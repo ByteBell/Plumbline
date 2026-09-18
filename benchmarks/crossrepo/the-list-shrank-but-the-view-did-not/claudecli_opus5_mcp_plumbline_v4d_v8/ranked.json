@@ -1,0 +1,52 @@
+[
+  {
+    "repo": "query",
+    "files": [
+      "packages/solid-query/src/useQueries.ts",
+      "packages/solid-query/src/useBaseQuery.ts",
+      "packages/query-core/src/queriesObserver.ts"
+    ],
+    "pinpoints": [
+      {
+        "path": "packages/solid-query/src/useQueries.ts",
+        "symbol": "useQueries",
+        "lines": "232-244",
+        "change": "setState(observer.getOptimisticResult(...)[1]()) merges the new results array into the Solid store key-by-key, overwriting indices 0..n-1 and appending beyond the old length but never deleting surplus indices \u2014 wrap the new array in reconcile() so the store is made equal to it and shrinks when the queries array shrinks"
+      },
+      {
+        "path": "packages/solid-query/src/useQueries.ts",
+        "symbol": "useQueries",
+        "lines": "246-259",
+        "change": "the dataResources memo is keyed on state.length, which can only grow, so createResource slots for removed queries survive and stay reactive and rendered; it must be derived from the new query count, disposing the resources whose slots are gone"
+      },
+      {
+        "path": "packages/solid-query/src/useQueries.ts",
+        "symbol": "useQueries",
+        "lines": "270-292",
+        "change": "the observer.subscribe task loops `index < dataResources_.length` (the previous, longer length) and calls setState(index, ...) slot by slot, so a shrink of more than one leaves more than one stale entry \u2014 replace the per-slot assignment with a whole-array reconcile"
+      },
+      {
+        "path": "packages/solid-query/src/useBaseQuery.ts",
+        "symbol": "useBaseQuery",
+        "lines": "1-40",
+        "change": "already imports createStore together with reconcile and unwrap; it is the in-repo idiom useQueries.ts (which imports createStore and unwrap but not reconcile) has to be brought in line with"
+      }
+    ]
+  },
+  {
+    "repo": "db",
+    "files": ["packages/solid-db/src/useLiveQuery.ts"],
+    "pinpoints": [
+      {
+        "path": "packages/solid-db/src/useLiveQuery.ts",
+        "symbol": "syncDataFromCollection",
+        "lines": "345-351",
+        "change": "owns the converge-in-both-directions form \u2014 setData((prev) => reconcile(Array.from(currentCollection.values()))(prev).filter(Boolean)) makes the projection equal to the source through a keyed pass that drops the entries whose keys are gone; this is the contract the query-side projection must satisfy"
+      }
+    ]
+  },
+  {
+    "repo": "tldraw",
+    "files": ["packages/store/src/lib/IncrementalSetConstructor.ts", "packages/store/src/lib/Store.ts"]
+  }
+]

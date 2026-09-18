@@ -1,0 +1,63 @@
+{
+  "id": "xrepo-v6-12-the-overview-does-not-share-the-view-filter-medium",
+  "question": "Two things in these libraries describe the same collection at the same time: the main surface, which draws only the members that currently qualify to be drawn, and a small secondary representation of the whole - an overview, a summary extent, a set of derived bounds - which is supposed to describe exactly what the main surface is showing. The secondary one is computed from the raw collection instead of from the qualifying subset, so the moment a member stops qualifying the two disagree: the overview is sized and positioned around members that are not being shown, and in the degenerate case where nothing qualifies it collapses onto whatever the raw collection happens to contain rather than falling back to the region the user is actually looking at. Every consumer that reads the overview to decide where the user is - a drag handle, a jump-to-fit, a scroll ratio - inherits the disagreement. The contract is that a derived summary must be computed over the same filtered set as the thing it summarises, and must have a defined answer when that set is empty. Elsewhere in the folder the same distinction is drawn on purpose: one library keeps an explicit qualifying-subset pass and hands the survivors to everything downstream, and another exposes the filtered projection of its columns as first-class accessors so that no consumer can accidentally read the unfiltered list. Which files compute a summary over the unfiltered collection, and which own the filtered-projection contract they have to be brought in line with?",
+  "anchor": {
+    "repo": "xyflow",
+    "pinned_commit": "360f5b13e2bc6899ea06b4be1a49b068d86926cf",
+    "fix_pr": "https://github.com/xyflow/xyflow/pull/5971",
+    "pr_number": 5971,
+    "pr_title": "fix(react): keep minimap bounds at the viewport when all nodes are hidden",
+    "fix_merged": "2026-08-21",
+    "fix_merge_commit": "3319ef4917c3",
+    "parent_is_buggy": true
+  },
+  "counts": {
+    "min_repos": 3,
+    "min_files": 5
+  },
+  "repo_commits": {
+    "xyflow": "360f5b13e2bc6899ea06b4be1a49b068d86926cf",
+    "tldraw": "5590d14d8edd4faab7dc1177b6e1adb28876fd23",
+    "table": "d08af367e11c539bb7e18c2472aa761149ef6db6"
+  },
+  "expected": [
+    {
+      "repo": "xyflow",
+      "knowledgeId": "6f1f2a40-aa51-4fe1-b9d2-d33ee4571368",
+      "files": [
+        "packages/react/src/additional-components/MiniMap/MiniMap.tsx",
+        "packages/svelte/src/lib/store/visibleElements.ts"
+      ]
+    },
+    {
+      "repo": "tldraw",
+      "knowledgeId": "91b23c56-1aee-5c86-a34b-c66f8970d025",
+      "files": [
+        "packages/editor/src/lib/hooks/useShapeCulling.tsx",
+        "packages/tldraw/src/lib/ui/components/Minimap/DefaultMinimap.tsx"
+      ]
+    },
+    {
+      "repo": "table",
+      "knowledgeId": "08e0b828-ac04-4dce-8e73-eb2ceb151072",
+      "files": ["packages/table-core/src/features/ColumnVisibility.ts"]
+    }
+  ],
+  "grader_notes": {
+    "why_cross_repo": "ANCHOR (real bug, xyflow #5971, merged 2026-08-21 as 3319ef4917c3, AFTER the pinned commit 360f5b13e2; 4/4 removed lines live at the pin): MiniMap.tsx derives its bounds from the whole node collection, so hidden nodes size the overview and an all-hidden graph collapses the bounds instead of falling back to the viewport. The svelte port carries the same defect on the edge axis at the pin ('fix(svelte): hide edge if connected node is hidden', bb40f2dd0a0e, 1/1 live in store/visibleElements.ts). Citations: tldraw runs an explicit qualifying pass (useShapeCulling.tsx, updateCulling/isCulled) and its own overview reads the culled-aware set (DefaultMinimap.tsx); table exposes the filtered projection as first-class accessors - getVisibleFlatColumns, getVisibleLeafColumns, getVisibleCells, getIsVisible - so a consumer cannot read the unfiltered list by accident.",
+    "verification_method": "(1) Both xyflow anchors mined from `pin..origin/main`, pin-is-ancestor True, removed-line liveness 4/4 and 1/1 (100%). NOTE xyflow b89ef7617cc1 ('getNodesBounds to skip unresolvable nodes'), which looked like a third instance, is NOT a descendant of the pin and was rejected by verify_anchor.py. (2) Citation paths confirmed at their pins and read (useShapeCulling.tsx isCulled/updateCulling; ColumnVisibility.ts accessors). (3) Overlap check: 0 shared (repo,file) pairs - table's three prior gold files are ColumnSizing/RowPagination/RowSelection. (4) Contract check: v5-18 is about a container holding ids whose records were deleted; this is about a summary computed over an unfiltered set.",
+    "difficulty_design": "Cross-framework rather than cross-library: the same product's react and svelte packages carry the defect on two different axes, which an arm that stops at the first hit will not notice. 5 files / 3 repos.",
+    "rejected_candidates": ""
+  },
+  "calibration": {
+    "probe": "claudecli_opus5_bare (Opus 5, Bash/Read/Grep/Glob over the pinned checkouts, sandbox-exec gold-blind, one fresh headless session)",
+    "date": "2026-09-10",
+    "recall": 0.6,
+    "precision": 0.2,
+    "returned": 15,
+    "gold": 5,
+    "cost_usd": 3.06,
+    "rule": "hard requires recall < 0.6; medium requires recall <= 0.8; above that the case is easy",
+    "label_from_probe": "medium"
+  }
+}

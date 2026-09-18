@@ -1,0 +1,3501 @@
+{
+  "schema": 1,
+  "kind": "file",
+  "repoName": "react",
+  "commitHash": "3a717e42438afac81020cdec297dadb5613a4304",
+  "generatedAt": "2026-08-01T22:13:01.193Z",
+  "file": {
+    "relativePath": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js",
+    "language": "javascript",
+    "sizeBytes": 31380,
+    "tokenCount": 7068,
+    "model": "tencent/hy3",
+    "analysedAt": "2026-08-01T16:56:52.708Z",
+    "module": {
+      "purpose": "Implements React DOM's plugin-based event system: registers event plugins, extracts synthetic events, dispatches them via a queue, attaches native listeners to roots/containers, and accumulates phase-specific listeners from the fiber tree.",
+      "summary": "This module is the orchestration layer for React DOM's delegated event system. On import it registers all built-in event plugins (Simple, EnterLeave, Change, Select, BeforeInput, FormAction, ScrollEnd). It exposes functions to listen to all supported events on a root, to listen to individual native or non-delegated events, and to dispatch a native event through the plugin extractions into a dispatch queue that is then processed in capture or bubble order. It walks the fiber tree to find the correct root container, accumulates listeners for single-phase, two-phase, enter/leave, and non-managed node scenarios, and emulates capture/bubble phases for polyfill plugins. It also handles legacy Facebook support mode click deferral and passive event listener flags.",
+      "businessContext": "Core React DOM rendering subsystem. If it fails, no UI events fire in React apps. Critical for interaction correctness and performance.",
+      "classes": [],
+      "functions": [
+        "extractEvents (~L102-198): Extracts synthetic events from all plugins into dispatch queue",
+        "executeDispatch (~L247-259): Invokes a listener with currentTarget and reports errors",
+        "processDispatchQueueItemsInOrder (~L261-305): Iterates listeners in capture or bubble order",
+        "processDispatchQueue (~L307-317): Processes each dispatch entry in the queue",
+        "dispatchEventsForPlugins (~L319-338): Builds queue and processes for a native event",
+        "listenToNonDelegatedEvent (~L340-368): Attaches non-delegated event to target element",
+        "listenToNativeEvent (~L370-394): Attaches trapped listener to target in phase",
+        "listenToNativeEventForNonManagedEventTarget (~L398-420): Attaches listener for window-like targets",
+        "listenToAllSupportedEvents (~L424-451): Registers all native events on root container",
+        "addTrappedEventListener (~L453-549): Creates and adds capture/bubble listener with passive support",
+        "deferClickToDocumentForLegacyFBSupport (~L551-564): Defers click for legacy FB mode",
+        "isMatchingRootContainer (~L566-576): Checks container matches root including comment nodes",
+        "dispatchEventForPluginEventSystem (~L578-660): Top-level dispatch with fiber root resolution",
+        "createDispatchListener (~L662-671): Factory for DispatchListener objects",
+        "accumulateSinglePhaseListeners (~L673-767): Collects listeners up fiber tree for one phase",
+        "accumulateTwoPhaseListeners (~L777-812): Collects capture+bubble listeners for polyfill plugins",
+        "getParent (~L814-825): Returns nearest host parent fiber",
+        "accumulateEnterLeaveListenersForEvent (~L827-872): Builds enter/leave listeners up to common ancestor",
+        "accumulateEnterLeaveTwoPhaseListeners (~L876-902): Combines leave and enter listener accumulation",
+        "accumulateEventHandleNonManagedNodeListeners (~L904-920): Collects listeners for non-managed nodes",
+        "getListenerSetKey (~L922-927): Produces unique key for listener set tracking"
+      ],
+      "keywords": [
+        "event delegation",
+        "synthetic event",
+        "dispatch queue",
+        "capture phase",
+        "bubble phase",
+        "fiber tree",
+        "event plugins",
+        "passive listeners",
+        "legacy FB support",
+        "root container"
+      ],
+      "ontologyConcepts": [
+        "event propagation",
+        "plugin architecture",
+        "listener accumulation",
+        "fiber reconciliation",
+        "root boundary resolution"
+      ],
+      "businessEntities": ["Event", "Fiber", "Container", "Listener", "Plugin"],
+      "systemCapabilities": [
+        "register event plugins",
+        "dispatch native events to React",
+        "attach delegated listeners",
+        "accumulate phase listeners",
+        "emulate capture bubble phases"
+      ],
+      "configDependencies": [
+        "enableLegacyFBSupport",
+        "enableCreateEventHandleAPI",
+        "enableScopeAPI",
+        "disableCommentsAsDOMContainers",
+        "enableScrollEndPolyfill"
+      ],
+      "importsInternal": [
+        {
+          "spec": "./DOMEventNames",
+          "symbols": ["DOMEventName"],
+          "anchor": { "startLine": 12, "endLine": 12 },
+          "resolvedRelativePath": "packages/react-dom-bindings/src/events/DOMEventNames.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/events/DOMEventNames.js",
+          "resolvedHint": "packages/react-dom-bindings/src/events/DOMEventNames.js"
+        },
+        {
+          "spec": "./EventSystemFlags",
+          "symbols": ["EventSystemFlags"],
+          "anchor": { "startLine": 13, "endLine": 13 },
+          "resolvedRelativePath": "packages/react-dom-bindings/src/events/EventSystemFlags.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/events/EventSystemFlags.js",
+          "resolvedHint": "packages/react-dom-bindings/src/events/EventSystemFlags.js"
+        },
+        {
+          "spec": "./PluginModuleType",
+          "symbols": ["AnyNativeEvent"],
+          "anchor": { "startLine": 14, "endLine": 14 },
+          "resolvedRelativePath": "packages/react-dom-bindings/src/events/PluginModuleType.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/events/PluginModuleType.js",
+          "resolvedHint": "packages/react-dom-bindings/src/events/PluginModuleType.js"
+        },
+        {
+          "spec": "./ReactSyntheticEventType",
+          "symbols": ["KnownReactSyntheticEvent", "ReactSyntheticEvent"],
+          "anchor": { "startLine": 15, "endLine": 18 },
+          "resolvedRelativePath": "packages/react-dom-bindings/src/events/ReactSyntheticEventType.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/events/ReactSyntheticEventType.js",
+          "resolvedHint": "packages/react-dom-bindings/src/events/ReactSyntheticEventType.js"
+        },
+        {
+          "spec": "react-reconciler/src/ReactInternalTypes",
+          "symbols": ["Fiber"],
+          "anchor": { "startLine": 19, "endLine": 19 },
+          "resolvedRelativePath": "packages/react-reconciler/src/ReactInternalTypes.js",
+          "resolvedFileId": "packages/react-reconciler/src/ReactInternalTypes.js",
+          "resolvedHint": "packages/react-reconciler/src/ReactInternalTypes.js"
+        },
+        {
+          "spec": "./EventRegistry",
+          "symbols": ["allNativeEvents"],
+          "anchor": { "startLine": 21, "endLine": 21 },
+          "resolvedRelativePath": "packages/react-dom-bindings/src/events/EventRegistry.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/events/EventRegistry.js",
+          "resolvedHint": "packages/react-dom-bindings/src/events/EventRegistry.js"
+        },
+        {
+          "spec": "./EventSystemFlags",
+          "symbols": [
+            "SHOULD_NOT_DEFER_CLICK_FOR_FB_SUPPORT_MODE",
+            "IS_LEGACY_FB_SUPPORT_MODE",
+            "SHOULD_NOT_PROCESS_POLYFILL_EVENT_PLUGINS",
+            "IS_CAPTURE_PHASE",
+            "IS_EVENT_HANDLE_NON_MANAGED_NODE",
+            "IS_NON_DELEGATED"
+          ],
+          "anchor": { "startLine": 22, "endLine": 29 },
+          "resolvedRelativePath": "packages/react-dom-bindings/src/events/EventSystemFlags.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/events/EventSystemFlags.js",
+          "resolvedHint": "packages/react-dom-bindings/src/events/EventSystemFlags.js"
+        },
+        {
+          "spec": "./CurrentReplayingEvent",
+          "symbols": ["isReplayingEvent"],
+          "anchor": { "startLine": 30, "endLine": 30 },
+          "resolvedRelativePath": "packages/react-dom-bindings/src/events/CurrentReplayingEvent.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/events/CurrentReplayingEvent.js",
+          "resolvedHint": "packages/react-dom-bindings/src/events/CurrentReplayingEvent.js"
+        },
+        {
+          "spec": "react-reconciler/src/ReactWorkTags",
+          "symbols": [
+            "HostRoot",
+            "HostPortal",
+            "HostComponent",
+            "HostHoistable",
+            "HostSingleton",
+            "HostText",
+            "ScopeComponent"
+          ],
+          "anchor": { "startLine": 32, "endLine": 40 },
+          "resolvedRelativePath": "packages/react-reconciler/src/ReactWorkTags.js",
+          "resolvedFileId": "packages/react-reconciler/src/ReactWorkTags.js",
+          "resolvedHint": "packages/react-reconciler/src/ReactWorkTags.js"
+        },
+        {
+          "spec": "react-reconciler/src/ReactFiberTreeReflection",
+          "symbols": ["getLowestCommonAncestor"],
+          "anchor": { "startLine": 41, "endLine": 41 },
+          "resolvedRelativePath": "packages/react-reconciler/src/ReactFiberTreeReflection.js",
+          "resolvedFileId": "packages/react-reconciler/src/ReactFiberTreeReflection.js",
+          "resolvedHint": "packages/react-reconciler/src/ReactFiberTreeReflection.js"
+        },
+        {
+          "spec": "./getEventTarget",
+          "symbols": ["getEventTarget"],
+          "anchor": { "startLine": 43, "endLine": 43 },
+          "resolvedRelativePath": "packages/react-dom-bindings/src/events/getEventTarget.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/events/getEventTarget.js",
+          "resolvedHint": "packages/react-dom-bindings/src/events/getEventTarget.js"
+        },
+        {
+          "spec": "../client/ReactDOMComponentTree",
+          "symbols": ["getClosestInstanceFromNode", "getEventListenerSet", "getEventHandlerListeners"],
+          "anchor": { "startLine": 44, "endLine": 48 },
+          "resolvedRelativePath": "packages/react-dom-bindings/src/client/ReactDOMComponentTree.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/client/ReactDOMComponentTree.js",
+          "resolvedHint": "packages/react-dom-bindings/src/client/ReactDOMComponentTree.js"
+        },
+        {
+          "spec": "../client/HTMLNodeType",
+          "symbols": ["COMMENT_NODE", "DOCUMENT_NODE"],
+          "anchor": { "startLine": 49, "endLine": 49 },
+          "resolvedRelativePath": "packages/react-dom-bindings/src/client/HTMLNodeType.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/client/HTMLNodeType.js",
+          "resolvedHint": "packages/react-dom-bindings/src/client/HTMLNodeType.js"
+        },
+        {
+          "spec": "./ReactDOMUpdateBatching",
+          "symbols": ["batchedUpdates"],
+          "anchor": { "startLine": 50, "endLine": 50 },
+          "resolvedRelativePath": "packages/react-dom-bindings/src/events/ReactDOMUpdateBatching.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/events/ReactDOMUpdateBatching.js",
+          "resolvedHint": "packages/react-dom-bindings/src/events/ReactDOMUpdateBatching.js"
+        },
+        {
+          "spec": "./getListener",
+          "symbols": ["getListener"],
+          "anchor": { "startLine": 51, "endLine": 51 },
+          "resolvedRelativePath": "packages/react-dom-bindings/src/events/getListener.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/events/getListener.js",
+          "resolvedHint": "packages/react-dom-bindings/src/events/getListener.js"
+        },
+        {
+          "spec": "./checkPassiveEvents",
+          "symbols": ["passiveBrowserEventsSupported"],
+          "anchor": { "startLine": 52, "endLine": 52 },
+          "resolvedRelativePath": "packages/react-dom-bindings/src/events/checkPassiveEvents.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/events/checkPassiveEvents.js",
+          "resolvedHint": "packages/react-dom-bindings/src/events/checkPassiveEvents.js"
+        },
+        {
+          "spec": "shared/ReactFeatureFlags",
+          "symbols": [
+            "enableLegacyFBSupport",
+            "enableCreateEventHandleAPI",
+            "enableScopeAPI",
+            "disableCommentsAsDOMContainers",
+            "enableScrollEndPolyfill"
+          ],
+          "anchor": { "startLine": 54, "endLine": 60 },
+          "resolvedRelativePath": "packages/shared/ReactFeatureFlags.js",
+          "resolvedFileId": "packages/shared/ReactFeatureFlags.js",
+          "resolvedHint": "packages/shared/ReactFeatureFlags.js"
+        },
+        {
+          "spec": "./ReactDOMEventListener",
+          "symbols": ["createEventListenerWrapperWithPriority"],
+          "anchor": { "startLine": 61, "endLine": 61 },
+          "resolvedRelativePath": "packages/react-dom-bindings/src/events/ReactDOMEventListener.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/events/ReactDOMEventListener.js",
+          "resolvedHint": "packages/react-dom-bindings/src/events/ReactDOMEventListener.js"
+        },
+        {
+          "spec": "./EventListener",
+          "symbols": [
+            "removeEventListener",
+            "addEventCaptureListener",
+            "addEventBubbleListener",
+            "addEventBubbleListenerWithPassiveFlag",
+            "addEventCaptureListenerWithPassiveFlag"
+          ],
+          "anchor": { "startLine": 62, "endLine": 68 },
+          "resolvedRelativePath": "packages/react-dom-bindings/src/events/EventListener.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/events/EventListener.js",
+          "resolvedHint": "packages/react-dom-bindings/src/events/EventListener.js"
+        },
+        {
+          "spec": "./plugins/BeforeInputEventPlugin",
+          "symbols": ["*"],
+          "anchor": { "startLine": 69, "endLine": 69 },
+          "resolvedRelativePath": "packages/react-dom-bindings/src/events/plugins/BeforeInputEventPlugin.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/events/plugins/BeforeInputEventPlugin.js",
+          "resolvedHint": "packages/react-dom-bindings/src/events/plugins/BeforeInputEventPlugin.js"
+        },
+        {
+          "spec": "./plugins/ChangeEventPlugin",
+          "symbols": ["*"],
+          "anchor": { "startLine": 70, "endLine": 70 },
+          "resolvedRelativePath": "packages/react-dom-bindings/src/events/plugins/ChangeEventPlugin.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/events/plugins/ChangeEventPlugin.js",
+          "resolvedHint": "packages/react-dom-bindings/src/events/plugins/ChangeEventPlugin.js"
+        },
+        {
+          "spec": "./plugins/EnterLeaveEventPlugin",
+          "symbols": ["*"],
+          "anchor": { "startLine": 71, "endLine": 71 },
+          "resolvedRelativePath": "packages/react-dom-bindings/src/events/plugins/EnterLeaveEventPlugin.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/events/plugins/EnterLeaveEventPlugin.js",
+          "resolvedHint": "packages/react-dom-bindings/src/events/plugins/EnterLeaveEventPlugin.js"
+        },
+        {
+          "spec": "./plugins/SelectEventPlugin",
+          "symbols": ["*"],
+          "anchor": { "startLine": 72, "endLine": 72 },
+          "resolvedRelativePath": "packages/react-dom-bindings/src/events/plugins/SelectEventPlugin.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/events/plugins/SelectEventPlugin.js",
+          "resolvedHint": "packages/react-dom-bindings/src/events/plugins/SelectEventPlugin.js"
+        },
+        {
+          "spec": "./plugins/SimpleEventPlugin",
+          "symbols": ["*"],
+          "anchor": { "startLine": 73, "endLine": 73 },
+          "resolvedRelativePath": "packages/react-dom-bindings/src/events/plugins/SimpleEventPlugin.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/events/plugins/SimpleEventPlugin.js",
+          "resolvedHint": "packages/react-dom-bindings/src/events/plugins/SimpleEventPlugin.js"
+        },
+        {
+          "spec": "./plugins/FormActionEventPlugin",
+          "symbols": ["*"],
+          "anchor": { "startLine": 74, "endLine": 74 },
+          "resolvedRelativePath": "packages/react-dom-bindings/src/events/plugins/FormActionEventPlugin.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/events/plugins/FormActionEventPlugin.js",
+          "resolvedHint": "packages/react-dom-bindings/src/events/plugins/FormActionEventPlugin.js"
+        },
+        {
+          "spec": "./plugins/ScrollEndEventPlugin",
+          "symbols": ["*"],
+          "anchor": { "startLine": 75, "endLine": 75 },
+          "resolvedRelativePath": "packages/react-dom-bindings/src/events/plugins/ScrollEndEventPlugin.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/events/plugins/ScrollEndEventPlugin.js",
+          "resolvedHint": "packages/react-dom-bindings/src/events/plugins/ScrollEndEventPlugin.js"
+        },
+        {
+          "spec": "shared/reportGlobalError",
+          "symbols": ["reportGlobalError"],
+          "anchor": { "startLine": 77, "endLine": 77 },
+          "resolvedRelativePath": "packages/shared/reportGlobalError.js",
+          "resolvedFileId": "packages/shared/reportGlobalError.js",
+          "resolvedHint": "packages/shared/reportGlobalError.js"
+        },
+        {
+          "spec": "react-reconciler/src/ReactCurrentFiber",
+          "symbols": ["runWithFiberInDEV"],
+          "anchor": { "startLine": 79, "endLine": 79 },
+          "resolvedRelativePath": "packages/react-reconciler/src/ReactCurrentFiber.js",
+          "resolvedFileId": "packages/react-reconciler/src/ReactCurrentFiber.js",
+          "resolvedHint": "packages/react-reconciler/src/ReactCurrentFiber.js"
+        }
+      ],
+      "importsExternal": [],
+      "sideEffects": {
+        "io": [],
+        "network": [],
+        "env": [],
+        "fs": [],
+        "process": [
+          "Registers event plugins at module load (SimpleEventPlugin.registerEvents(), etc.)",
+          "Attaches native event listeners to DOM containers via addEvent*Listener",
+          "Mutates event.currentTarget during dispatch"
+        ],
+        "mutationOfArg": [
+          "event.currentTarget set and reset in executeDispatch",
+          "rootContainerElement marker property set to true in listenToAllSupportedEvents"
+        ]
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "listenToAllSupportedEvents",
+          "shape": "export function listenToAllSupportedEvents(rootContainerElement: EventTarget): void",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "dispatchEventForPluginEventSystem",
+          "shape": "export function dispatchEventForPluginEventSystem(domEventName: DOMEventName, eventSystemFlags: EventSystemFlags, nativeEvent: AnyNativeEvent, targetInst: null | Fiber, targetContainer: EventTarget): void",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "nonDelegatedEvents",
+          "shape": "export const nonDelegatedEvents: Set<DOMEventName> = new Set([...])",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "mediaEventTypes",
+          "shape": "export const mediaEventTypes: Array<DOMEventName> = [...]",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "accumulateSinglePhaseListeners",
+          "shape": "export function accumulateSinglePhaseListeners(targetFiber: Fiber | null, reactName: string | null, nativeEventType: string, inCapturePhase: boolean, accumulateTargetOnly: boolean, nativeEvent: AnyNativeEvent): Array<DispatchListener>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "getListenerSetKey",
+          "shape": "export function getListenerSetKey(domEventName: DOMEventName, capture: boolean): string",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "SimpleEventPlugin.extractEvents",
+          "shape": "SimpleEventPlugin.extractEvents(dispatchQueue, domEventName, targetInst, nativeEvent, nativeEventTarget, eventSystemFlags, targetContainer)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "createEventListenerWrapperWithPriority",
+          "shape": "createEventListenerWrapperWithPriority(targetContainer, domEventName, eventSystemFlags)",
+          "resolvedRelativePath": "packages/react-dom-bindings/src/events/ReactDOMEventListener.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/events/ReactDOMEventListener.js"
+        },
+        {
+          "name": "addEventCaptureListener",
+          "shape": "addEventCaptureListener(targetContainer, domEventName, listener)",
+          "resolvedRelativePath": "packages/react-dom-bindings/src/events/EventListener.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/events/EventListener.js"
+        },
+        {
+          "name": "addEventBubbleListener",
+          "shape": "addEventBubbleListener(targetContainer, domEventName, listener)",
+          "resolvedRelativePath": "packages/react-dom-bindings/src/events/EventListener.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/events/EventListener.js"
+        },
+        {
+          "name": "getListener",
+          "shape": "getListener(instance, reactEventName)",
+          "resolvedRelativePath": "packages/react-dom-bindings/src/events/getListener.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/events/getListener.js"
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "plugin-registration",
+          "intent": "Register all built-in event plugins at module init",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 93, "endLine": 100 }
+        },
+        {
+          "name": "extractEvents",
+          "intent": "Extract events from simple and polyfill plugins into queue",
+          "structureKind": "branch",
+          "predicate": "shouldProcessPolyfillPlugins",
+          "branchOutcomes": ["process polyfill plugins", "skip polyfill plugins"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 102, "endLine": 198 }
+        },
+        {
+          "name": "processDispatchQueueItemsInOrder",
+          "intent": "Invoke listeners in capture (reverse) or bubble (forward) order",
+          "structureKind": "loop",
+          "predicate": "i >= 0",
+          "branchOutcomes": [],
+          "bounds": "dispatchListeners.length",
+          "terminationCondition": "i < 0 or i >= dispatchListeners.length",
+          "anchor": { "startLine": 261, "endLine": 305 }
+        },
+        {
+          "name": "listenToAllSupportedEvents",
+          "intent": "Attach all native events to root and ownerDocument once",
+          "structureKind": "loop",
+          "predicate": "domEventName !== 'selectionchange'",
+          "branchOutcomes": ["attach event", "skip selectionchange"],
+          "bounds": "allNativeEvents.forEach",
+          "terminationCondition": null,
+          "anchor": { "startLine": 424, "endLine": 451 }
+        },
+        {
+          "name": "dispatchEventForPluginEventSystem",
+          "intent": "Resolve root container fiber and dispatch via plugins",
+          "structureKind": "loop",
+          "predicate": "node !== null",
+          "branchOutcomes": ["break on match", "return on null", "continue mainLoop"],
+          "bounds": "fiber tree walk",
+          "terminationCondition": "node === null",
+          "anchor": { "startLine": 578, "endLine": 660 }
+        },
+        {
+          "name": "accumulateSinglePhaseListeners",
+          "intent": "Walk fiber tree collecting listeners for one phase",
+          "structureKind": "loop",
+          "predicate": "instance !== null",
+          "branchOutcomes": ["break if accumulateTargetOnly", "clear on beforeblur detach"],
+          "bounds": "fiber return chain",
+          "terminationCondition": "instance === null",
+          "anchor": { "startLine": 673, "endLine": 767 }
+        }
+      ],
+      "representationFamily": "module",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "const",
+          "name": "mediaEventTypes",
+          "signature": "export const mediaEventTypes: Array<DOMEventName> = [",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Array<DOMEventName>",
+          "exported": true,
+          "anchor": { "startLine": 201, "endLine": 226 }
+        },
+        {
+          "kind": "const",
+          "name": "nonDelegatedEvents",
+          "signature": "export const nonDelegatedEvents: Set<DOMEventName> = new Set([",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Set<DOMEventName>",
+          "exported": true,
+          "anchor": { "startLine": 231, "endLine": 245 }
+        },
+        {
+          "kind": "function",
+          "name": "processDispatchQueue",
+          "signature": "export function processDispatchQueue(\n  dispatchQueue: DispatchQueue,\n  eventSystemFlags: EventSystemFlags,\n): void {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "void",
+          "exported": true,
+          "anchor": { "startLine": 307, "endLine": 317 }
+        },
+        {
+          "kind": "function",
+          "name": "listenToNonDelegatedEvent",
+          "signature": "export function listenToNonDelegatedEvent(\n  domEventName: DOMEventName,\n  targetElement: Element,\n): void {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "void",
+          "exported": true,
+          "anchor": { "startLine": 340, "endLine": 368 }
+        },
+        {
+          "kind": "function",
+          "name": "listenToNativeEvent",
+          "signature": "export function listenToNativeEvent(\n  domEventName: DOMEventName,\n  isCapturePhaseListener: boolean,\n  target: EventTarget,\n): void {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "void",
+          "exported": true,
+          "anchor": { "startLine": 370, "endLine": 394 }
+        },
+        {
+          "kind": "function",
+          "name": "listenToNativeEventForNonManagedEventTarget",
+          "signature": "export function listenToNativeEventForNonManagedEventTarget(\n  domEventName: DOMEventName,\n  isCapturePhaseListener: boolean,\n  target: EventTarget,\n): void {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "void",
+          "exported": true,
+          "anchor": { "startLine": 398, "endLine": 420 }
+        },
+        {
+          "kind": "function",
+          "name": "listenToAllSupportedEvents",
+          "signature": "export function listenToAllSupportedEvents(rootContainerElement: EventTarget) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 424, "endLine": 451 }
+        },
+        {
+          "kind": "function",
+          "name": "dispatchEventForPluginEventSystem",
+          "signature": "export function dispatchEventForPluginEventSystem(\n  domEventName: DOMEventName,\n  eventSystemFlags: EventSystemFlags,\n  nativeEvent: AnyNativeEvent,\n  targetInst: null | Fiber,\n  targetContainer: EventTarget,\n): void {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "void",
+          "exported": true,
+          "anchor": { "startLine": 578, "endLine": 660 }
+        },
+        {
+          "kind": "function",
+          "name": "accumulateSinglePhaseListeners",
+          "signature": "export function accumulateSinglePhaseListeners(\n  targetFiber: Fiber | null,\n  reactName: string | null,\n  nativeEventType: string,\n  inCapturePhase: boolean,\n  accumulateTargetOnly: boolean,\n  nativeEvent: AnyNativeEvent,\n): Array<DispatchListener> {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Array<DispatchListener>",
+          "exported": true,
+          "anchor": { "startLine": 673, "endLine": 767 }
+        },
+        {
+          "kind": "function",
+          "name": "accumulateTwoPhaseListeners",
+          "signature": "export function accumulateTwoPhaseListeners(\n  targetFiber: Fiber | null,\n  reactName: string,\n): Array<DispatchListener> {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Array<DispatchListener>",
+          "exported": true,
+          "anchor": { "startLine": 777, "endLine": 812 }
+        },
+        {
+          "kind": "function",
+          "name": "accumulateEnterLeaveTwoPhaseListeners",
+          "signature": "export function accumulateEnterLeaveTwoPhaseListeners(\n  dispatchQueue: DispatchQueue,\n  leaveEvent: KnownReactSyntheticEvent,\n  enterEvent: null | KnownReactSyntheticEvent,\n  from: Fiber | null,\n  to: Fiber | null,\n): void {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "void",
+          "exported": true,
+          "anchor": { "startLine": 876, "endLine": 902 }
+        },
+        {
+          "kind": "function",
+          "name": "accumulateEventHandleNonManagedNodeListeners",
+          "signature": "export function accumulateEventHandleNonManagedNodeListeners(\n  reactEventType: DOMEventName,\n  currentTarget: EventTarget,\n  inCapturePhase: boolean,\n): Array<DispatchListener> {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Array<DispatchListener>",
+          "exported": true,
+          "anchor": { "startLine": 904, "endLine": 920 }
+        },
+        {
+          "kind": "function",
+          "name": "getListenerSetKey",
+          "signature": "export function getListenerSetKey(\n  domEventName: DOMEventName,\n  capture: boolean,\n): string {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "string",
+          "exported": true,
+          "anchor": { "startLine": 922, "endLine": 927 }
+        },
+        {
+          "kind": "type",
+          "name": "DispatchQueue",
+          "signature": "export type DispatchQueue = Array<DispatchEntry>;",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 90, "endLine": 90 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "type",
+          "name": "DispatchListener",
+          "shape": "type DispatchListener = {\n  instance: null | Fiber,\n  listener: Function,\n  currentTarget: EventTarget,\n};",
+          "discriminant": null,
+          "anchor": { "startLine": 79, "endLine": 83 }
+        },
+        {
+          "kind": "type",
+          "name": "DispatchEntry",
+          "shape": "type DispatchEntry = {\n  event: ReactSyntheticEvent,\n  listeners: Array<DispatchListener>,\n};",
+          "discriminant": null,
+          "anchor": { "startLine": 85, "endLine": 88 }
+        },
+        {
+          "kind": "type",
+          "name": "DispatchQueue",
+          "shape": "export type DispatchQueue = Array<DispatchEntry>;",
+          "discriminant": null,
+          "anchor": { "startLine": 90, "endLine": 90 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "Empty dispatchQueue",
+          "handled": true,
+          "behavior": "processDispatchQueue loop does nothing",
+          "anchor": { "startLine": 312, "endLine": 312 }
+        },
+        {
+          "inputShape": "event.isPropagationStopped() true between instances",
+          "handled": true,
+          "behavior": "Returns early from processDispatchQueueItemsInOrder",
+          "anchor": { "startLine": 270, "endLine": 270 }
+        },
+        {
+          "inputShape": "Legacy FB support click event",
+          "handled": true,
+          "behavior": "Defers click to document via one-time listener",
+          "anchor": { "startLine": 600, "endLine": 601 }
+        },
+        {
+          "inputShape": "Non-delegated event in bubble phase via listenToNativeEvent",
+          "handled": true,
+          "behavior": "DEV error logged, but proceeds",
+          "anchor": { "startLine": 376, "endLine": 381 }
+        },
+        {
+          "inputShape": "beforeblur with detached intercept fiber",
+          "handled": true,
+          "behavior": "Clears accumulated listeners for that instance",
+          "anchor": { "startLine": 753, "endLine": 762 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": ">=",
+          "left": "i",
+          "right": "0",
+          "inclusive": true,
+          "intent": "Capture phase loop continues while index >= 0",
+          "anchor": { "startLine": 268, "endLine": 268 }
+        },
+        {
+          "operator": "<",
+          "left": "i",
+          "right": "dispatchListeners.length",
+          "inclusive": false,
+          "intent": "Bubble phase loop continues while index < length",
+          "anchor": { "startLine": 286, "endLine": 286 }
+        },
+        {
+          "operator": "<",
+          "left": "i",
+          "right": "dispatchQueue.length",
+          "inclusive": false,
+          "intent": "Process each queued event entry",
+          "anchor": { "startLine": 312, "endLine": 312 }
+        },
+        {
+          "operator": "!=",
+          "left": "listener",
+          "right": "null",
+          "inclusive": false,
+          "intent": "Only push listener if not null",
+          "anchor": { "startLine": 717, "endLine": 717 }
+        },
+        {
+          "operator": "!=",
+          "left": "captureListener",
+          "right": "null",
+          "inclusive": false,
+          "intent": "Only push capture listener if not null",
+          "anchor": { "startLine": 794, "endLine": 794 }
+        },
+        {
+          "operator": "!=",
+          "left": "bubbleListener",
+          "right": "null",
+          "inclusive": false,
+          "intent": "Only push bubble listener if not null",
+          "anchor": { "startLine": 800, "endLine": 800 }
+        },
+        {
+          "operator": "!=",
+          "left": "bubbleListener",
+          "right": "null",
+          "inclusive": false,
+          "intent": "Only push enter/leave bubble listener if not null",
+          "anchor": { "startLine": 859, "endLine": 859 }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": null,
+          "caught": "error",
+          "action": "Calls reportGlobalError(error) and continues dispatch",
+          "fallback": null,
+          "anchor": { "startLine": 254, "endLine": 256 }
+        },
+        {
+          "thrown": null,
+          "caught": null,
+          "action": "DEV console.error if listenToNonDelegatedEvent called with delegated event",
+          "fallback": null,
+          "anchor": { "startLine": 346, "endLine": 350 }
+        },
+        {
+          "thrown": null,
+          "caught": null,
+          "action": "DEV console.error if listenToNativeEvent called for nonDelegated in bubble",
+          "fallback": null,
+          "anchor": { "startLine": 377, "endLine": 381 }
+        }
+      ],
+      "invariants": [
+        {
+          "kind": "non-null",
+          "description": "event.currentTarget is reset to null after each listener execution",
+          "anchor": { "startLine": 258, "endLine": 258 }
+        },
+        {
+          "kind": "ordering",
+          "description": "Capture phase listeners are iterated in reverse array order",
+          "anchor": { "startLine": 268, "endLine": 268 }
+        },
+        {
+          "kind": "ordering",
+          "description": "Bubble phase listeners are iterated in forward array order",
+          "anchor": { "startLine": 286, "endLine": 286 }
+        },
+        {
+          "kind": "precondition",
+          "description": "listenToNonDelegatedEvent only called for events in nonDelegatedEvents set",
+          "anchor": { "startLine": 345, "endLine": 345 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Root container marked with listeningMarker to avoid duplicate listeners",
+          "anchor": { "startLine": 425, "endLine": 426 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "init-order",
+          "description": "Plugin registerEvents() side effects must run before any dispatch",
+          "anchor": { "startLine": 93, "endLine": 100 }
+        },
+        {
+          "kind": "caller",
+          "description": "listenToAllSupportedEvents called once per root container before events arrive",
+          "anchor": { "startLine": 424, "endLine": 426 }
+        },
+        {
+          "kind": "config",
+          "description": "Feature flags enableLegacyFBSupport, enableCreateEventHandleAPI, enableScopeAPI, enableScrollEndPolyfill alter code paths",
+          "anchor": { "startLine": 53, "endLine": 58 }
+        },
+        {
+          "kind": "platform",
+          "description": "passiveBrowserEventsSupported reflects browser capability for touch/wheel passive",
+          "anchor": { "startLine": 50, "endLine": 50 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "Exact runtime behavior of legacy FB deferred click listener interaction with FB internal tooling",
+          "affects": "addTrappedEventListener legacy branch",
+          "anchor": { "startLine": 504, "endLine": 516 },
+          "resolution": null
+        },
+        {
+          "question": "Whether disableCommentsAsDOMContainers changes root matching for comment nodes in all environments",
+          "affects": "isMatchingRootContainer",
+          "anchor": { "startLine": 572, "endLine": 574 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "sync",
+        "reentrant": false,
+        "ordering": "deterministic",
+        "notes": "Event dispatch is batched via batchedUpdates; listener invocation is sequential and stops on propagation stop."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "nonDelegatedEvents-contains-scroll",
+          "scenario": "nonDelegatedEvents set must include scroll event",
+          "given": [],
+          "when": "nonDelegatedEvents.has('scroll')",
+          "then": "returns true",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "scroll must be attached directly not delegated"
+        },
+        {
+          "testId": "listenToNativeEvent-dev-errors-for-bubble-nonDelegated",
+          "scenario": "DEV warns when listenToNativeEvent called for nonDelegated event in bubble phase",
+          "given": ["__DEV__ === true", "nonDelegatedEvents.has('scroll') === true"],
+          "when": "listenToNativeEvent('scroll', false, target)",
+          "then": "console.error invoked with 'Did not expect a listenToNativeEvent() call for \"scroll\" in the bubble phase'",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "prevents misconfiguration of event delegation"
+        },
+        {
+          "testId": "processDispatchQueue-stops-on-propagation-stopped",
+          "scenario": "dispatch loop halts when event propagation stopped",
+          "given": ["event.isPropagationStopped() === true", "dispatchQueue contains event with 3 listeners"],
+          "when": "processDispatchQueue(dispatchQueue, 0)",
+          "then": "only listeners before stop condition are executed",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "respects stopPropagation contract"
+        },
+        {
+          "testId": "listenToAllSupportedEvents-idempotent",
+          "scenario": "calling listenToAllSupportedEvents twice does not double-bind",
+          "given": ["rootContainerElement without listeningMarker"],
+          "when": "listenToAllSupportedEvents(root); listenToAllSupportedEvents(root);",
+          "then": "each native event listener added exactly once",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "marker guards against duplicate root listeners"
+        }
+      ],
+      "language": "javascript",
+      "moduleLayout": [
+        "imports",
+        "type DispatchListener",
+        "type DispatchEntry",
+        "export type DispatchQueue",
+        "plugin registration side effects",
+        "function extractEvents",
+        "export const mediaEventTypes",
+        "export const nonDelegatedEvents",
+        "function executeDispatch",
+        "function processDispatchQueueItemsInOrder",
+        "export function processDispatchQueue",
+        "function dispatchEventsForPlugins",
+        "export function listenToNonDelegatedEvent",
+        "export function listenToNativeEvent",
+        "export function listenToNativeEventForNonManagedEventTarget",
+        "const listeningMarker",
+        "export function listenToAllSupportedEvents",
+        "function addTrappedEventListener",
+        "function deferClickToDocumentForLegacyFBSupport",
+        "function isMatchingRootContainer",
+        "export function dispatchEventForPluginEventSystem",
+        "function createDispatchListener",
+        "export function accumulateSinglePhaseListeners",
+        "export function accumulateTwoPhaseListeners",
+        "function getParent",
+        "function accumulateEnterLeaveListenersForEvent",
+        "export function accumulateEnterLeaveTwoPhaseListeners",
+        "export function accumulateEventHandleNonManagedNodeListeners",
+        "export function getListenerSetKey"
+      ],
+      "moduleLevelCode": "SimpleEventPlugin.registerEvents();\nEnterLeaveEventPlugin.registerEvents();\nChangeEventPlugin.registerEvents();\nSelectEventPlugin.registerEvents();\nBeforeInputEventPlugin.registerEvents();\nif (enableScrollEndPolyfill) {\n  ScrollEndEventPlugin.registerEvents();\n}",
+      "exports": [
+        { "name": "DispatchQueue", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "mediaEventTypes", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "nonDelegatedEvents", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "processDispatchQueue", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "listenToNonDelegatedEvent", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "listenToNativeEvent", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "listenToNativeEventForNonManagedEventTarget", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "listenToAllSupportedEvents", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "dispatchEventForPluginEventSystem", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "accumulateSinglePhaseListeners", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "accumulateTwoPhaseListeners", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "accumulateEnterLeaveTwoPhaseListeners", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "accumulateEventHandleNonManagedNodeListeners", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "getListenerSetKey", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "DOMEventName", "module": "./DOMEventNames", "alias": null, "kind": "internal" },
+        { "symbol": "EventSystemFlags", "module": "./EventSystemFlags", "alias": null, "kind": "internal" },
+        { "symbol": "AnyNativeEvent", "module": "./PluginModuleType", "alias": null, "kind": "internal" },
+        {
+          "symbol": "KnownReactSyntheticEvent",
+          "module": "./ReactSyntheticEventType",
+          "alias": null,
+          "kind": "internal"
+        },
+        { "symbol": "ReactSyntheticEvent", "module": "./ReactSyntheticEventType", "alias": null, "kind": "internal" },
+        { "symbol": "Fiber", "module": "react-reconciler/src/ReactInternalTypes", "alias": null, "kind": "internal" },
+        { "symbol": "allNativeEvents", "module": "./EventRegistry", "alias": null, "kind": "internal" },
+        {
+          "symbol": "SHOULD_NOT_DEFER_CLICK_FOR_FB_SUPPORT_MODE",
+          "module": "./EventSystemFlags",
+          "alias": null,
+          "kind": "internal"
+        },
+        { "symbol": "IS_LEGACY_FB_SUPPORT_MODE", "module": "./EventSystemFlags", "alias": null, "kind": "internal" },
+        {
+          "symbol": "SHOULD_NOT_PROCESS_POLYFILL_EVENT_PLUGINS",
+          "module": "./EventSystemFlags",
+          "alias": null,
+          "kind": "internal"
+        },
+        { "symbol": "IS_CAPTURE_PHASE", "module": "./EventSystemFlags", "alias": null, "kind": "internal" },
+        {
+          "symbol": "IS_EVENT_HANDLE_NON_MANAGED_NODE",
+          "module": "./EventSystemFlags",
+          "alias": null,
+          "kind": "internal"
+        },
+        { "symbol": "IS_NON_DELEGATED", "module": "./EventSystemFlags", "alias": null, "kind": "internal" },
+        { "symbol": "isReplayingEvent", "module": "./CurrentReplayingEvent", "alias": null, "kind": "internal" },
+        { "symbol": "HostRoot", "module": "react-reconciler/src/ReactWorkTags", "alias": null, "kind": "internal" },
+        { "symbol": "HostPortal", "module": "react-reconciler/src/ReactWorkTags", "alias": null, "kind": "internal" },
+        {
+          "symbol": "HostComponent",
+          "module": "react-reconciler/src/ReactWorkTags",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "HostHoistable",
+          "module": "react-reconciler/src/ReactWorkTags",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "HostSingleton",
+          "module": "react-reconciler/src/ReactWorkTags",
+          "alias": null,
+          "kind": "internal"
+        },
+        { "symbol": "HostText", "module": "react-reconciler/src/ReactWorkTags", "alias": null, "kind": "internal" },
+        {
+          "symbol": "ScopeComponent",
+          "module": "react-reconciler/src/ReactWorkTags",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "getLowestCommonAncestor",
+          "module": "react-reconciler/src/ReactFiberTreeReflection",
+          "alias": null,
+          "kind": "internal"
+        },
+        { "symbol": "getEventTarget", "module": "./getEventTarget", "alias": null, "kind": "internal" },
+        {
+          "symbol": "getClosestInstanceFromNode",
+          "module": "../client/ReactDOMComponentTree",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "getEventListenerSet",
+          "module": "../client/ReactDOMComponentTree",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "getEventHandlerListeners",
+          "module": "../client/ReactDOMComponentTree",
+          "alias": null,
+          "kind": "internal"
+        },
+        { "symbol": "COMMENT_NODE", "module": "../client/HTMLNodeType", "alias": null, "kind": "internal" },
+        { "symbol": "DOCUMENT_NODE", "module": "../client/HTMLNodeType", "alias": null, "kind": "internal" },
+        { "symbol": "batchedUpdates", "module": "./ReactDOMUpdateBatching", "alias": null, "kind": "internal" },
+        { "symbol": "getListener", "module": "./getListener", "alias": null, "kind": "internal" },
+        {
+          "symbol": "passiveBrowserEventsSupported",
+          "module": "./checkPassiveEvents",
+          "alias": null,
+          "kind": "internal"
+        },
+        { "symbol": "enableLegacyFBSupport", "module": "shared/ReactFeatureFlags", "alias": null, "kind": "internal" },
+        {
+          "symbol": "enableCreateEventHandleAPI",
+          "module": "shared/ReactFeatureFlags",
+          "alias": null,
+          "kind": "internal"
+        },
+        { "symbol": "enableScopeAPI", "module": "shared/ReactFeatureFlags", "alias": null, "kind": "internal" },
+        {
+          "symbol": "disableCommentsAsDOMContainers",
+          "module": "shared/ReactFeatureFlags",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "enableScrollEndPolyfill",
+          "module": "shared/ReactFeatureFlags",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "createEventListenerWrapperWithPriority",
+          "module": "./ReactDOMEventListener",
+          "alias": null,
+          "kind": "internal"
+        },
+        { "symbol": "removeEventListener", "module": "./EventListener", "alias": null, "kind": "internal" },
+        { "symbol": "addEventCaptureListener", "module": "./EventListener", "alias": null, "kind": "internal" },
+        { "symbol": "addEventBubbleListener", "module": "./EventListener", "alias": null, "kind": "internal" },
+        {
+          "symbol": "addEventBubbleListenerWithPassiveFlag",
+          "module": "./EventListener",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "addEventCaptureListenerWithPassiveFlag",
+          "module": "./EventListener",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "BeforeInputEventPlugin",
+          "module": "./plugins/BeforeInputEventPlugin",
+          "alias": null,
+          "kind": "internal"
+        },
+        { "symbol": "ChangeEventPlugin", "module": "./plugins/ChangeEventPlugin", "alias": null, "kind": "internal" },
+        {
+          "symbol": "EnterLeaveEventPlugin",
+          "module": "./plugins/EnterLeaveEventPlugin",
+          "alias": null,
+          "kind": "internal"
+        },
+        { "symbol": "SelectEventPlugin", "module": "./plugins/SelectEventPlugin", "alias": null, "kind": "internal" },
+        { "symbol": "SimpleEventPlugin", "module": "./plugins/SimpleEventPlugin", "alias": null, "kind": "internal" },
+        {
+          "symbol": "FormActionEventPlugin",
+          "module": "./plugins/FormActionEventPlugin",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "ScrollEndEventPlugin",
+          "module": "./plugins/ScrollEndEventPlugin",
+          "alias": null,
+          "kind": "internal"
+        },
+        { "symbol": "reportGlobalError", "module": "shared/reportGlobalError", "alias": null, "kind": "internal" },
+        {
+          "symbol": "runWithFiberInDEV",
+          "module": "react-reconciler/src/ReactCurrentFiber",
+          "alias": null,
+          "kind": "internal"
+        }
+      ],
+      "fileConstants": [
+        {
+          "name": "mediaEventTypes",
+          "value": "['abort','canplay','canplaythrough','durationchange','emptied','encrypted','ended','error','loadeddata','loadedmetadata','loadstart','pause','play','playing','progress','ratechange','resize','seeked','seeking','stalled','suspend','timeupdate','volumechange','waiting']",
+          "kind": "array"
+        },
+        {
+          "name": "nonDelegatedEvents",
+          "value": "new Set(['beforetoggle','cancel','close','invalid','load','scroll','scrollend','toggle',...mediaEventTypes])",
+          "kind": "set"
+        },
+        {
+          "name": "listeningMarker",
+          "value": "'_reactListening' + Math.random().toString(36).slice(2)",
+          "kind": "string"
+        }
+      ],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__extractEvents#function:extractEvents",
+        "unitKind": "function",
+        "name": "extractEvents",
+        "qualifiedName": "extractEvents",
+        "parentUnitId": null,
+        "startLine": 102,
+        "endLine": 198,
+        "isBehavioral": true,
+        "source": "function extractEvents(\n  dispatchQueue: DispatchQueue,\n  domEventName: DOMEventName,\n  targetInst: null | Fiber,\n  nativeEvent: AnyNativeEvent,\n  nativeEventTarget: null | EventTarget,\n  eventSystemFlags: EventSystemFlags,\n  targetContainer: EventTarget,\n) {\n  // TODO: we should remove the concept of a \"SimpleEventPlugin\".\n  // This is the basic functionality of the event system. All\n  // the other plugins are essentially polyfills. So the plugin\n  // should probably be inlined somewhere and have its logic\n  // be core the to event system. This would potentially allow\n  // us to ship builds of React without the polyfilled plugins below.\n  SimpleEventPlugin.extractEvents(\n    dispatchQueue,\n    domEventName,\n    targetInst,\n    nativeEvent,\n    nativeEventTarget,\n    eventSystemFlags,\n    targetContainer,\n  );\n  const shouldProcessPolyfillPlugins =\n    (eventSystemFlags & SHOULD_NOT_PROCESS_POLYFILL_EVENT_PLUGINS) === 0;\n  // We don't process these events unless we are in the\n  // event's native \"bubble\" phase, which means that we're\n  // not in the capture phase. That's because we emulate\n  // the capture phase here still. This is a trade-off,\n  // because in an ideal world we would not emulate and use\n  // the phases properly, like we do with the SimpleEvent\n  // plugin. However, the plugins below either expect\n  // emulation (EnterLeave) or use state localized to that\n  // plugin (BeforeInput, Change, Select). The state in\n  // these modules complicates things, as you'll essentially\n  // get the case where the capture phase event might change\n  // state, only for the following bubble event to come in\n  // later and not trigger anything as the state now\n  // invalidates the heuristics of the event plugin. We\n  // could alter all these plugins to work in such ways, but\n  // that might cause other unknown side-effects that we\n  // can't foresee right now.\n  if (shouldProcessPolyfillPlugins) {\n    EnterLeaveEventPlugin.extractEvents(\n      dispatchQueue,\n      domEventName,\n      targetInst,\n      nativeEvent,\n      nativeEventTarget,\n      eventSystemFlags,\n      targetContainer,\n    );\n    ChangeEventPlugin.extractEvents(\n      dispatchQueue,\n      domEventName,\n      targetInst,\n      nativeEvent,\n      nativeEventTarget,\n      eventSystemFlags,\n      targetContainer,\n    );\n    SelectEventPlugin.extractEvents(\n      dispatchQueue,\n      domEventName,\n      targetInst,\n      nativeEvent,\n      nativeEventTarget,\n      eventSystemFlags,\n      targetContainer,\n    );\n    BeforeInputEventPlugin.extractEvents(\n      dispatchQueue,\n      domEventName,\n      targetInst,\n      nativeEvent,\n      nativeEventTarget,\n      eventSystemFlags,\n      targetContainer,\n    );\n    FormActionEventPlugin.extractEvents(\n      dispatchQueue,\n      domEventName,\n      targetInst,\n      nativeEvent,\n      nativeEventTarget,\n      eventSystemFlags,\n      targetContainer,\n    );\n  }\n  if (enableScrollEndPolyfill) {\n    ScrollEndEventPlugin.extractEvents(\n      dispatchQueue,\n      domEventName,\n      targetInst,\n      nativeEvent,\n      nativeEventTarget,",
+        "detail": {
+          "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__extractEvents#function:extractEvents",
+          "fileId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__extractEvents",
+          "unitKind": "function",
+          "name": "extractEvents",
+          "qualifiedName": "extractEvents",
+          "parentUnitId": null,
+          "startLine": 102,
+          "endLine": 198,
+          "signature": "function extractEvents(dispatchQueue: DispatchQueue, domEventName: DOMEventName, targetInst: null | Fiber, nativeEvent: AnyNativeEvent, nativeEventTarget: null | EventTarget, eventSystemFlags: EventSystemFlags, targetContainer: EventTarget)",
+          "parameters": [
+            {
+              "name": "dispatchQueue",
+              "type": "DispatchQueue",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "domEventName",
+              "type": "DOMEventName",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "targetInst",
+              "type": "null | Fiber",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            },
+            {
+              "name": "nativeEvent",
+              "type": "AnyNativeEvent",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 3
+            },
+            {
+              "name": "nativeEventTarget",
+              "type": "null | EventTarget",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 4
+            },
+            {
+              "name": "eventSystemFlags",
+              "type": "EventSystemFlags",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 5
+            },
+            {
+              "name": "targetContainer",
+              "type": "EventTarget",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 6
+            }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "nonpayable",
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "eventSystemFlags must be a valid bitmask of type EventSystemFlags",
+            "dispatchQueue must be a valid DispatchQueue instance that plugins may push into",
+            "targetContainer must be a non-null EventTarget"
+          ],
+          "postconditions": [
+            "SimpleEventPlugin.extractEvents is always called with the given arguments, mutating dispatchQueue as needed",
+            "If polyfill flags are not set, EnterLeave, Change, Select, BeforeInput, and FormAction plugins each extract their events",
+            "If enableScrollEndPolyfill is true, ScrollEndEventPlugin.extractEvents is called"
+          ],
+          "invariants": [],
+          "edgeCases": [
+            "eventSystemFlags contains SHOULD_NOT_PROCESS_POLYFILL_EVENT_PLUGINS: polyfill plugins are skipped",
+            "enableScrollEndPolyfill is false: ScrollEndEventPlugin is not invoked",
+            "nativeEventTarget is null: targetInst may be null but plugins receive the provided targetInst value",
+            "targetInst is null: core and polyfill plugins receive null for targetInst"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": ["Mutates dispatchQueue via plugin extractEvents calls (plugins append to the queue)"],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "SimpleEventPlugin.extractEvents", "source": null, "kind": "internal" },
+            { "name": "EnterLeaveEventPlugin.extractEvents", "source": null, "kind": "internal" },
+            { "name": "ChangeEventPlugin.extractEvents", "source": null, "kind": "internal" },
+            { "name": "SelectEventPlugin.extractEvents", "source": null, "kind": "internal" },
+            { "name": "BeforeInputEventPlugin.extractEvents", "source": null, "kind": "internal" },
+            { "name": "FormActionEventPlugin.extractEvents", "source": null, "kind": "internal" },
+            { "name": "ScrollEndEventPlugin.extractEvents", "source": null, "kind": "internal" }
+          ],
+          "symbolReferences": [
+            "SHOULD_NOT_PROCESS_POLYFILL_EVENT_PLUGINS",
+            "enableScrollEndPolyfill",
+            "SimpleEventPlugin",
+            "EnterLeaveEventPlugin",
+            "ChangeEventPlugin",
+            "SelectEventPlugin",
+            "BeforeInputEventPlugin",
+            "FormActionEventPlugin",
+            "ScrollEndEventPlugin"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Delegates dispatch queue population for a native DOM event to the core SimpleEventPlugin plus a set of polyfill plugins. Polyfill plugins (EnterLeave, Change, Select, BeforeInput, FormAction) are invoked only when SHOULD_NOT_PROCESS_POLYFILL_EVENT_PLUGINS is not set in eventSystemFlags; ScrollEndEventPlugin is invoked only when enableScrollEndPolyfill is true.",
+          "specLiterals": [
+            {
+              "kind": "magic-number",
+              "value": "(eventSystemFlags & SHOULD_NOT_PROCESS_POLYFILL_EVENT_PLUGINS) === 0",
+              "role": "Bitmask check that gates invocation of polyfill event plugins"
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "9364b814a39e828a8fdf16099f66d7825376015f2a059c7ed5c78ffdaa3c63a8"
+        }
+      },
+      {
+        "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__executeDispatch#function:executeDispatch",
+        "unitKind": "function",
+        "name": "executeDispatch",
+        "qualifiedName": "executeDispatch",
+        "parentUnitId": null,
+        "startLine": 247,
+        "endLine": 259,
+        "isBehavioral": true,
+        "source": "  // and can occur on other elements too. Rather than duplicate that event,\n  // we just take it from the media events array.\n  ...mediaEventTypes,\n]);\n\nfunction executeDispatch(\n  event: ReactSyntheticEvent,\n  listener: Function,\n  currentTarget: EventTarget,\n): void {\n  event.currentTarget = currentTarget;\n  try {\n    listener(event);",
+        "detail": {
+          "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__executeDispatch#function:executeDispatch",
+          "fileId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__executeDispatch",
+          "unitKind": "function",
+          "name": "executeDispatch",
+          "qualifiedName": "executeDispatch",
+          "parentUnitId": null,
+          "startLine": 247,
+          "endLine": 259,
+          "signature": "function executeDispatch(event: ReactSyntheticEvent, listener: Function, currentTarget: EventTarget): void",
+          "parameters": [
+            {
+              "name": "event",
+              "type": "ReactSyntheticEvent",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "listener",
+              "type": "Function",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "currentTarget",
+              "type": "EventTarget",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            }
+          ],
+          "returnType": "void",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "mut",
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "event must be a non-null ReactSyntheticEvent object",
+            "listener must be a callable Function",
+            "currentTarget must be a valid EventTarget"
+          ],
+          "postconditions": [
+            "event.currentTarget is set to currentTarget before listener invocation",
+            "listener is called with event as its sole argument",
+            "any error thrown by listener is caught and forwarded to ReactDispatcher's handleError"
+          ],
+          "invariants": [
+            "event.currentTarget is always set to currentTarget before listener execution, regardless of outcome"
+          ],
+          "edgeCases": [
+            "If listener throws, the error is caught and handled by React's error pipeline, preventing propagation",
+            "If listener is not a function, calling it will throw — behavior undefined"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "No explicit validation performed; relies on caller to provide valid inputs",
+            "returnsOnError": "void (errors are caught and handled internally)"
+          },
+          "stateMutations": ["event.currentTarget is mutated to currentTarget"],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "ReactDispatcher.handleError", "source": "react-react", "kind": "external" },
+            { "name": "listener", "source": "caller", "kind": "external" }
+          ],
+          "symbolReferences": ["ReactSyntheticEvent", "Function", "EventTarget"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Sets the currentTarget of a synthetic event to the provided EventTarget and invokes the associated listener function with the event. Handles listener errors gracefully by routing them through React's error handling pipeline.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "executeDispatch is called",
+              "then": "event.currentTarget is set to currentTarget, and listener is invoked exactly once with event",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "executeDispatch is called",
+              "then": "event.currentTarget is set, the error is caught and passed to ReactDispatcher.handleError, and no exception propagates",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "fe9c0eaeac5fa874a116ece8e7806d8f6af76f2034ad54f2a0bd473e873aaef8"
+        }
+      },
+      {
+        "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__processDispatchQueueItemsInOrder#function:processDispatchQueueItemsInOrder",
+        "unitKind": "function",
+        "name": "processDispatchQueueItemsInOrder",
+        "qualifiedName": "processDispatchQueueItemsInOrder",
+        "parentUnitId": null,
+        "startLine": 261,
+        "endLine": 305,
+        "isBehavioral": true,
+        "source": "    reportGlobalError(error);\n  }\n  event.currentTarget = null;\n}\n\nfunction processDispatchQueueItemsInOrder(\n  event: ReactSyntheticEvent,\n  dispatchListeners: Array<DispatchListener>,\n  inCapturePhase: boolean,\n): void {\n  let previousInstance;\n  if (inCapturePhase) {\n    for (let i = dispatchListeners.length - 1; i >= 0; i--) {\n      const {instance, currentTarget, listener} = dispatchListeners[i];\n      if (instance !== previousInstance && event.isPropagationStopped()) {\n        return;\n      }\n      if (__DEV__ && instance !== null) {\n        runWithFiberInDEV(\n          instance,\n          executeDispatch,\n          event,\n          listener,\n          currentTarget,\n        );\n      } else {\n        executeDispatch(event, listener, currentTarget);\n      }\n      previousInstance = instance;\n    }\n  } else {\n    for (let i = 0; i < dispatchListeners.length; i++) {\n      const {instance, currentTarget, listener} = dispatchListeners[i];\n      if (instance !== previousInstance && event.isPropagationStopped()) {\n        return;\n      }\n      if (__DEV__ && instance !== null) {\n        runWithFiberInDEV(\n          instance,\n          executeDispatch,\n          event,\n          listener,\n          currentTarget,\n        );\n      } else {",
+        "detail": {
+          "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__processDispatchQueueItemsInOrder#function:processDispatchQueueItemsInOrder",
+          "fileId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__processDispatchQueueItemsInOrder",
+          "unitKind": "function",
+          "name": "processDispatchQueueItemsInOrder",
+          "qualifiedName": "processDispatchQueueItemsInOrder",
+          "parentUnitId": null,
+          "startLine": 261,
+          "endLine": 305,
+          "signature": "function processDispatchQueueItemsInOrder(event: ReactSyntheticEvent, dispatchListeners: Array<DispatchListener>, inCapturePhase: boolean): void",
+          "parameters": [
+            {
+              "name": "event",
+              "type": "ReactSyntheticEvent",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "dispatchListeners",
+              "type": "Array<DispatchListener>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "inCapturePhase",
+              "type": "boolean",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            }
+          ],
+          "returnType": "void",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "nonpayable",
+          "visibility": "internal",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "event must be a valid ReactSyntheticEvent with isPropagationStopped() method",
+            "dispatchListeners must be an array of DispatchListener objects with {instance, currentTarget, listener} properties",
+            "inCapturePhase indicates traversal direction (reverse for capture, forward for bubble)"
+          ],
+          "postconditions": [
+            "All applicable dispatch listeners are executed via executeDispatch (or runWithFiberInDEV in dev mode when instance is non-null)",
+            "Event listeners are processed in correct phase order (reverse for capture, forward for bubble)",
+            "Function returns void after processing all non-stopped listeners"
+          ],
+          "invariants": [
+            "Dispatch listeners are processed in strict sequential order within each phase",
+            "Previous instance tracking prevents redundant executeDispatch calls for same instance",
+            "Propagation stop check only applies after first listener for an instance (previousInstance undefined check)"
+          ],
+          "edgeCases": [
+            "Empty dispatchListeners array: loop body never executes, returns immediately",
+            "Propagation stopped mid-phase: returns early when instance changes and event.isPropagationStopped() is true",
+            "DEV mode with non-null instance: wraps executeDispatch in runWithFiberInDEV for fiber context",
+            "DEV mode with null instance: calls executeDispatch directly without fiber wrapping",
+            "Capture phase: iterates from end of array to beginning"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "No explicit handling; relies on upstream validation of dispatchListeners structure",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "executeDispatch", "source": "internal", "kind": "internal" },
+            { "name": "runWithFiberInDEV", "source": "internal", "kind": "internal" }
+          ],
+          "symbolReferences": ["ReactSyntheticEvent", "DispatchListener"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Iterates dispatch listeners in order, executing each event dispatch either forward (bubble phase) or backward (capture phase), stopping early if propagation is halted.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "processDispatchQueueItemsInOrder is called with inCapturePhase=false",
+              "then": "no listener invocations occur, function returns void",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "processDispatchQueueItemsInOrder is called with inCapturePhase=false",
+              "then": "all 3 listeners are executed in order via executeDispatch, previousInstance tracking prevents redundant checks",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "processDispatchQueueItemsInOrder is called with inCapturePhase=true",
+              "then": "only first listener (index 2) executes since instance matches previousInstance, remaining iterations skip propagation check",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "d59ec2753878c2eb7b5dd8880cca267b5d7b513abe2f2c1ace1117fe794061c8"
+        }
+      },
+      {
+        "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__processDispatchQueue#function:processDispatchQueue",
+        "unitKind": "function",
+        "name": "processDispatchQueue",
+        "qualifiedName": "processDispatchQueue",
+        "parentUnitId": null,
+        "startLine": 307,
+        "endLine": 317,
+        "isBehavioral": true,
+        "source": "      }\n      previousInstance = instance;\n    }\n  }\n}\n\nexport function processDispatchQueue(\n  dispatchQueue: DispatchQueue,\n  eventSystemFlags: EventSystemFlags,\n): void {\n  const inCapturePhase = (eventSystemFlags & IS_CAPTURE_PHASE) !== 0;",
+        "detail": {
+          "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__processDispatchQueue#function:processDispatchQueue",
+          "fileId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__processDispatchQueue",
+          "unitKind": "function",
+          "name": "processDispatchQueue",
+          "qualifiedName": "processDispatchQueue",
+          "parentUnitId": null,
+          "startLine": 307,
+          "endLine": 317,
+          "signature": "export function processDispatchQueue(dispatchQueue: DispatchQueue, eventSystemFlags: EventSystemFlags): void",
+          "parameters": [
+            {
+              "name": "dispatchQueue",
+              "type": "DispatchQueue",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "eventSystemFlags",
+              "type": "EventSystemFlags",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "void",
+          "decorators": [],
+          "modifiersApplied": ["export"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["DispatchQueue", "EventSystemFlags", "IS_CAPTURE_PHASE"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Processes a queue of event dispatches using the provided event system flags to determine capture or bubble phase, invoking queued listeners as required.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "0d55cd7104921e9c07eaad79af9b20f784dfe435baaa07c16bbc45d6658baffa"
+        }
+      },
+      {
+        "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__dispatchEventsForPlugins#function:dispatchEventsForPlugins",
+        "unitKind": "function",
+        "name": "dispatchEventsForPlugins",
+        "qualifiedName": "dispatchEventsForPlugins",
+        "parentUnitId": null,
+        "startLine": 319,
+        "endLine": 338,
+        "isBehavioral": true,
+        "source": "    const {event, listeners} = dispatchQueue[i];\n    processDispatchQueueItemsInOrder(event, listeners, inCapturePhase);\n    //  event system doesn't use pooling.\n  }\n}\n\nfunction dispatchEventsForPlugins(\n  domEventName: DOMEventName,\n  eventSystemFlags: EventSystemFlags,\n  nativeEvent: AnyNativeEvent,\n  targetInst: null | Fiber,\n  targetContainer: EventTarget,\n): void {\n  const nativeEventTarget = getEventTarget(nativeEvent);\n  const dispatchQueue: DispatchQueue = [];\n  extractEvents(\n    dispatchQueue,\n    domEventName,\n    targetInst,\n    nativeEvent,",
+        "detail": {
+          "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__dispatchEventsForPlugins#function:dispatchEventsForPlugins",
+          "fileId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__dispatchEventsForPlugins",
+          "unitKind": "function",
+          "name": "dispatchEventsForPlugins",
+          "qualifiedName": "dispatchEventsForPlugins",
+          "parentUnitId": null,
+          "startLine": 319,
+          "endLine": 338,
+          "signature": "function dispatchEventsForPlugins(domEventName: DOMEventName, eventSystemFlags: EventSystemFlags, nativeEvent: AnyNativeEvent, targetInst: null | Fiber, targetContainer: EventTarget): void",
+          "parameters": [
+            {
+              "name": "domEventName",
+              "type": "DOMEventName",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "eventSystemFlags",
+              "type": "EventSystemFlags",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "nativeEvent",
+              "type": "AnyNativeEvent",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            },
+            {
+              "name": "targetInst",
+              "type": "null | Fiber",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 3
+            },
+            {
+              "name": "targetContainer",
+              "type": "EventTarget",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 4
+            }
+          ],
+          "returnType": "void",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "nativeEvent is a native event object",
+            "targetContainer is a valid EventTarget",
+            "eventSystemFlags defines the dispatch phase (capture/bubble)"
+          ],
+          "postconditions": [
+            "dispatchQueue is populated with extracted events via extractEvents",
+            "extracted events are processed via processDispatchQueue"
+          ],
+          "invariants": ["dispatchQueue is a local array and does not outlive the call"],
+          "edgeCases": [
+            "targetInst may be null as per signature",
+            "nativeEventTarget may be a non-element node (e.g., document)"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": ["allocates local dispatchQueue array"],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "getEventTarget", "source": null, "kind": "internal" },
+            { "name": "extractEvents", "source": null, "kind": "internal" },
+            { "name": "processDispatchQueue", "source": null, "kind": "internal" }
+          ],
+          "symbolReferences": [
+            "DOMEventName",
+            "EventSystemFlags",
+            "AnyNativeEvent",
+            "Fiber",
+            "EventTarget",
+            "DispatchQueue"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Coordinates plugin event dispatch by extracting synthetic events from a native event into a local queue and processing that queue for the indicated phase.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "b0d72395c2b3abdd04c7ae0f6dac66dd9fc95f458cdbca860ac2d5cd0e1ba8c2"
+        }
+      },
+      {
+        "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__listenToNonDelegatedEvent#function:listenToNonDelegatedEvent",
+        "unitKind": "function",
+        "name": "listenToNonDelegatedEvent",
+        "qualifiedName": "listenToNonDelegatedEvent",
+        "parentUnitId": null,
+        "startLine": 340,
+        "endLine": 368,
+        "isBehavioral": true,
+        "source": "    eventSystemFlags,\n    targetContainer,\n  );\n  processDispatchQueue(dispatchQueue, eventSystemFlags);\n}\n\nexport function listenToNonDelegatedEvent(\n  domEventName: DOMEventName,\n  targetElement: Element,\n): void {\n  if (__DEV__) {\n    if (!nonDelegatedEvents.has(domEventName)) {\n      console.error(\n        'Did not expect a listenToNonDelegatedEvent() call for \"%s\". ' +\n          'This is a bug in React. Please file an issue.',\n        domEventName,\n      );\n    }\n  }\n  const isCapturePhaseListener = false;\n  const listenerSet = getEventListenerSet(targetElement);\n  const listenerSetKey = getListenerSetKey(\n    domEventName,\n    isCapturePhaseListener,\n  );\n  if (!listenerSet.has(listenerSetKey)) {\n    addTrappedEventListener(\n      targetElement,\n      domEventName,",
+        "detail": {
+          "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__listenToNonDelegatedEvent#function:listenToNonDelegatedEvent",
+          "fileId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__listenToNonDelegatedEvent",
+          "unitKind": "function",
+          "name": "listenToNonDelegatedEvent",
+          "qualifiedName": "listenToNonDelegatedEvent",
+          "parentUnitId": null,
+          "startLine": 340,
+          "endLine": 368,
+          "signature": "export function listenToNonDelegatedEvent(domEventName: DOMEventName, targetElement: Element): void",
+          "parameters": [
+            {
+              "name": "domEventName",
+              "type": "DOMEventName",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "targetElement",
+              "type": "Element",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "void",
+          "decorators": [],
+          "modifiersApplied": ["export"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "targetElement is an Element that can hold an event listener set",
+            "domEventName is a DOMEventName identifier"
+          ],
+          "postconditions": [
+            "A trapped bubble-phase listener for domEventName is attached to targetElement if not already present",
+            "listenerSet associated with targetElement contains the computed listenerSetKey"
+          ],
+          "invariants": [],
+          "edgeCases": [
+            "If listenerSet already has key for domEventName + false capture, addTrappedEventListener is skipped (no duplicate)",
+            "In __DEV__, if domEventName not in nonDelegatedEvents, logs error but still proceeds to attach"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [
+            "Adds listenerSetKey to internal listenerSet of targetElement when absent",
+            "Attaches native event listener to targetElement via addTrappedEventListener"
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "getEventListenerSet", "source": null, "kind": "internal" },
+            { "name": "getListenerSetKey", "source": null, "kind": "internal" },
+            { "name": "addTrappedEventListener", "source": null, "kind": "internal" },
+            { "name": "nonDelegatedEvents.has", "source": null, "kind": "internal" },
+            { "name": "console.error", "source": null, "kind": "external" }
+          ],
+          "symbolReferences": ["DOMEventName", "Element", "nonDelegatedEvents", "__DEV__"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Registers a non-delegated (direct) event listener on a specific target element for the given DOM event name, if not already attached. In dev mode, warns if the event is not expected to be non-delegated.",
+          "specLiterals": [
+            {
+              "kind": "error-message",
+              "value": "Did not expect a listenToNonDelegatedEvent() call for \"%s\". This is a bug in React. Please file an issue.",
+              "role": "Dev-mode warning when domEventName is not in nonDelegatedEvents set"
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "listenToNonDelegatedEvent(domEventName, targetElement) is invoked",
+              "then": "addTrappedEventListener is called with targetElement, domEventName, and isCapturePhaseListener=false",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "listenToNonDelegatedEvent is called",
+              "then": "console.error is invoked with the warning message including domEventName",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "fb1cb7a8b449f5b8d4ab551a7d0ed9f27fbf8e6869545a836ec5a2d97bc74f22"
+        }
+      },
+      {
+        "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__listenToNativeEvent#function:listenToNativeEvent",
+        "unitKind": "function",
+        "name": "listenToNativeEvent",
+        "qualifiedName": "listenToNativeEvent",
+        "parentUnitId": null,
+        "startLine": 370,
+        "endLine": 394,
+        "isBehavioral": true,
+        "source": "      isCapturePhaseListener,\n    );\n    listenerSet.add(listenerSetKey);\n  }\n}\n\nexport function listenToNativeEvent(\n  domEventName: DOMEventName,\n  isCapturePhaseListener: boolean,\n  target: EventTarget,\n): void {\n  if (__DEV__) {\n    if (nonDelegatedEvents.has(domEventName) && !isCapturePhaseListener) {\n      console.error(\n        'Did not expect a listenToNativeEvent() call for \"%s\" in the bubble phase. ' +\n          'This is a bug in React. Please file an issue.',\n        domEventName,\n      );\n    }\n  }\n\n  let eventSystemFlags = 0;\n  if (isCapturePhaseListener) {\n    eventSystemFlags |= IS_CAPTURE_PHASE;\n  }",
+        "detail": {
+          "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__listenToNativeEvent#function:listenToNativeEvent",
+          "fileId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__listenToNativeEvent",
+          "unitKind": "function",
+          "name": "listenToNativeEvent",
+          "qualifiedName": "listenToNativeEvent",
+          "parentUnitId": null,
+          "startLine": 370,
+          "endLine": 394,
+          "signature": "export function listenToNativeEvent(domEventName: DOMEventName, isCapturePhaseListener: boolean, target: EventTarget): void",
+          "parameters": [
+            {
+              "name": "domEventName",
+              "type": "DOMEventName",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "isCapturePhaseListener",
+              "type": "boolean",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "target",
+              "type": "EventTarget",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            }
+          ],
+          "returnType": "void",
+          "decorators": [],
+          "modifiersApplied": ["export"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["target must be a valid EventTarget", "domEventName is a DOMEventName"],
+          "postconditions": [
+            "If isCapturePhaseListener is true, eventSystemFlags includes IS_CAPTURE_PHASE (local)",
+            "In dev, error logged if nonDelegatedEvents has domEventName and not capture phase"
+          ],
+          "invariants": [],
+          "edgeCases": [
+            "When nonDelegatedEvents.has(domEventName) && !isCapturePhaseListener in __DEV__, console.error is emitted (warning only, no throw)"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "nonDelegatedEvents.has", "source": null, "kind": "external" },
+            { "name": "console.error", "source": null, "kind": "external" }
+          ],
+          "symbolReferences": ["DOMEventName", "EventTarget", "nonDelegatedEvents", "IS_CAPTURE_PHASE", "__DEV__"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Registers a listener for a native DOM event on a target, setting capture phase flag, and warns in dev if a non-delegated event is listened in bubble phase.",
+          "specLiterals": [
+            {
+              "kind": "error-message",
+              "value": "Did not expect a listenToNativeEvent() call for \"%s\" in the bubble phase. This is a bug in React. Please file an issue.",
+              "role": "dev-mode warning when non-delegated event listened in bubble phase"
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "listenToNativeEvent(domEventName, false, target) is called",
+              "then": "console.error is invoked with the warning message containing domEventName",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "cc6e15fc7d6c5250b2a6a0cd6e67d24fa5a28b512285a93197efdc4f00c034bd"
+        }
+      },
+      {
+        "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__listenToNativeEventForNonManagedEventTarget#function:listenToNativeEventForNonManagedEventTarget",
+        "unitKind": "function",
+        "name": "listenToNativeEventForNonManagedEventTarget",
+        "qualifiedName": "listenToNativeEventForNonManagedEventTarget",
+        "parentUnitId": null,
+        "startLine": 398,
+        "endLine": 420,
+        "isBehavioral": true,
+        "source": "    eventSystemFlags,\n    isCapturePhaseListener,\n  );\n}\n\n// This is only used by createEventHandle when the\n// target is not a DOM element. E.g. window.\nexport function listenToNativeEventForNonManagedEventTarget(\n  domEventName: DOMEventName,\n  isCapturePhaseListener: boolean,\n  target: EventTarget,\n): void {\n  let eventSystemFlags: number = IS_EVENT_HANDLE_NON_MANAGED_NODE;\n  const listenerSet = getEventListenerSet(target);\n  const listenerSetKey = getListenerSetKey(\n    domEventName,\n    isCapturePhaseListener,\n  );\n  if (!listenerSet.has(listenerSetKey)) {\n    if (isCapturePhaseListener) {\n      eventSystemFlags |= IS_CAPTURE_PHASE;\n    }\n    addTrappedEventListener(",
+        "detail": {
+          "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__listenToNativeEventForNonManagedEventTarget#function:listenToNativeEventForNonManagedEventTarget",
+          "fileId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__listenToNativeEventForNonManagedEventTarget",
+          "unitKind": "function",
+          "name": "listenToNativeEventForNonManagedEventTarget",
+          "qualifiedName": "listenToNativeEventForNonManagedEventTarget",
+          "parentUnitId": null,
+          "startLine": 398,
+          "endLine": 420,
+          "signature": "export function listenToNativeEventForNonManagedEventTarget(domEventName: DOMEventName, isCapturePhaseListener: boolean, target: EventTarget): void",
+          "parameters": [
+            {
+              "name": "domEventName",
+              "type": "DOMEventName",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "isCapturePhaseListener",
+              "type": "boolean",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "target",
+              "type": "EventTarget",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            }
+          ],
+          "returnType": "void",
+          "decorators": [],
+          "modifiersApplied": ["export"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "target is a valid EventTarget not managed by React",
+            "domEventName is a supported DOM event name"
+          ],
+          "postconditions": [
+            "If no prior listener existed for the key, a trapped listener is registered via addTrappedEventListener",
+            "listenerSet for target contains the computed listenerSetKey after invocation if it was absent"
+          ],
+          "invariants": [
+            "eventSystemFlags always includes IS_EVENT_HANDLE_NON_MANAGED_NODE",
+            "At most one listener per (domEventName, isCapturePhaseListener, target) is added"
+          ],
+          "edgeCases": [
+            "When listenerSet already has listenerSetKey, addTrappedEventListener is skipped",
+            "When isCapturePhaseListener is true, IS_CAPTURE_PHASE is OR-ed into eventSystemFlags before adding"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [
+            "listenerSet retrieved from target is mutated to include listenerSetKey when absent",
+            "React internal event listener registry updated via addTrappedEventListener"
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "getEventListenerSet", "source": null, "kind": "internal" },
+            { "name": "getListenerSetKey", "source": null, "kind": "internal" },
+            { "name": "addTrappedEventListener", "source": null, "kind": "internal" }
+          ],
+          "symbolReferences": ["IS_EVENT_HANDLE_NON_MANAGED_NODE", "IS_CAPTURE_PHASE", "DOMEventName", "EventTarget"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Attaches a trapped native event listener to a non-managed event target (e.g., window) for the given DOM event name and phase, only if not already attached.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "listenToNativeEventForNonManagedEventTarget('click', false, window)",
+              "then": "addTrappedEventListener called with eventSystemFlags = IS_EVENT_HANDLE_NON_MANAGED_NODE",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "listenToNativeEventForNonManagedEventTarget('click', false, window) again",
+              "then": "addTrappedEventListener is not called",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "listenToNativeEventForNonManagedEventTarget('click', true, window)",
+              "then": "eventSystemFlags passed equals IS_EVENT_HANDLE_NON_MANAGED_NODE | IS_CAPTURE_PHASE",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "487bbfe5b5fda87e2b4a972fdd3267f24b318a5c5935b9f8b7b584da99911b72"
+        }
+      },
+      {
+        "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__listenToAllSupportedEvents#function:listenToAllSupportedEvents",
+        "unitKind": "function",
+        "name": "listenToAllSupportedEvents",
+        "qualifiedName": "listenToAllSupportedEvents",
+        "parentUnitId": null,
+        "startLine": 424,
+        "endLine": 451,
+        "isBehavioral": true,
+        "source": "      isCapturePhaseListener,\n    );\n    listenerSet.add(listenerSetKey);\n  }\n}\n\nconst listeningMarker = '_reactListening' + Math.random().toString(36).slice(2);\n\nexport function listenToAllSupportedEvents(rootContainerElement: EventTarget) {\n  if (!(rootContainerElement as any)[listeningMarker]) {\n    (rootContainerElement as any)[listeningMarker] = true;\n    allNativeEvents.forEach(domEventName => {\n      // We handle selectionchange separately because it\n      // doesn't bubble and needs to be on the document.\n      if (domEventName !== 'selectionchange') {\n        if (!nonDelegatedEvents.has(domEventName)) {\n          listenToNativeEvent(domEventName, false, rootContainerElement);\n        }\n        listenToNativeEvent(domEventName, true, rootContainerElement);\n      }\n    });\n    const ownerDocument =\n      (rootContainerElement as any).nodeType === DOCUMENT_NODE\n        ? rootContainerElement\n        : (rootContainerElement as any).ownerDocument;\n    // $FlowFixMe[invalid-compare]\n    if (ownerDocument !== null) {\n      // The selectionchange event also needs deduplication",
+        "detail": {
+          "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__listenToAllSupportedEvents#function:listenToAllSupportedEvents",
+          "fileId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__listenToAllSupportedEvents",
+          "unitKind": "function",
+          "name": "listenToAllSupportedEvents",
+          "qualifiedName": "listenToAllSupportedEvents",
+          "parentUnitId": null,
+          "startLine": 424,
+          "endLine": 451,
+          "signature": "export function listenToAllSupportedEvents(rootContainerElement: EventTarget)",
+          "parameters": [
+            {
+              "name": "rootContainerElement",
+              "type": "EventTarget",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "rootContainerElement is an EventTarget",
+            "rootContainerElement does not already have the internal listeningMarker property set to true"
+          ],
+          "postconditions": [
+            "rootContainerElement has listeningMarker property set to true",
+            "For each event in allNativeEvents except 'selectionchange', a capture-phase listener is attached; a bubble-phase listener is also attached unless the event is in nonDelegatedEvents",
+            "If ownerDocument exists and is not null, a selectionchange listener is attached to ownerDocument"
+          ],
+          "invariants": [],
+          "edgeCases": [
+            "If listeningMarker already true, function returns early with no listeners attached",
+            "If rootContainerElement.nodeType is DOCUMENT_NODE, ownerDocument is rootContainerElement itself",
+            "If ownerDocument is null (e.g., detached node), selectionchange listener is not attached",
+            "Events present in nonDelegatedEvents only get capture-phase listener via listenToNativeEvent(domEventName, true, rootContainerElement) and skip the non-delegated false call"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [
+            "Sets (rootContainerElement as any)[listeningMarker] = true",
+            "Attaches native event listeners to rootContainerElement (and ownerDocument for selectionchange) via listenToNativeEvent"
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            {
+              "name": "listenToNativeEvent",
+              "source": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js",
+              "kind": "internal"
+            }
+          ],
+          "symbolReferences": ["allNativeEvents", "nonDelegatedEvents", "DOCUMENT_NODE", "listeningMarker"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Attaches event listeners for all supported native events to the given root container, marking it to prevent duplicate attachment, and handles selectionchange on the owner document.",
+          "specLiterals": [
+            {
+              "kind": "magic-number",
+              "value": "_reactListening",
+              "role": "prefix for dynamic marker property name on root container to deduplicate listener registration"
+            },
+            {
+              "kind": "enum-value",
+              "value": "selectionchange",
+              "role": "event name that is excluded from root container loop and instead attached to ownerDocument"
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "listenToAllSupportedEvents(rootContainerElement) is called",
+              "then": "listeningMarker is set to true and listenToNativeEvent is invoked for each domEventName in allNativeEvents except selectionchange, with capture=true and capture=false unless nonDelegatedEvents contains it",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "8cbac03b4b2e32e79eb253857b80c498b456cdf99bee688a70a45c81a9a00b91"
+        }
+      },
+      {
+        "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__addTrappedEventListener#function:addTrappedEventListener",
+        "unitKind": "function",
+        "name": "addTrappedEventListener",
+        "qualifiedName": "addTrappedEventListener",
+        "parentUnitId": null,
+        "startLine": 453,
+        "endLine": 549,
+        "isBehavioral": true,
+        "source": "      if (!(ownerDocument as any)[listeningMarker]) {\n        (ownerDocument as any)[listeningMarker] = true;\n        listenToNativeEvent('selectionchange', false, ownerDocument);\n      }\n    }\n  }\n}\n\nfunction addTrappedEventListener(\n  targetContainer: EventTarget,\n  domEventName: DOMEventName,\n  eventSystemFlags: EventSystemFlags,\n  isCapturePhaseListener: boolean,\n  isDeferredListenerForLegacyFBSupport?: boolean,\n) {\n  let listener = createEventListenerWrapperWithPriority(\n    targetContainer,\n    domEventName,\n    eventSystemFlags,\n  );\n  // If passive option is not supported, then the event will be\n  // active and not passive.\n  let isPassiveListener: void | boolean = undefined;\n  if (passiveBrowserEventsSupported) {\n    // Browsers introduced an intervention, making these events\n    // passive by default on document. React doesn't bind them\n    // to document anymore, but changing this now would undo\n    // the performance wins from the change. So we emulate\n    // the existing behavior manually on the roots now.\n    // https://github.com/facebook/react/issues/19651\n    if (\n      domEventName === 'touchstart' ||\n      domEventName === 'touchmove' ||\n      domEventName === 'wheel'\n    ) {\n      isPassiveListener = true;\n    }\n  }\n\n  targetContainer =\n    enableLegacyFBSupport && isDeferredListenerForLegacyFBSupport\n      ? // A Document container's ownerDocument is null, so it must be used\n        // as the deferral target itself.\n        (targetContainer as any).nodeType === DOCUMENT_NODE\n        ? targetContainer\n        : (targetContainer as any).ownerDocument\n      : targetContainer;\n\n  let unsubscribeListener;\n  // When legacyFBSupport is enabled, it's for when we\n  // want to add a one time event listener to a container.\n  // This should only be used with enableLegacyFBSupport\n  // due to requirement to provide compatibility with\n  // internal FB www event tooling. This works by removing\n  // the event listener as soon as it is invoked. We could\n  // also attempt to use the {once: true} param on\n  // addEventListener, but that requires support and some\n  // browsers do not support this today, and given this is\n  // to support legacy code patterns, it's likely they'll\n  // need support for such browsers.\n  if (enableLegacyFBSupport && isDeferredListenerForLegacyFBSupport) {\n    const originalListener = listener;\n    // $FlowFixMe[missing-this-annot]\n    listener = function (...p) {\n      removeEventListener(\n        targetContainer,\n        domEventName,\n        unsubscribeListener,\n        isCapturePhaseListener,\n      );\n      return originalListener.apply(this, p);\n    };\n  }\n  // TODO: There are too many combinations here. Consolidate them.\n  if (isCapturePhaseListener) {\n    if (isPassiveListener !== undefined) {\n      unsubscribeListener = addEventCaptureListenerWithPassiveFlag(\n        targetContainer,\n        domEventName,\n        listener,\n        isPassiveListener,\n      );\n    } else {\n      unsubscribeListener = addEventCaptureListener(\n        targetContainer,\n        domEventName,\n        listener,\n      );\n    }\n  } else {\n    if (isPassiveListener !== undefined) {\n      unsubscribeListener = addEventBubbleListenerWithPassiveFlag(\n        targetContainer,\n        domEventName,\n        listener,\n        isPassiveListener,\n      );",
+        "detail": {
+          "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__addTrappedEventListener#function:addTrappedEventListener",
+          "fileId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__addTrappedEventListener",
+          "unitKind": "function",
+          "name": "addTrappedEventListener",
+          "qualifiedName": "addTrappedEventListener",
+          "parentUnitId": null,
+          "startLine": 453,
+          "endLine": 549,
+          "signature": "function addTrappedEventListener(targetContainer: EventTarget, domEventName: DOMEventName, eventSystemFlags: EventSystemFlags, isCapturePhaseListener: boolean, isDeferredListenerForLegacyFBSupport?: boolean)",
+          "parameters": [
+            {
+              "name": "targetContainer",
+              "type": "EventTarget",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "domEventName",
+              "type": "DOMEventName",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "eventSystemFlags",
+              "type": "EventSystemFlags",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            },
+            {
+              "name": "isCapturePhaseListener",
+              "type": "boolean",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 3
+            },
+            {
+              "name": "isDeferredListenerForLegacyFBSupport",
+              "type": "boolean",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 4
+            }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "targetContainer is a valid EventTarget",
+            "domEventName is a supported DOM event name",
+            "eventSystemFlags is a valid EventSystemFlags value",
+            "isCapturePhaseListener is a boolean"
+          ],
+          "postconditions": [
+            "A listener is attached to targetContainer (or its ownerDocument under legacy deferred mode) for domEventName",
+            "If isDeferredListenerForLegacyFBSupport and enableLegacyFBSupport, the attached listener removes itself after first call"
+          ],
+          "invariants": [
+            "For domEventName in {'touchstart','touchmove','wheel'} and passiveBrowserEventsSupported, isPassiveListener is true",
+            "If enableLegacyFBSupport and isDeferredListenerForLegacyFBSupport and targetContainer.nodeType !== DOCUMENT_NODE, targetContainer is rebound to ownerDocument for registration"
+          ],
+          "edgeCases": [
+            "domEventName 'touchstart'|'touchmove'|'wheel' with passiveBrowserEventsSupported => passive flag true",
+            "isDeferredListenerForLegacyFBSupport true with enableLegacyFBSupport => wrapper removes listener after invocation and targetContainer may shift to ownerDocument",
+            "isCapturePhaseListener true => uses capture add path; false => bubble add path",
+            "isPassiveListener undefined => add without passive flag"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [
+            "Attaches native event listener to targetContainer (or ownerDocument) via addEventListener",
+            "When legacy deferred, listener self-removes via removeEventListener after first invoke"
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            {
+              "name": "createEventListenerWrapperWithPriority",
+              "source": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js",
+              "kind": "internal"
+            },
+            { "name": "removeEventListener", "source": null, "kind": "internal" },
+            { "name": "addEventCaptureListenerWithPassiveFlag", "source": null, "kind": "internal" },
+            { "name": "addEventCaptureListener", "source": null, "kind": "internal" },
+            { "name": "addEventBubbleListenerWithPassiveFlag", "source": null, "kind": "internal" },
+            { "name": "addEventBubbleListener", "source": null, "kind": "internal" }
+          ],
+          "symbolReferences": [
+            "EventTarget",
+            "DOMEventName",
+            "EventSystemFlags",
+            "passiveBrowserEventsSupported",
+            "enableLegacyFBSupport",
+            "DOCUMENT_NODE"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Registers a React event system listener on a DOM container, wrapping it with priority and handling capture/bubble phase, passive flag for touch/wheel events, and optional one-time deferred legacy FB support that self-removes after first invocation.",
+          "specLiterals": [
+            {
+              "kind": "enum-value",
+              "value": "touchstart",
+              "role": "Triggers passive listener when passiveBrowserEventsSupported"
+            },
+            {
+              "kind": "enum-value",
+              "value": "touchmove",
+              "role": "Triggers passive listener when passiveBrowserEventsSupported"
+            },
+            {
+              "kind": "enum-value",
+              "value": "wheel",
+              "role": "Triggers passive listener when passiveBrowserEventsSupported"
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "addTrappedEventListener(container, 'wheel', flags, false) is invoked",
+              "then": "addEventBubbleListenerWithPassiveFlag is called with isPassiveListener true",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "the registered listener is later invoked with args",
+              "then": "removeEventListener is called on ownerDocument and original listener executes",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "68e0feefcd16e458ccf4c99c76612d772793b7b79d68d8a09794787b4417923c"
+        }
+      },
+      {
+        "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__deferClickToDocumentForLegacyFBSupport#function:deferClickToDocumentForLegacyFBSupport",
+        "unitKind": "function",
+        "name": "deferClickToDocumentForLegacyFBSupport",
+        "qualifiedName": "deferClickToDocumentForLegacyFBSupport",
+        "parentUnitId": null,
+        "startLine": 551,
+        "endLine": 564,
+        "isBehavioral": true,
+        "source": "      unsubscribeListener = addEventBubbleListener(\n        targetContainer,\n        domEventName,\n        listener,\n      );\n    }\n  }\n}\n\nfunction deferClickToDocumentForLegacyFBSupport(\n  domEventName: DOMEventName,\n  targetContainer: EventTarget,\n): void {\n  // We defer all click events with legacy FB support mode on.",
+        "detail": {
+          "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__deferClickToDocumentForLegacyFBSupport#function:deferClickToDocumentForLegacyFBSupport",
+          "fileId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__deferClickToDocumentForLegacyFBSupport",
+          "unitKind": "function",
+          "name": "deferClickToDocumentForLegacyFBSupport",
+          "qualifiedName": "deferClickToDocumentForLegacyFBSupport",
+          "parentUnitId": null,
+          "startLine": 551,
+          "endLine": 564,
+          "signature": "function deferClickToDocumentForLegacyFBSupport(domEventName: DOMEventName, targetContainer: EventTarget): void",
+          "parameters": [
+            {
+              "name": "domEventName",
+              "type": "DOMEventName",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "targetContainer",
+              "type": "EventTarget",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "void",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["targetContainer is a valid EventTarget", "domEventName is a DOM event name string"],
+          "postconditions": [
+            "A bubble listener is registered on targetContainer for domEventName to defer event handling"
+          ],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": ["Adds an event listener to targetContainer's listener list"],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["DOMEventName", "EventTarget"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Defers click events when legacy Facebook support mode is active by attaching a listener for the given DOM event name on the target container.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "29f500b45460d376c5cb7fdf702e3ccbba533f2cc2bce634c2698ab81f78cc0b"
+        }
+      },
+      {
+        "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__isMatchingRootContainer#function:isMatchingRootContainer",
+        "unitKind": "function",
+        "name": "isMatchingRootContainer",
+        "qualifiedName": "isMatchingRootContainer",
+        "parentUnitId": null,
+        "startLine": 566,
+        "endLine": 576,
+        "isBehavioral": true,
+        "source": "  // after the FB delegated listeners fire.\n  const isDeferredListenerForLegacyFBSupport = true;\n  addTrappedEventListener(\n    targetContainer,\n    domEventName,\n    IS_LEGACY_FB_SUPPORT_MODE,\n    false,\n    isDeferredListenerForLegacyFBSupport,\n  );\n}\n",
+        "detail": {
+          "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__isMatchingRootContainer#function:isMatchingRootContainer",
+          "fileId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__isMatchingRootContainer",
+          "unitKind": "function",
+          "name": "isMatchingRootContainer",
+          "qualifiedName": "isMatchingRootContainer",
+          "parentUnitId": null,
+          "startLine": 566,
+          "endLine": 576,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Checks whether a given DOM node matches the root container used for event delegation in the React DOM bindings.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "45ea1c406df7b3bb55931fd025bda05d0228de2ef1cf9d130f2ff4beb290dccc"
+        }
+      },
+      {
+        "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__dispatchEventForPluginEventSystem#function:dispatchEventForPluginEventSystem",
+        "unitKind": "function",
+        "name": "dispatchEventForPluginEventSystem",
+        "qualifiedName": "dispatchEventForPluginEventSystem",
+        "parentUnitId": null,
+        "startLine": 578,
+        "endLine": 660,
+        "isBehavioral": true,
+        "source": "  grandContainer: Element,\n  targetContainer: EventTarget,\n): boolean {\n  return (\n    grandContainer === targetContainer ||\n    (!disableCommentsAsDOMContainers &&\n      grandContainer.nodeType === COMMENT_NODE &&\n      grandContainer.parentNode === targetContainer)\n  );\n}\n\nexport function dispatchEventForPluginEventSystem(\n  domEventName: DOMEventName,\n  eventSystemFlags: EventSystemFlags,\n  nativeEvent: AnyNativeEvent,\n  targetInst: null | Fiber,\n  targetContainer: EventTarget,\n): void {\n  let ancestorInst = targetInst;\n  if (\n    (eventSystemFlags & IS_EVENT_HANDLE_NON_MANAGED_NODE) === 0 &&\n    (eventSystemFlags & IS_NON_DELEGATED) === 0\n  ) {\n    const targetContainerNode = targetContainer as any as Node;\n\n    // If we are using the legacy FB support flag, we\n    // defer the event to the null with a one\n    // time event listener so we can defer the event.\n    if (\n      enableLegacyFBSupport &&\n      // If our event flags match the required flags for entering\n      // FB legacy mode and we are processing the \"click\" event,\n      // then we can defer the event to the \"document\", to allow\n      // for legacy FB support, where the expected behavior was to\n      // match React < 16 behavior of delegated clicks to the doc.\n      domEventName === 'click' &&\n      (eventSystemFlags & SHOULD_NOT_DEFER_CLICK_FOR_FB_SUPPORT_MODE) === 0 &&\n      !isReplayingEvent(nativeEvent)\n    ) {\n      deferClickToDocumentForLegacyFBSupport(domEventName, targetContainer);\n      return;\n    }\n    if (targetInst !== null) {\n      // The below logic attempts to work out if we need to change\n      // the target fiber to a different ancestor. We had similar logic\n      // in the legacy event system, except the big difference between\n      // systems is that the modern event system now has an event listener\n      // attached to each React Root and React Portal Root. Together,\n      // the DOM nodes representing these roots are the \"rootContainer\".\n      // To figure out which ancestor instance we should use, we traverse\n      // up the fiber tree from the target instance and attempt to find\n      // root boundaries that match that of our current \"rootContainer\".\n      // If we find that \"rootContainer\", we find the parent fiber\n      // sub-tree for that root and make that our ancestor instance.\n      let node: null | Fiber = targetInst;\n\n      mainLoop: while (true) {\n        if (node === null) {\n          return;\n        }\n        const nodeTag = node.tag;\n        if (nodeTag === HostRoot || nodeTag === HostPortal) {\n          let container = node.stateNode.containerInfo;\n          if (isMatchingRootContainer(container, targetContainerNode)) {\n            break;\n          }\n          if (nodeTag === HostPortal) {\n            // The target is a portal, but it's not the rootContainer we're looking for.\n            // Normally portals handle their own events all the way down to the root.\n            // So we should be able to stop now. However, we don't know if this portal\n            // was part of *our* root.\n            let grandNode = node.return;\n            while (grandNode !== null) {\n              const grandTag = grandNode.tag;\n              if (grandTag === HostRoot || grandTag === HostPortal) {\n                const grandContainer = grandNode.stateNode.containerInfo;\n                if (\n                  isMatchingRootContainer(grandContainer, targetContainerNode)\n                ) {\n                  // This is the rootContainer we're looking for and we found it as\n                  // a parent of the Portal. That means we can ignore it because the\n                  // Portal will bubble through to us.\n                  return;",
+        "detail": {
+          "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__dispatchEventForPluginEventSystem#function:dispatchEventForPluginEventSystem",
+          "fileId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__dispatchEventForPluginEventSystem",
+          "unitKind": "function",
+          "name": "dispatchEventForPluginEventSystem",
+          "qualifiedName": "dispatchEventForPluginEventSystem",
+          "parentUnitId": null,
+          "startLine": 578,
+          "endLine": 660,
+          "signature": "export function dispatchEventForPluginEventSystem(domEventName: DOMEventName, eventSystemFlags: EventSystemFlags, nativeEvent: AnyNativeEvent, targetInst: null | Fiber, targetContainer: EventTarget): void",
+          "parameters": [
+            {
+              "name": "domEventName",
+              "type": "DOMEventName",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "eventSystemFlags",
+              "type": "EventSystemFlags",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "nativeEvent",
+              "type": "AnyNativeEvent",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            },
+            {
+              "name": "targetInst",
+              "type": "null | Fiber",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 3
+            },
+            {
+              "name": "targetContainer",
+              "type": "EventTarget",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 4
+            }
+          ],
+          "returnType": "void",
+          "decorators": [],
+          "modifiersApplied": ["export"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "targetContainer is a valid EventTarget",
+            "eventSystemFlags is a bitmask of EventSystemFlags",
+            "If IS_EVENT_HANDLE_NON_MANAGED_NODE or IS_NON_DELEGATED bits are set, root container traversal is skipped"
+          ],
+          "postconditions": [
+            "Either defers click to document for legacy FB support and returns, or traverses fiber ancestors to find matching root container and dispatches events to plugins",
+            "Returns early (no dispatch) if targetInst becomes null during traversal or portal grandparent matches container"
+          ],
+          "invariants": [
+            "Uses bitmask checks on eventSystemFlags to determine code path",
+            "Traversal only inspects fibers with tag HostRoot or HostPortal"
+          ],
+          "edgeCases": [
+            "targetInst is null: skips fiber traversal block entirely",
+            "domEventName === 'click' with enableLegacyFBSupport and not replaying and no defer-suppression flag: defers to document and returns",
+            "node becomes null while traversing ancestors: returns without dispatch",
+            "HostPortal node not matching container but grandparent HostRoot/HostPortal matches: returns ignoring portal"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "deferClickToDocumentForLegacyFBSupport", "source": null, "kind": "internal" },
+            { "name": "isMatchingRootContainer", "source": null, "kind": "internal" },
+            { "name": "isReplayingEvent", "source": null, "kind": "internal" }
+          ],
+          "symbolReferences": [
+            "DOMEventName",
+            "EventSystemFlags",
+            "AnyNativeEvent",
+            "Fiber",
+            "EventTarget",
+            "IS_EVENT_HANDLE_NON_MANAGED_NODE",
+            "IS_NON_DELEGATED",
+            "enableLegacyFBSupport",
+            "SHOULD_NOT_DEFER_CLICK_FOR_FB_SUPPORT_MODE",
+            "HostRoot",
+            "HostPortal"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Routes a native DOM event into React's plugin event system, traversing the fiber tree to locate the matching root/portal container and handling legacy Facebook click deferral.",
+          "specLiterals": [
+            {
+              "kind": "enum-value",
+              "value": "click",
+              "role": "domEventName that triggers legacy FB click deferral path"
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "dispatchEventForPluginEventSystem is invoked",
+              "then": "deferClickToDocumentForLegacyFBSupport is called and function returns without traversing fiber tree",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "c36831da379ba410777ae1f56289b4c012daad47e43adecc565b1f9c8173d236"
+        }
+      },
+      {
+        "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__createDispatchListener#function:createDispatchListener",
+        "unitKind": "function",
+        "name": "createDispatchListener",
+        "qualifiedName": "createDispatchListener",
+        "parentUnitId": null,
+        "startLine": 662,
+        "endLine": 671,
+        "isBehavioral": true,
+        "source": "              }\n              grandNode = grandNode.return;\n            }\n          }\n          // Now we need to find it's corresponding host fiber in the other\n          // tree. To do this we can use getClosestInstanceFromNode, but we\n          // need to validate that the fiber is a host instance, otherwise\n          // we need to traverse up through the DOM till we find the correct\n          // node that is from the other tree.\n          while (container !== null) {",
+        "detail": {
+          "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__createDispatchListener#function:createDispatchListener",
+          "fileId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__createDispatchListener",
+          "unitKind": "function",
+          "name": "createDispatchListener",
+          "qualifiedName": "createDispatchListener",
+          "parentUnitId": null,
+          "startLine": 662,
+          "endLine": 671,
+          "signature": "function createDispatchListener(bookingId: string, cb: (id: string) => void): void",
+          "parameters": [
+            {
+              "name": "bookingId",
+              "type": "string",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "cb",
+              "type": "(id: string) => void",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "mut",
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["bookingId must be a non-empty string", "cb must be a callable function"],
+          "postconditions": [
+            "A dispatch listener associated with the given bookingId is registered internally",
+            "When dispatched, the registered callback cb is invoked with the corresponding identifier"
+          ],
+          "invariants": [
+            "Each bookingId maps to exactly one registered listener",
+            "Callback invocation order is preserved relative to dispatch sequence"
+          ],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [
+            "Registers a listener entry internally indexed by bookingId",
+            "Stores reference to callback function cb"
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "cb", "source": null, "kind": "internal" }],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Creates and registers a dispatch listener associated with a booking ID that invokes a provided callback when triggered.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "c00d8db56690102450c6beb7ea53dd7568f4fa81a41a4d68d0bf1efccc073dbc"
+        }
+      },
+      {
+        "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__accumulateSinglePhaseListeners#function:accumulateSinglePhaseListeners",
+        "unitKind": "function",
+        "name": "accumulateSinglePhaseListeners",
+        "qualifiedName": "accumulateSinglePhaseListeners",
+        "parentUnitId": null,
+        "startLine": 673,
+        "endLine": 767,
+        "isBehavioral": true,
+        "source": "            if (parentNode === null) {\n              return;\n            }\n            const parentTag = parentNode.tag;\n            if (\n              parentTag === HostComponent ||\n              parentTag === HostText ||\n              parentTag === HostHoistable ||\n              parentTag === HostSingleton\n            ) {\n              node = ancestorInst = parentNode;\n              continue mainLoop;\n            }\n            container = container.parentNode;\n          }\n        }\n        node = node.return;\n      }\n    }\n  }\n\n  batchedUpdates(() =>\n    dispatchEventsForPlugins(\n      domEventName,\n      eventSystemFlags,\n      nativeEvent,\n      ancestorInst,\n      targetContainer,\n    ),\n  );\n}\n\nfunction createDispatchListener(\n  instance: null | Fiber,\n  listener: Function,\n  currentTarget: EventTarget,\n): DispatchListener {\n  return {\n    instance,\n    listener,\n    currentTarget,\n  };\n}\n\nexport function accumulateSinglePhaseListeners(\n  targetFiber: Fiber | null,\n  reactName: string | null,\n  nativeEventType: string,\n  inCapturePhase: boolean,\n  accumulateTargetOnly: boolean,\n  nativeEvent: AnyNativeEvent,\n): Array<DispatchListener> {\n  const captureName = reactName !== null ? reactName + 'Capture' : null;\n  const reactEventName = inCapturePhase ? captureName : reactName;\n  let listeners: Array<DispatchListener> = [];\n\n  let instance = targetFiber;\n  let lastHostComponent = null;\n\n  // Accumulate all instances and listeners via the target -> root path.\n  while (instance !== null) {\n    const {stateNode, tag} = instance;\n    // Handle listeners that are on HostComponents (i.e. <div>)\n    if (\n      (tag === HostComponent ||\n        tag === HostHoistable ||\n        tag === HostSingleton) &&\n      stateNode !== null\n    ) {\n      lastHostComponent = stateNode;\n\n      // createEventHandle listeners\n      if (enableCreateEventHandleAPI) {\n        const eventHandlerListeners =\n          getEventHandlerListeners(lastHostComponent);\n        if (eventHandlerListeners !== null) {\n          eventHandlerListeners.forEach(entry => {\n            if (\n              entry.type === nativeEventType &&\n              entry.capture === inCapturePhase\n            ) {\n              listeners.push(\n                createDispatchListener(\n                  instance,\n                  entry.callback,\n                  lastHostComponent as any,\n                ),\n              );\n            }\n          });\n        }\n      }\n\n      // Standard React on* listeners, i.e. onClick or onClickCapture\n      if (reactEventName !== null) {",
+        "detail": {
+          "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__accumulateSinglePhaseListeners#function:accumulateSinglePhaseListeners",
+          "fileId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__accumulateSinglePhaseListeners",
+          "unitKind": "function",
+          "name": "accumulateSinglePhaseListeners",
+          "qualifiedName": "accumulateSinglePhaseListeners",
+          "parentUnitId": null,
+          "startLine": 673,
+          "endLine": 767,
+          "signature": "export function accumulateSinglePhaseListeners(targetFiber: Fiber | null, reactName: string | null, nativeEventType: string, inCapturePhase: boolean, accumulateTargetOnly: boolean, nativeEvent: AnyNativeEvent): Array<DispatchListener>",
+          "parameters": [
+            {
+              "name": "targetFiber",
+              "type": "Fiber | null",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "reactName",
+              "type": "string | null",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "nativeEventType",
+              "type": "string",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            },
+            {
+              "name": "inCapturePhase",
+              "type": "boolean",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 3
+            },
+            {
+              "name": "accumulateTargetOnly",
+              "type": "boolean",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 4
+            },
+            {
+              "name": "nativeEvent",
+              "type": "AnyNativeEvent",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 5
+            }
+          ],
+          "returnType": "Array<DispatchListener>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "targetFiber is a Fiber or null",
+            "reactName is string or null",
+            "nativeEventType is a string",
+            "inCapturePhase is boolean",
+            "accumulateTargetOnly is boolean",
+            "nativeEvent is AnyNativeEvent"
+          ],
+          "postconditions": [
+            "Returns an Array<DispatchListener> ordered from target instance upward",
+            "Each DispatchListener contains instance, listener, and currentTarget fields"
+          ],
+          "invariants": [
+            "Only listeners whose event type matches nativeEventType and capture flag matches inCapturePhase are included",
+            "Traversal follows the fiber return path from targetFiber to root"
+          ],
+          "edgeCases": [
+            "If targetFiber is null, the while loop is skipped and empty array is returned",
+            "If reactName is null, reactEventName becomes null and standard React on* listeners are not collected",
+            "If enableCreateEventHandleAPI is false, createEventHandle listeners are omitted",
+            "If accumulateTargetOnly is true, accumulation stops after the first host component (typical behavior)",
+            "If no matching host components or listeners are found, returns empty array"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": "[]" },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "createDispatchListener", "source": "local", "kind": "internal" },
+            { "name": "getEventHandlerListeners", "source": "import", "kind": "external" }
+          ],
+          "symbolReferences": [
+            "Fiber",
+            "DispatchListener",
+            "AnyNativeEvent",
+            "HostComponent",
+            "HostHoistable",
+            "HostSingleton",
+            "enableCreateEventHandleAPI",
+            "getEventHandlerListeners"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Collects single-phase (capture or bubble) event dispatch listeners from the target fiber up to the root, including createEventHandle and standard React on* listeners, returning an ordered array for dispatch.",
+          "specLiterals": [
+            {
+              "kind": "format-string",
+              "value": "Capture",
+              "role": "Suffix appended to reactName to form capture phase event name (reactName + 'Capture')"
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "accumulateSinglePhaseListeners is called with matching parameters",
+              "then": "returned array contains a DispatchListener with that instance, callback, and currentTarget",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "function is called",
+              "then": "no standard React on* listeners are added; only createEventHandle listeners (if any) appear in result",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "ec9251017441790a1fd97e15e3d9e51b84b11cbaa966a8567d1c178ba395ea7c"
+        }
+      },
+      {
+        "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__accumulateTwoPhaseListeners#function:accumulateTwoPhaseListeners",
+        "unitKind": "function",
+        "name": "accumulateTwoPhaseListeners",
+        "qualifiedName": "accumulateTwoPhaseListeners",
+        "parentUnitId": null,
+        "startLine": 777,
+        "endLine": 812,
+        "isBehavioral": true,
+        "source": "      enableScopeAPI &&\n      tag === ScopeComponent &&\n      lastHostComponent !== null &&\n      stateNode !== null\n    ) {\n      // Scopes\n      const reactScopeInstance = stateNode;\n      const eventHandlerListeners =\n        getEventHandlerListeners(reactScopeInstance);\n      if (eventHandlerListeners !== null) {\n        eventHandlerListeners.forEach(entry => {\n          if (\n            entry.type === nativeEventType &&\n            entry.capture === inCapturePhase\n          ) {\n            listeners.push(\n              createDispatchListener(\n                instance,\n                entry.callback,\n                lastHostComponent as any,\n              ),\n            );\n          }\n        });\n      }\n    }\n    // If we are only accumulating events for the target, then we don't\n    // continue to propagate through the React fiber tree to find other\n    // listeners.\n    if (accumulateTargetOnly) {\n      break;\n    }\n    // If we are processing the onBeforeBlur event, then we need to take\n    // into consideration that part of the React tree might have been hidden\n    // or deleted (as we're invoking this event during commit). We can find\n    // this out by checking if intercept fiber set on the event matches the",
+        "detail": {
+          "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__accumulateTwoPhaseListeners#function:accumulateTwoPhaseListeners",
+          "fileId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__accumulateTwoPhaseListeners",
+          "unitKind": "function",
+          "name": "accumulateTwoPhaseListeners",
+          "qualifiedName": "accumulateTwoPhaseListeners",
+          "parentUnitId": null,
+          "startLine": 777,
+          "endLine": 812,
+          "signature": "function accumulateTwoPhaseListeners(instance:Object, nativeEventType:string, nativeEventTarget:Object, accumulateTargetOnly:boolean, listeners:Array<Object>):void",
+          "parameters": [
+            { "name": "instance", "type": "Object", "default": null, "optional": false, "variadic": false, "order": 1 },
+            {
+              "name": "nativeEventType",
+              "type": "string",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            },
+            {
+              "name": "nativeEventTarget",
+              "type": "Object",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 3
+            },
+            {
+              "name": "accumulateTargetOnly",
+              "type": "boolean",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 4
+            },
+            {
+              "name": "listeners",
+              "type": "Array<Object>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 5
+            }
+          ],
+          "returnType": "void",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "nonpayable",
+          "visibility": "internal",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "instance must be a valid React fiber node with a tag property",
+            "nativeEventType must be a non-empty string corresponding to a supported native event type",
+            "listeners must be a mutable array that will be populated with dispatch listener objects",
+            "nativeEventTarget must be a valid DOM event target or null"
+          ],
+          "postconditions": [
+            "All capture-phase and bubble-phase listeners registered on the fiber path from instance up to the root, matching nativeEventType and inCapturePhase, are pushed as dispatch listener objects into listeners",
+            "When accumulateTargetOnly is true, only listeners directly on instance are collected before breaking out of the traversal",
+            "If no matching listeners exist along the path, the listeners array remains unmodified (empty append)",
+            "The function returns void; all results are communicated via the listeners array mutation"
+          ],
+          "invariants": [
+            "Listeners are accumulated in order from the target instance up through ancestors toward the root",
+            "Each accumulated dispatch listener is created via createDispatchListener and carries the original callback, the React instance, and the host component"
+          ],
+          "edgeCases": [
+            "When instance is null or undefined, traversal terminates immediately without accumulation",
+            "When accumulateTargetOnly is true, the function breaks after processing the first (target) fiber, skipping ancestor traversal",
+            "ScopeComponent nodes (with enableScopeAPI enabled) contribute their eventHandlerListeners entries that match nativeEventType and inCapturePhase",
+            "HostComponent and ClassComponent fibers contribute their __reactListeners reference lookups",
+            "onBeforeBlur event processing accounts for fibers that may have been hidden or deleted during commit phase"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "No explicit error handling; relies on caller to provide valid arguments. Undefined/null instance simply terminates traversal",
+            "returnsOnError": null
+          },
+          "stateMutations": [
+            "listeners (Array<Object>) — appended with dispatch listener objects created by createDispatchListener"
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "createDispatchListener", "source": "DOMPluginEventSystem.js", "kind": "internal" },
+            { "name": "getEventHandlerListeners", "source": "DOMPluginEventSystem.js", "kind": "internal" }
+          ],
+          "symbolReferences": [
+            "enableScopeAPI",
+            "ScopeComponent",
+            "createDispatchListener",
+            "getEventHandlerListeners",
+            "HostComponent",
+            "ClassComponent"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Accumulates two-phase (capture and bubble) native event listeners by walking up the React fiber tree from a given target instance, collecting dispatch listeners for both phases and pushing them into a provided array. Stops early when accumulateTargetOnly is true.",
+          "specLiterals": [
+            {
+              "kind": "enum-value",
+              "value": "capture",
+              "role": "Used to match the inCapturePhase property when filtering scope event handler listeners"
+            },
+            {
+              "kind": "enum-value",
+              "value": "bubble",
+              "role": "Implicitly matched via !inCapturePhase when collecting non-capture phase listeners"
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "accumulateTwoPhaseListeners(instance, 'click', nativeEventTarget, false, listeners) is called",
+              "then": "listeners contains a dispatch listener object wrapping the matched callback, created via createDispatchListener",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "accumulateTwoPhaseListeners(instance, 'click', nativeEventTarget, true, listeners) is called",
+              "then": "only the target instance's own listeners are pushed into listeners; ancestor fibers are not traversed",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "accumulateTwoPhaseListeners(instance, nativeEventType, nativeEventTarget, false, listeners) is called",
+              "then": "matching scope event handler listener entries are pushed as dispatch listeners into listeners",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "415c968a31cb5e8f8b4f718c5a7a5a3b85c429781ffd63848949d5fa31288a66"
+        }
+      },
+      {
+        "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__getParent#function:getParent",
+        "unitKind": "function",
+        "name": "getParent",
+        "qualifiedName": "getParent",
+        "parentUnitId": null,
+        "startLine": 814,
+        "endLine": 825,
+        "isBehavioral": true,
+        "source": "    // listeners.\n    if (enableCreateEventHandleAPI && nativeEvent.type === 'beforeblur') {\n      // $FlowFixMe[prop-missing] internal field\n      const detachedInterceptFiber = nativeEvent._detachedInterceptFiber;\n      if (\n        detachedInterceptFiber !== null &&\n        (detachedInterceptFiber === instance ||\n          detachedInterceptFiber === instance.alternate)\n      ) {\n        listeners = [];\n      }\n    }",
+        "detail": {
+          "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__getParent#function:getParent",
+          "fileId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__getParent",
+          "unitKind": "function",
+          "name": "getParent",
+          "qualifiedName": "getParent",
+          "parentUnitId": null,
+          "startLine": 814,
+          "endLine": 825,
+          "signature": null,
+          "parameters": [
+            { "name": "inst", "type": null, "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Returns the parent instance of the given fiber/instance to support event listener traversal up the React tree.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "15d30d41d64855c1de6370164b4f8fbd32a29926fc0e7874c21a87c3b844432b"
+        }
+      },
+      {
+        "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__accumulateEnterLeaveListenersForEvent#function:accumulateEnterLeaveListenersForEvent",
+        "unitKind": "function",
+        "name": "accumulateEnterLeaveListenersForEvent",
+        "qualifiedName": "accumulateEnterLeaveListenersForEvent",
+        "parentUnitId": null,
+        "startLine": 827,
+        "endLine": 872,
+        "isBehavioral": true,
+        "source": "  }\n  return listeners;\n}\n\n// We should only use this function for:\n// - BeforeInputEventPlugin\n// - ChangeEventPlugin\n// - SelectEventPlugin\n// - ScrollEndEventPlugin\n// This is because we only process these plugins\n// in the bubble phase, so we need to accumulate two\n// phase event listeners (via emulation).\nexport function accumulateTwoPhaseListeners(\n  targetFiber: Fiber | null,\n  reactName: string,\n): Array<DispatchListener> {\n  const captureName = reactName + 'Capture';\n  const listeners: Array<DispatchListener> = [];\n  let instance = targetFiber;\n\n  // Accumulate all instances and listeners via the target -> root path.\n  while (instance !== null) {\n    const {stateNode, tag} = instance;\n    // Handle listeners that are on HostComponents (i.e. <div>)\n    if (\n      (tag === HostComponent ||\n        tag === HostHoistable ||\n        tag === HostSingleton) &&\n      stateNode !== null\n    ) {\n      const currentTarget = stateNode;\n      const captureListener = getListener(instance, captureName);\n      if (captureListener != null) {\n        listeners.unshift(\n          createDispatchListener(instance, captureListener, currentTarget),\n        );\n      }\n      const bubbleListener = getListener(instance, reactName);\n      if (bubbleListener != null) {\n        listeners.push(\n          createDispatchListener(instance, bubbleListener, currentTarget),\n        );\n      }\n    }\n    if (instance.tag === HostRoot) {\n      return listeners;",
+        "detail": {
+          "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__accumulateEnterLeaveListenersForEvent#function:accumulateEnterLeaveListenersForEvent",
+          "fileId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__accumulateEnterLeaveListenersForEvent",
+          "unitKind": "function",
+          "name": "accumulateEnterLeaveListenersForEvent",
+          "qualifiedName": "accumulateEnterLeaveListenersForEvent",
+          "parentUnitId": null,
+          "startLine": 827,
+          "endLine": 872,
+          "signature": "export function accumulateEnterLeaveListenersForEvent(targetFiber: Fiber | null, reactName: string, localViewedFiber: Fiber | null): Array<DispatchListener>",
+          "parameters": [
+            {
+              "name": "targetFiber",
+              "type": "Fiber | null",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "reactName",
+              "type": "string",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "localViewedFiber",
+              "type": "Fiber | null",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            }
+          ],
+          "returnType": "Array<DispatchListener>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "view",
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "getListener", "source": null, "kind": "internal" },
+            { "name": "createDispatchListener", "source": null, "kind": "internal" }
+          ],
+          "symbolReferences": ["Fiber", "HostComponent", "HostHoistable", "HostSingleton", "HostRoot"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Accumulates capture and bubble phase event listeners along the path from the target fiber to the root for enter/leave event emulation, used by plugins processed only in the bubble phase.",
+          "specLiterals": [
+            {
+              "kind": "enum-value",
+              "value": "HostComponent",
+              "role": "Fiber tag used to identify DOM host elements for native listener accumulation"
+            },
+            {
+              "kind": "enum-value",
+              "value": "HostHoistable",
+              "role": "Fiber tag used to identify hoistable host elements for native listener accumulation"
+            },
+            {
+              "kind": "enum-value",
+              "value": "HostSingleton",
+              "role": "Fiber tag used to identify singleton host elements for native listener accumulation"
+            },
+            {
+              "kind": "enum-value",
+              "value": "HostRoot",
+              "role": "Fiber tag used to identify the root fiber and terminate listener accumulation"
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "7fd1f7b9b179aab8fc54ba1aeecc2fb69bd38589c0f438cac3e6c0acd999ed78"
+        }
+      },
+      {
+        "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__accumulateEnterLeaveTwoPhaseListeners#function:accumulateEnterLeaveTwoPhaseListeners",
+        "unitKind": "function",
+        "name": "accumulateEnterLeaveTwoPhaseListeners",
+        "qualifiedName": "accumulateEnterLeaveTwoPhaseListeners",
+        "parentUnitId": null,
+        "startLine": 876,
+        "endLine": 902,
+        "isBehavioral": true,
+        "source": "  // If we didn't reach the root it means we're unmounted and shouldn't\n  // dispatch any events on the target.\n  return [];\n}\n\nfunction getParent(inst: Fiber | null): Fiber | null {\n  if (inst === null) {\n    return null;\n  }\n  do {\n    // $FlowFixMe[incompatible-use] found when upgrading Flow\n    inst = inst.return;\n    // TODO: If this is a HostRoot we might want to bail out.\n    // That is depending on if we want nested subtrees (layers) to bubble\n    // events to their parent. We could also go through parentNode on the\n    // host node but that wouldn't work for React Native and doesn't let us\n    // do the portal feature.\n  } while (inst && inst.tag !== HostComponent && inst.tag !== HostSingleton);\n  if (inst) {\n    return inst;\n  }\n  return null;\n}\n\nfunction accumulateEnterLeaveListenersForEvent(\n  dispatchQueue: DispatchQueue,\n  event: KnownReactSyntheticEvent,",
+        "detail": {
+          "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__accumulateEnterLeaveTwoPhaseListeners#function:accumulateEnterLeaveTwoPhaseListeners",
+          "fileId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__accumulateEnterLeaveTwoPhaseListeners",
+          "unitKind": "function",
+          "name": "accumulateEnterLeaveTwoPhaseListeners",
+          "qualifiedName": "accumulateEnterLeaveTwoPhaseListeners",
+          "parentUnitId": null,
+          "startLine": 876,
+          "endLine": 902,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Accumulates enter and leave event listeners for two-phase (capture and bubble) propagation into the dispatch queue for the React DOM event system.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "e44a710431a07cc36b6023086f734dcb850e4a6258163f5b53733aa6c8ca9da5"
+        }
+      },
+      {
+        "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__accumulateEventHandleNonManagedNodeListeners#function:accumulateEventHandleNonManagedNodeListeners",
+        "unitKind": "function",
+        "name": "accumulateEventHandleNonManagedNodeListeners",
+        "qualifiedName": "accumulateEventHandleNonManagedNodeListeners",
+        "parentUnitId": null,
+        "startLine": 904,
+        "endLine": 920,
+        "isBehavioral": true,
+        "source": "  common: Fiber | null,\n  inCapturePhase: boolean,\n): void {\n  const registrationName = event._reactName;\n  const listeners: Array<DispatchListener> = [];\n\n  let instance: null | Fiber = target;\n  while (instance !== null) {\n    if (instance === common) {\n      break;\n    }\n    const {alternate, stateNode, tag} = instance;\n    if (alternate !== null && alternate === common) {\n      break;\n    }\n    if (\n      (tag === HostComponent ||",
+        "detail": {
+          "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__accumulateEventHandleNonManagedNodeListeners#function:accumulateEventHandleNonManagedNodeListeners",
+          "fileId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__accumulateEventHandleNonManagedNodeListeners",
+          "unitKind": "function",
+          "name": "accumulateEventHandleNonManagedNodeListeners",
+          "qualifiedName": "accumulateEventHandleNonManagedNodeListeners",
+          "parentUnitId": null,
+          "startLine": 904,
+          "endLine": 920,
+          "signature": "function accumulateEventHandleNonManagedNodeListeners(event: SyntheticEvent, target: Fiber, common: Fiber | null, inCapturePhase: boolean): void",
+          "parameters": [
+            {
+              "name": "event",
+              "type": "SyntheticEvent",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            { "name": "target", "type": "Fiber", "default": null, "optional": false, "variadic": false, "order": 1 },
+            {
+              "name": "common",
+              "type": "Fiber | null",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            },
+            {
+              "name": "inCapturePhase",
+              "type": "boolean",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 3
+            }
+          ],
+          "returnType": "void",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["event possesses _reactName", "target is a Fiber or null", "common is a Fiber or null"],
+          "postconditions": [
+            "listeners array contains DispatchListener entries for each eligible fiber between target and common",
+            "traversal stops before common (or its alternate) or at root"
+          ],
+          "invariants": [
+            "loop breaks when instance === common or instance.alternate === common",
+            "only HostComponent (or similar) fibers are considered for listener extraction"
+          ],
+          "edgeCases": [
+            "target is null: no traversal",
+            "common is null: traverse to root",
+            "common is alternate of current instance: break",
+            "no matching listeners: empty listeners array"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": ["local listeners array is built (no external state mutated)"],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["Fiber", "DispatchListener", "HostComponent", "SyntheticEvent"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Accumulates dispatch listeners for an event by walking the fiber tree from target up to a common ancestor, collecting listeners for non-managed nodes based on capture or bubble phase.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "07bd5765c76fe4c16a7ff752751633fa7b6a75da378557487627e12f5c169eaf"
+        }
+      },
+      {
+        "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__getListenerSetKey#function:getListenerSetKey",
+        "unitKind": "function",
+        "name": "getListenerSetKey",
+        "qualifiedName": "getListenerSetKey",
+        "parentUnitId": null,
+        "startLine": 922,
+        "endLine": 927,
+        "isBehavioral": false,
+        "source": "        tag === HostSingleton) &&\n      stateNode !== null\n    ) {\n      const currentTarget = stateNode;\n      if (inCapturePhase) {\n        const captureListener = getListener(instance, registrationName);",
+        "detail": {
+          "unitId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__getListenerSetKey#function:getListenerSetKey",
+          "fileId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js__getListenerSetKey",
+          "unitKind": "function",
+          "name": "getListenerSetKey",
+          "qualifiedName": "getListenerSetKey",
+          "parentUnitId": null,
+          "startLine": 922,
+          "endLine": 927,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Generates a unique key identifying a set of event listeners for a given registration context, enabling efficient storage and retrieval within the DOM event plugin system.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "579b1e4ba845d2809e623419a4b8fb0d28df7295a32aea324140924db036e2b8"
+        }
+      }
+    ]
+  },
+  "out": [
+    "packages/shared/reportGlobalError.js",
+    "packages/react-reconciler/src/ReactInternalTypes.js",
+    "packages/shared/ReactFeatureFlags.js",
+    "packages/react-reconciler/src/ReactWorkTags.js",
+    "packages/react-reconciler/src/ReactCurrentFiber.js",
+    "packages/react-reconciler/src/ReactFiberTreeReflection.js",
+    "packages/react-dom-bindings/src/client/HTMLNodeType.js",
+    "packages/react-dom-bindings/src/client/ReactDOMComponentTree.js",
+    "packages/react-dom-bindings/src/events/CurrentReplayingEvent.js",
+    "packages/react-dom-bindings/src/events/PluginModuleType.js",
+    "packages/react-dom-bindings/src/events/EventListener.js",
+    "packages/react-dom-bindings/src/events/ReactDOMEventListener.js",
+    "packages/react-dom-bindings/src/events/DOMEventNames.js",
+    "packages/react-dom-bindings/src/events/EventSystemFlags.js",
+    "packages/react-dom-bindings/src/events/getEventTarget.js",
+    "packages/react-dom-bindings/src/events/ReactSyntheticEventType.js",
+    "packages/react-dom-bindings/src/events/checkPassiveEvents.js",
+    "packages/react-dom-bindings/src/events/ReactDOMUpdateBatching.js",
+    "packages/react-dom-bindings/src/events/EventRegistry.js",
+    "packages/react-dom-bindings/src/events/getListener.js",
+    "packages/react-dom-bindings/src/events/plugins/BeforeInputEventPlugin.js",
+    "packages/react-dom-bindings/src/events/plugins/ChangeEventPlugin.js",
+    "packages/react-dom-bindings/src/events/plugins/EnterLeaveEventPlugin.js",
+    "packages/react-dom-bindings/src/events/plugins/SelectEventPlugin.js",
+    "packages/react-dom-bindings/src/events/plugins/SimpleEventPlugin.js",
+    "packages/react-dom-bindings/src/events/plugins/FormActionEventPlugin.js",
+    "packages/react-dom-bindings/src/events/plugins/ScrollEndEventPlugin.js"
+  ],
+  "in": [
+    "packages/react-dom-bindings/src/events/plugins/FormActionEventPlugin.js",
+    "packages/react-dom-bindings/src/events/plugins/ScrollEndEventPlugin.js",
+    "packages/react-dom-bindings/src/events/ReactDOMEventListener.js",
+    "packages/react-dom-bindings/src/events/plugins/SimpleEventPlugin.js",
+    "packages/react-dom-bindings/src/events/plugins/ChangeEventPlugin.js",
+    "packages/react-dom-bindings/src/events/plugins/SelectEventPlugin.js",
+    "packages/react-dom-bindings/src/client/ReactDOMEventHandle.js",
+    "packages/react-dom-bindings/src/events/plugins/EnterLeaveEventPlugin.js",
+    "packages/react-dom-bindings/src/events/plugins/BeforeInputEventPlugin.js",
+    "packages/react-dom/src/client/ReactDOMRootFB.js",
+    "packages/react-dom/src/client/ReactDOMRoot.js"
+  ],
+  "externals": [],
+  "impact": { "seeds": 21, "callers": 9, "impactedFiles": [] }
+}

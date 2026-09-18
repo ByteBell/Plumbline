@@ -1,0 +1,500 @@
+{
+  "schema": 1,
+  "kind": "file",
+  "repoName": "redux-devtools",
+  "commitHash": "f4b4668c30ae08920c59a76cc4629c35c16ef0fa",
+  "generatedAt": "2026-08-06T07:47:09.303Z",
+  "file": {
+    "relativePath": "packages/redux-devtools-utils/src/importState.ts",
+    "language": "typescript",
+    "sizeBytes": 1788,
+    "tokenCount": 443,
+    "model": "openai/gpt-5.6-luna",
+    "analysedAt": "2026-08-03T15:02:32.495Z",
+    "module": {
+      "purpose": "Parses serialized Redux DevTools state, selecting the appropriate jsan reviver and unpacking optional payload and preloaded-state envelopes.",
+      "summary": "This utility converts a serialized state string into the lifted Redux DevTools state format. It supports default jsan parsing, Immutable.js-aware revival, custom revivers, and nested payload envelopes containing optional preloaded state. Empty input produces no result, while malformed serialized input propagates the parser error.",
+      "businessContext": "Redux DevTools needs to import persisted or transferred state snapshots into its lifted-state model. Failure prevents state restoration, debugging session loading, or replay initialization.",
+      "classes": ["State (~L7-11): Represents lifted Redux DevTools state and optional committed state"],
+      "functions": ["importState (~L13-70): Parses serialized state and unwraps optional payload envelopes"],
+      "keywords": [
+        "Redux DevTools",
+        "jsan",
+        "Immutable.js",
+        "lifted state",
+        "preloaded state",
+        "state serialization",
+        "reviver",
+        "payload envelope"
+      ],
+      "ontologyConcepts": [
+        "serialization",
+        "deserialization",
+        "state restoration",
+        "polymorphic parsing",
+        "payload unwrapping",
+        "optional configuration"
+      ],
+      "businessEntities": [
+        "Redux state",
+        "lifted state",
+        "preloaded state",
+        "action",
+        "computed state",
+        "committed state"
+      ],
+      "systemCapabilities": [
+        "Import serialized Redux state",
+        "Revive Immutable.js values",
+        "Apply custom serialization revivers",
+        "Unwrap transported state payloads"
+      ],
+      "configDependencies": [],
+      "importsInternal": [],
+      "importsExternal": [
+        {
+          "spec": "jsan",
+          "symbols": ["jsan"],
+          "package": "jsan",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 1 }
+        },
+        {
+          "spec": "@redux-devtools/serialize",
+          "symbols": ["immutableSerialize"],
+          "package": "@redux-devtools/serialize",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 2, "endLine": 2 }
+        },
+        {
+          "spec": "redux",
+          "symbols": ["Action"],
+          "package": "redux",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 3, "endLine": 3 }
+        },
+        {
+          "spec": "immutable",
+          "symbols": ["Immutable"],
+          "package": "immutable",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 4, "endLine": 4 }
+        },
+        {
+          "spec": "@redux-devtools/core",
+          "symbols": ["PerformAction"],
+          "package": "@redux-devtools/core",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 5, "endLine": 5 }
+        }
+      ],
+      "sideEffects": { "io": [], "network": [], "env": [], "fs": [], "process": [], "mutationOfArg": [] },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "importState",
+          "shape": "export function importState(\n  state: string,\n  {\n    serialize,\n  }: {\n    serialize?: {\n      immutable?: typeof Immutable;\n      refs?: (new (data: any) => unknown)[] | null;\n      reviver?: (key: string, value: unknown) => unknown;\n    };\n  },\n)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "jsan.parse",
+          "shape": "jsan.parse(value, reviver?)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "immutableSerialize",
+          "shape": "immutableSerialize(serialize.immutable!, serialize.refs).reviver",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "PerformAction",
+          "shape": "PerformAction<Action<string>>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        { "name": "Action", "shape": "Action<string>", "resolvedRelativePath": null, "resolvedFileId": null },
+        { "name": "Immutable", "shape": "typeof Immutable", "resolvedRelativePath": null, "resolvedFileId": null }
+      ],
+      "sectionMap": [
+        {
+          "name": "empty-input guard",
+          "intent": "Rejects absent serialized input before parsing.",
+          "structureKind": "branch",
+          "predicate": "!state",
+          "branchOutcomes": ["returns undefined", "continues parsing"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 25, "endLine": 25 }
+        },
+        {
+          "name": "reviver selection",
+          "intent": "Chooses default, Immutable-aware, or custom jsan parsing.",
+          "structureKind": "branch",
+          "predicate": "serialize",
+          "branchOutcomes": ["uses default jsan.parse", "configures Immutable reviver", "configures custom reviver"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 26, "endLine": 37 }
+        },
+        {
+          "name": "initial state parse",
+          "intent": "Parses the input into a lifted-state structure.",
+          "structureKind": "io",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 39, "endLine": 40 }
+        },
+        {
+          "name": "payload envelope detection",
+          "intent": "Detects serialized wrapper objects containing a payload.",
+          "structureKind": "branch",
+          "predicate": "(\n      nextLiftedState as unknown as {\n        payload?: string;\n        preloadedState?: string;\n      }\n    ).payload",
+          "branchOutcomes": ["unwraps payload", "returns initially parsed state"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 41, "endLine": 67 }
+        },
+        {
+          "name": "preloaded-state extraction",
+          "intent": "Parses an optional serialized preloaded state from the wrapper.",
+          "structureKind": "branch",
+          "predicate": "(\n        nextLiftedState as unknown as {\n          payload: string;\n          preloadedState?: string;\n        }\n      ).preloadedState",
+          "branchOutcomes": ["parses preloaded state", "leaves it undefined"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 47, "endLine": 59 }
+        },
+        {
+          "name": "result assembly",
+          "intent": "Returns the parsed lifted state and optional preloaded state.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 69, "endLine": 69 }
+        }
+      ],
+      "representationFamily": "function-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "function",
+          "name": "importState",
+          "signature": "export function importState(\n  state: string,\n  {\n    serialize,\n  }: {\n    serialize?: {\n      immutable?: typeof Immutable;\n      refs?: (new (data: any) => unknown)[] | null;\n      reviver?: (key: string, value: unknown) => unknown;\n    };\n  },\n)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 13, "endLine": 24 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "interface",
+          "name": "State",
+          "shape": "interface State {\n  actionsById: { [actionId: number]: PerformAction<Action<string>> };\n  computedStates: { state: unknown; error?: string }[];\n  committedState?: unknown;\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 7, "endLine": 11 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "Empty or falsy state string",
+          "handled": true,
+          "behavior": "Returns undefined without invoking the parser.",
+          "anchor": { "startLine": 25, "endLine": 25 }
+        },
+        {
+          "inputShape": "Serialized wrapper with payload and preloadedState",
+          "handled": true,
+          "behavior": "Parses preloadedState separately, then parses payload as nextLiftedState.",
+          "anchor": { "startLine": 47, "endLine": 66 }
+        },
+        {
+          "inputShape": "Serialized wrapper with payload but no preloadedState",
+          "handled": true,
+          "behavior": "Leaves preloadedState undefined and parses payload as nextLiftedState.",
+          "anchor": { "startLine": 47, "endLine": 66 }
+        },
+        {
+          "inputShape": "Malformed serialized input",
+          "handled": false,
+          "behavior": "Parser exceptions propagate to the caller because no catch or fallback exists.",
+          "anchor": { "startLine": 40, "endLine": 40 }
+        }
+      ],
+      "boundaryConditions": [],
+      "errorHandling": [
+        {
+          "thrown": null,
+          "caught": null,
+          "action": "Allows jsan parsing and reviver errors to propagate.",
+          "fallback": null,
+          "anchor": { "startLine": 40, "endLine": 40 }
+        }
+      ],
+      "invariants": [
+        {
+          "kind": "postcondition",
+          "description": "Successful non-empty input returns nextLiftedState together with preloadedState.",
+          "anchor": { "startLine": 69, "endLine": 69 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Payload and preloaded-state strings are parsed using the selected parser.",
+          "anchor": { "startLine": 54, "endLine": 66 }
+        },
+        {
+          "kind": "non-null",
+          "description": "The lifted-state parse is asserted to produce a State structure.",
+          "anchor": { "startLine": 40, "endLine": 40 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "Callers provide serialized state compatible with jsan and the expected lifted-state or payload schema.",
+          "anchor": { "startLine": 13, "endLine": 14 }
+        },
+        {
+          "kind": "schema",
+          "description": "A payload envelope stores serialized strings in payload and optionally preloadedState.",
+          "anchor": { "startLine": 42, "endLine": 44 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "What concrete serialized schema and jsan options are guaranteed for imported state?",
+          "affects": "type_shapes and input validation",
+          "anchor": { "startLine": 39, "endLine": 40 },
+          "resolution": null
+        },
+        {
+          "question": "Which callers rely on undefined for empty input versus treating it as an error?",
+          "affects": "edge_cases and caller contract",
+          "anchor": { "startLine": 25, "endLine": 25 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "sync",
+        "reentrant": true,
+        "ordering": "deterministic",
+        "notes": "The function performs synchronous parsing with local variables and no shared mutable state."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "returns-undefined-for-empty-state",
+          "scenario": "An empty serialized state is supplied.",
+          "given": ["state = ''", "serialize = {}"],
+          "when": "importState(state, { serialize })",
+          "then": "result === undefined",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Guards the explicit empty-input short circuit."
+        },
+        {
+          "testId": "parses-lifted-state",
+          "scenario": "A serialized lifted state without a payload wrapper is supplied.",
+          "given": [
+            "state = jsan.stringify({ actionsById: {}, computedStates: [{ state: { count: 1 } }] })",
+            "serialize = {}"
+          ],
+          "when": "importState(state, { serialize })",
+          "then": "result.nextLiftedState.computedStates[0].state.count === 1 && result.preloadedState === undefined",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins the normal lifted-state parsing result."
+        },
+        {
+          "testId": "parses-payload-and-preloaded-state",
+          "scenario": "A serialized wrapper contains both payload and preloadedState strings.",
+          "given": [
+            "state = jsan.stringify({ payload: jsan.stringify({ actionsById: {}, computedStates: [] }), preloadedState: jsan.stringify({ actionsById: {}, computedStates: [{ state: { count: 0 } }] }) })",
+            "serialize = {}"
+          ],
+          "when": "importState(state, { serialize })",
+          "then": "result.nextLiftedState.computedStates.length === 0 && result.preloadedState.computedStates[0].state.count === 0",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Guards unwrapping and independently parsing both serialized state fields."
+        },
+        {
+          "testId": "uses-custom-reviver",
+          "scenario": "A custom reviver is supplied for serialized values.",
+          "given": [
+            "state = jsan.stringify({ actionsById: {}, computedStates: [{ state: { value: '1' } }] })",
+            "serialize = { reviver: (key, value) => key === 'value' ? Number(value) : value }"
+          ],
+          "when": "importState(state, { serialize })",
+          "then": "result.nextLiftedState.computedStates[0].state.value === 1",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins the custom reviver path for decoded state values."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": ["imports", "State interface", "importState function"],
+      "moduleLevelCode": "import jsan from 'jsan';\nimport { immutableSerialize } from '@redux-devtools/serialize';\nimport { Action } from 'redux';\nimport type Immutable from 'immutable';\nimport { PerformAction } from '@redux-devtools/core';",
+      "exports": [{ "name": "importState", "kind": "own", "fromSpec": null, "exportedAs": null }],
+      "importSymbolMap": [
+        { "symbol": "jsan", "module": "jsan", "alias": null, "kind": "external" },
+        { "symbol": "immutableSerialize", "module": "@redux-devtools/serialize", "alias": null, "kind": "external" },
+        { "symbol": "Action", "module": "redux", "alias": null, "kind": "external" },
+        { "symbol": "Immutable", "module": "immutable", "alias": null, "kind": "external" },
+        { "symbol": "PerformAction", "module": "@redux-devtools/core", "alias": null, "kind": "external" }
+      ],
+      "fileConstants": [],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/redux-devtools-utils/src/importState.ts__importState#function:importState",
+        "unitKind": "function",
+        "name": "importState",
+        "qualifiedName": "importState",
+        "parentUnitId": null,
+        "startLine": 13,
+        "endLine": 70,
+        "isBehavioral": true,
+        "source": "export function importState(\n  state: string,\n  {\n    serialize,\n  }: {\n    serialize?: {\n      immutable?: typeof Immutable;\n      refs?: (new (data: any) => unknown)[] | null;\n      reviver?: (key: string, value: unknown) => unknown;\n    };\n  },\n) {\n  if (!state) return undefined;\n  let parse = jsan.parse;\n  if (serialize) {\n    if (serialize.immutable) {\n      parse = (v) =>\n        jsan.parse(\n          v,\n          immutableSerialize(serialize.immutable!, serialize.refs).reviver,\n        );\n    } else if (serialize.reviver) {\n      parse = (v) => jsan.parse(v, serialize.reviver);\n    }\n  }\n\n  let preloadedState: State | undefined;\n  let nextLiftedState: State = parse(state) as State;\n  if (\n    (\n      nextLiftedState as unknown as {\n        payload?: string;\n        preloadedState?: string;\n      }\n    ).payload\n  ) {\n    if (\n      (\n        nextLiftedState as unknown as {\n          payload: string;\n          preloadedState?: string;\n        }\n      ).preloadedState\n    )\n      preloadedState = parse(\n        (\n          nextLiftedState as unknown as {\n            payload: string;\n            preloadedState: string;\n          }\n        ).preloadedState,\n      ) as State;\n    nextLiftedState = parse(\n      (\n        nextLiftedState as unknown as {\n          payload: string;\n        }\n      ).payload,",
+        "detail": {
+          "unitId": "packages/redux-devtools-utils/src/importState.ts__importState#function:importState",
+          "fileId": "packages/redux-devtools-utils/src/importState.ts__importState",
+          "unitKind": "function",
+          "name": "importState",
+          "qualifiedName": "importState",
+          "parentUnitId": null,
+          "startLine": 13,
+          "endLine": 70,
+          "signature": "export function importState(state: string, { serialize, }: { serialize?: { immutable?: typeof Immutable; refs?: (new (data: any) => unknown)[] | null; reviver?: (key: string, value: unknown) => unknown; }; })",
+          "parameters": [
+            { "name": "state", "type": "string", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "serialize",
+              "type": "{ immutable?: typeof Immutable; refs?: (new (data: any) => unknown)[] | null; reviver?: (key: string, value: unknown) => unknown; }",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": ["export"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "state is a string.",
+            "When serialize.immutable is provided, it is a compatible Immutable implementation.",
+            "When serialize.refs is provided, each entry is a constructible reference type accepted by the Immutable-aware deserializer."
+          ],
+          "postconditions": [
+            "For a falsy state string, returns undefined without parsing.",
+            "For a non-empty state string without a payload wrapper, parses the state and returns it as nextLiftedState with no preloadedState.",
+            "For a non-empty state string with a payload wrapper, parses payload as nextLiftedState and parses preloadedState when the wrapper contains one.",
+            "Uses the configured deserialization strategy when serialize.immutable or serialize.reviver is supplied."
+          ],
+          "invariants": [
+            "The selected parser is used consistently for the outer state and any nested payload or preloadedState values.",
+            "The returned nextLiftedState is the parsed state value, or the parsed payload when the outer value contains a payload."
+          ],
+          "edgeCases": [
+            "An empty string or other falsy state returns undefined.",
+            "A non-empty serialized value without payload is parsed directly as nextLiftedState.",
+            "A serialized wrapper with payload parses payload as nextLiftedState.",
+            "A serialized wrapper with both payload and preloadedState parses both independently.",
+            "Malformed serialized input or a reviver/parser failure propagates the underlying parsing error."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["Underlying jsan.parse or configured reviver/deserializer errors"],
+            "reverts": [],
+            "onInvalidInput": "Falsy state returns undefined; non-falsy malformed serialized input propagates the parser error.",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "jsan.parse", "source": "jsan", "kind": "external" },
+            { "name": "immutableSerialize", "source": null, "kind": "internal" }
+          ],
+          "symbolReferences": ["State", "Immutable", "jsan", "immutableSerialize"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Parses an imported serialized state into the lifted state and, when present, a separately serialized preloaded state. It supports default jsan parsing, custom revivers, and Immutable-aware deserialization.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "importState(state, {}) is called",
+              "then": "the result is undefined and no parsing is performed",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "importState(state, {}) is called",
+              "then": "the payload is returned as nextLiftedState and the preloadedState string is parsed into preloadedState",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "importState(state, { serialize: { reviver } }) is called",
+              "then": "the supplied reviver is used when parsing the outer state and any nested payload or preloadedState",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "59d957b24a181bb81c281506bc36ddbd4f669f86738759b674b0a7fb53c793d7"
+        }
+      }
+    ]
+  },
+  "out": [],
+  "in": ["packages/redux-devtools-utils/src/index.ts"],
+  "externals": ["jsan", "@redux-devtools/serialize", "redux", "immutable", "@redux-devtools/core"]
+}

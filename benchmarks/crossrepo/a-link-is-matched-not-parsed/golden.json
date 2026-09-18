@@ -1,0 +1,82 @@
+{
+  "id": "xrepo-v6-6-a-link-is-matched-not-parsed-medium",
+  "question": "Several libraries in this folder have to answer a yes/no question about a piece of structured text before they can act on it: does this target point somewhere else entirely, or is it relative to where we already are; is this host one of the hosts we are willing to embed or answer for; which file does this recorded location refer to. In each case the answer is reached by pattern-matching the text itself - a substring, a suffix, a glob turned into an expression, an unanchored search - rather than by handing the string to the parser that owns its grammar and comparing the parsed parts. Every one of those matches is right for the examples its author had in mind and wrong for inputs that are perfectly legal: a target that merely carries another target inside its query string is treated as though it pointed away; a name that only ends with the trusted name, or that reaches it over the wrong scheme, is accepted as though it were the trusted one; a recorded location whose path contains a space falls out of the pattern entirely and is read as a different location. The consequences differ by library - a prefix silently dropped, a stranger trusted, a caller mislabelled - but the defect is one contract, and elsewhere in the folder the same decision is made the right way: one library refuses to reason about a target at all until the platform parser has normalised it, and another anchors its dangerous-prefix test to the start of the string and spells out, with the specification cited, exactly which characters the grammar lets an attacker hide in there. Which files decide what a piece of structured text refers to by matching it, and which own the parse-first contract they have to be brought in line with?",
+  "anchor": {
+    "repo": "redux-toolkit",
+    "pinned_commit": "b1c5130154c454ca8387f55da6122fcb507c560c",
+    "fix_pr": "https://github.com/reduxjs/redux-toolkit/pull/5428",
+    "pr_number": 5428,
+    "pr_title": "fix(rtk-query): only treat a url as absolute when it starts with a scheme",
+    "fix_merged": "2026-09-01",
+    "fix_merge_commit": "e99fe6135188",
+    "parent_is_buggy": true
+  },
+  "counts": {
+    "min_repos": 4,
+    "min_files": 8
+  },
+  "repo_commits": {
+    "redux-toolkit": "b1c5130154c454ca8387f55da6122fcb507c560c",
+    "tldraw": "5590d14d8edd4faab7dc1177b6e1adb28876fd23",
+    "zustand": "beca84e600e4e250f6b244d22878e72948f331c7",
+    "router": "3dee5b2e9453d01a3172c73426959007b290b3fc",
+    "react": "3a717e42438afac81020cdec297dadb5613a4304"
+  },
+  "expected": [
+    {
+      "repo": "redux-toolkit",
+      "knowledgeId": "5129210f7edc89d624231a57a3b76770",
+      "files": ["packages/toolkit/src/query/utils/isAbsoluteUrl.ts", "packages/toolkit/src/query/utils/joinUrls.ts"]
+    },
+    {
+      "repo": "tldraw",
+      "knowledgeId": "91b23c56-1aee-5c86-a34b-c66f8970d025",
+      "files": ["packages/tldraw/src/lib/utils/embeds/embeds.ts", "apps/analytics-worker/src/worker.ts"]
+    },
+    {
+      "repo": "router",
+      "knowledgeId": "328fd1db-0faf-59bd-b628-c446e782693a",
+      "files": [
+        "packages/router-core/src/utils.ts",
+        "packages/history/src/index.ts",
+        "packages/router-core/src/redirect.ts"
+      ]
+    },
+    {
+      "repo": "react",
+      "knowledgeId": "2a9d1614-943b-44ad-b7cf-edda2f37ddf9",
+      "files": ["packages/react-dom-bindings/src/shared/sanitizeURL.js"]
+    }
+  ],
+  "grader_notes": {
+    "why_cross_repo": "ANCHOR (real bug, reduxjs/redux-toolkit PR #5428 'only treat a url as absolute when it starts with a scheme', merged 2026-09-01 as e99fe6135188, AFTER the pinned commit b1c5130154, so the pin is the buggy parent and the fix postdates the May 2026 cutoff). At the pin isAbsoluteUrl.ts is `new RegExp('(^|:)//').test(url)` - unanchored, so the relative url `redirect?target=https://example.com` tests as absolute and joinUrls.ts drops the baseUrl. THREE MORE REPOS CARRY THE SAME DEFECT LIVE AT THEIR OWN PINS, each fixed by its own post-pin PR: tldraw embeds.ts turns each allowed hostname into an UNANCHORED glob regexp (`new RegExp(globlikeRegExp(hostname))`, matched against `parsed.host`), so a lookalike host containing the trusted one is embedded (tldraw #10196, def06d6c06c5, 2026-08-27); tldraw analytics-worker decides CORS by `origin.endsWith('.tldraw.com')` on the raw Origin header, which admits any scheme and any port; zustand devtools.ts recovers the caller's source location from a V8 stack frame with a regex that breaks as soon as the path contains a space (zustand #3531, f44cecc72a8e, 2026-08-13). router's URL handling at the pin is also live-buggy across history/src/index.ts, router-core/src/redirect.ts and router-core/src/utils.ts (TanStack/router #8308 'harden URL handling across Router and Start', 9c1871ccc88b, 2026-09-09), and the SAME utils.ts file already contains the reference-correct member of the pair: isDangerousProtocol() refuses to reason about the string, hands it to `new URL()` and compares `parsed.protocol` against an allowlist, with a comment enumerating the mixed-case, control-character and leading-whitespace bypasses the parser normalises for it. react's sanitizeURL.js is the other reference: the javascript:-protocol test is anchored to the start of the string and its character class is derived from the WHATWG URL and Infra specs, with both cited in the file.",
+    "verification_method": "(1) Every anchor mined from `pin..origin/<default-branch>` so pin-is-ancestor is guaranteed; _tools/verify_anchor.py reports pin-is-ancestor-of-fix=True for all four. (2) Removed-line liveness at the pin: redux-toolkit isAbsoluteUrl.ts 1/1 (100%), zustand devtools.ts 1/1 (100%), router history/src/index.ts 9/9 (100%), redirect.ts 5/8 (62%), utils.ts 23/27 (85%). tldraw embeds.ts and the analytics worker were read DIRECTLY at the pin (`git show <pin>:<path>`) rather than from any diff context: the unanchored `new RegExp(globlikeRegExp(hostname))` and the `origin.endsWith('.tldraw.com')` ladder are both verbatim in the pinned tree. (3) Greppability screen at the pins: `isAbsoluteUrl` reaches 2/9 gold, `hostname` 1/9, `protocol` 2/9, `new URL(` 3/9 of 359 files, `origin` 4/9 of 1048 files - no single identifier unlocks a majority, and the terms that do touch several gold files have <1% precision ecosystem-wide. (4) Overlap check against every existing golden.json: 0 shared (repo,file) pairs; zustand's devtools.ts, router's utils.ts/history/redirect.ts, tldraw's embeds.ts and analytics-worker, react's sanitizeURL.js and both RTK url utils are all first-time gold. (5) Contract check against the 19 v5 cases and v6-1..v6-4: no existing case is about deciding what a piece of structured text refers to.",
+    "difficulty_design": "Breadth case: 5 repositories, 9 files, and the defect is live in FOUR of them at once, so an arm that stops at the first repository whose symptom matches loses most of the answer. There is no shared vocabulary - isAbsoluteUrl vs globlikeRegExp vs endsWith('.tldraw.com') vs a stack-frame regexp vs isDangerousProtocol vs sanitizeURL - and the two reference-correct files sit in repositories (react, router) that also contain, or sit next to, the wrong version of the same decision: router's utils.ts is simultaneously reference-correct for protocol checks and live-buggy for the rest of its URL handling. Gold is 9 files, above the >=7 floor from the measured difficulty predictors.",
+    "rejected_candidates": "TanStack/router #8209 'handle unknown error boundary values' (15 source files, all 100% bug-live at the pin, 0 gold overlap, and co-violated live by TanStack/query #11305/#11309 'propagate falsy errors to the error boundary') was rejected on the greppability screen exactly as router #8169 was: `git grep onCatch` at the pins reaches 13 of the 20 candidate gold files out of only 17 files ecosystem-wide - 76% precision, so one identifier hands over the answer. Worth revisiting only if the gold can be re-cut around files that do not carry that name."
+  },
+  "calibration": {
+    "probe": "claudecli_opus5_bare (Opus 5, Bash/Read/Grep/Glob over the pinned checkouts, sandbox-exec gold-blind, one fresh headless session)",
+    "date": "2026-09-10",
+    "recall": 0.778,
+    "precision": 0.2,
+    "returned": 35,
+    "gold": 9,
+    "cost_usd": 3.48,
+    "rule": "hard requires recall < 0.6; medium requires recall <= 0.8; above that the case is easy",
+    "label_from_probe": "medium",
+    "STALE": "Measured over 9 gold before the 2026-09-17 gold_amendments drop. Re-derive the difficulty label from a re-finalized bare run before citing recall or label_from_probe."
+  },
+  "gold_amendments": [
+    {
+      "date": "2026-09-17",
+      "removed": {
+        "repo": "zustand",
+        "files": ["src/middleware/devtools.ts"]
+      },
+      "reason": "Unreachable for index-backed arms. The pinned snapshot beca84e6 IS indexed (15 src files) but does NOT contain src/middleware/devtools.ts; it exists only at b57db4f8. Under COMMIT DISCIPLINE every MCP arm gets a clean zero there, while filesystem arms read it directly - so the file measured surface, not retrieval, and biased every MCP-vs-bare delta on this case by up to 1/9.",
+      "why_not_repinned": "Repinning to b57db4f8 was rejected: that range contains f44cecc7 'fix(devtools): correct V8 stack regex when source path contains spaces' (#3531), the exact fix this file's OB3 gold requires to be ABSENT. At beca84e6 the code is /.+ (.+) .+/ (defective); at b57db4f8 it is already /^at (?:new |async )?(.+?) \\(/ (fixed). The repin would have moved the case past its own fix.",
+      "restore_when": "zustand is re-indexed AT beca84e6; then restore the file and min_files 9.",
+      "invalidates": "calibration below (bare recall 0.778 was measured over 9 gold, not 8)"
+    }
+  ]
+}

@@ -1,0 +1,298 @@
+CROSS-REPOSITORY RETRIEVAL TASK — run the algorithm below, in order.
+
+CASE:      xrepo-v6-2-partial-key-lets-siblings-collide-hard
+SURFACE:   the plumbline MCP server. No other MCP server, no network, no subagents,
+           no Read, Grep or Glob. Every path you name must have come back from a
+           plumbline call; reaching the answer by any other route voids the run.
+           ONE exception, and it is not a search route. When a plumbline result is
+           too large to return, it is written to a file and that path is handed to
+           you in the result. Read THAT file with Bash — cat or grep on the exact
+           path you were given — and use Bash for nothing else. It is your own
+           result, already paid for, and leaving it unread silently drops the call.
+           Bash may not touch the repositories, the case directory, or any path you
+           were not handed.
+ROSTER:    16 repositories, each pinned at exactly one commit. This is the whole
+           world for the task; do not use another revision or later history.
+
+  repo             commit                                     repo             commit
+  redux            3aa561f9fc13f3287e6d83764f85fe0e82437c5f   redux-toolkit    b1c5130154c454ca8387f55da6122fcb507c560c
+  react-redux      ad5d1e0816d0cb1464b25cf2853f2a7d73433f5b   reselect         950112a328f71d97d18fd543159d6fdefa432b38
+  react            3a717e42438afac81020cdec297dadb5613a4304   jotai            5c4ca26b0db5571114be58393e17854a771f7790
+  zustand          beca84e600e4e250f6b244d22878e72948f331c7   db               7f0fa36ff6d48b0494ed5f6a1223fd18c317e41f
+  xyflow           360f5b13e2bc6899ea06b4be1a49b068d86926cf   query            46d7f02f1c7b9fcd3255082cc7103e8bfa3dab76
+  table            d08af367e11c539bb7e18c2472aa761149ef6db6   tldraw           5590d14d8edd4faab7dc1177b6e1adb28876fd23
+  redux-devtools   f4b4668c30ae08920c59a76cc4629c35c16ef0fa   router           3dee5b2e9453d01a3172c73426959007b290b3fc
+  primitives       58164e06ca67dff9a68dd375d858180cfdc8ec27   zod              912f0f51b0ced654d0069741e7160834dca742ee
+
+PROBLEM (identifiers are deliberately withheld — searching these words will not
+find the answer):
+
+A correlated per-parent computation joins its result back to the parent that asked for it using a key built only from the computed value itself - never from which parent produced it. So when two different parents' correlated computations happen to produce the same value, the join can no longer tell them apart, and a value silently attaches itself to the wrong parent's row - the correlation was real, but the key that was supposed to carry it only captured part of what made the two cases different. The same hazard is handled deliberately elsewhere in the folder: several libraries look up or normalize a piece of state using a key computed from an object, and that key has to capture every dimension that can make two logically different objects collide, not merely the dimension an equality check or a filter clause happens to reference. Which files build the join key that drops the parent's identity, and which own the key-completeness contract it has to be brought in line with?
+
+GOAL: name every file, in every repository above, that must change to satisfy that
+contract. The answer spans multiple repositories that do not import one another.
+
+================================ ALGORITHM ================================
+
+This is a procedure over explicit state, not advice. Run it in order.
+  ASSERT  = a condition that must hold. If it fails, go back and repair the
+            state before continuing. Never proceed past a failing ASSERT.
+  Where a rule and your judgement disagree, the rule wins. The PROBLEM
+  describes BEHAVIOUR and withholds every identifier, so the instinct that
+  says "this one is obviously it" is operating on vocabulary, not evidence.
+
+
+---- STATE ----------------------------------------------------------------
+Maintain these as you go. STEP 6 is COMPUTED from them; it is not a fresh
+judgement at the end.
+
+  OB[]       obligations.  each = { id, phrase, repos[], status, closers[] }
+             status in { OPEN, CLOSED }
+             closers[] is a LIST and MAY HOLD MORE THAN ONE FILE.
+  SWEPT      set of (ob_id, repo) pairs actually searched. A pair enters SWEPT
+             only after a stakeout carrying THAT ob's phrase INTO that repo.
+             No other call, and no other ob's phrase, puts a pair in SWEPT.
+  SEEN       EVERY path any call returned, all run long. Append, never prune.
+  CONFIRMED  files you READ in STEP 5 and judged.
+             each = { repo, path, role, why },  role in { VIOLATOR, OWNER, EVIDENCE }
+  RULED_OUT  files you READ and positively excluded against VERBATIM SOURCE.
+             Not reading a file NEVER puts it here.
+  CANDIDATES = SEEN minus CONFIRMED minus RULED_OUT. Everything retrieved that
+             you neither confirmed nor disproved. These ARE part of the answer
+             (STEP 6.2); they rank below CONFIRMED, they are not discarded.
+  NAMES      symbols learned from results, pending their org-wide sweep.
+
+  INVARIANT-1   Every file in CONFIRMED is emitted in STEP 6. Always. There is
+                no filter, no "already covered by another file", no per-
+                obligation quota. CONFIRMED IS THE ANSWER.
+  INVARIANT-2   status = CLOSED records a fact. It NEVER removes work from a
+                list and NEVER exits a loop.
+  INVARIANT-3   VERIFICATION SETS ORDER, NEVER LENGTH. Reading a file decides
+                WHERE it ranks, never WHETHER it is named. The answer is NOT
+                trimmed to what you had budget to read. A file you retrieved and
+                could not get to is ranked low — it is not dropped.
+
+
+---- STEP 0 — GROUND.  Both calls are free; make them before anything else. --
+  0.1  roll_call once.
+       ASSERT: every repository in the ROSTER appears in the roll_call output.
+       ON FAIL — a repository is ABSENT — STOP and say so plainly. Answering
+       from memory about a repository that is not indexed is never acceptable.
+
+       A PIN THAT DIFFERS FROM roll_call IS NOT DRIFT. roll_call reports ONLY
+       each repository's NEWEST indexed commit, never its full indexed history.
+       A ROSTER pin that differs from that newest commit is NORMAL: it is an
+       older snapshot that is also indexed. Do NOT stop, and do NOT quietly
+       answer at the newest commit instead.
+  0.2  COMMIT DISCIPLINE. For every repository whose ROSTER pin differs from the
+       newest commit roll_call reported, pass commitHash = <that ROSTER pin> on
+       EVERY call into that repository — stakeout, case_file, the_receipts,
+       collateral_damage, all of them.
+       Omitting it answers at the wrong snapshot. Files move and are renamed
+       between snapshots, so a path that exists at the pin and not at the tip
+       comes back as a CLEAN ABSENCE rather than an error — indistinguishable
+       from the file not existing, and silently unrecoverable.
+  0.3  rap_sheet once, no arguments. ~150 tokens per repository, saying what
+       each one is FOR. STEP 2 is computed from it.
+       RANK, NEVER EXCLUDE. A repository whose brief reads wrong can still hold
+       the other half of the contract.
+
+
+---- STEP 1 — BUILD OB[].  Before any search. -----------------------------
+  1.1  Split the PROBLEM into obligations:
+         - ONE for the code that VIOLATES the contract;
+         - ONE FOR EACH SEPARATE CLAUSE describing code that already gets it
+           right. "one library does X ... and another does Y" is TWO
+           obligations, not one.
+  1.2  For each, record id, and phrase = the behaviour in the PROBLEM's OWN
+       WORDS, a handful of content words. Keep it SHORT: padding a phrase into
+       a sentence dilutes the match enough to drop real hits out of range.
+  1.3  Set status = OPEN, closers = [] for all.
+       ASSERT: |OB[]| >= 3.
+
+
+---- STEP 2 — BUILD ob.repos[] FOR EVERY OBLIGATION.  Before any search. ----
+  FOR EACH ob IN OB[]:
+  2.1  From the rap_sheet briefs, list EVERY repository whose subject matter
+       could plausibly hold this obligation. Be generous; breadth is close to
+       free, because the FIRST scoped call into a repository this run has not
+       queried yet is never rationed, however much you have already spent.
+       Re-querying a repository you HAVE searched is what gets rationed. So the
+       cheap move and the correct move are the same move.
+  2.2  ASSERT: |ob.repos| >= 4, and at least one entry is a repository whose
+       brief does NOT obviously fit.
+       ON FAIL -> the list is a guess, not a scope. Widen it now.
+  2.3  THE OBVIOUS-OWNER TRAP — this is where runs are lost. When a behaviour
+       has one famous owner ("keyed reconciliation", "a store", "a scheduler"),
+       naming that owner FEELS like completing this step. It is skipping it.
+       The more obviously a single repository owns a behaviour, the more
+       certainly the OTHER implementations of that same behaviour are the ones
+       you have not thought of — and a peer library that does the same job in
+       its own register is exactly what the PROBLEM means by "elsewhere".
+       A list of one entry is not a short list. It is a skipped step.
+  2.4  Do not try to pre-guess which single repository is right. The PROBLEM's
+       central noun — the "collection", the "projection", the thing kept in
+       sync — has several plausible readings, and picking one is how a run ends
+       inside one repository. Breadth settles it; cleverness does not.
+
+
+---- STEP 3 — SWEEP.  This is the whole run. -------------------------------
+  FOR EACH ob IN OB[]:
+    FOR EACH repo IN ob.repos:
+      3.1  IF (ob.id, repo) IN SWEPT -> skip.
+      3.2  CALL stakeout( query = ob.phrase,
+                          knowledgeId = <that repo>,     <-- MUST be set
+                          searchIn = 'both' )
+      3.3  Add (ob.id, repo) to SWEPT. Add returned paths to SEEN, and any
+           function / class / exported symbol that matters to NAMES.
+      3.4  DO NOT BREAK. ob.status = CLOSED exits NEITHER loop. Continue to the
+           next repo, and to every remaining repo on this ob's list.
+
+  3.5  ASSERT ON EXIT, per obligation:
+         count{ r : (ob.id, r) IN SWEPT } == |ob.repos|,  FOR EVERY ob.
+       ON FAIL -> go back and sweep the missing pairs. An obligation is not
+       swept because SOME repository answered it.
+
+  WHY EACH CLAUSE OF STEP 3 IS THERE:
+  3.a  knowledgeId SET vs OMITTED decides runs. An org-wide search ranks
+       whichever repository shares the most vocabulary with your words and
+       never reaches the others at all. The same phrase scoped INTO a
+       repository is answered from that repository's own register and returns
+       what an org-wide sweep could not see. When a scoped search is the only
+       thing that would have found a file, an org-wide one reports a clean
+       absence instead.
+  3.b  PHRASE DISCIPLINE. Each ob's phrase goes to every repository on ITS OWN
+       list. A repository swept with OB-1's words HAS NOT BEEN SWEPT for OB-3;
+       it is not in SWEPT for OB-3 and does not count toward 3.5. Searching a
+       repository is not the same as searching it for the thing you need.
+  3.c  DO-NOT-BREAK. A behaviour one repository implements well is routinely
+       implemented by three. The first one you find is the one that shares the
+       most vocabulary with your phrase — not necessarily the one the PROBLEM
+       means. Stopping at the first hit is how a true-but-wrong file ends a
+       line of enquiry that had not yet reached the right repository.
+  3.d  A repository you have not scoped into is NOT evidence of absence.
+
+  3.6  ON REFUSAL (a tool declines with a cap): not an error, not a server
+       failure, never a reason to stop, and never a fact about your query. The
+       allowance is a share of the run that GROWS as the run grows. Three ways
+       through, in order:
+         (a) scope the call into a repository not yet queried — a first touch
+             is exempt and goes through regardless of what you have spent;
+         (b) spend the tools the refusal names — walking the edges of a file
+             you already have reaches the type declaration, the barrel and the
+             call site, which no search reaches because they share no
+             vocabulary with it;
+         (c) return to the refused tool once the total has risen.
+
+
+---- STEP 4 — NAME SWEEP.  FOR EACH name IN NAMES: ------------------------
+  4.1  CALL manhunt( name ), knowledgeId OMITTED. One call, exact, every repo.
+  4.2  SIBLING PACKAGES ARE THE POINT. A repository shipping one capability as
+       several adapter packages — framework bindings, drivers, backends,
+       engines — implements the SAME name in each, and those packages do not
+       import one another, so no fold and no dependency walk will ever cross
+       between them. This sweep is the only thing that reaches them all.
+  4.3  When it returns N siblings, EVERY ONE enters SEEN as a candidate. Do not
+       answer with the sibling that happened to rank in a text search. They
+       differ from each other, and THE ONE THAT DIFFERS IS USUALLY THE POINT.
+
+
+---- STEP 5 — READ AND CLASSIFY.  Ruling a file OUT costs what ruling it IN --
+---- costs.  FOR EACH path IN SEEN that could bear on any obligation: -------
+  5.1  CALL case_file(path) -> every code unit with its declared startLine-
+       endLine. THEN the_receipts on THAT DECLARED RANGE. Ranges you pick
+       yourself are guesses, and a guessed window that happens to look innocent
+       is how a violating file gets cleared.
+  5.2  Never judge a file from a purpose, summary, signature, path, or from a
+       search that came back empty. Those prose fields were written by a model
+       at index time. An empty search is a fact about your query, not the file.
+  5.3  CLASSIFY from the verbatim source, and append to CONFIRMED with a role:
+         VIOLATOR  — it updates a projection without shrinking it.
+         OWNER     — it owns the converge-in-both-directions contract.
+         EVIDENCE  — it grounded a verdict about ANOTHER file: the in-repo
+                     proof, the sibling that does it right, the contract a
+                     violator must be brought in line with, the counterexample
+                     that made a sibling's omission legible.
+       EVIDENCE IS A FULL ROLE, NOT A FOOTNOTE. See 6.3.
+  5.4  IF the file satisfies an obligation: APPEND it to ob.closers and set
+       ob.status = CLOSED.
+       APPEND, never replace. An obligation may be closed by SEVERAL files, and
+       when several independently satisfy it ALL of them are part of the
+       answer. CLOSING IS NOT CHOOSING. Re-closing an already-CLOSED obligation
+       with a second file is a correct and expected event, not a duplicate.
+  5.5  RULING OUT REQUIRES VERBATIM SOURCE. A file enters RULED_OUT only when
+       you have READ it and the source says it is not on either side of the
+       contract. "I did not get to it", "the summary looked wrong", "the search
+       came back empty" and "its repository felt off-topic" are NOT rulings —
+       each leaves the file a CANDIDATE. Running out of calls is not a verdict.
+  5.6  You will not read everything you retrieve. That is expected and it is
+       not a failure: the unread remainder is CANDIDATES, and STEP 6.2 emits it.
+
+
+---- STEP 6 — EMIT.  COMPUTED FROM STATE.  Do not re-decide here. ----------
+  6.1  First, in plain text before the JSON, print the LEDGER:
+         (a) per obligation: id, status, and EVERY file in closers[] — or the
+             word OPEN. An OPEN obligation declared plainly is a correct
+             outcome; an obligation silently dropped is the failure this
+             algorithm exists to prevent.
+         (b) the SWEEP MATRIX: one row per obligation, listing the repositories
+             in SWEPT for it. A row shorter than that ob's repos[] means STEP
+             3.5 did not hold — say so.
+  6.2  BUILD THE LIST IN TWO BANDS, IN THIS ORDER. LIST_CAP = 75 paths total.
+         BAND 1 — every path in CONFIRMED, whatever its role, ranked
+                  most-likely-first. This is INVARIANT-1 and it is mechanical.
+         BAND 2 — every path in CANDIDATES, ranked by how strongly the search
+                  that returned it bore on an obligation, appended BELOW band 1.
+       Truncate only at LIST_CAP, and only from the bottom.
+       The JSON IS NOT THE LEDGER. The ledger records which obligations are
+       satisfied; it NEVER limits how many files you name. A file does not need
+       to have closed an obligation to be emitted, and it does not need to have
+       been READ — reading decides its BAND, not its presence.
+  6.3  ASSERT: every path you named ANYWHERE in the 6.1 ledger prose also
+       appears in files.
+       A file you cited as evidence — "the in-repo proof", "the sibling that
+       does it right", "the contract it must be brought in line with" — IS a
+       confirmed file. IF IT WAS GOOD ENOUGH TO JUSTIFY A VERDICT, IT IS GOOD
+       ENOUGH TO NAME. Dropping it because its obligation was already closed by
+       a different file violates INVARIANT-1.
+       ON FAIL -> add the missing paths to files before emitting.
+  6.4  ASSERT: |files| == min( |CONFIRMED| + |CANDIDATES| , 75 ).
+       ON FAIL -> you silently dropped paths this run RETRIEVED. Put them back.
+       A SHORT LIST IS NOT A CAREFUL LIST. You are scored on how much of the
+       true change set you name. A wrong path ranked 20th costs you almost
+       nothing; a right one you declined to name is lost outright. When you are
+       unsure, NAME IT LOWER — never omit it. Emitting far fewer than 75 paths
+       while CANDIDATES remain is the single most expensive thing you can do.
+  6.5  Repo-relative paths only — no leading slash, no repo-name prefix,
+       e.g. packages/<package-name>/src/<SomeFile>.ts
+  6.6  Source files only: no tests, docs, examples, fixtures, benchmarks, build
+       output, dependency directories or generated API reports.
+  6.7  ASSERT: every path was RETURNED BY A CALL. A path completed from memory
+       or inferred from directory layout is not a result.
+  6.8  Pinpoints are optional and best effort, for files you actually READ. A
+       symbol or line range you did not read is a fabrication — omit the
+       pinpoint instead. Pinpoints never change WHICH files you name, nor their
+       order.
+  6.9  Your FINAL message is the JSON array and NOTHING ELSE. The 6.1 ledger
+       belongs in the message BEFORE it. No prose, no markdown fence, nothing
+       after it:
+
+[{"repo": "<repo>",
+  "files": ["<path>", "..."],
+  "pinpoints": [{"path": "<a path already in files>",
+                 "symbol": "<function/method/class, as the source spells it>",
+                 "lines": "<start-end>",
+                 "change": "<what has to change there, one line>"}]}, ...]
+
+       "files" MUST be a flat array of path strings in rank order — it is what
+       is scored, and an object inside it voids the run. "pinpoints" is
+       separate and optional; omit the key entirely where you pinned nothing
+       down, and never name a path there that is not already in "files".
+
+
+RUN CONDITIONS (the run is invalid if any fails)
+  R1  One fresh session. Do not resume or re-attempt a case already attempted.
+  R2  STEP 0 must pass before any search.
+  R3  The harness records the transcript, every call and the cost, and writes
+      ranked.json from your final message. You have no write tools — do not try
+      to create files. Your only job is the ranked answer.

@@ -1,0 +1,2411 @@
+{
+  "schema": 2,
+  "kind": "file",
+  "repoName": "tldraw",
+  "file": {
+    "relativePath": "packages/editor/src/lib/hooks/useCanvasEvents.ts",
+    "language": "typescript",
+    "sizeBytes": 8577,
+    "tokenCount": 2144,
+    "model": "us.openai.gpt-5.6-luna",
+    "analysedAt": "2026-08-24T12:20:51.305Z",
+    "module": {
+      "purpose": "Provides the React hook that binds canvas pointer, touch, drag-and-drop, click, and context-menu events to editor behavior, while tracking pointer movement on the containing document.",
+      "summary": "This hook creates a memoized collection of canvas event handlers and a document-level pointer-move subscription. It translates browser events into editor pointer dispatches, manages pointer capture and handled-event state, supports right-click panning and context-menu behavior, prevents inappropriate browser defaults, updates hover state, and imports dropped files or URLs as external editor content. Coalesced pointer events are used when supported by the active tool and platform.",
+      "businessContext": "This supports an interactive drawing canvas where pointer, pen, touch, drag-and-drop, and context-menu interactions drive editing. Failure breaks canvas navigation, drawing input, selection, external-content import, and platform-specific input behavior.",
+      "classes": [],
+      "functions": [
+        "useCanvasEvents (~L14-260): Binds canvas and document pointer interaction handlers to the editor.",
+        "canvasEvents (~L20-213): Constructs memoized handlers for canvas interaction events.",
+        "onPointerDown (~L23-48): Dispatches accepted pointer presses and handles secondary-click behavior.",
+        "onPointerUp (~L50-82): Releases capture and dispatches pointer release or context-menu behavior.",
+        "onPointerEnter (~L84-89): Updates canvas hover state for mouse and pen pointers.",
+        "onPointerLeave (~L91-95): Clears canvas hover state for mouse and pen pointers.",
+        "onTouchStart (~L97-101): Marks touch input handled and prevents browser defaults.",
+        "onTouchEnd (~L103-121): Prevents touch defaults outside editable or link elements.",
+        "onDragOver (~L123-126): Prevents browser defaults during drag-over interaction.",
+        "onDrop (~L128-167): Imports dropped files or URLs at the canvas page location.",
+        "onClick (~L169-172): Stops propagation for canvas clicks.",
+        "onContextMenu (~L174-197): Suppresses native secondary-click menus when panning requires it.",
+        "onPointerMove (~L227-251): Dispatches document-level pointer movement, including coalesced events."
+      ],
+      "keywords": [
+        "tldraw editor",
+        "pointer capture",
+        "right-click panning",
+        "coalesced pointer events",
+        "direct-display pen",
+        "context menu",
+        "external content drop",
+        "canvas hover state",
+        "React event handlers"
+      ],
+      "ontologyConcepts": [
+        "event dispatch",
+        "input modality detection",
+        "pointer capture",
+        "gesture handling",
+        "browser default suppression",
+        "external content ingestion",
+        "state synchronization"
+      ],
+      "businessEntities": ["Editor", "Canvas", "Pointer", "Pen", "Touch", "File", "URL", "Context menu"],
+      "systemCapabilities": [
+        "Handle canvas pointer interactions",
+        "Support pen and touch input",
+        "Enable right-click panning",
+        "Import dropped files and URLs",
+        "Track document-wide pointer movement",
+        "Control browser interaction defaults"
+      ],
+      "configDependencies": [
+        "editor.options.rightClickPanning",
+        "editor.options.experimental__onDropOnCanvas",
+        "tlenv.isIos",
+        "currentTool.useCoalescedEvents"
+      ],
+      "importsInternal": [
+        {
+          "spec": "../globals/environment",
+          "symbols": ["tlenv"],
+          "anchor": { "startLine": 3, "endLine": 3 },
+          "resolvedRelativePath": "packages/editor/src/lib/globals/environment.ts",
+          "resolvedFileId": "packages/editor/src/lib/globals/environment.ts",
+          "resolvedHint": "packages/editor/src/lib/globals/environment.ts"
+        },
+        {
+          "spec": "../utils/dom",
+          "symbols": ["elementShouldCaptureKeys", "preventDefault", "releasePointerCapture", "setPointerCapture"],
+          "anchor": { "startLine": 4, "endLine": 9 },
+          "resolvedRelativePath": "packages/editor/src/lib/utils/dom.ts",
+          "resolvedFileId": "packages/editor/src/lib/utils/dom.ts",
+          "resolvedHint": "packages/editor/src/lib/utils/dom.ts"
+        },
+        {
+          "spec": "../utils/getPointerInfo",
+          "symbols": ["getPointerInfo"],
+          "anchor": { "startLine": 10, "endLine": 10 },
+          "resolvedRelativePath": "packages/editor/src/lib/utils/getPointerInfo.ts",
+          "resolvedFileId": "packages/editor/src/lib/utils/getPointerInfo.ts",
+          "resolvedHint": "packages/editor/src/lib/utils/getPointerInfo.ts"
+        },
+        {
+          "spec": "../utils/pointer",
+          "symbols": ["getPointerEventButton", "isDirectDisplayPen", "isSecondaryClickEvent"],
+          "anchor": { "startLine": 11, "endLine": 11 },
+          "resolvedRelativePath": "packages/editor/src/lib/utils/pointer.ts",
+          "resolvedFileId": "packages/editor/src/lib/utils/pointer.ts",
+          "resolvedHint": "packages/editor/src/lib/utils/pointer.ts"
+        },
+        {
+          "spec": "./useEditor",
+          "symbols": ["useEditor"],
+          "anchor": { "startLine": 12, "endLine": 12 },
+          "resolvedRelativePath": "packages/editor/src/lib/hooks/useEditor.tsx",
+          "resolvedFileId": "packages/editor/src/lib/hooks/useEditor.tsx",
+          "resolvedHint": "packages/editor/src/lib/hooks/useEditor.ts"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "@tldraw/state-react",
+          "symbols": ["useValue"],
+          "package": "@tldraw/state-react",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 1 }
+        },
+        {
+          "spec": "react",
+          "symbols": ["React", "useEffect", "useMemo"],
+          "package": "react",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 2, "endLine": 2 }
+        }
+      ],
+      "sideEffects": {
+        "io": [
+          "Adds a pointermove listener to ownerDocument.body.",
+          "Removes the pointermove listener during effect cleanup.",
+          "Dispatches pointer events into the editor.",
+          "Updates editor instance hover state."
+        ],
+        "network": [],
+        "env": ["Reads the iOS platform flag from tlenv.isIos."],
+        "fs": ["Passes dropped files to editor.putExternalContent for ingestion."],
+        "process": [],
+        "mutationOfArg": [
+          "Marks browser events as handled.",
+          "Prevents default browser behavior and stops propagation for selected events.",
+          "Sets and releases pointer capture on the event target."
+        ]
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "useCanvasEvents",
+          "shape": "export function useCanvasEvents()",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "useEditor",
+          "shape": "useEditor()",
+          "resolvedRelativePath": "packages/editor/src/lib/hooks/useEditor.tsx",
+          "resolvedFileId": "packages/editor/src/lib/hooks/useEditor.tsx"
+        },
+        {
+          "name": "useValue",
+          "shape": "useValue('current tool', () => editor.getCurrentTool(), [editor])",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "editor pointer dispatch",
+          "shape": "editor.dispatch({ type: 'pointer', target: 'canvas', name: 'pointer_down' | 'pointer_up' | 'pointer_move', ... })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "editor external content drop",
+          "shape": "editor.putExternalContent({ type: 'files' | 'url', files | url, point: pagePoint })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "editor canvas drop callback",
+          "shape": "editor.options.experimental__onDropOnCanvas({ point: pagePoint, event: e })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "memoized_canvas_handlers",
+          "intent": "Constructs and returns handlers for canvas interaction events.",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 19, "endLine": 213 }
+        },
+        {
+          "name": "pointer_press_dispatch",
+          "intent": "Accepts supported buttons and dispatches pointer-down editor input.",
+          "structureKind": "branch",
+          "predicate": "button !== 0 && button !== 1 && button !== 2 && button !== 5",
+          "branchOutcomes": ["unsupported button returns", "supported button dispatches pointer_down"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 23, "endLine": 48 }
+        },
+        {
+          "name": "pointer_release_and_context_menu",
+          "intent": "Releases pointer capture and handles static secondary-click context menus.",
+          "structureKind": "branch",
+          "predicate": "rightClickPanning && button === 2 && !wasRightClickPanning",
+          "branchOutcomes": ["dispatches synthetic contextmenu", "does not dispatch contextmenu"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 50, "endLine": 82 }
+        },
+        {
+          "name": "touch_default_suppression",
+          "intent": "Suppresses touch browser behavior outside links and editable targets.",
+          "structureKind": "branch",
+          "predicate": "!(editingShapeId && e.target.closest(`[data-shape-id=\"${editingShapeId}\"]`)) && e.target.tagName !== 'A' && !elementShouldCaptureKeys(e.target, false)",
+          "branchOutcomes": ["prevents default", "allows browser behavior"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 103, "endLine": 121 }
+        },
+        {
+          "name": "drop_content_import",
+          "intent": "Converts dropped files or URLs into editor external content.",
+          "structureKind": "async",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 128, "endLine": 167 }
+        },
+        {
+          "name": "context_menu_policy",
+          "intent": "Filters native secondary-click context menus according to panning mode.",
+          "structureKind": "branch",
+          "predicate": "isSecondaryClickEvent(e)",
+          "branchOutcomes": ["prevents default", "allows context menu"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 174, "endLine": 197 }
+        },
+        {
+          "name": "document_pointer_subscription",
+          "intent": "Tracks document-wide movement and dispatches pointer updates.",
+          "structureKind": "io",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 224, "endLine": 257 }
+        },
+        {
+          "name": "coalesced_pointer_dispatch",
+          "intent": "Dispatches high-fidelity pointer events when platform and tool permit.",
+          "structureKind": "loop",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": "events",
+          "terminationCondition": null,
+          "anchor": { "startLine": 241, "endLine": 250 }
+        }
+      ],
+      "representationFamily": "function-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "function",
+          "name": "useCanvasEvents",
+          "signature": "export function useCanvasEvents()",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 14, "endLine": 14 }
+        },
+        {
+          "kind": "function",
+          "name": "canvasEvents",
+          "signature": "function canvasEvents()",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 20, "endLine": 20 }
+        },
+        {
+          "kind": "function",
+          "name": "onPointerDown",
+          "signature": "function onPointerDown(e: React.PointerEvent)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 23, "endLine": 23 }
+        },
+        {
+          "kind": "function",
+          "name": "onPointerUp",
+          "signature": "function onPointerUp(e: React.PointerEvent)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 50, "endLine": 50 }
+        },
+        {
+          "kind": "function",
+          "name": "onPointerEnter",
+          "signature": "function onPointerEnter(e: React.PointerEvent)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 84, "endLine": 84 }
+        },
+        {
+          "kind": "function",
+          "name": "onPointerLeave",
+          "signature": "function onPointerLeave(e: React.PointerEvent)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 91, "endLine": 91 }
+        },
+        {
+          "kind": "function",
+          "name": "onTouchStart",
+          "signature": "function onTouchStart(e: React.TouchEvent)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 97, "endLine": 97 }
+        },
+        {
+          "kind": "function",
+          "name": "onTouchEnd",
+          "signature": "function onTouchEnd(e: React.TouchEvent)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 103, "endLine": 103 }
+        },
+        {
+          "kind": "function",
+          "name": "onDragOver",
+          "signature": "function onDragOver(e: React.DragEvent<Element>)",
+          "generics": "<Element>",
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 123, "endLine": 123 }
+        },
+        {
+          "kind": "function",
+          "name": "onDrop",
+          "signature": "async function onDrop(e: React.DragEvent<Element>)",
+          "generics": "<Element>",
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 128, "endLine": 128 }
+        },
+        {
+          "kind": "function",
+          "name": "onClick",
+          "signature": "function onClick(e: React.MouseEvent)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 169, "endLine": 169 }
+        },
+        {
+          "kind": "function",
+          "name": "onContextMenu",
+          "signature": "function onContextMenu(e: React.MouseEvent)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 174, "endLine": 174 }
+        },
+        {
+          "kind": "function",
+          "name": "onPointerMove",
+          "signature": "function onPointerMove(e: PointerEvent)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 227, "endLine": 227 }
+        }
+      ],
+      "typeShapes": [],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "Already-handled browser event",
+          "handled": true,
+          "behavior": "Returns immediately without mutating the event or dispatching editor behavior.",
+          "anchor": { "startLine": 24, "endLine": 24 }
+        },
+        {
+          "inputShape": "Unsupported pointer button",
+          "handled": true,
+          "behavior": "Returns without pointer capture or editor dispatch.",
+          "anchor": { "startLine": 36, "endLine": 36 }
+        },
+        {
+          "inputShape": "Right-click with right-click panning disabled",
+          "handled": true,
+          "behavior": "Dispatches right_click and allows the native context menu to proceed.",
+          "anchor": { "startLine": 29, "endLine": 33 }
+        },
+        {
+          "inputShape": "Touch end on editing shape, link, or editable element",
+          "handled": true,
+          "behavior": "Does not prevent the browser default.",
+          "anchor": { "startLine": 109, "endLine": 119 }
+        },
+        {
+          "inputShape": "Drop containing files",
+          "handled": true,
+          "behavior": "Imports all dropped files at the converted page point.",
+          "anchor": { "startLine": 145, "endLine": 154 }
+        },
+        {
+          "inputShape": "Drop containing a URL but no files",
+          "handled": true,
+          "behavior": "Imports the URL at the converted page point.",
+          "anchor": { "startLine": 157, "endLine": 165 }
+        },
+        {
+          "inputShape": "Pointer move with unchanged client coordinates",
+          "handled": true,
+          "behavior": "Skips dispatch for the duplicate position.",
+          "anchor": { "startLine": 231, "endLine": 233 }
+        },
+        {
+          "inputShape": "iOS or tool without coalesced-event support",
+          "handled": true,
+          "behavior": "Dispatches the original pointer event as a single-element sequence.",
+          "anchor": { "startLine": 241, "endLine": 243 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": "==",
+          "left": "button",
+          "right": "2",
+          "inclusive": true,
+          "intent": "Identifies secondary-button pointer presses.",
+          "anchor": { "startLine": 26, "endLine": 26 }
+        },
+        {
+          "operator": "==",
+          "left": "button",
+          "right": "2",
+          "inclusive": true,
+          "intent": "Routes secondary presses through right-click behavior.",
+          "anchor": { "startLine": 29, "endLine": 29 }
+        },
+        {
+          "operator": "!=",
+          "left": "button",
+          "right": "0",
+          "inclusive": false,
+          "intent": "Rejects unsupported button zero mismatch as part of button filtering.",
+          "anchor": { "startLine": 36, "endLine": 36 }
+        },
+        {
+          "operator": "!=",
+          "left": "button",
+          "right": "1",
+          "inclusive": false,
+          "intent": "Rejects unsupported button one mismatch as part of button filtering.",
+          "anchor": { "startLine": 36, "endLine": 36 }
+        },
+        {
+          "operator": "!=",
+          "left": "button",
+          "right": "2",
+          "inclusive": false,
+          "intent": "Rejects unsupported button two mismatch as part of button filtering.",
+          "anchor": { "startLine": 36, "endLine": 36 }
+        },
+        {
+          "operator": "!=",
+          "left": "button",
+          "right": "5",
+          "inclusive": false,
+          "intent": "Rejects unsupported button five mismatch as part of button filtering.",
+          "anchor": { "startLine": 36, "endLine": 36 }
+        },
+        {
+          "operator": "!=",
+          "left": "button",
+          "right": "0",
+          "inclusive": false,
+          "intent": "Rejects unsupported release buttons.",
+          "anchor": { "startLine": 53, "endLine": 53 }
+        },
+        {
+          "operator": "!=",
+          "left": "button",
+          "right": "1",
+          "inclusive": false,
+          "intent": "Rejects unsupported release buttons.",
+          "anchor": { "startLine": 53, "endLine": 53 }
+        },
+        {
+          "operator": "!=",
+          "left": "button",
+          "right": "2",
+          "inclusive": false,
+          "intent": "Rejects unsupported release buttons.",
+          "anchor": { "startLine": 53, "endLine": 53 }
+        },
+        {
+          "operator": "!=",
+          "left": "button",
+          "right": "5",
+          "inclusive": false,
+          "intent": "Rejects unsupported release buttons.",
+          "anchor": { "startLine": 53, "endLine": 53 }
+        },
+        {
+          "operator": "==",
+          "left": "button",
+          "right": "2",
+          "inclusive": true,
+          "intent": "Checks whether a release is a secondary click.",
+          "anchor": { "startLine": 57, "endLine": 57 }
+        },
+        {
+          "operator": "==",
+          "left": "button",
+          "right": "2",
+          "inclusive": true,
+          "intent": "Checks whether to synthesize a context menu after release.",
+          "anchor": { "startLine": 68, "endLine": 68 }
+        },
+        {
+          "operator": "!=",
+          "left": "e.pointerType",
+          "right": "'pen'",
+          "inclusive": false,
+          "intent": "Suppresses hover updates from non-pen pointers while pen mode is active.",
+          "anchor": { "startLine": 86, "endLine": 86 }
+        },
+        {
+          "operator": "==",
+          "left": "e.pointerType",
+          "right": "'mouse'",
+          "inclusive": true,
+          "intent": "Allows mouse input to establish hover state.",
+          "anchor": { "startLine": 87, "endLine": 87 }
+        },
+        {
+          "operator": "==",
+          "left": "e.pointerType",
+          "right": "'pen'",
+          "inclusive": true,
+          "intent": "Allows pen input to establish hover state.",
+          "anchor": { "startLine": 87, "endLine": 87 }
+        },
+        {
+          "operator": "!=",
+          "left": "e.pointerType",
+          "right": "'pen'",
+          "inclusive": false,
+          "intent": "Suppresses hover clearing from non-pen pointers while pen mode is active.",
+          "anchor": { "startLine": 92, "endLine": 92 }
+        },
+        {
+          "operator": "==",
+          "left": "e.pointerType",
+          "right": "'mouse'",
+          "inclusive": true,
+          "intent": "Allows mouse input to clear hover state.",
+          "anchor": { "startLine": 93, "endLine": 93 }
+        },
+        {
+          "operator": "==",
+          "left": "e.pointerType",
+          "right": "'pen'",
+          "inclusive": true,
+          "intent": "Allows pen input to clear hover state.",
+          "anchor": { "startLine": 93, "endLine": 93 }
+        },
+        {
+          "operator": "!=",
+          "left": "e.target.tagName",
+          "right": "'A'",
+          "inclusive": false,
+          "intent": "Excludes anchor elements from touch default suppression.",
+          "anchor": { "startLine": 114, "endLine": 114 }
+        },
+        {
+          "operator": "==",
+          "left": "e.clientX",
+          "right": "lastX",
+          "inclusive": true,
+          "intent": "Detects unchanged horizontal pointer position.",
+          "anchor": { "startLine": 231, "endLine": 231 }
+        },
+        {
+          "operator": "==",
+          "left": "e.clientY",
+          "right": "lastY",
+          "inclusive": true,
+          "intent": "Detects unchanged vertical pointer position.",
+          "anchor": { "startLine": 231, "endLine": 231 }
+        }
+      ],
+      "errorHandling": [],
+      "invariants": [
+        {
+          "kind": "invariant",
+          "description": "Only supported pointer buttons 0, 1, 2, and 5 reach editor pointer dispatch.",
+          "anchor": { "startLine": 36, "endLine": 36 }
+        },
+        {
+          "kind": "ordering",
+          "description": "Pointer capture is established before pointer_down dispatch and released before pointer_up dispatch.",
+          "anchor": { "startLine": 42, "endLine": 65 }
+        },
+        {
+          "kind": "ordering",
+          "description": "The pointer-move listener is removed when the effect dependencies change or the component unmounts.",
+          "anchor": { "startLine": 253, "endLine": 255 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "Dropped files and URLs create a history stopping point before external content insertion.",
+          "anchor": { "startLine": 145, "endLine": 164 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "The hook is called within an editor context that provides useEditor and a valid container document.",
+          "anchor": { "startLine": 15, "endLine": 16 }
+        },
+        {
+          "kind": "caller",
+          "description": "The returned event handlers are attached to the canvas element and receive React synthetic events.",
+          "anchor": { "startLine": 199, "endLine": 210 }
+        },
+        {
+          "kind": "platform",
+          "description": "The container document body supports addEventListener and removeEventListener for pointermove.",
+          "anchor": { "startLine": 253, "endLine": 255 }
+        },
+        {
+          "kind": "schema",
+          "description": "Editor external-content APIs accept file and URL payloads with page coordinates.",
+          "anchor": { "startLine": 148, "endLine": 153 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "What does editor.dispatch do for each pointer event and how does it mutate editor state?",
+          "affects": "side_effects, invariants, and event behavior",
+          "anchor": { "startLine": 44, "endLine": 47 },
+          "resolution": null
+        },
+        {
+          "question": "What browser and editor guarantees exist for PointerEvent construction and synthetic contextmenu dispatch?",
+          "affects": "platform compatibility and context-menu behavior",
+          "anchor": { "startLine": 69, "endLine": 79 },
+          "resolution": null
+        },
+        {
+          "question": "What does a truthy experimental__onDropOnCanvas return value mean for ownership and content handling?",
+          "affects": "drop orchestration and external-content behavior",
+          "anchor": { "startLine": 136, "endLine": 143 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "mixed",
+        "reentrant": true,
+        "ordering": "deterministic",
+        "notes": "Canvas handlers are synchronous except for asynchronous drop ingestion; document pointer events are processed in browser event order."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "dispatches-right-click-when-panning-disabled",
+          "scenario": "A secondary pointer press occurs while right-click panning is disabled.",
+          "given": ["editor.options.rightClickPanning === false", "getPointerEventButton(e) === 2"],
+          "when": "handlers.onPointerDown(e)",
+          "then": "editor.dispatch is called with { type: 'pointer', target: 'canvas', name: 'right_click', ...getPointerInfo(editor, e) }",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Preserves native context-menu positioning behavior for disabled right-click panning."
+        },
+        {
+          "testId": "dispatches-pointer-down-for-supported-buttons",
+          "scenario": "A supported pointer button presses the canvas.",
+          "given": ["getPointerEventButton(e) is 0, 1, 2, or 5", "editor.wasEventAlreadyHandled(e) === false"],
+          "when": "handlers.onPointerDown(e)",
+          "then": "setPointerCapture(e.currentTarget, e) is called and editor.dispatch emits a canvas pointer_down event",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins the accepted button set and pointer capture contract."
+        },
+        {
+          "testId": "dispatches-pointer-up-and-releases-capture",
+          "scenario": "A supported pointer button is released after pointer capture.",
+          "given": ["editor.wasEventAlreadyHandled(e) === false", "getPointerEventButton(e) is 0, 1, 2, or 5"],
+          "when": "handlers.onPointerUp(e)",
+          "then": "releasePointerCapture(e.currentTarget, e) is called and editor.dispatch emits a canvas pointer_up event with button",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Ensures release handling always emits the normalized pointer-up contract."
+        },
+        {
+          "testId": "updates-hover-state-for-mouse-and-pen",
+          "scenario": "A mouse or pen pointer enters and leaves the canvas.",
+          "given": ["editor.getInstanceState().isPenMode === false"],
+          "when": "handlers.onPointerEnter(e); handlers.onPointerLeave(e)",
+          "then": "editor.updateInstanceState is called with { isHoveringCanvas: true } on enter and { isHoveringCanvas: false } on leave",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins canvas hover state semantics for hover-capable pointer types."
+        },
+        {
+          "testId": "ignores-non-pen-hover-in-pen-mode",
+          "scenario": "A non-pen pointer enters or leaves while pen mode is active.",
+          "given": ["editor.getInstanceState().isPenMode === true", "e.pointerType !== 'pen'"],
+          "when": "handlers.onPointerEnter(e)",
+          "then": "editor.updateInstanceState is not called",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Prevents mouse or touch movement from changing hover state during pen mode."
+        },
+        {
+          "testId": "prevents-touch-defaults",
+          "scenario": "A touch starts on the canvas or ends outside editable and link elements.",
+          "given": ["editor.wasEventAlreadyHandled(e) === false"],
+          "when": "handlers.onTouchStart(e); handlers.onTouchEnd(e)",
+          "then": "the event is marked handled and preventDefault(e) is called when the touch target is not an editing shape, link, or editable element",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Guards touch gesture handling without blocking native interaction inside editable content."
+        },
+        {
+          "testId": "drops-files-as-external-content",
+          "scenario": "A drop contains one or more files and no custom canvas drop handler consumes it.",
+          "given": [
+            "editor.options.experimental__onDropOnCanvas is undefined or returns false",
+            "e.dataTransfer.files.length > 0"
+          ],
+          "when": "await handlers.onDrop(e)",
+          "then": "editor.markHistoryStoppingPoint('drop') is called and editor.putExternalContent receives { type: 'files', files, point: pagePoint }",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Pins file-drop conversion, history boundaries, and page-coordinate placement."
+        },
+        {
+          "testId": "drops-url-as-external-content",
+          "scenario": "A drop contains a URL and no files or custom canvas drop handler consumes it.",
+          "given": [
+            "editor.options.experimental__onDropOnCanvas is undefined or returns false",
+            "e.dataTransfer.getData('url') returns a non-empty URL"
+          ],
+          "when": "await handlers.onDrop(e)",
+          "then": "editor.markHistoryStoppingPoint('drop') is called and editor.putExternalContent receives { type: 'url', url, point: pagePoint }",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Preserves URL-drop ingestion and placement behavior."
+        },
+        {
+          "testId": "custom-drop-handler-short-circuits",
+          "scenario": "The configured custom canvas drop callback handles a drop.",
+          "given": ["editor.options.experimental__onDropOnCanvas returns true"],
+          "when": "await handlers.onDrop(e)",
+          "then": "editor.putExternalContent is not called",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Ensures application-defined drop handling takes precedence over built-in ingestion."
+        },
+        {
+          "testId": "dispatches-coalesced-pointer-moves",
+          "scenario": "A pointer move has changed coordinates and coalesced events are available for a tool that uses them.",
+          "given": [
+            "tlenv.isIos === false",
+            "currentTool.useCoalescedEvents === true",
+            "e.getCoalescedEvents exists",
+            "e.clientX !== lastX || e.clientY !== lastY"
+          ],
+          "when": "onPointerMove(e)",
+          "then": "editor.dispatch emits one canvas pointer_move event for each event returned by e.getCoalescedEvents()",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Protects high-fidelity input behavior while retaining the document-level listener."
+        },
+        {
+          "testId": "skips-duplicate-pointer-moves",
+          "scenario": "A pointer move repeats the previous client coordinates.",
+          "given": ["e.clientX === lastX", "e.clientY === lastY"],
+          "when": "onPointerMove(e)",
+          "then": "editor.dispatch is not called for the repeated move",
+          "targets": [],
+          "oracleKind": "invariant-check",
+          "rationale": "Prevents redundant pointer-move dispatches."
+        },
+        {
+          "testId": "suppresses-trusted-secondary-contextmenu-when-panning-enabled",
+          "scenario": "A trusted context-menu event follows a secondary click while right-click panning is enabled.",
+          "given": [
+            "editor.options.rightClickPanning === true",
+            "e.nativeEvent.isTrusted === true",
+            "isSecondaryClickEvent(e) === true"
+          ],
+          "when": "handlers.onContextMenu(e)",
+          "then": "preventDefault(e) is called",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Prevents duplicate native menus while allowing synthetic and non-secondary context menus through."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "import declarations",
+        "exported useCanvasEvents hook",
+        "memoized canvas event-handler construction",
+        "document-level pointermove effect",
+        "hook return"
+      ],
+      "moduleLevelCode": "import { useValue } from '@tldraw/state-react'\nimport React, { useEffect, useMemo } from 'react'\nimport { tlenv } from '../globals/environment'\nimport {\n\telementShouldCaptureKeys,\n\tpreventDefault,\n\treleasePointerCapture,\n\tsetPointerCapture,\n} from '../utils/dom'\nimport { getPointerInfo } from '../utils/getPointerInfo'\nimport { getPointerEventButton, isDirectDisplayPen, isSecondaryClickEvent } from '../utils/pointer'\nimport { useEditor } from './useEditor'",
+      "exports": [{ "name": "useCanvasEvents", "kind": "own", "fromSpec": null, "exportedAs": null }],
+      "importSymbolMap": [
+        { "symbol": "useValue", "module": "@tldraw/state-react", "alias": null, "kind": "external" },
+        { "symbol": "React", "module": "react", "alias": null, "kind": "external" },
+        { "symbol": "useEffect", "module": "react", "alias": null, "kind": "external" },
+        { "symbol": "useMemo", "module": "react", "alias": null, "kind": "external" },
+        { "symbol": "tlenv", "module": "../globals/environment", "alias": null, "kind": "internal" },
+        { "symbol": "elementShouldCaptureKeys", "module": "../utils/dom", "alias": null, "kind": "internal" },
+        { "symbol": "preventDefault", "module": "../utils/dom", "alias": null, "kind": "internal" },
+        { "symbol": "releasePointerCapture", "module": "../utils/dom", "alias": null, "kind": "internal" },
+        { "symbol": "setPointerCapture", "module": "../utils/dom", "alias": null, "kind": "internal" },
+        { "symbol": "getPointerInfo", "module": "../utils/getPointerInfo", "alias": null, "kind": "internal" },
+        { "symbol": "getPointerEventButton", "module": "../utils/pointer", "alias": null, "kind": "internal" },
+        { "symbol": "isDirectDisplayPen", "module": "../utils/pointer", "alias": null, "kind": "internal" },
+        { "symbol": "isSecondaryClickEvent", "module": "../utils/pointer", "alias": null, "kind": "internal" },
+        { "symbol": "useEditor", "module": "./useEditor", "alias": null, "kind": "internal" }
+      ],
+      "fileConstants": [],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents#function:useCanvasEvents",
+        "unitKind": "function",
+        "name": "useCanvasEvents",
+        "qualifiedName": "useCanvasEvents",
+        "parentUnitId": null,
+        "startLine": 14,
+        "endLine": 260,
+        "isBehavioral": true,
+        "source": "export function useCanvasEvents() {\n\tconst editor = useEditor()\n\tconst ownerDocument = editor.getContainerDocument()\n\tconst currentTool = useValue('current tool', () => editor.getCurrentTool(), [editor])\n\n\tconst events = useMemo(\n\t\tfunction canvasEvents() {\n\t\t\tlet isSecondaryClickPointerDown = false\n\n\t\t\tfunction onPointerDown(e: React.PointerEvent) {\n\t\t\t\tif (editor.wasEventAlreadyHandled(e)) return\n\t\t\t\tconst button = getPointerEventButton(e)\n\t\t\t\tisSecondaryClickPointerDown = button === 2\n\n\t\t\t\t// With right-click panning disabled, fire right_click on press and let the\n\t\t\t\t// native contextmenu through so the menu opens at the pointer-down location.\n\t\t\t\tif (button === 2 && !editor.options.rightClickPanning) {\n\t\t\t\t\teditor.dispatch({\n\t\t\t\t\t\ttype: 'pointer',\n\t\t\t\t\t\ttarget: 'canvas',\n\t\t\t\t\t\tname: 'right_click',\n\t\t\t\t\t\t...getPointerInfo(editor, e),\n\t\t\t\t\t})\n\t\t\t\t\treturn\n\t\t\t\t}\n\n\t\t\t\tif (button !== 0 && button !== 1 && button !== 2 && button !== 5) return\n\n\t\t\t\t// Detect direct-display pen input (Apple Pencil, Surface Pen on a touchscreen) so we\n\t\t\t\t// only auto-enable pen mode for it, not for an indirect desktop tablet stylus.\n\t\t\t\tconst isPenDirect = isDirectDisplayPen(e)\n\n\t\t\t\tsetPointerCapture(e.currentTarget, e)\n\n\t\t\t\teditor.dispatch({\n\t\t\t\t\ttype: 'pointer',\n\t\t\t\t\ttarget: 'canvas',\n\t\t\t\t\tname: 'pointer_down',\n\t\t\t\t\t...getPointerInfo(editor, e),\n\t\t\t\t\tisPenDirect,\n\t\t\t\t})\n\t\t\t}\n\n\t\t\tfunction onPointerUp(e: React.PointerEvent) {\n\t\t\t\tif (editor.wasEventAlreadyHandled(e)) return\n\t\t\t\tconst button = isSecondaryClickPointerDown ? 2 : getPointerEventButton(e)\n\t\t\t\tif (button !== 0 && button !== 1 && button !== 2 && button !== 5) return\n\n\t\t\t\tconst rightClickPanning = editor.options.rightClickPanning\n\t\t\t\t// Check before dispatch (which resets isPanning)\n\t\t\t\tconst wasRightClickPanning =\n\t\t\t\t\trightClickPanning && button === 2 && editor.inputs.getIsPanning()\n\n\t\t\t\treleasePointerCapture(e.currentTarget, e)\n\n\t\t\t\teditor.dispatch({\n\t\t\t\t\ttype: 'pointer',\n\t\t\t\t\ttarget: 'canvas',\n\t\t\t\t\tname: 'pointer_up',\n\t\t\t\t\t...getPointerInfo(editor, e),\n\t\t\t\t\tbutton,\n\t\t\t\t})\n\n\t\t\t\t// Static right-click: fire contextmenu at the pointer-up location\n\t\t\t\tif (rightClickPanning && button === 2 && !wasRightClickPanning) {\n\t\t\t\t\tconst contextMenuEvent = new PointerEvent('contextmenu', {\n\t\t\t\t\t\tbubbles: true,\n\t\t\t\t\t\tclientX: e.clientX,\n\t\t\t\t\t\tclientY: e.clientY,\n\t\t\t\t\t\tbutton: 2,\n\t\t\t\t\t\tbuttons: 0,\n\t\t\t\t\t\tpointerId: e.pointerId,\n\t\t\t\t\t\tpointerType: e.pointerType,\n\t\t\t\t\t\tisPrimary: e.isPrimary,\n\t\t\t\t\t})\n\t\t\t\t\te.currentTarget.dispatchEvent(contextMenuEvent)\n\t\t\t\t}\n\t\t\t\tisSecondaryClickPointerDown = false\n\t\t\t}\n\n\t\t\tfunction onPointerEnter(e: React.PointerEvent) {\n\t\t\t\tif (editor.wasEventAlreadyHandled(e)) return\n\t\t\t\tif (editor.getInstanceState().isPenMode && e.pointerType !== 'pen') return\n\t\t\t\tconst canHover = e.pointerType === 'mouse' || e.pointerType === 'pen'\n\t\t\t\teditor.updateInstanceState({ isHoveringCanvas: canHover ? true : null })\n\t\t\t}\n\n\t\t\tfunction onPointerLeave(e: React.PointerEvent) {\n\t\t\t\tif (editor.wasEventAlreadyHandled(e)) return\n\t\t\t\tif (editor.getInstanceState().isPenMode && e.pointerType !== 'pen') return\n\t\t\t\tconst canHover = e.pointerType === 'mouse' || e.pointerType === 'pen'\n\t\t\t\teditor.updateInstanceState({ isHoveringCanvas: canHover ? false : null })\n\t\t\t}\n\n\t\t\tfunction onTouchStart(e: React.TouchEvent) {\n\t\t\t\tif (editor.wasEventAlreadyHandled(e)) return\n\t\t\t\teditor.markEventAsHandled(e)\n\t\t\t\tpreventDefault(e)\n\t\t\t}\n\n\t\t\tfunction onTouchEnd(e: React.TouchEvent) {\n\t\t\t\tif (editor.wasEventAlreadyHandled(e)) return\n\t\t\t\teditor.markEventAsHandled(e)\n\t\t\t\tif (!(e.target instanceof editor.getContainerWindow().HTMLElement)) return\n\n\t\t\t\tconst editingShapeId = editor.getEditingShapeId()\n\t\t\t\tif (\n\t\t\t\t\t// if the target is not inside the editing shape\n\t\t\t\t\t!(editingShapeId && e.target.closest(`[data-shape-id=\"${editingShapeId}\"]`)) &&\n\t\t\t\t\t// and the target is not an clickable element\n\t\t\t\t\te.target.tagName !== 'A' &&\n\t\t\t\t\t// and the target is not an editable element\n\t\t\t\t\t!elementShouldCaptureKeys(e.target, false)\n\t\t\t\t) {\n\t\t\t\t\tpreventDefault(e)\n\t\t\t\t}\n\t\t\t}\n\n\t\t\tfunction onDragOver(e: React.DragEvent<Element>) {\n\t\t\t\tif (editor.wasEventAlreadyHandled(e)) return\n\t\t\t\tpreventDefault(e)\n\t\t\t}\n\n\t\t\tasync function onDrop(e: React.DragEvent<Element>) {\n\t\t\t\tif (editor.wasEventAlreadyHandled(e)) return\n\t\t\t\tpreventDefault(e)\n\t\t\t\te.stopPropagation()\n\n\t\t\t\tconst pagePoint = editor.screenToPage({ x: e.clientX, y: e.clientY })\n\n\t\t\t\t// Call the custom onDropOnCanvas callback if provided\n\t\t\t\tif (editor.options.experimental__onDropOnCanvas) {\n\t\t\t\t\tconst handled = editor.options.experimental__onDropOnCanvas({\n\t\t\t\t\t\tpoint: pagePoint,\n\t\t\t\t\t\tevent: e,\n\t\t\t\t\t})\n\t\t\t\t\tif (handled) return\n\t\t\t\t}\n\n\t\t\t\tif (e.dataTransfer?.files?.length) {\n\t\t\t\t\tconst files = Array.from(e.dataTransfer.files)\n\n\t\t\t\t\teditor.markHistoryStoppingPoint('drop')\n\t\t\t\t\tawait editor.putExternalContent({\n\t\t\t\t\t\ttype: 'files',\n\t\t\t\t\t\tfiles,\n\t\t\t\t\t\tpoint: pagePoint,\n\t\t\t\t\t})\n\t\t\t\t\treturn\n\t\t\t\t}\n\n\t\t\t\tconst url = e.dataTransfer.getData('url')\n\t\t\t\tif (url) {\n\t\t\t\t\teditor.markHistoryStoppingPoint('drop')\n\t\t\t\t\tawait editor.putExternalContent({\n\t\t\t\t\t\ttype: 'url',\n\t\t\t\t\t\turl,\n\t\t\t\t\t\tpoint: pagePoint,\n\t\t\t\t\t})\n\t\t\t\t\treturn\n\t\t\t\t}\n\t\t\t}\n\n\t\t\tfunction onClick(e: React.MouseEvent) {\n\t\t\t\tif (editor.wasEventAlreadyHandled(e)) return\n\t\t\t\te.stopPropagation()\n\t\t\t}\n\n\t\t\tfunction onContextMenu(e: React.MouseEvent) {\n\t\t\t\t// With right-click panning disabled, let the native contextmenu through so the\n\t\t\t\t// menu opens on press.\n\t\t\t\tif (!editor.options.rightClickPanning) return\n\t\t\t\t// Synthetic events — our own dispatch from onPointerUp, or tests using\n\t\t\t\t// fireEvent.contextMenu — pass through so Radix can open the menu.\n\t\t\t\tif (!e.nativeEvent.isTrusted) return\n\t\t\t\t// Only suppress the native browser contextmenu when it follows a\n\t\t\t\t// secondary click. For those, our pointer handling has already\n\t\t\t\t// decided what to do (either we'll dispatch a synthetic contextmenu on\n\t\t\t\t// pointerup to open the menu at the release position, or we panned and\n\t\t\t\t// don't want a menu at all).\n\t\t\t\t//\n\t\t\t\t// Other contextmenu sources must reach Radix so the menu opens:\n\t\t\t\t// - long-press on touch devices (button=0, pointerType=touch)\n\t\t\t\tif (!isSecondaryClickEvent(e)) return\n\t\t\t\tpreventDefault(e)\n\t\t\t}\n\n\t\t\treturn {\n\t\t\t\tonPointerDown,\n\t\t\t\tonPointerUp,\n\t\t\t\tonPointerEnter,\n\t\t\t\tonPointerLeave,\n\t\t\t\tonDragOver,\n\t\t\t\tonDrop,\n\t\t\t\tonTouchStart,\n\t\t\t\tonTouchEnd,\n\t\t\t\tonClick,\n\t\t\t\tonContextMenu,\n\t\t\t}\n\t\t},\n\t\t[editor]\n\t)\n\n\t// onPointerMove is special: where we're only interested in the other events when they're\n\t// happening _on_ the canvas (as opposed to outside of it, or on UI floating over it), we want\n\t// the pointer position to be up to date regardless of whether it's over the tldraw canvas or\n\t// not. So instead of returning a listener to be attached to the canvas, we directly attach a\n\t// listener to the whole document instead.\n\tuseEffect(() => {\n\t\tlet lastX: number, lastY: number\n\n\t\tfunction onPointerMove(e: PointerEvent) {\n\t\t\tif (editor.wasEventAlreadyHandled(e)) return\n\t\t\teditor.markEventAsHandled(e)\n\n\t\t\tif (e.clientX === lastX && e.clientY === lastY) return\n\t\t\tlastX = e.clientX\n\t\t\tlastY = e.clientY\n\n\t\t\t// For tools that benefit from a higher fidelity of events,\n\t\t\t// we dispatch the coalesced events.\n\t\t\t// N.B. Sometimes getCoalescedEvents isn't present on iOS, ugh.\n\t\t\t// Specifically, in local mode (non-https) mode, iOS does not `useCoalescedEvents`\n\t\t\t// so it appears like the ink is working locally, when really it's just that `useCoalescedEvents`\n\t\t\t// is disabled. The intent here is to have `useCoalescedEvents` disabled for iOS.\n\t\t\tconst events =\n\t\t\t\t!tlenv.isIos && currentTool.useCoalescedEvents && e.getCoalescedEvents\n\t\t\t\t\t? e.getCoalescedEvents()\n\t\t\t\t\t: [e]\n\n\t\t\tfor (const singleEvent of events) {\n\t\t\t\teditor.dispatch({\n\t\t\t\t\ttype: 'pointer',\n\t\t\t\t\ttarget: 'canvas',\n\t\t\t\t\tname: 'pointer_move',\n\t\t\t\t\t...getPointerInfo(editor, singleEvent),\n\t\t\t\t})\n\t\t\t}\n\t\t}\n\n\t\townerDocument.body.addEventListener('pointermove', onPointerMove)\n\t\treturn () => {\n\t\t\townerDocument.body.removeEventListener('pointermove', onPointerMove)\n\t\t}\n\t}, [editor, currentTool, ownerDocument])\n\n\treturn events",
+        "detail": {
+          "unitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents#function:useCanvasEvents",
+          "fileId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents",
+          "unitKind": "function",
+          "name": "useCanvasEvents",
+          "qualifiedName": "useCanvasEvents",
+          "parentUnitId": null,
+          "startLine": 14,
+          "endLine": 260,
+          "signature": "export function useCanvasEvents()",
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The hook is invoked within an editor context providing editor state and event APIs.",
+            "The editor exposes a container document and current tool configuration.",
+            "Returned handlers receive the corresponding React event types."
+          ],
+          "postconditions": [
+            "Returns a stable memoized collection of canvas event handlers.",
+            "Installs a pointermove listener on the container document body while mounted.",
+            "Removes the pointermove listener from the container document body when the effect is cleaned up."
+          ],
+          "invariants": [
+            "Events already marked as handled by the editor are ignored.",
+            "Pointer movement at an unchanged clientX/clientY pair is not dispatched.",
+            "Pointer movement is dispatched with target canvas and name pointer_move.",
+            "Canvas event handlers use the editor associated with the current hook invocation."
+          ],
+          "edgeCases": [
+            "Secondary pointer down with rightClickPanning disabled dispatches right_click and does not dispatch pointer_down.",
+            "Pointer buttons other than 0, 1, 2, or 5 are ignored for pointer down and pointer up.",
+            "A secondary pointer up with rightClickPanning enabled dispatches a synthetic contextmenu event unless the editor was right-click panning.",
+            "Pointer enter and leave ignore non-pen pointers while pen mode is active; otherwise they set isHoveringCanvas to true or false for mouse and pen pointers, and null for other pointer types.",
+            "Touch start marks the event handled and prevents its default action.",
+            "Touch end prevents the default action unless the target is inside the editing shape, is an anchor element, or is an editable/key-capturing element.",
+            "Drag over prevents the default action.",
+            "A drop invokes experimental__onDropOnCanvas when provided; a truthy callback result stops further drop processing.",
+            "A dropped non-empty file list is passed to putExternalContent as files and creates a drop history stopping point.",
+            "A dropped URL is passed to putExternalContent as a URL and creates a drop history stopping point.",
+            "A click stops propagation unless the event was already handled.",
+            "Trusted secondary-click contextmenu events are prevented when right-click panning is enabled; untrusted events and non-secondary-click contextmenu events are allowed through.",
+            "When coalesced events are enabled for the current tool and supported by the browser, pointer movement dispatches each coalesced event; otherwise it dispatches the original event."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Unsupported pointer buttons and already-handled events are ignored; unsupported drop payloads produce no editor content import.",
+            "returnsOnError": null
+          },
+          "stateMutations": [
+            "Marks handled touch and document pointermove events through the editor.",
+            "Updates editor instance state isHoveringCanvas on pointer enter and leave.",
+            "Updates the internal secondary-click pointer-down flag.",
+            "Captures and releases pointer capture for accepted pointer down and pointer up events.",
+            "Creates editor history stopping points for file and URL drops.",
+            "Dispatches pointer, right_click, and pointer_move events through the editor.",
+            "Attaches and detaches a pointermove listener on the container document body."
+          ],
+          "eventsEmitted": [
+            "Editor pointer event with name right_click.",
+            "Editor pointer event with name pointer_down.",
+            "Editor pointer event with name pointer_up.",
+            "Editor pointer event with name pointer_move.",
+            "Synthetic contextmenu DOM event for qualifying static secondary clicks."
+          ],
+          "complexity": null,
+          "calls": [
+            { "name": "useEditor", "source": "editor context hook", "kind": "internal" },
+            { "name": "editor.getContainerDocument", "source": "editor", "kind": "internal" },
+            { "name": "editor.getCurrentTool", "source": "editor", "kind": "internal" },
+            { "name": "editor.wasEventAlreadyHandled", "source": "editor", "kind": "internal" },
+            { "name": "editor.dispatch", "source": "editor", "kind": "internal" },
+            { "name": "editor.getInstanceState", "source": "editor", "kind": "internal" },
+            { "name": "editor.updateInstanceState", "source": "editor", "kind": "internal" },
+            { "name": "editor.markEventAsHandled", "source": "editor", "kind": "internal" },
+            { "name": "editor.getContainerWindow", "source": "editor", "kind": "internal" },
+            { "name": "editor.getEditingShapeId", "source": "editor", "kind": "internal" },
+            { "name": "editor.screenToPage", "source": "editor", "kind": "internal" },
+            { "name": "editor.markHistoryStoppingPoint", "source": "editor", "kind": "internal" },
+            { "name": "editor.putExternalContent", "source": "editor", "kind": "internal" },
+            { "name": "editor.inputs.getIsPanning", "source": "editor", "kind": "internal" },
+            { "name": "editor.options.experimental__onDropOnCanvas", "source": "editor options", "kind": "internal" },
+            { "name": "getPointerEventButton", "source": null, "kind": "external" },
+            { "name": "getPointerInfo", "source": null, "kind": "external" },
+            { "name": "isDirectDisplayPen", "source": null, "kind": "external" },
+            { "name": "setPointerCapture", "source": null, "kind": "external" },
+            { "name": "releasePointerCapture", "source": null, "kind": "external" },
+            { "name": "preventDefault", "source": null, "kind": "external" },
+            { "name": "elementShouldCaptureKeys", "source": null, "kind": "external" },
+            { "name": "isSecondaryClickEvent", "source": null, "kind": "external" },
+            { "name": "useValue", "source": null, "kind": "external" },
+            { "name": "useMemo", "source": "React", "kind": "external" },
+            { "name": "useEffect", "source": "React", "kind": "external" }
+          ],
+          "symbolReferences": [
+            "React.PointerEvent",
+            "React.TouchEvent",
+            "React.DragEvent",
+            "React.MouseEvent",
+            "PointerEvent",
+            "tlenv.isIos",
+            "editor.options.rightClickPanning",
+            "editor.options.experimental__onDropOnCanvas",
+            "editor.inputs.getIsPanning",
+            "currentTool.useCoalescedEvents"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Returns an object containing onPointerDown, onPointerUp, onPointerEnter, onPointerLeave, onDragOver, onDrop, onTouchStart, onTouchEnd, onClick, and onContextMenu handlers. The hook also registers a native pointermove listener on the editor container document body's pointermove event.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Provides canvas event handlers for pointer, touch, drag-and-drop, click, and context-menu interactions. It also tracks pointer movement on the editor container document and dispatches normalized pointer events to the editor.",
+          "specLiterals": [
+            {
+              "kind": "enum-value",
+              "value": "right_click",
+              "role": "Editor dispatch event name for a secondary click when right-click panning is disabled."
+            },
+            {
+              "kind": "enum-value",
+              "value": "pointer_down",
+              "role": "Editor dispatch event name for accepted pointer presses."
+            },
+            {
+              "kind": "enum-value",
+              "value": "pointer_up",
+              "role": "Editor dispatch event name for accepted pointer releases."
+            },
+            {
+              "kind": "enum-value",
+              "value": "pointer_move",
+              "role": "Editor dispatch event name for pointer movement."
+            },
+            { "kind": "enum-value", "value": "canvas", "role": "Dispatch target for all normalized pointer events." },
+            { "kind": "enum-value", "value": "files", "role": "putExternalContent input type for dropped files." },
+            { "kind": "enum-value", "value": "url", "role": "putExternalContent input type for dropped URLs." },
+            {
+              "kind": "enum-value",
+              "value": "drop",
+              "role": "History stopping-point label for external content drops."
+            },
+            {
+              "kind": "format-string",
+              "value": "[data-shape-id=\"${editingShapeId}\"]",
+              "role": "Selector used to determine whether a touch target is inside the editing shape."
+            },
+            {
+              "kind": "magic-number",
+              "value": "0",
+              "role": "Primary pointer button and synthetic contextmenu buttons value."
+            },
+            { "kind": "magic-number", "value": "1", "role": "Accepted auxiliary pointer button." },
+            { "kind": "magic-number", "value": "2", "role": "Secondary pointer button." },
+            { "kind": "magic-number", "value": "5", "role": "Accepted additional pointer button." }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "onPointerDown is invoked",
+              "then": "the editor receives a canvas right_click dispatch with pointer information, and no pointer_down dispatch or pointer capture is performed.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "onDrop is invoked",
+              "then": "the event is prevented and stopped, a drop history stopping point is created, and putExternalContent is awaited with type files, the file list, and the page point obtained from screenToPage({ x, y }).",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "the document body receives a pointermove at coordinates different from the previous movement",
+              "then": "each coalesced event is dispatched as a canvas pointer_move event, and the source pointermove event is marked handled.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "f2e98739464866608c1e8542c524b41559b2dd9fb82968577b71b16f4a2bbeb2"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents#function:useCanvasEvents.canvasEvents",
+        "unitKind": "function",
+        "name": "canvasEvents",
+        "qualifiedName": "useCanvasEvents.canvasEvents",
+        "parentUnitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents#function:useCanvasEvents",
+        "startLine": 20,
+        "endLine": 213,
+        "isBehavioral": true,
+        "source": "\t\tfunction canvasEvents() {\n\t\t\tlet isSecondaryClickPointerDown = false\n\n\t\t\tfunction onPointerDown(e: React.PointerEvent) {\n\t\t\t\tif (editor.wasEventAlreadyHandled(e)) return\n\t\t\t\tconst button = getPointerEventButton(e)\n\t\t\t\tisSecondaryClickPointerDown = button === 2\n\n\t\t\t\t// With right-click panning disabled, fire right_click on press and let the\n\t\t\t\t// native contextmenu through so the menu opens at the pointer-down location.\n\t\t\t\tif (button === 2 && !editor.options.rightClickPanning) {\n\t\t\t\t\teditor.dispatch({\n\t\t\t\t\t\ttype: 'pointer',\n\t\t\t\t\t\ttarget: 'canvas',\n\t\t\t\t\t\tname: 'right_click',\n\t\t\t\t\t\t...getPointerInfo(editor, e),\n\t\t\t\t\t})\n\t\t\t\t\treturn\n\t\t\t\t}\n\n\t\t\t\tif (button !== 0 && button !== 1 && button !== 2 && button !== 5) return\n\n\t\t\t\t// Detect direct-display pen input (Apple Pencil, Surface Pen on a touchscreen) so we\n\t\t\t\t// only auto-enable pen mode for it, not for an indirect desktop tablet stylus.\n\t\t\t\tconst isPenDirect = isDirectDisplayPen(e)\n\n\t\t\t\tsetPointerCapture(e.currentTarget, e)\n\n\t\t\t\teditor.dispatch({\n\t\t\t\t\ttype: 'pointer',\n\t\t\t\t\ttarget: 'canvas',\n\t\t\t\t\tname: 'pointer_down',\n\t\t\t\t\t...getPointerInfo(editor, e),\n\t\t\t\t\tisPenDirect,\n\t\t\t\t})\n\t\t\t}\n\n\t\t\tfunction onPointerUp(e: React.PointerEvent) {\n\t\t\t\tif (editor.wasEventAlreadyHandled(e)) return\n\t\t\t\tconst button = isSecondaryClickPointerDown ? 2 : getPointerEventButton(e)\n\t\t\t\tif (button !== 0 && button !== 1 && button !== 2 && button !== 5) return\n\n\t\t\t\tconst rightClickPanning = editor.options.rightClickPanning\n\t\t\t\t// Check before dispatch (which resets isPanning)\n\t\t\t\tconst wasRightClickPanning =\n\t\t\t\t\trightClickPanning && button === 2 && editor.inputs.getIsPanning()\n\n\t\t\t\treleasePointerCapture(e.currentTarget, e)\n\n\t\t\t\teditor.dispatch({\n\t\t\t\t\ttype: 'pointer',\n\t\t\t\t\ttarget: 'canvas',\n\t\t\t\t\tname: 'pointer_up',\n\t\t\t\t\t...getPointerInfo(editor, e),\n\t\t\t\t\tbutton,\n\t\t\t\t})\n\n\t\t\t\t// Static right-click: fire contextmenu at the pointer-up location\n\t\t\t\tif (rightClickPanning && button === 2 && !wasRightClickPanning) {\n\t\t\t\t\tconst contextMenuEvent = new PointerEvent('contextmenu', {\n\t\t\t\t\t\tbubbles: true,\n\t\t\t\t\t\tclientX: e.clientX,\n\t\t\t\t\t\tclientY: e.clientY,\n\t\t\t\t\t\tbutton: 2,\n\t\t\t\t\t\tbuttons: 0,\n\t\t\t\t\t\tpointerId: e.pointerId,\n\t\t\t\t\t\tpointerType: e.pointerType,\n\t\t\t\t\t\tisPrimary: e.isPrimary,\n\t\t\t\t\t})\n\t\t\t\t\te.currentTarget.dispatchEvent(contextMenuEvent)\n\t\t\t\t}\n\t\t\t\tisSecondaryClickPointerDown = false\n\t\t\t}\n\n\t\t\tfunction onPointerEnter(e: React.PointerEvent) {\n\t\t\t\tif (editor.wasEventAlreadyHandled(e)) return\n\t\t\t\tif (editor.getInstanceState().isPenMode && e.pointerType !== 'pen') return\n\t\t\t\tconst canHover = e.pointerType === 'mouse' || e.pointerType === 'pen'\n\t\t\t\teditor.updateInstanceState({ isHoveringCanvas: canHover ? true : null })\n\t\t\t}\n\n\t\t\tfunction onPointerLeave(e: React.PointerEvent) {\n\t\t\t\tif (editor.wasEventAlreadyHandled(e)) return\n\t\t\t\tif (editor.getInstanceState().isPenMode && e.pointerType !== 'pen') return\n\t\t\t\tconst canHover = e.pointerType === 'mouse' || e.pointerType === 'pen'\n\t\t\t\teditor.updateInstanceState({ isHoveringCanvas: canHover ? false : null })\n\t\t\t}\n\n\t\t\tfunction onTouchStart(e: React.TouchEvent) {\n\t\t\t\tif (editor.wasEventAlreadyHandled(e)) return\n\t\t\t\teditor.markEventAsHandled(e)\n\t\t\t\tpreventDefault(e)\n\t\t\t}\n\n\t\t\tfunction onTouchEnd(e: React.TouchEvent) {\n\t\t\t\tif (editor.wasEventAlreadyHandled(e)) return\n\t\t\t\teditor.markEventAsHandled(e)\n\t\t\t\tif (!(e.target instanceof editor.getContainerWindow().HTMLElement)) return\n\n\t\t\t\tconst editingShapeId = editor.getEditingShapeId()\n\t\t\t\tif (\n\t\t\t\t\t// if the target is not inside the editing shape\n\t\t\t\t\t!(editingShapeId && e.target.closest(`[data-shape-id=\"${editingShapeId}\"]`)) &&\n\t\t\t\t\t// and the target is not an clickable element\n\t\t\t\t\te.target.tagName !== 'A' &&\n\t\t\t\t\t// and the target is not an editable element\n\t\t\t\t\t!elementShouldCaptureKeys(e.target, false)\n\t\t\t\t) {\n\t\t\t\t\tpreventDefault(e)\n\t\t\t\t}\n\t\t\t}\n\n\t\t\tfunction onDragOver(e: React.DragEvent<Element>) {\n\t\t\t\tif (editor.wasEventAlreadyHandled(e)) return\n\t\t\t\tpreventDefault(e)\n\t\t\t}\n\n\t\t\tasync function onDrop(e: React.DragEvent<Element>) {\n\t\t\t\tif (editor.wasEventAlreadyHandled(e)) return\n\t\t\t\tpreventDefault(e)\n\t\t\t\te.stopPropagation()\n\n\t\t\t\tconst pagePoint = editor.screenToPage({ x: e.clientX, y: e.clientY })\n\n\t\t\t\t// Call the custom onDropOnCanvas callback if provided\n\t\t\t\tif (editor.options.experimental__onDropOnCanvas) {\n\t\t\t\t\tconst handled = editor.options.experimental__onDropOnCanvas({\n\t\t\t\t\t\tpoint: pagePoint,\n\t\t\t\t\t\tevent: e,\n\t\t\t\t\t})\n\t\t\t\t\tif (handled) return\n\t\t\t\t}\n\n\t\t\t\tif (e.dataTransfer?.files?.length) {\n\t\t\t\t\tconst files = Array.from(e.dataTransfer.files)\n\n\t\t\t\t\teditor.markHistoryStoppingPoint('drop')\n\t\t\t\t\tawait editor.putExternalContent({\n\t\t\t\t\t\ttype: 'files',\n\t\t\t\t\t\tfiles,\n\t\t\t\t\t\tpoint: pagePoint,\n\t\t\t\t\t})\n\t\t\t\t\treturn\n\t\t\t\t}\n\n\t\t\t\tconst url = e.dataTransfer.getData('url')\n\t\t\t\tif (url) {\n\t\t\t\t\teditor.markHistoryStoppingPoint('drop')\n\t\t\t\t\tawait editor.putExternalContent({\n\t\t\t\t\t\ttype: 'url',\n\t\t\t\t\t\turl,\n\t\t\t\t\t\tpoint: pagePoint,\n\t\t\t\t\t})\n\t\t\t\t\treturn\n\t\t\t\t}\n\t\t\t}\n\n\t\t\tfunction onClick(e: React.MouseEvent) {\n\t\t\t\tif (editor.wasEventAlreadyHandled(e)) return\n\t\t\t\te.stopPropagation()\n\t\t\t}\n\n\t\t\tfunction onContextMenu(e: React.MouseEvent) {\n\t\t\t\t// With right-click panning disabled, let the native contextmenu through so the\n\t\t\t\t// menu opens on press.\n\t\t\t\tif (!editor.options.rightClickPanning) return\n\t\t\t\t// Synthetic events — our own dispatch from onPointerUp, or tests using\n\t\t\t\t// fireEvent.contextMenu — pass through so Radix can open the menu.\n\t\t\t\tif (!e.nativeEvent.isTrusted) return\n\t\t\t\t// Only suppress the native browser contextmenu when it follows a\n\t\t\t\t// secondary click. For those, our pointer handling has already\n\t\t\t\t// decided what to do (either we'll dispatch a synthetic contextmenu on\n\t\t\t\t// pointerup to open the menu at the release position, or we panned and\n\t\t\t\t// don't want a menu at all).\n\t\t\t\t//\n\t\t\t\t// Other contextmenu sources must reach Radix so the menu opens:\n\t\t\t\t// - long-press on touch devices (button=0, pointerType=touch)\n\t\t\t\tif (!isSecondaryClickEvent(e)) return\n\t\t\t\tpreventDefault(e)\n\t\t\t}\n\n\t\t\treturn {\n\t\t\t\tonPointerDown,\n\t\t\t\tonPointerUp,\n\t\t\t\tonPointerEnter,\n\t\t\t\tonPointerLeave,\n\t\t\t\tonDragOver,\n\t\t\t\tonDrop,\n\t\t\t\tonTouchStart,\n\t\t\t\tonTouchEnd,\n\t\t\t\tonClick,\n\t\t\t\tonContextMenu,\n\t\t\t}\n\t\t},",
+        "detail": {
+          "unitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents#function:useCanvasEvents.canvasEvents",
+          "fileId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents",
+          "unitKind": "function",
+          "name": "canvasEvents",
+          "qualifiedName": "useCanvasEvents.canvasEvents",
+          "parentUnitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents#function:useCanvasEvents",
+          "startLine": 20,
+          "endLine": 213,
+          "signature": "function canvasEvents()",
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The enclosing editor instance and its event-handling dependencies are available.",
+            "Handlers receive React pointer, touch, drag, or mouse events appropriate to their respective interfaces."
+          ],
+          "postconditions": [
+            "Returns handlers named onPointerDown, onPointerUp, onPointerEnter, onPointerLeave, onDragOver, onDrop, onTouchStart, onTouchEnd, onClick, and onContextMenu.",
+            "The returned handlers share closure state tracking whether the current secondary pointer interaction began with button 2."
+          ],
+          "invariants": [
+            "Events already marked as handled are ignored by handlers that perform duplicate-event checks.",
+            "Secondary-pointer state is reset after a valid pointer-up.",
+            "Pointer dispatches target the canvas and use the editor-derived pointer information."
+          ],
+          "edgeCases": [
+            "Unsupported pointer buttons are ignored; only buttons 0, 1, 2, and 5 are processed.",
+            "A secondary pointer-down with right-click panning disabled dispatches right_click and does not establish pointer capture or dispatch pointer_down.",
+            "Pointer-up after a tracked secondary pointer-down uses button 2 even if the pointer-up event reports a different button.",
+            "Pen-mode hover updates ignore non-pen pointer entries and leaves.",
+            "Touch-end events targeting non-HTMLElement values do not call preventDefault.",
+            "Touch-end events on the current editing shape, an anchor element, or an element that should capture keys are not prevented.",
+            "A drop handled by experimental__onDropOnCanvas does not import files or URLs.",
+            "File drops take precedence over URL drops; unsupported drops perform no content import.",
+            "Trusted secondary context-menu events are prevented when right-click panning is enabled, while synthetic or non-secondary context-menu events are allowed through."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Unsupported pointer buttons and non-applicable drop or touch targets are ignored or left to native behavior as described; no explicit error is produced.",
+            "returnsOnError": null
+          },
+          "stateMutations": [
+            "Mutates closure state isSecondaryClickPointerDown during pointer interactions.",
+            "Updates editor instance state isHoveringCanvas on applicable pointer enter and leave events.",
+            "Marks touch-start and touch-end events as handled.",
+            "May update editor history and external content state through drop handling.",
+            "May set and release DOM pointer capture on the event target."
+          ],
+          "eventsEmitted": [
+            "Editor pointer dispatches named right_click, pointer_down, and pointer_up.",
+            "A synthetic bubbling contextmenu PointerEvent may be dispatched after a static right-click pointer-up."
+          ],
+          "complexity": null,
+          "calls": [
+            { "name": "editor.wasEventAlreadyHandled", "source": "editor", "kind": "external" },
+            { "name": "getPointerEventButton", "source": null, "kind": "internal" },
+            { "name": "editor.dispatch", "source": "editor", "kind": "external" },
+            { "name": "getPointerInfo", "source": null, "kind": "internal" },
+            { "name": "isDirectDisplayPen", "source": null, "kind": "internal" },
+            { "name": "setPointerCapture", "source": null, "kind": "internal" },
+            { "name": "releasePointerCapture", "source": null, "kind": "internal" },
+            { "name": "editor.getInstanceState", "source": "editor", "kind": "external" },
+            { "name": "editor.updateInstanceState", "source": "editor", "kind": "external" },
+            { "name": "editor.markEventAsHandled", "source": "editor", "kind": "external" },
+            { "name": "preventDefault", "source": null, "kind": "internal" },
+            { "name": "elementShouldCaptureKeys", "source": null, "kind": "internal" },
+            { "name": "editor.screenToPage", "source": "editor", "kind": "external" },
+            { "name": "editor.options.experimental__onDropOnCanvas", "source": "editor", "kind": "external" },
+            { "name": "editor.markHistoryStoppingPoint", "source": "editor", "kind": "external" },
+            { "name": "editor.putExternalContent", "source": "editor", "kind": "external" },
+            { "name": "isSecondaryClickEvent", "source": null, "kind": "internal" }
+          ],
+          "symbolReferences": [
+            "React.PointerEvent",
+            "React.TouchEvent",
+            "React.DragEvent",
+            "React.MouseEvent",
+            "editor.options.rightClickPanning",
+            "editor.options.experimental__onDropOnCanvas",
+            "editor.inputs.getIsPanning",
+            "editor.getEditingShapeId"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Returns an object of ten React event handlers. Pointer dispatch payloads include type:'pointer', target:'canvas', a handler-specific name, and editor-derived pointer information; pointer_up additionally includes button and pointer_down includes isPenDirect. Drop callbacks receive { point: { x, y }, event }; external content receives either { type:'files', files, point } or { type:'url', url, point }.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Creates a canvas event-handler set that coordinates pointer, touch, drag-and-drop, click, and context-menu interactions with the editor. The handlers preserve event deduplication, pointer capture, editor state updates, content drops, and right-click behavior.",
+          "specLiterals": [
+            {
+              "kind": "enum-value",
+              "value": "right_click",
+              "role": "Editor pointer event name dispatched for a secondary press when right-click panning is disabled."
+            },
+            {
+              "kind": "enum-value",
+              "value": "pointer_down",
+              "role": "Editor pointer event name dispatched for supported pointer-down buttons."
+            },
+            {
+              "kind": "enum-value",
+              "value": "pointer_up",
+              "role": "Editor pointer event name dispatched for supported pointer-up buttons."
+            },
+            { "kind": "enum-value", "value": "canvas", "role": "Dispatch target for canvas pointer events." },
+            { "kind": "enum-value", "value": "files", "role": "External-content type used for file drops." },
+            { "kind": "enum-value", "value": "url", "role": "External-content type used for URL drops." },
+            { "kind": "enum-value", "value": "drop", "role": "History stopping-point label used for imported drops." },
+            {
+              "kind": "format-string",
+              "value": "[data-shape-id=\"${editingShapeId}\"]",
+              "role": "Selector used to determine whether a touch-end target is inside the currently edited shape."
+            },
+            {
+              "kind": "enum-value",
+              "value": "contextmenu",
+              "role": "Synthetic DOM event type dispatched for a static right-click release and inspected by the context-menu handler."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "onPointerDown is invoked",
+              "then": "The editor receives a canvas right_click dispatch and the handler returns without dispatching pointer_down.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "onContextMenu is invoked",
+              "then": "The native event is prevented.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "onDrop is invoked",
+              "then": "The event is prevented and stopped, a drop history stopping point is marked, and external content is submitted with type files and the pointer converted to page coordinates.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "68d65d48ee05d737e3893ff59ba21d3643114da5e3d66f5431d867d4a2ee2d9a"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents.onPointerDown#function:useCanvasEvents.canvasEvents.onPointerDown",
+        "unitKind": "function",
+        "name": "onPointerDown",
+        "qualifiedName": "useCanvasEvents.canvasEvents.onPointerDown",
+        "parentUnitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents#function:useCanvasEvents.canvasEvents",
+        "startLine": 23,
+        "endLine": 48,
+        "isBehavioral": true,
+        "source": "\t\t\tfunction onPointerDown(e: React.PointerEvent) {\n\t\t\t\tif (editor.wasEventAlreadyHandled(e)) return\n\t\t\t\tconst button = getPointerEventButton(e)\n\t\t\t\tisSecondaryClickPointerDown = button === 2\n\n\t\t\t\t// With right-click panning disabled, fire right_click on press and let the\n\t\t\t\t// native contextmenu through so the menu opens at the pointer-down location.\n\t\t\t\tif (button === 2 && !editor.options.rightClickPanning) {\n\t\t\t\t\teditor.dispatch({\n\t\t\t\t\t\ttype: 'pointer',\n\t\t\t\t\t\ttarget: 'canvas',\n\t\t\t\t\t\tname: 'right_click',\n\t\t\t\t\t\t...getPointerInfo(editor, e),\n\t\t\t\t\t})\n\t\t\t\t\treturn\n\t\t\t\t}\n\n\t\t\t\tif (button !== 0 && button !== 1 && button !== 2 && button !== 5) return\n\n\t\t\t\t// Detect direct-display pen input (Apple Pencil, Surface Pen on a touchscreen) so we\n\t\t\t\t// only auto-enable pen mode for it, not for an indirect desktop tablet stylus.\n\t\t\t\tconst isPenDirect = isDirectDisplayPen(e)\n\n\t\t\t\tsetPointerCapture(e.currentTarget, e)\n\n\t\t\t\teditor.dispatch({",
+        "detail": {
+          "unitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents.onPointerDown#function:useCanvasEvents.canvasEvents.onPointerDown",
+          "fileId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents.onPointerDown",
+          "unitKind": "function",
+          "name": "onPointerDown",
+          "qualifiedName": "useCanvasEvents.canvasEvents.onPointerDown",
+          "parentUnitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents#function:useCanvasEvents.canvasEvents",
+          "startLine": 23,
+          "endLine": 48,
+          "signature": "function onPointerDown(e: React.PointerEvent)",
+          "parameters": [
+            {
+              "name": "e",
+              "type": "React.PointerEvent",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The event argument is a React pointer event.",
+            "The event provides a currentTarget suitable for pointer capture and button information."
+          ],
+          "postconditions": [
+            "Already-handled events produce no further action.",
+            "For supported pointer buttons, pointer capture is established unless disabled right-click panning causes an early return.",
+            "A right-click with right-click panning disabled dispatches a canvas right_click event and returns."
+          ],
+          "invariants": [
+            "The secondary-click pointer-down state reflects whether the most recently processed non-duplicate pointer event used button 2.",
+            "Unsupported pointer buttons do not dispatch a pointer action."
+          ],
+          "edgeCases": [
+            "If editor.wasEventAlreadyHandled(e) is true, the function returns without changing pointer state or dispatching.",
+            "If button 2 is used while editor.options.rightClickPanning is false, the function dispatches a canvas right_click event using pointer information and returns without pointer capture.",
+            "If the button is not 0, 1, 2, or 5, the function returns without pointer capture or dispatch.",
+            "For supported buttons other than the disabled-right-click early-return case, the event is evaluated for direct-display pen input and pointer capture is established."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Unsupported pointer buttons are ignored by returning without dispatch.",
+            "returnsOnError": null
+          },
+          "stateMutations": [
+            "isSecondaryClickPointerDown is assigned based on the pointer button.",
+            "The event's currentTarget receives pointer capture for supported pointer buttons except the disabled-right-click early-return case.",
+            "The editor receives dispatched pointer events when applicable."
+          ],
+          "eventsEmitted": [
+            "A pointer event with target canvas and name right_click is dispatched for button 2 when rightClickPanning is disabled."
+          ],
+          "complexity": null,
+          "calls": [
+            { "name": "editor.wasEventAlreadyHandled", "source": "editor", "kind": "external" },
+            { "name": "getPointerEventButton", "source": "useCanvasEvents.ts", "kind": "internal" },
+            { "name": "isDirectDisplayPen", "source": "useCanvasEvents.ts", "kind": "internal" },
+            { "name": "setPointerCapture", "source": "useCanvasEvents.ts", "kind": "internal" },
+            { "name": "editor.dispatch", "source": "editor", "kind": "external" },
+            { "name": "getPointerInfo", "source": "useCanvasEvents.ts", "kind": "internal" }
+          ],
+          "symbolReferences": ["React.PointerEvent", "editor.options.rightClickPanning"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "When dispatching the right-click action, the payload contains type: \"pointer\", target: \"canvas\", name: \"right_click\", and the fields returned by getPointerInfo(editor, e).",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Handles pointer-down events on the canvas, tracking the pointer button and dispatching canvas pointer actions while respecting already-handled events and right-click panning settings.",
+          "specLiterals": [
+            { "kind": "enum-value", "value": "pointer", "role": "Dispatch action type for canvas pointer events." },
+            { "kind": "enum-value", "value": "canvas", "role": "Dispatch target for the canvas pointer event." },
+            {
+              "kind": "enum-value",
+              "value": "right_click",
+              "role": "Dispatched event name for right-click when right-click panning is disabled."
+            },
+            {
+              "kind": "magic-number",
+              "value": "2",
+              "role": "Pointer button value identifying a secondary/right click."
+            },
+            { "kind": "magic-number", "value": "0", "role": "Supported pointer button value." },
+            { "kind": "magic-number", "value": "1", "role": "Supported pointer button value." },
+            { "kind": "magic-number", "value": "5", "role": "Supported pointer button value." }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "onPointerDown is called with that event.",
+              "then": "The function returns without dispatching an event or performing pointer capture.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "onPointerDown is called.",
+              "then": "isSecondaryClickPointerDown becomes true, editor.dispatch receives a pointer event targeting canvas with name right_click and pointer information, and the function returns.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "onPointerDown is called.",
+              "then": "The function returns without dispatching or capturing the pointer.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "f01170f1fe5772e6b9d9e46f74b5eb491e94faa32d203c54fc0acb4fec5ff76e"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents.onPointerUp#function:useCanvasEvents.canvasEvents.onPointerUp",
+        "unitKind": "function",
+        "name": "onPointerUp",
+        "qualifiedName": "useCanvasEvents.canvasEvents.onPointerUp",
+        "parentUnitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents#function:useCanvasEvents.canvasEvents",
+        "startLine": 50,
+        "endLine": 82,
+        "isBehavioral": true,
+        "source": "\t\t\t\t\ttarget: 'canvas',\n\t\t\t\t\tname: 'pointer_down',\n\t\t\t\t\t...getPointerInfo(editor, e),\n\t\t\t\t\tisPenDirect,\n\t\t\t\t})\n\t\t\t}\n\n\t\t\tfunction onPointerUp(e: React.PointerEvent) {\n\t\t\t\tif (editor.wasEventAlreadyHandled(e)) return\n\t\t\t\tconst button = isSecondaryClickPointerDown ? 2 : getPointerEventButton(e)\n\t\t\t\tif (button !== 0 && button !== 1 && button !== 2 && button !== 5) return\n\n\t\t\t\tconst rightClickPanning = editor.options.rightClickPanning\n\t\t\t\t// Check before dispatch (which resets isPanning)\n\t\t\t\tconst wasRightClickPanning =\n\t\t\t\t\trightClickPanning && button === 2 && editor.inputs.getIsPanning()\n\n\t\t\t\treleasePointerCapture(e.currentTarget, e)\n\n\t\t\t\teditor.dispatch({\n\t\t\t\t\ttype: 'pointer',\n\t\t\t\t\ttarget: 'canvas',\n\t\t\t\t\tname: 'pointer_up',\n\t\t\t\t\t...getPointerInfo(editor, e),\n\t\t\t\t\tbutton,\n\t\t\t\t})\n\n\t\t\t\t// Static right-click: fire contextmenu at the pointer-up location\n\t\t\t\tif (rightClickPanning && button === 2 && !wasRightClickPanning) {\n\t\t\t\t\tconst contextMenuEvent = new PointerEvent('contextmenu', {\n\t\t\t\t\t\tbubbles: true,\n\t\t\t\t\t\tclientX: e.clientX,\n\t\t\t\t\t\tclientY: e.clientY,",
+        "detail": {
+          "unitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents.onPointerUp#function:useCanvasEvents.canvasEvents.onPointerUp",
+          "fileId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents.onPointerUp",
+          "unitKind": "function",
+          "name": "onPointerUp",
+          "qualifiedName": "useCanvasEvents.canvasEvents.onPointerUp",
+          "parentUnitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents#function:useCanvasEvents.canvasEvents",
+          "startLine": 50,
+          "endLine": 82,
+          "signature": "function onPointerUp(e: React.PointerEvent)",
+          "parameters": [
+            {
+              "name": "e",
+              "type": "React.PointerEvent",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The argument is a React pointer event.",
+            "The event is associated with a canvas pointer interaction."
+          ],
+          "postconditions": [
+            "For an eligible pointer button, pointer capture is released and a canvas pointer-up action is dispatched with pointer information and the resolved button.",
+            "For a qualifying static secondary-button release, a bubbling contextmenu PointerEvent is created at the release coordinates."
+          ],
+          "invariants": [
+            "Events already marked as handled by the editor produce no further action.",
+            "Only buttons 0, 1, 2, and 5 are processed.",
+            "The panning state used to decide whether a static right-click occurred is read before dispatch."
+          ],
+          "edgeCases": [
+            "If editor.wasEventAlreadyHandled(e) is true, the handler returns without releasing capture or dispatching.",
+            "If the resolved button is not 0, 1, 2, or 5, the handler returns without further processing.",
+            "When isSecondaryClickPointerDown is true, the resolved button is treated as 2 regardless of the pointer event button.",
+            "When rightClickPanning is enabled and button 2 is released without active right-click panning, a bubbling contextmenu event is created using the pointer-up clientX and clientY coordinates.",
+            "When right-click panning was active, no static right-click context-menu event is triggered."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Already-handled events and unsupported pointer buttons are ignored with an immediate return.",
+            "returnsOnError": null
+          },
+          "stateMutations": [
+            "Releases pointer capture for the current event target.",
+            "Dispatches a pointer-up action through editor.dispatch for eligible buttons.",
+            "May dispatch a synthetic contextmenu event on the current event target."
+          ],
+          "eventsEmitted": [
+            "Canvas pointer action with name pointer_up.",
+            "Synthetic bubbling contextmenu PointerEvent for a qualifying static secondary-button release."
+          ],
+          "complexity": null,
+          "calls": [
+            { "name": "editor.wasEventAlreadyHandled", "source": "editor", "kind": "internal" },
+            { "name": "getPointerEventButton", "source": null, "kind": "internal" },
+            { "name": "editor.inputs.getIsPanning", "source": "editor.inputs", "kind": "internal" },
+            { "name": "releasePointerCapture", "source": null, "kind": "internal" },
+            { "name": "getPointerInfo", "source": null, "kind": "internal" },
+            { "name": "editor.dispatch", "source": "editor", "kind": "internal" },
+            { "name": "PointerEvent", "source": "DOM", "kind": "external" }
+          ],
+          "symbolReferences": ["React.PointerEvent", "editor.options.rightClickPanning", "PointerEvent"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Eligible releases dispatch an object with type 'pointer', target 'canvas', name 'pointer_up', the fields returned by getPointerInfo(editor, e), and the resolved button. Synthetic contextmenu events use bubbles: true and copy e.clientX and e.clientY.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Handles pointer release events on the canvas by filtering already-handled or unsupported buttons, releasing pointer capture, and dispatching canvas pointer-up information. A qualifying secondary-button release may also trigger a context-menu event when right-click panning is enabled and was not active.",
+          "specLiterals": [
+            { "kind": "enum-value", "value": "pointer", "role": "Dispatched action type for canvas pointer events." },
+            { "kind": "enum-value", "value": "canvas", "role": "Dispatched action target." },
+            { "kind": "enum-value", "value": "pointer_up", "role": "Dispatched action name for pointer release." },
+            {
+              "kind": "enum-value",
+              "value": "contextmenu",
+              "role": "Synthetic DOM event type used for a static right-click."
+            },
+            { "kind": "magic-number", "value": "0", "role": "Accepted primary pointer button." },
+            { "kind": "magic-number", "value": "1", "role": "Accepted auxiliary pointer button." },
+            {
+              "kind": "magic-number",
+              "value": "2",
+              "role": "Accepted secondary pointer button and right-click override."
+            },
+            { "kind": "magic-number", "value": "5", "role": "Accepted pointer button." }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "onPointerUp is called.",
+              "then": "Pointer capture is released and editor.dispatch receives a pointer action targeted at canvas with name pointer_up, pointer information, and button 0.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "onPointerUp is called.",
+              "then": "The handler returns without releasing pointer capture or dispatching a pointer-up action.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "onPointerUp is called with client coordinates (x, y).",
+              "then": "A bubbling contextmenu PointerEvent is created at clientX x and clientY y in addition to the pointer-up handling.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "e58018babd3216277d7e755cd350d8fe25ea8f5b4cb3f3913eff145a7dfe40d3"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents.onPointerEnter#function:useCanvasEvents.canvasEvents.onPointerEnter",
+        "unitKind": "function",
+        "name": "onPointerEnter",
+        "qualifiedName": "useCanvasEvents.canvasEvents.onPointerEnter",
+        "parentUnitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents#function:useCanvasEvents.canvasEvents",
+        "startLine": 84,
+        "endLine": 89,
+        "isBehavioral": true,
+        "source": "\t\t\t\t\t\tbuttons: 0,\n\t\t\t\t\t\tpointerId: e.pointerId,\n\t\t\t\t\t\tpointerType: e.pointerType,\n\t\t\t\t\t\tisPrimary: e.isPrimary,\n\t\t\t\t\t})\n\t\t\t\t\te.currentTarget.dispatchEvent(contextMenuEvent)",
+        "detail": {
+          "unitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents.onPointerEnter#function:useCanvasEvents.canvasEvents.onPointerEnter",
+          "fileId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents.onPointerEnter",
+          "unitKind": "function",
+          "name": "onPointerEnter",
+          "qualifiedName": "useCanvasEvents.canvasEvents.onPointerEnter",
+          "parentUnitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents#function:useCanvasEvents.canvasEvents",
+          "startLine": 84,
+          "endLine": 89,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Handles the canvas pointer-enter event as part of the canvas event-handler set. No more specific externally observable guarantee is available from the provided unit source.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "272406c40491d8c013ae5b19bc55687980008edef1f58f237dfeb6abd230fd81"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents.onPointerLeave#function:useCanvasEvents.canvasEvents.onPointerLeave",
+        "unitKind": "function",
+        "name": "onPointerLeave",
+        "qualifiedName": "useCanvasEvents.canvasEvents.onPointerLeave",
+        "parentUnitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents#function:useCanvasEvents.canvasEvents",
+        "startLine": 91,
+        "endLine": 95,
+        "isBehavioral": true,
+        "source": "\t\t\t\tisSecondaryClickPointerDown = false\n\t\t\t}\n\n\t\t\tfunction onPointerEnter(e: React.PointerEvent) {\n\t\t\t\tif (editor.wasEventAlreadyHandled(e)) return",
+        "detail": {
+          "unitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents.onPointerLeave#function:useCanvasEvents.canvasEvents.onPointerLeave",
+          "fileId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents.onPointerLeave",
+          "unitKind": "function",
+          "name": "onPointerLeave",
+          "qualifiedName": "useCanvasEvents.canvasEvents.onPointerLeave",
+          "parentUnitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents#function:useCanvasEvents.canvasEvents",
+          "startLine": 91,
+          "endLine": 95,
+          "signature": "function onPointerLeave(e: React.PointerEvent)",
+          "parameters": [
+            {
+              "name": "e",
+              "type": "React.PointerEvent",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["A React pointer event is supplied."],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["React.PointerEvent"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Handles pointer-leave events for the canvas event bindings.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "70831709abb32f4dbd7200e21de07a006321110fffd75a6c8619d7d54ded4b97"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents.onTouchStart#function:useCanvasEvents.canvasEvents.onTouchStart",
+        "unitKind": "function",
+        "name": "onTouchStart",
+        "qualifiedName": "useCanvasEvents.canvasEvents.onTouchStart",
+        "parentUnitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents#function:useCanvasEvents.canvasEvents",
+        "startLine": 97,
+        "endLine": 101,
+        "isBehavioral": true,
+        "source": "\t\t\t\tconst canHover = e.pointerType === 'mouse' || e.pointerType === 'pen'\n\t\t\t\teditor.updateInstanceState({ isHoveringCanvas: canHover ? true : null })\n\t\t\t}\n\n\t\t\tfunction onPointerLeave(e: React.PointerEvent) {",
+        "detail": {
+          "unitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents.onTouchStart#function:useCanvasEvents.canvasEvents.onTouchStart",
+          "fileId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents.onTouchStart",
+          "unitKind": "function",
+          "name": "onTouchStart",
+          "qualifiedName": "useCanvasEvents.canvasEvents.onTouchStart",
+          "parentUnitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents#function:useCanvasEvents.canvasEvents",
+          "startLine": 97,
+          "endLine": 101,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Handles the canvas touch-start event within the canvas event handler set.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "ec9aef1ee840abb917cfb44568615928b0738fafa8a40aa9fc615b68ee14d507"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents.onTouchEnd#function:useCanvasEvents.canvasEvents.onTouchEnd",
+        "unitKind": "function",
+        "name": "onTouchEnd",
+        "qualifiedName": "useCanvasEvents.canvasEvents.onTouchEnd",
+        "parentUnitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents#function:useCanvasEvents.canvasEvents",
+        "startLine": 103,
+        "endLine": 121,
+        "isBehavioral": true,
+        "source": "\t\t\t\tif (editor.getInstanceState().isPenMode && e.pointerType !== 'pen') return\n\t\t\t\tconst canHover = e.pointerType === 'mouse' || e.pointerType === 'pen'\n\t\t\t\teditor.updateInstanceState({ isHoveringCanvas: canHover ? false : null })\n\t\t\t}\n\n\t\t\tfunction onTouchStart(e: React.TouchEvent) {\n\t\t\t\tif (editor.wasEventAlreadyHandled(e)) return\n\t\t\t\teditor.markEventAsHandled(e)\n\t\t\t\tpreventDefault(e)\n\t\t\t}\n\n\t\t\tfunction onTouchEnd(e: React.TouchEvent) {\n\t\t\t\tif (editor.wasEventAlreadyHandled(e)) return\n\t\t\t\teditor.markEventAsHandled(e)\n\t\t\t\tif (!(e.target instanceof editor.getContainerWindow().HTMLElement)) return\n\n\t\t\t\tconst editingShapeId = editor.getEditingShapeId()\n\t\t\t\tif (\n\t\t\t\t\t// if the target is not inside the editing shape",
+        "detail": {
+          "unitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents.onTouchEnd#function:useCanvasEvents.canvasEvents.onTouchEnd",
+          "fileId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents.onTouchEnd",
+          "unitKind": "function",
+          "name": "onTouchEnd",
+          "qualifiedName": "useCanvasEvents.canvasEvents.onTouchEnd",
+          "parentUnitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents#function:useCanvasEvents.canvasEvents",
+          "startLine": 103,
+          "endLine": 121,
+          "signature": "function onTouchEnd(e: React.TouchEvent)",
+          "parameters": [
+            {
+              "name": "e",
+              "type": "React.TouchEvent",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The argument is a React touch event.",
+            "The event target may belong to the editor container window or may be another value."
+          ],
+          "postconditions": [
+            "An already-handled event causes no further processing.",
+            "A newly handled event is marked as handled by the editor.",
+            "Events whose target is not an HTMLElement from the editor container window cause no further processing.",
+            "When editing a shape and the HTMLElement target is outside that shape, the editing shape is cleared."
+          ],
+          "invariants": [
+            "Each event is processed at most once through the editor's handled-event mechanism.",
+            "The editing shape is not cleared when the touch target is inside the currently edited shape."
+          ],
+          "edgeCases": [
+            "If the event was already handled, the function returns without marking it again or changing editing state.",
+            "If the event target is not an HTMLElement from the editor container window, the function returns after marking the event as handled.",
+            "If no shape is being edited, no editing state is changed.",
+            "If a shape is being edited and the target is outside its corresponding shape element, editing is exited.",
+            "If a shape is being edited and the target is inside its corresponding shape element, editing remains active."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Non-HTMLElement event targets are ignored after the event is marked handled.",
+            "returnsOnError": null
+          },
+          "stateMutations": [
+            "Marks the touch event as handled through the editor.",
+            "Clears the editor's current editing shape when a valid HTMLElement target is outside that shape."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "editor.wasEventAlreadyHandled", "source": "editor", "kind": "external" },
+            { "name": "editor.markEventAsHandled", "source": "editor", "kind": "external" },
+            { "name": "editor.getContainerWindow", "source": "editor", "kind": "external" },
+            { "name": "editor.getEditingShapeId", "source": "editor", "kind": "external" },
+            { "name": "HTMLElement.closest", "source": "event target DOM element", "kind": "external" },
+            { "name": "editor.setEditingShape", "source": "editor", "kind": "external" }
+          ],
+          "symbolReferences": ["React.TouchEvent", "HTMLElement"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Handles the end of a touch interaction on the canvas, ignoring touch events already processed by the editor. When the event targets a valid HTMLElement outside the currently edited shape, it exits shape editing.",
+          "specLiterals": [
+            {
+              "kind": "format-string",
+              "value": "[data-shape-id=\"${editingShapeId}\"]",
+              "role": "DOM selector used to determine whether the touch target is inside the currently edited shape."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "onTouchEnd is invoked with that event.",
+              "then": "The event is marked handled and the editor clears the current editing shape.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "onTouchEnd is invoked with that event.",
+              "then": "The function returns without changing editing state or processing the target.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "onTouchEnd is invoked with that event.",
+              "then": "The event is marked handled, then no editing-shape change occurs.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "da4828d40c9c4751a1bbe575c040b222173fc1869f9336e322b7a79fada0329e"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents.onDragOver#function:useCanvasEvents.canvasEvents.onDragOver",
+        "unitKind": "function",
+        "name": "onDragOver",
+        "qualifiedName": "useCanvasEvents.canvasEvents.onDragOver",
+        "parentUnitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents#function:useCanvasEvents.canvasEvents",
+        "startLine": 123,
+        "endLine": 126,
+        "isBehavioral": true,
+        "source": "\t\t\t\t\t// and the target is not an clickable element\n\t\t\t\t\te.target.tagName !== 'A' &&\n\t\t\t\t\t// and the target is not an editable element\n\t\t\t\t\t!elementShouldCaptureKeys(e.target, false)",
+        "detail": {
+          "unitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents.onDragOver#function:useCanvasEvents.canvasEvents.onDragOver",
+          "fileId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents.onDragOver",
+          "unitKind": "function",
+          "name": "onDragOver",
+          "qualifiedName": "useCanvasEvents.canvasEvents.onDragOver",
+          "parentUnitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents#function:useCanvasEvents.canvasEvents",
+          "startLine": 123,
+          "endLine": 126,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The event target provides a tagName property.",
+            "The event target is suitable for evaluation by elementShouldCaptureKeys."
+          ],
+          "postconditions": [],
+          "invariants": [
+            "Targets whose tagName is 'A' do not satisfy the observed canvas-interaction condition.",
+            "Targets for which elementShouldCaptureKeys(target, false) is true do not satisfy the observed canvas-interaction condition."
+          ],
+          "edgeCases": [
+            "When the target tagName is 'A', the observed condition evaluates false.",
+            "When elementShouldCaptureKeys(target, false) returns true, the observed condition evaluates false.",
+            "When the target is neither an anchor nor an element captured by elementShouldCaptureKeys(target, false), the observed condition may pass."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "elementShouldCaptureKeys", "source": null, "kind": "internal" }],
+          "symbolReferences": ["elementShouldCaptureKeys"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Handles drag-over events for the canvas while excluding targets that should not participate in the canvas interaction condition.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "2a47ede4ffc23b636a67d542b0b67af551f7f6074d0a56df643992fe70f8bec2"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents.onDrop#function:useCanvasEvents.canvasEvents.onDrop",
+        "unitKind": "function",
+        "name": "onDrop",
+        "qualifiedName": "useCanvasEvents.canvasEvents.onDrop",
+        "parentUnitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents#function:useCanvasEvents.canvasEvents",
+        "startLine": 128,
+        "endLine": 167,
+        "isBehavioral": true,
+        "source": "\t\t\t\t\tpreventDefault(e)\n\t\t\t\t}\n\t\t\t}\n\n\t\t\tfunction onDragOver(e: React.DragEvent<Element>) {\n\t\t\t\tif (editor.wasEventAlreadyHandled(e)) return\n\t\t\t\tpreventDefault(e)\n\t\t\t}\n\n\t\t\tasync function onDrop(e: React.DragEvent<Element>) {\n\t\t\t\tif (editor.wasEventAlreadyHandled(e)) return\n\t\t\t\tpreventDefault(e)\n\t\t\t\te.stopPropagation()\n\n\t\t\t\tconst pagePoint = editor.screenToPage({ x: e.clientX, y: e.clientY })\n\n\t\t\t\t// Call the custom onDropOnCanvas callback if provided\n\t\t\t\tif (editor.options.experimental__onDropOnCanvas) {\n\t\t\t\t\tconst handled = editor.options.experimental__onDropOnCanvas({\n\t\t\t\t\t\tpoint: pagePoint,\n\t\t\t\t\t\tevent: e,\n\t\t\t\t\t})\n\t\t\t\t\tif (handled) return\n\t\t\t\t}\n\n\t\t\t\tif (e.dataTransfer?.files?.length) {\n\t\t\t\t\tconst files = Array.from(e.dataTransfer.files)\n\n\t\t\t\t\teditor.markHistoryStoppingPoint('drop')\n\t\t\t\t\tawait editor.putExternalContent({\n\t\t\t\t\t\ttype: 'files',\n\t\t\t\t\t\tfiles,\n\t\t\t\t\t\tpoint: pagePoint,\n\t\t\t\t\t})\n\t\t\t\t\treturn\n\t\t\t\t}\n\n\t\t\t\tconst url = e.dataTransfer.getData('url')\n\t\t\t\tif (url) {\n\t\t\t\t\teditor.markHistoryStoppingPoint('drop')",
+        "detail": {
+          "unitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents.onDrop#function:useCanvasEvents.canvasEvents.onDrop",
+          "fileId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents.onDrop",
+          "unitKind": "function",
+          "name": "onDrop",
+          "qualifiedName": "useCanvasEvents.canvasEvents.onDrop",
+          "parentUnitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents#function:useCanvasEvents.canvasEvents",
+          "startLine": 128,
+          "endLine": 167,
+          "signature": "async function onDrop(e: React.DragEvent<Element>)",
+          "parameters": [
+            {
+              "name": "e",
+              "type": "React.DragEvent<Element>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "Promise<void>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The event argument is a React drag event with client coordinates.",
+            "The function executes within the canvas event handler context and has access to the editor instance."
+          ],
+          "postconditions": [
+            "The browser default drop behavior is prevented unless the event was already handled.",
+            "Propagation is stopped for an actively processed drop event.",
+            "The drop location is converted from screen coordinates to page coordinates.",
+            "A custom canvas drop callback is invoked when configured.",
+            "Dropped files are passed to the editor as external content when files are present."
+          ],
+          "invariants": [
+            "Events reported by editor.wasEventAlreadyHandled are ignored without further processing.",
+            "The same page point derived from the event client coordinates is used for custom handling and file import.",
+            "A history stopping point named 'drop' is recorded before importing dropped files."
+          ],
+          "edgeCases": [
+            "If the event was already handled, the function returns without preventing the default, stopping propagation, converting coordinates, or invoking editor operations.",
+            "If an experimental custom onDropOnCanvas callback is configured and returns a truthy value, the function returns after the callback without importing dropped files.",
+            "If files are present in dataTransfer, all files are converted to an array, a drop history stopping point is marked, and the files are imported asynchronously.",
+            "If no files are present, file import is skipped and processing proceeds to the non-file drop handling path."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": "Errors from editor dependencies or asynchronous external-content import propagate as a rejected Promise."
+          },
+          "stateMutations": [
+            "Mutates the event's default-prevented and propagation state through preventDefault and stopPropagation.",
+            "May mutate editor history by marking a stopping point named 'drop'.",
+            "May mutate editor content by importing dropped external files."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "editor.wasEventAlreadyHandled", "source": "editor", "kind": "internal" },
+            { "name": "preventDefault", "source": null, "kind": "internal" },
+            { "name": "e.stopPropagation", "source": "React.DragEvent", "kind": "internal" },
+            { "name": "editor.screenToPage", "source": "editor", "kind": "internal" },
+            { "name": "editor.options.experimental__onDropOnCanvas", "source": "editor.options", "kind": "internal" },
+            { "name": "editor.markHistoryStoppingPoint", "source": "editor", "kind": "internal" },
+            { "name": "editor.putExternalContent", "source": "editor", "kind": "internal" }
+          ],
+          "symbolReferences": ["React.DragEvent<Element>", "editor.options.experimental__onDropOnCanvas"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Handles canvas drop events by preventing browser defaults, converting the drop location to page coordinates, delegating to an optional custom handler, and importing dropped files when present.",
+          "specLiterals": [
+            {
+              "kind": "enum-value",
+              "value": "drop",
+              "role": "History stopping-point identifier used for processed drop events."
+            },
+            {
+              "kind": "enum-value",
+              "value": "files",
+              "role": "External-content type supplied when importing dropped files."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "onDrop is invoked with the event.",
+              "then": "It resolves without calling preventDefault, stopPropagation, screenToPage, the custom callback, markHistoryStoppingPoint, or putExternalContent.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "onDrop is invoked.",
+              "then": "It prevents the default, stops propagation, converts the client coordinates with editor.screenToPage, marks the history stopping point as 'drop', and awaits editor.putExternalContent with type 'files', the complete file array, and the converted page point.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "onDrop is invoked.",
+              "then": "The callback receives the converted page point and original event, and no file import or history stopping point is performed.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "97be1751c2713a2c18192a57ed8b9127f29389b91a25d3e691c297d208bbdd09"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents.onClick#function:useCanvasEvents.canvasEvents.onClick",
+        "unitKind": "function",
+        "name": "onClick",
+        "qualifiedName": "useCanvasEvents.canvasEvents.onClick",
+        "parentUnitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents#function:useCanvasEvents.canvasEvents",
+        "startLine": 169,
+        "endLine": 172,
+        "isBehavioral": true,
+        "source": "\t\t\t\t\t\ttype: 'url',\n\t\t\t\t\t\turl,\n\t\t\t\t\t\tpoint: pagePoint,\n\t\t\t\t\t})",
+        "detail": {
+          "unitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents.onClick#function:useCanvasEvents.canvasEvents.onClick",
+          "fileId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents.onClick",
+          "unitKind": "function",
+          "name": "onClick",
+          "qualifiedName": "useCanvasEvents.canvasEvents.onClick",
+          "parentUnitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents#function:useCanvasEvents.canvasEvents",
+          "startLine": 169,
+          "endLine": 172,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [
+            "A URL interaction payload is formed with type \"url\", the relevant URL, and the page point."
+          ],
+          "invariants": [
+            "The interaction payload uses the literal type \"url\".",
+            "The interaction payload preserves both the URL and page-point values."
+          ],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Provides the canvas click-event behavior for URL interactions, associating the URL with the click location.",
+          "specLiterals": [
+            { "kind": "enum-value", "value": "url", "role": "Discriminant identifying the URL interaction payload." }
+          ],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "63166d62987586bcc68acfa7130a570bcdb63ff090cad8aa0e06d0fb256c1216"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents.onContextMenu#function:useCanvasEvents.canvasEvents.onContextMenu",
+        "unitKind": "function",
+        "name": "onContextMenu",
+        "qualifiedName": "useCanvasEvents.canvasEvents.onContextMenu",
+        "parentUnitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents#function:useCanvasEvents.canvasEvents",
+        "startLine": 174,
+        "endLine": 197,
+        "isBehavioral": true,
+        "source": "\t\t\t\t}\n\t\t\t}\n\n\t\t\tfunction onClick(e: React.MouseEvent) {\n\t\t\t\tif (editor.wasEventAlreadyHandled(e)) return\n\t\t\t\te.stopPropagation()\n\t\t\t}\n\n\t\t\tfunction onContextMenu(e: React.MouseEvent) {\n\t\t\t\t// With right-click panning disabled, let the native contextmenu through so the\n\t\t\t\t// menu opens on press.\n\t\t\t\tif (!editor.options.rightClickPanning) return\n\t\t\t\t// Synthetic events — our own dispatch from onPointerUp, or tests using\n\t\t\t\t// fireEvent.contextMenu — pass through so Radix can open the menu.\n\t\t\t\tif (!e.nativeEvent.isTrusted) return\n\t\t\t\t// Only suppress the native browser contextmenu when it follows a\n\t\t\t\t// secondary click. For those, our pointer handling has already\n\t\t\t\t// decided what to do (either we'll dispatch a synthetic contextmenu on\n\t\t\t\t// pointerup to open the menu at the release position, or we panned and\n\t\t\t\t// don't want a menu at all).\n\t\t\t\t//\n\t\t\t\t// Other contextmenu sources must reach Radix so the menu opens:\n\t\t\t\t// - long-press on touch devices (button=0, pointerType=touch)\n\t\t\t\tif (!isSecondaryClickEvent(e)) return",
+        "detail": {
+          "unitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents.onContextMenu#function:useCanvasEvents.canvasEvents.onContextMenu",
+          "fileId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents.onContextMenu",
+          "unitKind": "function",
+          "name": "onContextMenu",
+          "qualifiedName": "useCanvasEvents.canvasEvents.onContextMenu",
+          "parentUnitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.canvasEvents#function:useCanvasEvents.canvasEvents",
+          "startLine": 174,
+          "endLine": 197,
+          "signature": "function onContextMenu(e: React.MouseEvent)",
+          "parameters": [
+            {
+              "name": "e",
+              "type": "React.MouseEvent",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The argument is a React mouse event with a nativeEvent containing an isTrusted property.",
+            "The enclosing editor provides an options.rightClickPanning boolean.",
+            "The event can be evaluated by isSecondaryClickEvent."
+          ],
+          "postconditions": [
+            "If right-click panning is disabled, the event is left unchanged.",
+            "If the native event is untrusted, the event is left unchanged.",
+            "If the event is not a secondary-click context-menu event, the event is left unchanged.",
+            "A trusted secondary-click context-menu event is suppressed from the native browser context menu."
+          ],
+          "invariants": [
+            "Synthetic context-menu events are never suppressed.",
+            "Non-secondary context-menu sources are allowed to reach the context-menu consumer."
+          ],
+          "edgeCases": [
+            "When editor.options.rightClickPanning is false, the handler returns without suppressing the event.",
+            "When e.nativeEvent.isTrusted is false, the handler returns without suppressing the event.",
+            "When the event is trusted but isSecondaryClickEvent(e) is false, the handler returns without suppressing the event.",
+            "When right-click panning is enabled and the trusted event is a secondary click, the native context menu is suppressed."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "isSecondaryClickEvent", "source": "local helper", "kind": "internal" }],
+          "symbolReferences": [
+            "React.MouseEvent",
+            "editor.options.rightClickPanning",
+            "e.nativeEvent.isTrusted",
+            "isSecondaryClickEvent"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Handles native context-menu events for the canvas. It preserves context-menu events when right-click panning is disabled, when the event is synthetic, or when the event is not caused by a secondary click; trusted secondary-click context menus are suppressed for custom pointer handling.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "onContextMenu is invoked",
+              "then": "the handler returns without suppressing the event.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "onContextMenu is invoked",
+              "then": "the handler returns without suppressing the event.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "onContextMenu is invoked",
+              "then": "the native browser context-menu event is suppressed.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "f6a59367672f9c5c0ebcef464f416baf9b6cd6576c7133e43e8f457fe26e1cd7"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.onPointerMove#function:useCanvasEvents.onPointerMove",
+        "unitKind": "function",
+        "name": "onPointerMove",
+        "qualifiedName": "useCanvasEvents.onPointerMove",
+        "parentUnitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents#function:useCanvasEvents",
+        "startLine": 227,
+        "endLine": 251,
+        "isBehavioral": true,
+        "source": "\t\t\teditor.markEventAsHandled(e)\n\n\t\t\tif (e.clientX === lastX && e.clientY === lastY) return\n\t\t\tlastX = e.clientX\n\t\t\tlastY = e.clientY\n\n\t\t\t// For tools that benefit from a higher fidelity of events,\n\t\t\t// we dispatch the coalesced events.\n\t\t\t// N.B. Sometimes getCoalescedEvents isn't present on iOS, ugh.\n\t\t\t// Specifically, in local mode (non-https) mode, iOS does not `useCoalescedEvents`\n\t\t\t// so it appears like the ink is working locally, when really it's just that `useCoalescedEvents`\n\t\t\t// is disabled. The intent here is to have `useCoalescedEvents` disabled for iOS.\n\t\t\tconst events =\n\t\t\t\t!tlenv.isIos && currentTool.useCoalescedEvents && e.getCoalescedEvents\n\t\t\t\t\t? e.getCoalescedEvents()\n\t\t\t\t\t: [e]\n\n\t\t\tfor (const singleEvent of events) {\n\t\t\t\teditor.dispatch({\n\t\t\t\t\ttype: 'pointer',\n\t\t\t\t\ttarget: 'canvas',\n\t\t\t\t\tname: 'pointer_move',\n\t\t\t\t\t...getPointerInfo(editor, singleEvent),\n\t\t\t\t})\n\t\t\t}",
+        "detail": {
+          "unitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.onPointerMove#function:useCanvasEvents.onPointerMove",
+          "fileId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents.onPointerMove",
+          "unitKind": "function",
+          "name": "onPointerMove",
+          "qualifiedName": "useCanvasEvents.onPointerMove",
+          "parentUnitId": "packages/editor/src/lib/hooks/useCanvasEvents.ts__useCanvasEvents#function:useCanvasEvents",
+          "startLine": 227,
+          "endLine": 251,
+          "signature": null,
+          "parameters": [
+            { "name": "e", "type": null, "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The event argument provides clientX and clientY coordinates.",
+            "editor, currentTool, tlenv, and the pointer-event state are available in the enclosing hook context."
+          ],
+          "postconditions": [
+            "The event is marked as handled.",
+            "If the client coordinates differ from the previous pointer move, the stored last coordinates are updated.",
+            "One pointer action is dispatched for each selected event, with target canvas, name pointer_move, and pointer information derived from that event."
+          ],
+          "invariants": [
+            "A pointer move with the same clientX and clientY as the previous move produces no dispatch.",
+            "When iOS mode is enabled, the original event is used instead of coalesced events.",
+            "When coalesced events are selected, each selected event produces a separate pointer dispatch."
+          ],
+          "edgeCases": [
+            "A repeated clientX/clientY pair is marked handled but returns without updating coordinates or dispatching.",
+            "When tlenv.isIos is true, currentTool.useCoalescedEvents is false, or getCoalescedEvents is unavailable, only the original event is dispatched.",
+            "When coalesced events are selected and getCoalescedEvents returns an empty array, no pointer dispatch is produced for that move."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [
+            "Mutates the enclosing lastX state to the event clientX when the coordinates are not duplicates.",
+            "Mutates the enclosing lastY state to the event clientY when the coordinates are not duplicates.",
+            "Marks the event as handled through editor.markEventAsHandled."
+          ],
+          "eventsEmitted": [
+            "Dispatches editor pointer actions with type pointer, target canvas, and name pointer_move."
+          ],
+          "complexity": null,
+          "calls": [
+            { "name": "editor.markEventAsHandled", "source": "editor", "kind": "external" },
+            { "name": "e.getCoalescedEvents", "source": "pointer event", "kind": "external" },
+            { "name": "getPointerInfo", "source": null, "kind": "external" },
+            { "name": "editor.dispatch", "source": "editor", "kind": "external" }
+          ],
+          "symbolReferences": ["editor", "tlenv", "currentTool", "getPointerInfo"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Each dispatch payload has type: 'pointer', target: 'canvas', name: 'pointer_move', plus the fields returned by getPointerInfo(editor, singleEvent).",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Handles canvas pointer-move events and dispatches pointer actions with pointer information. Repeated coordinates are ignored, while supported coalesced events are dispatched individually.",
+          "specLiterals": [
+            { "kind": "enum-value", "value": "pointer", "role": "Dispatched action type for pointer movement." },
+            { "kind": "enum-value", "value": "canvas", "role": "Dispatched action target." },
+            { "kind": "enum-value", "value": "pointer_move", "role": "Dispatched action name." }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "onPointerMove is called with the new event.",
+              "then": "The event is marked as handled, no pointer action is dispatched, and the stored coordinates remain unchanged.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "onPointerMove is called.",
+              "then": "The event is marked as handled, the latest coordinates are stored, and one pointer action is dispatched for each coalesced event.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "onPointerMove is called.",
+              "then": "Exactly one pointer action is dispatched using the original event.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "c27ecf8fd26a8708ab2b726ff4b80370b55710b019ac45ffb85eadf39385a68f"
+        }
+      }
+    ]
+  },
+  "out": [
+    "packages/editor/src/lib/utils/getPointerInfo.ts",
+    "packages/editor/src/lib/utils/dom.ts",
+    "packages/editor/src/lib/globals/environment.ts",
+    "packages/editor/src/lib/utils/pointer.ts",
+    "packages/editor/src/lib/hooks/useEditor.tsx"
+  ],
+  "in": [
+    "packages/editor/src/lib/license/Watermark.tsx",
+    "packages/editor/src/lib/components/default-components/DefaultCanvas.tsx",
+    "packages/editor/src/lib/components/MenuClickCapture.tsx"
+  ],
+  "externals": ["@tldraw/state-react", "react"],
+  "impact": {
+    "seeds": 13,
+    "callers": 4,
+    "impactedFiles": [
+      "packages/editor/src/lib/license/Watermark.tsx",
+      "packages/editor/src/lib/components/MenuClickCapture.tsx",
+      "packages/editor/src/lib/components/default-components/DefaultCanvas.tsx"
+    ]
+  }
+}

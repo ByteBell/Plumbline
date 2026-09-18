@@ -1,0 +1,106 @@
+{
+  "answer": [
+    "apps/web/modules/schedules/hooks/useApiV2AvailableSlots.ts",
+    "packages/platform/atoms/hooks/useAvailableSlots.ts",
+    "apps/web/modules/schedules/hooks/useSchedule.ts",
+    "packages/platform/atoms/booker/BookerPlatformWrapper.tsx",
+    "packages/platform/atoms/calendar-view/EventTypeCalendarViewComponent.tsx",
+    "packages/trpc/server/routers/viewer/slots/util.ts",
+    "packages/platform/types/slots/slots-2024-04-15/inputs/index.ts",
+    "packages/features/bookings/lib/timePreferences.ts",
+    "packages/features/bookings/Booker/store.ts",
+    "apps/web/modules/schedules/hooks/useSlotsForDate.ts",
+    "apps/web/modules/schedules/hooks/useNonEmptyScheduleDays.ts",
+    "apps/web/modules/schedules/hooks/useEvent.ts",
+    "packages/features/bookings/Booker/hooks/useAvailableTimeSlots.ts",
+    "apps/api/v2/src/modules/slots/slots-2024-04-15/controllers/slots.controller.ts",
+    "apps/api/v2/src/modules/slots/slots-2024-04-15/services/slots-output.service.ts",
+    "apps/api/v2/src/modules/slots/slots-2024-09-04/services/slots-input.service.ts",
+    "apps/api/v2/src/modules/slots/slots-2024-09-04/services/slots-output.service.ts",
+    "apps/api/v2/src/modules/slots/slots-2024-09-04/controllers/slots.controller.ts",
+    "apps/api/v2/src/modules/slots/slots-2024-09-04/services/slots.service.ts",
+    "packages/platform/types/slots/slots-2024-09-04/inputs/get-slots.input.ts",
+    "packages/platform/types/slots/slots-2024-09-04/outputs/slots.output.ts",
+    "apps/api/v2/src/lib/services/available-slots.service.ts",
+    "apps/api/v2/src/modules/slots/slots-2024-04-15/workers/slots.worker.ts",
+    "apps/web/modules/bookings/components/AvailableTimes.tsx",
+    "apps/web/modules/bookings/components/LargeCalendar.tsx",
+    "apps/web/modules/bookings/components/BookingCalendarView.tsx",
+    "apps/web/modules/bookings/components/SlotSelectionModalHeader.tsx",
+    "packages/embeds/embed-core/src/embed-iframe.ts",
+    "packages/embeds/embed-core/src/embed.ts",
+    "packages/embeds/embed-core/src/types.ts",
+    "packages/lib/sdk-event.ts",
+    "packages/embeds/embed-core/embed-iframe-init.ts",
+    "packages/features/availability/lib/getUserAvailability.ts",
+    "apps/web/modules/event-types/components/tabs/availability/EventAvailabilityTab.tsx",
+    "packages/lib/server/eventTypeSelect.ts",
+    "packages/features/eventtypes/lib/getPublicEvent.ts",
+    "packages/features/availability/lib/detectEventTypeScheduleForUser.ts",
+    "packages/features/schedules/lib/slots.ts",
+    "apps/web/modules/schedules/lib/types.ts",
+    "packages/platform/atoms/timezone/index.tsx",
+    "packages/lib/timezone.ts",
+    "packages/features/calendars/lib/timezone-conversion.ts",
+    "apps/web/lib/clock.ts",
+    "packages/features/bookings/Booker/types.ts",
+    "packages/platform/libraries/slots.ts",
+    "packages/features/di/containers/AvailableSlots.ts",
+    "packages/features/di/modules/AvailableSlots.ts",
+    "packages/platform/atoms/index.ts",
+    "packages/platform/atoms/booker/types.ts",
+    "packages/platform/types/index.ts",
+    "apps/api/v1/pages/api/slots/_get.ts",
+    "packages/features/availability/lib/getAggregatedAvailability/getAggregatedAvailability.ts",
+    "packages/lib/dayjs/index.ts",
+    "packages/dayjs/index.ts",
+    "packages/prisma/schema.prisma",
+    "packages/lib/hashedLinksUtils.ts",
+    "packages/features/calendars/weeklyview/types/state.ts",
+    "apps/web/modules/troubleshooter/components/LargeCalendar.tsx",
+    "packages/features/eventtypes/components/tabs/limits/EventLimitsTab.tsx",
+    "apps/api/v1/lib/validations/availability.ts",
+    "apps/api/v1/lib/validations/shared/timeZone.ts",
+    "packages/lib/dateTimeFormatter.ts",
+    "packages/types/schedule.d.ts",
+    "apps/web/lib/types/schedule.ts"
+  ],
+  "contract": "The restriction schedule that limits when an event type may be booked is evaluated in the visitor's own timezone whenever useBookerTimezone is set, so the visitor's selected timezone is a semantic input to slot computation \u2014 not a display-only formatting concern. Every layer that carries that timezone must therefore treat a change to it as a change of identity for the fetched availability: the request must include it, the published input DTO must accept it, the server must read it when applying the restriction, and every client cache key must incorporate it so that changing the picker invalidates and refetches the slots rather than re-rendering stale ones.",
+  "defect_location": {
+    "repo": "calcom/cal.com",
+    "summary": "The server honours the rule correctly: packages/trpc/server/routers/viewer/slots/util.ts:1271-1283 gates on eventType.restrictionScheduleId plus the 'restriction-schedule' feature flag, then computes `const restrictionTimezone = eventType.useBookerTimezone ? input.timeZone : (restrictionSchedule.timeZone ?? \"UTC\")` and feeds it to buildDateRanges at :1304-1306 \u2014 so the response genuinely depends on the request's timeZone. The break is in the client cache keys. apps/web/modules/schedules/hooks/useApiV2AvailableSlots.ts:18-31 builds its react-query key from startTime, endTime, eventTypeId, eventTypeSlug, isTeamEvent, teamId, usernameList, routedTeamMemberIds, skipContactOwner, teamMemberEmail and embedConnectVersion \u2014 timeZone is absent, even though the whole `rest` object (which does contain it) is sent as the request params at :32-36. packages/platform/atoms/hooks/useAvailableSlots.ts:20-33 has the identical omission, keying on the same fields plus rrHostSubsetIds and again passing the full `rest` as params at :34-38. Because the key never changes, react-query serves the cached response and never refires the request, so the on-screen times keep matching the previous zone's restriction until a remount. Both affected surfaces route through these two hooks: our own page via apps/web/modules/schedules/hooks/useSchedule.ts:94-120, which puts `timeZone: timezone ?? \"PLACEHOLDER_TIMEZONE\"` into `input` and forwards it at :147-154 to the V2 hook (its tRPC sibling at :156 passes the whole `input` as the key and so refetches correctly \u2014 which is why only the V2 path misbehaves), and the embeddable widget via packages/platform/atoms/booker/BookerPlatformWrapper.tsx:246,289 (`const { timezone } = useTimePreferences()` then `timeZone: timezone`) and packages/platform/atoms/calendar-view/EventTypeCalendarViewComponent.tsx:71,93 with the same pattern. The zone itself is owned by packages/features/bookings/lib/timePreferences.ts:28-31, whose setTimezone writes localStorage and the zustand store \u2014 which is what makes the stale view survive re-render but not a reload. The published input surface already accepts the value (packages/platform/types/slots/slots-2024-04-15/inputs/index.ts:101-103, optional timeZone), so the fix is to add timeZone to both query keys and keep the DTO/server contract as is."
+  },
+  "registers": [
+    {
+      "name": "ENFORCEMENT",
+      "phrase": "restriction schedule enforcement booker timezone flag",
+      "hits": 18
+    },
+    {
+      "name": "PAYLOAD",
+      "phrase": "client store selected zone value query key request parameters",
+      "hits": 16
+    },
+    {
+      "name": "CONTRACT",
+      "phrase": "versioned slots endpoint controller output DTO published surface (pathContains apps/api/v2/src/modules/slots)",
+      "hits": 14
+    },
+    {
+      "name": "CROSSCUTTING",
+      "phrase": "embed iframe snippet postMessage prefill locale propagation",
+      "hits": 12
+    }
+  ],
+  "traces": [
+    "packages/trpc/server/routers/viewer/slots/util.ts",
+    "packages/features/bookings/Booker/hooks/useAvailableTimeSlots.ts",
+    "packages/platform/atoms/hooks/useAvailableSlots.ts"
+  ],
+  "counts": {
+    "seen": 132,
+    "confirmed": 8,
+    "ruled_out": 0,
+    "candidates": 124
+  }
+}

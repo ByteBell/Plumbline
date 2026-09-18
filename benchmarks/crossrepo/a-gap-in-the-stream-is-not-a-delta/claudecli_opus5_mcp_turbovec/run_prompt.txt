@@ -1,0 +1,58 @@
+CASE: xrepo-m03
+
+You are looking for every file that a single change would touch, across 16
+separate React-ecosystem repositories. They do not import one another, so the
+answer spans more than one repository.
+
+  repo             commit
+  redux            3aa561f9fc13f3287e6d83764f85fe0e82437c5f
+  redux-toolkit    b1c5130154c454ca8387f55da6122fcb507c560c
+  react-redux      ad5d1e0816d0cb1464b25cf2853f2a7d73433f5b
+  reselect         8d87c27b75f55883629be75d1eae1c27832d907a
+  react            3a717e42438afac81020cdec297dadb5613a4304
+  jotai            5c4ca26b0db5571114be58393e17854a771f7790
+  zustand          beca84e600e4e250f6b244d22878e72948f331c7
+  db               7f0fa36ff6d48b0494ed5f6a1223fd18c317e41f
+  xyflow           360f5b13e2bc6899ea06b4be1a49b068d86926cf
+  query            46d7f02f1c7b9fcd3255082cc7103e8bfa3dab76
+  table            d08af367e11c539bb7e18c2472aa761149ef6db6
+  tldraw           5590d14d8edd4faab7dc1177b6e1adb28876fd23
+  redux-devtools   f4b4668c30ae08920c59a76cc4629c35c16ef0fa
+  router           3dee5b2e9453d01a3172c73426959007b290b3fc
+  primitives       58164e06ca67dff9a68dd375d858180cfdc8ec27
+  zod              912f0f51b0ced654d0069741e7160834dca742ee
+
+Assume these commits are already indexed and ready. Do not verify checkouts, do
+not check revisions, do not run any gates. Just start searching.
+
+PROBLEM
+An incremental subscriber in one of these libraries is fed a running sequence of changes against a baseline it is assumed to hold. When the producer cannot honour that assumption - the subscriber joined late, the window it was tracking moved, the upstream restarted, the portion of the data it had asked for was narrowed and then widened again - what arrives is not a change against the baseline the subscriber holds but a change against a baseline it never saw. It applies it anyway, because nothing in the protocol distinguishes 'here is what changed' from 'you have missed something, start again': both are just the next batch. The result is a local view that no longer corresponds to any state the producer was ever in, and it stays wrong indefinitely, because every subsequent correct batch is applied on top of the corruption. The contract is that a stream of changes is only meaningful relative to a known baseline, so a subscriber must be able to detect that it has lost the baseline and must recover by re-reading the whole rather than by continuing to patch. Elsewhere in the folder the difference is explicit: one library's diff type carries, per record, whether the entry was added, changed or removed, and its constructor can be asked for the diff between two whole snapshots, so a recovery is expressible in the same vocabulary as an increment. Which files apply an increment against a baseline they may not hold, and which own the increment-versus-snapshot contract they have to be brought in line with?
+
+PHASE 1 - FIND THE FILES
+- Use ONLY the turbovector MCP tools. That is your whole surface.
+- You are sandboxed: nothing else on this machine is readable, and any denial you
+  hit is expected. Do not work around it.
+- Do NOT read golden.json, and do not look for it. Phase 1 is answered blind.
+- Work outward from the symptom to the contract, across repositories. Source files
+  only - no tests, docs, examples, fixtures or build output.
+- Return repo-relative paths (no leading slash, no repo name prefix), most likely
+  first, at most 75 paths total.
+
+- Keep a running note of every error you hit in this phase: a tool call that is
+  rejected, times out, returns an MCP error, overflows, is denied, or comes back
+  empty when it should not. Record the call number, the tool, the arguments, and
+  the exact error text. You will list them all in PHASE 2.
+
+End PHASE 1 with ONLY this JSON array, no prose and no markdown fence:
+[{"repo": "<repo>", "files": ["<path>", "..."]}, ...]
+
+PHASE 2 - COMPARE (only after PHASE 1's array is out)
+- Now read the golden.json file whose path was supplied with this run.
+- Print every file it lists, then which of them PHASE 1 found and which it missed.
+- List every error you faced during PHASE 1, one per entry, in call order:
+  "NN. <tool> <json args> -> <exact error text>". Include rejected arguments, MCP
+  errors, timeouts, denials, result overflows, and empty results that should not
+  have been empty. If you have a write tool, write this list to errors.log in
+  this arm's folder; if you have none, print it under an "ERRORS" heading in this
+  PHASE 2 message so the harness can capture it into errors.log. If there were
+  none, say "no errors in PHASE 1" - the list must still appear.

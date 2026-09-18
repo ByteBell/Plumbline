@@ -1,0 +1,1210 @@
+{
+  "schema": 2,
+  "kind": "file",
+  "repoName": "tldraw",
+  "file": {
+    "relativePath": "packages/tlschema/src/records/TLPageState.ts",
+    "language": "typescript",
+    "sizeBytes": 7569,
+    "tokenCount": 1893,
+    "model": "us.openai.gpt-5.6-luna",
+    "analysedAt": "2026-08-24T12:15:44.642Z",
+    "module": {
+      "purpose": "Defines the schema, validator, migrations, defaults, and record type for transient page-specific interaction state scoped to a browser session.",
+      "summary": "This module models per-page interaction state such as selections, hover, editing, cropping, hinting, erasing, focused groups, and metadata. It provides runtime validation, versioned migrations for evolving persisted records, session scoping, ephemeral-field behavior, and default values for newly created records.",
+      "businessContext": "Supports interactive page editing in a browser-based collaborative drawing application. Failure can invalidate page-session state, break editing interactions, or prevent older documents from loading correctly.",
+      "classes": [],
+      "functions": [
+        "up (~L116-118): Adds the cropping state field during record migration",
+        "up (~L122-125): Removes obsolete instance and camera fields",
+        "up (~L129-131): Adds an empty metadata object to migrated records",
+        "up (~L137-139): Performs the intentionally preserved no-op migration",
+        "down (~L140-142): Performs the intentionally preserved reverse no-op migration",
+        "up (~L146-161): Renames legacy interaction state properties to current names",
+        "down (~L162-177): Renames current interaction state properties to legacy names",
+        "anonymous default factory (~L224-233): Supplies default values for new page-state records"
+      ],
+      "keywords": [
+        "TLInstancePageState",
+        "record migration",
+        "session scope",
+        "ephemeral keys",
+        "shape selection",
+        "editing state",
+        "cropping state",
+        "runtime validator",
+        "page interaction state",
+        "schema evolution"
+      ],
+      "ontologyConcepts": [
+        "state persistence",
+        "schema validation",
+        "schema migration",
+        "session scoping",
+        "default initialization",
+        "transient interaction state"
+      ],
+      "businessEntities": ["page", "shape", "browser tab", "page state", "metadata", "record"],
+      "systemCapabilities": [
+        "Validate page interaction records",
+        "Migrate legacy page-state schemas",
+        "Create session-scoped page state",
+        "Initialize interaction-state defaults",
+        "Control undo persistence for transient fields"
+      ],
+      "configDependencies": [],
+      "importsInternal": [
+        {
+          "spec": "../misc/id-validator",
+          "symbols": ["idValidator"],
+          "anchor": { "startLine": 11, "endLine": 11 },
+          "resolvedRelativePath": "packages/tlschema/src/misc/id-validator.ts",
+          "resolvedFileId": "packages/tlschema/src/misc/id-validator.ts",
+          "resolvedHint": "packages/tlschema/src/misc/id-validator.ts"
+        },
+        {
+          "spec": "../shapes/TLBaseShape",
+          "symbols": ["shapeIdValidator"],
+          "anchor": { "startLine": 12, "endLine": 12 },
+          "resolvedRelativePath": "packages/tlschema/src/shapes/TLBaseShape.ts",
+          "resolvedFileId": "packages/tlschema/src/shapes/TLBaseShape.ts",
+          "resolvedHint": "packages/tlschema/src/shapes/TLBaseShape.ts"
+        },
+        {
+          "spec": "./TLPage",
+          "symbols": ["pageIdValidator", "TLPage"],
+          "anchor": { "startLine": 13, "endLine": 13 },
+          "resolvedRelativePath": "packages/tlschema/src/records/TLPage.ts",
+          "resolvedFileId": "packages/tlschema/src/records/TLPage.ts",
+          "resolvedHint": "packages/tlschema/src/records/TLPage.ts"
+        },
+        {
+          "spec": "./TLShape",
+          "symbols": ["TLShapeId"],
+          "anchor": { "startLine": 14, "endLine": 14 },
+          "resolvedRelativePath": "packages/tlschema/src/records/TLShape.ts",
+          "resolvedFileId": "packages/tlschema/src/records/TLShape.ts",
+          "resolvedHint": "packages/tlschema/src/records/TLShape.ts"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "@tldraw/store",
+          "symbols": [
+            "BaseRecord",
+            "createMigrationIds",
+            "createRecordMigrationSequence",
+            "createRecordType",
+            "RecordId"
+          ],
+          "package": "@tldraw/store",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 7 }
+        },
+        {
+          "spec": "@tldraw/utils",
+          "symbols": ["JsonObject"],
+          "package": "@tldraw/utils",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 8, "endLine": 9 }
+        },
+        {
+          "spec": "@tldraw/validate",
+          "symbols": ["T"],
+          "package": "@tldraw/validate",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 10, "endLine": 10 }
+        }
+      ],
+      "sideEffects": {
+        "io": [],
+        "network": [],
+        "env": [],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": ["Migrations add, rename, and delete properties directly on migration record arguments."]
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "TLInstancePageState",
+          "shape": "BaseRecord<'instance_page_state', TLInstancePageStateId> { pageId: RecordId<TLPage>; selectedShapeIds: TLShapeId[]; hintingShapeIds: TLShapeId[]; erasingShapeIds: TLShapeId[]; hoveredShapeId: TLShapeId | null; editingShapeId: TLShapeId | null; croppingShapeId: TLShapeId | null; focusedGroupId: TLShapeId | null; meta: JsonObject }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "instancePageStateValidator",
+          "shape": "T.Validator<TLInstancePageState> = T.model('instance_page_state', T.object({ typeName: T.literal('instance_page_state'), id: idValidator<TLInstancePageStateId>('instance_page_state'), pageId: pageIdValidator, selectedShapeIds: T.arrayOf(shapeIdValidator), hintingShapeIds: T.arrayOf(shapeIdValidator), erasingShapeIds: T.arrayOf(shapeIdValidator), hoveredShapeId: shapeIdValidator.nullable(), editingShapeId: shapeIdValidator.nullable(), croppingShapeId: shapeIdValidator.nullable(), focusedGroupId: shapeIdValidator.nullable(), meta: T.jsonValue as T.ObjectValidator<JsonObject> }))",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "instancePageStateVersions",
+          "shape": "createMigrationIds('com.tldraw.instance_page_state', { AddCroppingId: 1, RemoveInstanceIdAndCameraId: 2, AddMeta: 3, RenameProperties: 4, RenamePropertiesAgain: 5 } as const)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "instancePageStateMigrations",
+          "shape": "createRecordMigrationSequence({ sequenceId: 'com.tldraw.instance_page_state', recordType: 'instance_page_state', sequence: [...] })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "InstancePageStateRecordType",
+          "shape": "createRecordType<TLInstancePageState>('instance_page_state', { validator: instancePageStateValidator, scope: 'session', ephemeralKeys: { pageId: false, selectedShapeIds: false, editingShapeId: true, croppingShapeId: false, meta: false, hintingShapeIds: true, erasingShapeIds: true, hoveredShapeId: true, focusedGroupId: true } }).withDefaultProperties((): Omit<TLInstancePageState, 'id' | 'typeName' | 'pageId'> => ({ editingShapeId: null, croppingShapeId: null, selectedShapeIds: [], hoveredShapeId: null, erasingShapeIds: [], hintingShapeIds: [], focusedGroupId: null, meta: {} }))",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "TLInstancePageStateId",
+          "shape": "RecordId<TLInstancePageState>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "BaseRecord",
+          "shape": "BaseRecord<'instance_page_state', TLInstancePageStateId>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        { "name": "RecordId", "shape": "RecordId<TLPage>", "resolvedRelativePath": null, "resolvedFileId": null },
+        { "name": "JsonObject", "shape": "JsonObject", "resolvedRelativePath": null, "resolvedFileId": null },
+        {
+          "name": "T.Validator",
+          "shape": "T.Validator<TLInstancePageState>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "idValidator",
+          "shape": "idValidator<TLInstancePageStateId>('instance_page_state')",
+          "resolvedRelativePath": "packages/tlschema/src/misc/id-validator.ts",
+          "resolvedFileId": "packages/tlschema/src/misc/id-validator.ts"
+        },
+        {
+          "name": "shapeIdValidator",
+          "shape": "shapeIdValidator",
+          "resolvedRelativePath": "packages/tlschema/src/shapes/TLBaseShape.ts",
+          "resolvedFileId": "packages/tlschema/src/shapes/TLBaseShape.ts"
+        },
+        {
+          "name": "pageIdValidator",
+          "shape": "pageIdValidator",
+          "resolvedRelativePath": "packages/tlschema/src/records/TLPage.ts",
+          "resolvedFileId": "packages/tlschema/src/records/TLPage.ts"
+        },
+        {
+          "name": "TLPage",
+          "shape": "RecordId<TLPage>",
+          "resolvedRelativePath": "packages/tlschema/src/records/TLPage.ts",
+          "resolvedFileId": "packages/tlschema/src/records/TLPage.ts"
+        },
+        {
+          "name": "TLShapeId",
+          "shape": "TLShapeId",
+          "resolvedRelativePath": "packages/tlschema/src/records/TLShape.ts",
+          "resolvedFileId": "packages/tlschema/src/records/TLShape.ts"
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "runtime validation",
+          "intent": "Validates record identity and all page interaction state fields.",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 70, "endLine": 85 }
+        },
+        {
+          "name": "migration sequence",
+          "intent": "Declares ordered schema transformations for historical record versions.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 110, "endLine": 180 }
+        },
+        {
+          "name": "legacy property rename",
+          "intent": "Converts legacy property names into current interaction-state names.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 146, "endLine": 161 }
+        },
+        {
+          "name": "reverse property rename",
+          "intent": "Converts current interaction-state names back to legacy names.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 162, "endLine": 177 }
+        },
+        {
+          "name": "record type configuration",
+          "intent": "Configures session scope and undo behavior for state fields.",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 201, "endLine": 222 }
+        },
+        {
+          "name": "default properties",
+          "intent": "Initializes nullable fields, arrays, and metadata for new records.",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 223, "endLine": 234 }
+        }
+      ],
+      "representationFamily": "schema",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "interface",
+          "name": "TLInstancePageState",
+          "signature": "export interface TLInstancePageState extends BaseRecord<\n\t'instance_page_state',\n\tTLInstancePageStateId\n>",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 37, "endLine": 40 }
+        },
+        {
+          "kind": "const",
+          "name": "instancePageStateValidator",
+          "signature": "export const instancePageStateValidator: T.Validator<TLInstancePageState> = T.model(",
+          "generics": null,
+          "decorators": [],
+          "returnType": "T.Validator<TLInstancePageState>",
+          "exported": true,
+          "anchor": { "startLine": 70, "endLine": 70 }
+        },
+        {
+          "kind": "const",
+          "name": "instancePageStateVersions",
+          "signature": "export const instancePageStateVersions = createMigrationIds('com.tldraw.instance_page_state', {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 93, "endLine": 93 }
+        },
+        {
+          "kind": "const",
+          "name": "instancePageStateMigrations",
+          "signature": "export const instancePageStateMigrations = createRecordMigrationSequence({",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 110, "endLine": 110 }
+        },
+        {
+          "kind": "const",
+          "name": "InstancePageStateRecordType",
+          "signature": "export const InstancePageStateRecordType = createRecordType<TLInstancePageState>(",
+          "generics": "TLInstancePageState",
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 201, "endLine": 201 }
+        },
+        {
+          "kind": "type",
+          "name": "TLInstancePageStateId",
+          "signature": "export type TLInstancePageStateId = RecordId<TLInstancePageState>",
+          "generics": null,
+          "decorators": [],
+          "returnType": "RecordId<TLInstancePageState>",
+          "exported": true,
+          "anchor": { "startLine": 248, "endLine": 248 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "interface",
+          "name": "TLInstancePageState",
+          "shape": "{\n\tpageId: RecordId<TLPage>\n\tselectedShapeIds: TLShapeId[]\n\thintingShapeIds: TLShapeId[]\n\terasingShapeIds: TLShapeId[]\n\thoveredShapeId: TLShapeId | null\n\teditingShapeId: TLShapeId | null\n\tcroppingShapeId: TLShapeId | null\n\tfocusedGroupId: TLShapeId | null\n\tmeta: JsonObject\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 40, "endLine": 50 }
+        },
+        {
+          "kind": "alias",
+          "name": "TLInstancePageStateId",
+          "shape": "RecordId<TLInstancePageState>",
+          "discriminant": null,
+          "anchor": { "startLine": 248, "endLine": 248 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "Older record without croppingShapeId",
+          "handled": true,
+          "behavior": "The first migration adds croppingShapeId with a null value.",
+          "anchor": { "startLine": 114, "endLine": 118 }
+        },
+        {
+          "inputShape": "Older record containing instanceId or cameraId",
+          "handled": true,
+          "behavior": "The obsolete properties are deleted during migration.",
+          "anchor": { "startLine": 120, "endLine": 125 }
+        },
+        {
+          "inputShape": "Record without metadata",
+          "handled": true,
+          "behavior": "Migration initializes meta to an empty object.",
+          "anchor": { "startLine": 127, "endLine": 131 }
+        },
+        {
+          "inputShape": "Legacy selectedIds, hintingIds, erasingIds, hoveredId, editingId, croppingId, or focusLayerId fields",
+          "handled": true,
+          "behavior": "Legacy fields are copied or normalized into current names and then deleted.",
+          "anchor": { "startLine": 146, "endLine": 161 }
+        },
+        {
+          "inputShape": "Record with existing croppingShapeId and legacy croppingId",
+          "handled": true,
+          "behavior": "The existing croppingShapeId is retained because nullish coalescing only falls back when it is null or undefined.",
+          "anchor": { "startLine": 157, "endLine": 158 }
+        },
+        {
+          "inputShape": "New record with omitted optional interaction fields",
+          "handled": true,
+          "behavior": "Default properties provide null references, empty arrays, and empty metadata.",
+          "anchor": { "startLine": 223, "endLine": 234 }
+        }
+      ],
+      "boundaryConditions": [],
+      "errorHandling": [],
+      "invariants": [
+        {
+          "kind": "invariant",
+          "description": "Records use the instance_page_state type name and matching identifier validator.",
+          "anchor": { "startLine": 72, "endLine": 74 }
+        },
+        {
+          "kind": "non-null",
+          "description": "Selected, hinting, and erasing shape collections are always arrays.",
+          "anchor": { "startLine": 76, "endLine": 78 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Nullable interaction references explicitly accept null.",
+          "anchor": { "startLine": 79, "endLine": 82 }
+        },
+        {
+          "kind": "ordering",
+          "description": "Migration transformations are applied in the declared sequence order.",
+          "anchor": { "startLine": 113, "endLine": 179 }
+        },
+        {
+          "kind": "invariant",
+          "description": "New records default interaction collections to empty arrays and nullable references to null.",
+          "anchor": { "startLine": 224, "endLine": 233 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "schema",
+          "description": "Migration inputs are mutable record-like objects containing the legacy fields referenced by each migration.",
+          "anchor": { "startLine": 146, "endLine": 177 }
+        },
+        {
+          "kind": "caller",
+          "description": "Migration execution is handled by the record migration framework in declared version order.",
+          "anchor": { "startLine": 110, "endLine": 113 }
+        },
+        {
+          "kind": "schema",
+          "description": "Validated records conform to the instance_page_state shape and use valid page and shape identifiers.",
+          "anchor": { "startLine": 70, "endLine": 85 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "How does the migration framework select and sequence up versus down transformations?",
+          "affects": "migration orchestration",
+          "anchor": { "startLine": 110, "endLine": 180 },
+          "resolution": null
+        },
+        {
+          "question": "Which record fields are persisted or synchronized despite the session scope and ephemeral key configuration?",
+          "affects": "record persistence and synchronization",
+          "anchor": { "startLine": 201, "endLine": 222 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "sync",
+        "reentrant": true,
+        "ordering": "deterministic",
+        "notes": "Validation, default construction, and migration callbacks are synchronous and contain no asynchronous coordination."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "validates-instance-page-state-record",
+          "scenario": "A record with the instance page state shape and valid identifiers is accepted by the runtime validator.",
+          "given": [
+            "const pageState = { typeName: 'instance_page_state', id: 'instance_page_state:page1', pageId: 'page:page1', selectedShapeIds: ['shape:rect1'], hintingShapeIds: [], erasingShapeIds: [], hoveredShapeId: null, editingShapeId: null, croppingShapeId: null, focusedGroupId: null, meta: {} }"
+          ],
+          "when": "instancePageStateValidator.isValid(pageState)",
+          "then": "true",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Guards the complete persisted record schema and identifier validation."
+        },
+        {
+          "testId": "creates-default-instance-page-state-properties",
+          "scenario": "Creating a record without optional state properties supplies the documented transient and persistent defaults.",
+          "given": [
+            "const pageState = InstancePageStateRecordType.create({ id: 'instance_page_state:page1', pageId: 'page:page1' })"
+          ],
+          "when": "pageState",
+          "then": "pageState.selectedShapeIds is []; pageState.hintingShapeIds is []; pageState.erasingShapeIds is []; pageState.hoveredShapeId is null; pageState.editingShapeId is null; pageState.croppingShapeId is null; pageState.focusedGroupId is null; pageState.meta is {}",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins the default record shape required by consumers."
+        },
+        {
+          "testId": "migrates-renamed-page-state-properties",
+          "scenario": "A legacy record using the pre-rename property names is transformed into the current property names.",
+          "given": [
+            "const record = { selectedIds: ['shape:rect1'], hintingIds: [], erasingIds: [], hoveredId: null, editingId: null, croppingId: null, focusLayerId: null }"
+          ],
+          "when": "instancePageStateMigrations.migrate(record, instancePageStateVersions.RenamePropertiesAgain)",
+          "then": "record.selectedShapeIds is record.selectedIds; record.hintingShapeIds is record.hintingIds; record.erasingShapeIds is record.erasingIds; record.hoveredShapeId is record.hoveredId; record.editingShapeId is record.editingId; record.croppingShapeId is null; record.focusedGroupId is record.focusLayerId; legacy properties are deleted",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Protects forward compatibility for records written with legacy field names."
+        },
+        {
+          "testId": "adds-missing-cropping-and-meta-fields",
+          "scenario": "An older record is migrated through the schema versions that introduced cropping state and metadata.",
+          "given": [
+            "const record = { typeName: 'instance_page_state', id: 'instance_page_state:page1', pageId: 'page:page1' }"
+          ],
+          "when": "instancePageStateMigrations.migrate(record, instancePageStateVersions.AddMeta)",
+          "then": "record.croppingShapeId is null; record.meta is {}",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Ensures newly introduced schema fields receive safe migration defaults."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "imports",
+        "TLInstancePageState interface",
+        "instancePageStateValidator declaration",
+        "instancePageStateVersions declaration",
+        "instancePageStateMigrations declaration",
+        "InstancePageStateRecordType declaration",
+        "TLInstancePageStateId type alias"
+      ],
+      "moduleLevelCode": "import {\n\tBaseRecord,\n\tcreateMigrationIds,\n\tcreateRecordMigrationSequence,\n\tcreateRecordType,\n\tRecordId,\n} from '@tldraw/store'\nimport { JsonObject } from '@tldraw/utils'\nimport { T } from '@tldraw/validate'\nimport { idValidator } from '../misc/id-validator'\nimport { shapeIdValidator } from '../shapes/TLBaseShape'\nimport { pageIdValidator, TLPage } from './TLPage'\nimport { TLShapeId } from './TLShape'",
+      "exports": [
+        { "name": "TLInstancePageState", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "instancePageStateValidator", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "instancePageStateVersions", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "instancePageStateMigrations", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "InstancePageStateRecordType", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "TLInstancePageStateId", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "BaseRecord", "module": "@tldraw/store", "alias": null, "kind": "external" },
+        { "symbol": "createMigrationIds", "module": "@tldraw/store", "alias": null, "kind": "external" },
+        { "symbol": "createRecordMigrationSequence", "module": "@tldraw/store", "alias": null, "kind": "external" },
+        { "symbol": "createRecordType", "module": "@tldraw/store", "alias": null, "kind": "external" },
+        { "symbol": "RecordId", "module": "@tldraw/store", "alias": null, "kind": "external" },
+        { "symbol": "JsonObject", "module": "@tldraw/utils", "alias": null, "kind": "external" },
+        { "symbol": "T", "module": "@tldraw/validate", "alias": null, "kind": "external" },
+        { "symbol": "idValidator", "module": "../misc/id-validator", "alias": null, "kind": "internal" },
+        { "symbol": "shapeIdValidator", "module": "../shapes/TLBaseShape", "alias": null, "kind": "internal" },
+        { "symbol": "pageIdValidator", "module": "./TLPage", "alias": null, "kind": "internal" },
+        { "symbol": "TLPage", "module": "./TLPage", "alias": null, "kind": "internal" },
+        { "symbol": "TLShapeId", "module": "./TLShape", "alias": null, "kind": "internal" }
+      ],
+      "fileConstants": [],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/tlschema/src/records/TLPageState.ts__instancePageStateMigrations.sequence[0].up#function:instancePageStateMigrations.sequence[0].up",
+        "unitKind": "function",
+        "name": "up",
+        "qualifiedName": "instancePageStateMigrations.sequence[0].up",
+        "parentUnitId": null,
+        "startLine": 116,
+        "endLine": 118,
+        "isBehavioral": true,
+        "source": "export const instancePageStateMigrations = createRecordMigrationSequence({\n\tsequenceId: 'com.tldraw.instance_page_state',\n\trecordType: 'instance_page_state',",
+        "detail": {
+          "unitId": "packages/tlschema/src/records/TLPageState.ts__instancePageStateMigrations.sequence[0].up#function:instancePageStateMigrations.sequence[0].up",
+          "fileId": "packages/tlschema/src/records/TLPageState.ts__instancePageStateMigrations.sequence[0].up",
+          "unitKind": "function",
+          "name": "up",
+          "qualifiedName": "instancePageStateMigrations.sequence[0].up",
+          "parentUnitId": null,
+          "startLine": 116,
+          "endLine": 118,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Provides the upward migration step for the first page-state migration sequence entry.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "011f9e750e6df35739fa56ce854c561cee4d880c982333d8f7d73df3ff0dcb39"
+        }
+      },
+      {
+        "unitId": "packages/tlschema/src/records/TLPageState.ts__instancePageStateMigrations.sequence[1].up#function:instancePageStateMigrations.sequence[1].up",
+        "unitKind": "function",
+        "name": "up",
+        "qualifiedName": "instancePageStateMigrations.sequence[1].up",
+        "parentUnitId": null,
+        "startLine": 122,
+        "endLine": 125,
+        "isBehavioral": true,
+        "source": "\t\t\tup(instance: any) {\n\t\t\t\tinstance.croppingShapeId = null\n\t\t\t},\n\t\t},",
+        "detail": {
+          "unitId": "packages/tlschema/src/records/TLPageState.ts__instancePageStateMigrations.sequence[1].up#function:instancePageStateMigrations.sequence[1].up",
+          "fileId": "packages/tlschema/src/records/TLPageState.ts__instancePageStateMigrations.sequence[1].up",
+          "unitKind": "function",
+          "name": "up",
+          "qualifiedName": "instancePageStateMigrations.sequence[1].up",
+          "parentUnitId": null,
+          "startLine": 122,
+          "endLine": 125,
+          "signature": "up(instance: any)",
+          "parameters": [
+            { "name": "instance", "type": "any", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["instance is a writable object reference."],
+          "postconditions": ["instance.croppingShapeId equals null."],
+          "invariants": ["The migration does not alter properties other than croppingShapeId."],
+          "edgeCases": ["If instance already has a croppingShapeId value, it is overwritten with null."],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": ["Mutates instance.croppingShapeId by assigning null."],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Migrates a page state instance by clearing its cropping shape reference. The instance's croppingShapeId is set to null.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The migration is applied to the instance.",
+              "then": "croppingShapeId is null after the call.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "0f19194f67b5d76adf4a8aaaee6e0c02779cf5f699d522fd5937225176691a92"
+        }
+      },
+      {
+        "unitId": "packages/tlschema/src/records/TLPageState.ts__instancePageStateMigrations.sequence[2].up#function:instancePageStateMigrations.sequence[2].up",
+        "unitKind": "function",
+        "name": "up",
+        "qualifiedName": "instancePageStateMigrations.sequence[2].up",
+        "parentUnitId": null,
+        "startLine": 129,
+        "endLine": 131,
+        "isBehavioral": true,
+        "source": "\t\t\t\tdelete instance.instanceId\n\t\t\t\tdelete instance.cameraId\n\t\t\t},",
+        "detail": {
+          "unitId": "packages/tlschema/src/records/TLPageState.ts__instancePageStateMigrations.sequence[2].up#function:instancePageStateMigrations.sequence[2].up",
+          "fileId": "packages/tlschema/src/records/TLPageState.ts__instancePageStateMigrations.sequence[2].up",
+          "unitKind": "function",
+          "name": "up",
+          "qualifiedName": "instancePageStateMigrations.sequence[2].up",
+          "parentUnitId": null,
+          "startLine": 129,
+          "endLine": 131,
+          "signature": null,
+          "parameters": [
+            { "name": "instance", "type": null, "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["The input is a mutable object whose instanceId and cameraId properties may be present."],
+          "postconditions": [
+            "The instanceId property is absent from the input object.",
+            "The cameraId property is absent from the input object.",
+            "The input object is mutated in place."
+          ],
+          "invariants": ["Properties other than instanceId and cameraId are not modified by this function."],
+          "edgeCases": [
+            "If instanceId or cameraId is already absent, deletion remains successful and the function does not add the property.",
+            "If both properties are absent, the object remains otherwise unchanged.",
+            "If either property is present, it is removed from the same object rather than from a returned copy."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": ["Deletes instance.instanceId.", "Deletes instance.cameraId."],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Migrates an instance page-state object by removing the legacy instanceId and cameraId properties.",
+          "specLiterals": [
+            { "kind": "enum-value", "value": "instanceId", "role": "Legacy property name removed during migration." },
+            { "kind": "enum-value", "value": "cameraId", "role": "Legacy property name removed during migration." }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The migration's up function is called with that object.",
+              "then": "instanceId and cameraId are absent afterward, the other property is preserved, and the original object has been mutated.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "e1a5d31d3276d6bf712200ee8e0831b162fc89ba7c73ae672de0cfeda448647e"
+        }
+      },
+      {
+        "unitId": "packages/tlschema/src/records/TLPageState.ts__instancePageStateMigrations.sequence[3].up#function:instancePageStateMigrations.sequence[3].up",
+        "unitKind": "function",
+        "name": "up",
+        "qualifiedName": "instancePageStateMigrations.sequence[3].up",
+        "parentUnitId": null,
+        "startLine": 137,
+        "endLine": 139,
+        "isBehavioral": true,
+        "source": "\t\t\t},\n\t\t},\n\t\t{",
+        "detail": {
+          "unitId": "packages/tlschema/src/records/TLPageState.ts__instancePageStateMigrations.sequence[3].up#function:instancePageStateMigrations.sequence[3].up",
+          "fileId": "packages/tlschema/src/records/TLPageState.ts__instancePageStateMigrations.sequence[3].up",
+          "unitKind": "function",
+          "name": "up",
+          "qualifiedName": "instancePageStateMigrations.sequence[3].up",
+          "parentUnitId": null,
+          "startLine": 137,
+          "endLine": 139,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Applies the upward transformation for migration sequence step 3 of instance page state records.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "c90301dd8b01a86eb43960132d98daba50831779132fa057d27d20a3640e56aa"
+        }
+      },
+      {
+        "unitId": "packages/tlschema/src/records/TLPageState.ts__instancePageStateMigrations.sequence[3].down#function:instancePageStateMigrations.sequence[3].down",
+        "unitKind": "function",
+        "name": "down",
+        "qualifiedName": "instancePageStateMigrations.sequence[3].down",
+        "parentUnitId": null,
+        "startLine": 140,
+        "endLine": 142,
+        "isBehavioral": true,
+        "source": "\t\t\tid: instancePageStateVersions.RenameProperties,\n\t\t\t// this migration is cursed: it was written wrong and doesn't do anything.\n\t\t\t// rather than replace it, I've added another migration below that fixes it.",
+        "detail": {
+          "unitId": "packages/tlschema/src/records/TLPageState.ts__instancePageStateMigrations.sequence[3].down#function:instancePageStateMigrations.sequence[3].down",
+          "fileId": "packages/tlschema/src/records/TLPageState.ts__instancePageStateMigrations.sequence[3].down",
+          "unitKind": "function",
+          "name": "down",
+          "qualifiedName": "instancePageStateMigrations.sequence[3].down",
+          "parentUnitId": null,
+          "startLine": 140,
+          "endLine": 142,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": ["The reverse migration produces no effective change to the page-state data."],
+          "invariants": ["No migration properties are renamed or otherwise transformed."],
+          "edgeCases": [
+            "Any input shape receives the same no-op treatment because this migration does not perform an effective operation."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["instancePageStateVersions.RenameProperties"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Represents the reverse migration for the RenameProperties page-state version. As implemented, it performs no effective migration.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "a2fd3cafd1175cb4fd4d43b037f54e73d43c0df29ec78e3063b7dcb257c01d10"
+        }
+      },
+      {
+        "unitId": "packages/tlschema/src/records/TLPageState.ts__instancePageStateMigrations.sequence[4].up#function:instancePageStateMigrations.sequence[4].up",
+        "unitKind": "function",
+        "name": "up",
+        "qualifiedName": "instancePageStateMigrations.sequence[4].up",
+        "parentUnitId": null,
+        "startLine": 146,
+        "endLine": 161,
+        "isBehavioral": true,
+        "source": "\t\t\tdown: (_record) => {\n\t\t\t\t// noop\n\t\t\t},\n\t\t},\n\t\t{\n\t\t\tid: instancePageStateVersions.RenamePropertiesAgain,\n\t\t\tup: (record: any) => {\n\t\t\t\trecord.selectedShapeIds = record.selectedIds\n\t\t\t\tdelete record.selectedIds\n\t\t\t\trecord.hintingShapeIds = record.hintingIds\n\t\t\t\tdelete record.hintingIds\n\t\t\t\trecord.erasingShapeIds = record.erasingIds\n\t\t\t\tdelete record.erasingIds\n\t\t\t\trecord.hoveredShapeId = record.hoveredId\n\t\t\t\tdelete record.hoveredId\n\t\t\t\trecord.editingShapeId = record.editingId",
+        "detail": {
+          "unitId": "packages/tlschema/src/records/TLPageState.ts__instancePageStateMigrations.sequence[4].up#function:instancePageStateMigrations.sequence[4].up",
+          "fileId": "packages/tlschema/src/records/TLPageState.ts__instancePageStateMigrations.sequence[4].up",
+          "unitKind": "function",
+          "name": "up",
+          "qualifiedName": "instancePageStateMigrations.sequence[4].up",
+          "parentUnitId": null,
+          "startLine": 146,
+          "endLine": 161,
+          "signature": "(record: any) => void",
+          "parameters": [
+            { "name": "record", "type": "any", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "void",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["record must be a non-null object that can be assigned to and have properties deleted."],
+          "postconditions": [
+            "record.selectedShapeIds contains the prior value of record.selectedIds, and selectedIds is deleted.",
+            "record.hintingShapeIds contains the prior value of record.hintingIds, and hintingIds is deleted.",
+            "record.erasingShapeIds contains the prior value of record.erasingIds, and erasingIds is deleted.",
+            "record.hoveredShapeId contains the prior value of record.hoveredId, and hoveredId is deleted.",
+            "record.editingShapeId contains the prior value of record.editingId, and editingId is deleted."
+          ],
+          "invariants": [
+            "The migration mutates the supplied record rather than returning a replacement record.",
+            "Each legacy property is deleted after its value is copied to the corresponding current property."
+          ],
+          "edgeCases": [
+            "If a legacy property is absent, its current property is assigned undefined and the legacy property remains absent after deletion.",
+            "If the same record already has current and legacy properties, the current property is overwritten with the legacy value before the legacy property is deleted.",
+            "If record is null or undefined, property access throws a runtime TypeError.",
+            "If record is not a mutable object, assignment or deletion follows normal JavaScript runtime behavior and may throw."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [
+              "JavaScript TypeError when record is null or undefined, or when an attempted mutation is invalid for the supplied value."
+            ],
+            "reverts": [],
+            "onInvalidInput": "No explicit validation or fallback is performed; JavaScript property access, assignment, and deletion semantics apply.",
+            "returnsOnError": null
+          },
+          "stateMutations": [
+            "Mutates the supplied record by assigning selectedShapeIds, hintingShapeIds, erasingShapeIds, hoveredShapeId, and editingShapeId.",
+            "Deletes selectedIds, hintingIds, erasingIds, hoveredId, and editingId from the supplied record."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Migrates page-state records by renaming legacy selection, hinting, erasing, hovered, and editing identifier properties to their current names in place.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The migration is applied to the record.",
+              "then": "The record has selectedShapeIds = [\"shape:1\"], hintingShapeIds = [\"shape:2\"], erasingShapeIds = [\"shape:3\"], hoveredShapeId = \"shape:4\", and editingShapeId = \"shape:5\"; all five legacy properties are absent.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The migration is applied to the record.",
+              "then": "The five current properties are assigned undefined and the legacy properties remain absent.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "31877cbc810bfadd37b69141c0936981fd0b23d8fdad0eec96cb104c9ea1c9ab"
+        }
+      },
+      {
+        "unitId": "packages/tlschema/src/records/TLPageState.ts__instancePageStateMigrations.sequence[4].down#function:instancePageStateMigrations.sequence[4].down",
+        "unitKind": "function",
+        "name": "down",
+        "qualifiedName": "instancePageStateMigrations.sequence[4].down",
+        "parentUnitId": null,
+        "startLine": 162,
+        "endLine": 177,
+        "isBehavioral": true,
+        "source": "\t\t\t\tdelete record.editingId\n\t\t\t\trecord.croppingShapeId = record.croppingShapeId ?? record.croppingId ?? null\n\t\t\t\tdelete record.croppingId\n\t\t\t\trecord.focusedGroupId = record.focusLayerId\n\t\t\t\tdelete record.focusLayerId\n\t\t\t},\n\t\t\tdown: (record: any) => {\n\t\t\t\trecord.selectedIds = record.selectedShapeIds\n\t\t\t\tdelete record.selectedShapeIds\n\t\t\t\trecord.hintingIds = record.hintingShapeIds\n\t\t\t\tdelete record.hintingShapeIds\n\t\t\t\trecord.erasingIds = record.erasingShapeIds\n\t\t\t\tdelete record.erasingShapeIds\n\t\t\t\trecord.hoveredId = record.hoveredShapeId\n\t\t\t\tdelete record.hoveredShapeId\n\t\t\t\trecord.editingId = record.editingShapeId",
+        "detail": {
+          "unitId": "packages/tlschema/src/records/TLPageState.ts__instancePageStateMigrations.sequence[4].down#function:instancePageStateMigrations.sequence[4].down",
+          "fileId": "packages/tlschema/src/records/TLPageState.ts__instancePageStateMigrations.sequence[4].down",
+          "unitKind": "function",
+          "name": "down",
+          "qualifiedName": "instancePageStateMigrations.sequence[4].down",
+          "parentUnitId": null,
+          "startLine": 162,
+          "endLine": 177,
+          "signature": "(record: any) => void",
+          "parameters": [
+            { "name": "record", "type": "any", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "void",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "record is a mutable object representing page state.",
+            "The source fields may be absent or present; assignments preserve their current values, including undefined."
+          ],
+          "postconditions": [
+            "selectedIds contains the prior value of selectedShapeIds, then selectedShapeIds is removed.",
+            "hintingIds contains the prior value of hintingShapeIds, then hintingShapeIds is removed.",
+            "erasingIds contains the prior value of erasingShapeIds, then erasingShapeIds is removed.",
+            "hoveredId contains the prior value of hoveredShapeId, then hoveredShapeId is removed.",
+            "editingId contains the prior value of editingShapeId."
+          ],
+          "invariants": [
+            "The supplied record object is mutated in place rather than replaced.",
+            "Each migrated value is copied directly without transformation."
+          ],
+          "edgeCases": [
+            "When a source field is undefined or absent, the corresponding legacy field is assigned undefined before the source field is deleted.",
+            "Existing legacy fields are overwritten by the corresponding newer field values."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "No explicit validation or fallback is performed; non-object inputs may fail when property mutation is attempted.",
+            "returnsOnError": null
+          },
+          "stateMutations": [
+            "record.selectedIds",
+            "record.selectedShapeIds",
+            "record.hintingIds",
+            "record.hintingShapeIds",
+            "record.erasingIds",
+            "record.erasingShapeIds",
+            "record.hoveredId",
+            "record.hoveredShapeId",
+            "record.editingId"
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Mutates a page-state record in place to migrate renamed shape-state identifiers back to their prior field names.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The migration is applied to the record.",
+              "then": "The corresponding selectedIds, hintingIds, erasingIds, hoveredId, and editingId fields contain those values, and the first four newer source fields are absent.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The migration is applied.",
+              "then": "Each corresponding legacy field is assigned undefined and each processed newer source field is absent.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "05fe6d8ff140e2d5c14ae8a4f2d98f4c74dd18e9a6db074355bdcb969bc72855"
+        }
+      },
+      {
+        "unitId": "packages/tlschema/src/records/TLPageState.ts__InstancePageStateRecordType.defaultProperties#function:InstancePageStateRecordType.defaultProperties",
+        "unitKind": "function",
+        "name": "defaultProperties",
+        "qualifiedName": "InstancePageStateRecordType.defaultProperties",
+        "parentUnitId": null,
+        "startLine": 224,
+        "endLine": 233,
+        "isBehavioral": true,
+        "source": "\t\t\terasingShapeIds: true,\n\t\t\thoveredShapeId: true,\n\t\t\tfocusedGroupId: true,\n\t\t},\n\t}\n).withDefaultProperties(\n\t(): Omit<TLInstancePageState, 'id' | 'typeName' | 'pageId'> => ({\n\t\teditingShapeId: null,\n\t\tcroppingShapeId: null,\n\t\tselectedShapeIds: [],",
+        "detail": {
+          "unitId": "packages/tlschema/src/records/TLPageState.ts__InstancePageStateRecordType.defaultProperties#function:InstancePageStateRecordType.defaultProperties",
+          "fileId": "packages/tlschema/src/records/TLPageState.ts__InstancePageStateRecordType.defaultProperties",
+          "unitKind": "function",
+          "name": "defaultProperties",
+          "qualifiedName": "InstancePageStateRecordType.defaultProperties",
+          "parentUnitId": null,
+          "startLine": 224,
+          "endLine": 233,
+          "signature": "() => Omit<TLInstancePageState, 'id' | 'typeName' | 'pageId'>",
+          "parameters": [],
+          "returnType": "Omit<TLInstancePageState, 'id' | 'typeName' | 'pageId'>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [
+            "Returns an object assignable to Omit<TLInstancePageState, 'id' | 'typeName' | 'pageId'>.",
+            "editingShapeId is null.",
+            "croppingShapeId is null.",
+            "selectedShapeIds is an empty array."
+          ],
+          "invariants": [
+            "The returned default properties do not include id, typeName, or pageId.",
+            "The selectedShapeIds collection is initialized independently for each returned object."
+          ],
+          "edgeCases": [
+            "Called with no arguments: returns the default page-state properties.",
+            "Called repeatedly: each result has an empty selectedShapeIds array suitable for independent mutation."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["TLInstancePageState"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Creates the default page-state properties while excluding the record identity fields. New page-state instances start with no active editing or cropping shape and no selected shapes.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Invoke InstancePageStateRecordType.defaultProperties().",
+              "then": "The result has editingShapeId set to null, croppingShapeId set to null, and selectedShapeIds set to an empty array.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Mutate the selectedShapeIds array of the first result.",
+              "then": "The selectedShapeIds array of the second result remains empty.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "0a06d95ea9f8c89664b93ed0783adde750a41b27d18ba880cb83aec7f560da95"
+        }
+      }
+    ]
+  },
+  "out": [
+    "packages/tlschema/src/records/TLShape.ts",
+    "packages/tlschema/src/misc/id-validator.ts",
+    "packages/tlschema/src/shapes/TLBaseShape.ts",
+    "packages/tlschema/src/records/TLPage.ts"
+  ],
+  "in": [
+    "packages/tlschema/src/createTLSchema.ts",
+    "packages/tlschema/src/records/TLRecord.ts",
+    "packages/tlschema/src/createPresenceStateDerivation.test.ts",
+    "packages/tlschema/src/TLStore.ts",
+    "packages/tlschema/src/index.ts",
+    "packages/tlschema/src/createPresenceStateDerivation.ts",
+    "packages/tlschema/src/TLStore.test.ts"
+  ],
+  "externals": ["@tldraw/store", "@tldraw/utils", "@tldraw/validate"],
+  "impact": { "seeds": 8, "callers": 0, "impactedFiles": [] }
+}

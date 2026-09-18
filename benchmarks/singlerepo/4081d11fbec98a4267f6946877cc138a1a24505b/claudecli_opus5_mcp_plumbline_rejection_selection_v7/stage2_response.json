@@ -1,0 +1,71 @@
+{
+  "duration_api_ms": 84986,
+  "stop_reason": "end_turn",
+  "session_id": "b1a61b56-50aa-4030-92c4-3feb846db068",
+  "total_cost_usd": 1.1842175000000001,
+  "usage": {
+    "input_tokens": 20,
+    "cache_creation_input_tokens": 74967,
+    "cache_read_input_tokens": 537445,
+    "output_tokens": 6629,
+    "output_tokens_details": { "thinking_tokens": 1640 },
+    "server_tool_use": { "web_search_requests": 0, "web_fetch_requests": 0 },
+    "service_tier": "standard",
+    "cache_creation": { "ephemeral_1h_input_tokens": 74967, "ephemeral_5m_input_tokens": 0 },
+    "inference_geo": "not_available",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 1938,
+        "cache_read_input_tokens": 72280,
+        "cache_creation_input_tokens": 2687,
+        "cache_creation": { "ephemeral_5m_input_tokens": 0, "ephemeral_1h_input_tokens": 2687 },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-opus-5": {
+      "inputTokens": 20,
+      "outputTokens": 6629,
+      "cacheReadInputTokens": 537445,
+      "cacheCreationInputTokens": 74967,
+      "webSearchRequests": 0,
+      "costUSD": 1.1842175000000001,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "canonicalModel": "claude-opus-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": { "background": 0, "foreground": 0, "unset": 0 },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": { "parent": 0, "user": 0, "system": 0 },
+    "refused": { "depth_limit": 0, "concurrency_limit": 0, "budget": 0 },
+    "by_type": {}
+  },
+  "is_error": false,
+  "num_turns": 10,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Both files written.\n\n**Order of reading.** I read `ranked.json` in full before opening any gold file. Gold used: **`gold.json`** (`golden.json` does not exist for this case). Answer shape: **flat array, single-repo** — 76 unique paths, matching gold's flat `gold` list; no flattening was needed. The scorer applies its own `list_cap` of 75, so rank 76 (`packages/lib/constants.ts`) was not scored.\n\n**Metrics** (from `score_arm.py`, unedited):\n\n| metric | value |\n|---|---|\n| hits / gold_total | 15 / 31 |\n| recall@10 | 0.226 |\n| recall@20 | 0.387 |\n| recall@25 | 0.387 |\n| recall@50 | 0.452 |\n| recall@75 (full) | 0.484 |\n| precision@5 | 0.600 |\n| MRR | 0.500 |\n\nThe scorer does not emit precision@10, precision@20, F1@20 or F1_full_list, so those cells are blank rather than filled — computing them here by hand would not be comparable with the rest of the series.\n\n**Found (15):** `handleConfirmation.ts`, `RegularBookingService.ts`, `auth/lib/verifyEmail.ts`, `payment/getBooking.ts`, `handleBookingRequested.ts`, `handleCancelBooking.ts`, `handleNewBooking/getEventTypesFromDB.ts`, `ManagedEventManualReassignmentService.ts`, `bookings/repositories/BookingRepository.ts`, `getBookingToDelete.ts`, `emails/templates/attendee-verify-email.ts`, `EmailWorkflowService.ts`, `sendVerifyEmailCode.handler.ts`, `sendVerifyEmailCode.schema.ts`, `emails/lib/types/email-types.ts`.\n\n**Missed gold (16):** `apps/web/modules/bookings/components/BookerWebWrapper.tsx`, `apps/web/modules/bookings/hooks/useVerifyEmail.ts`, `packages/app-store/_utils/payments/handlePaymentSuccess.ts`, `packages/emails/src/templates/BaseScheduledEmail.tsx`, `packages/emails/src/templates/VerifyEmailByCode.tsx`, `packages/features/CalendarEventBuilder.ts`, `packages/features/bookings/lib/payment/handleNoShowFee.ts`, `packages/features/di/tokens.ts`, `packages/features/eventtypes/repositories/eventTypeRepository.ts`, `packages/features/handleMarkNoShow.ts`, `packages/platform/atoms/booker/BookerPlatformWrapper.tsx`, `packages/platform/atoms/hooks/useVerifyEmail.ts`, `packages/trpc/server/routers/loggedInViewer/connectAndJoin.handler.ts`, `packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts`, `packages/trpc/server/routers/viewer/bookings/confirm.handler.ts`, `packages/types/Calendar.d.ts`.\n\n**Surface verdict: NOT comparable.** One reason: prompt caching was active (cache_read = 3,215,097, cache_creation = 220,936), so the $5.20 figure is a warm-cache cost and not comparable with cold runs. The tool surface itself is clean — the log's 43 calls are 41 plumbline MCP calls plus 2 `ToolSearch` schema loads, no filesystem or shell tool, and `stakeout` (the retriever's own search) was called 12 times. My log-derived counts match `cost.json`'s self-reported counts exactly; the scorer's own surface block reported `not_comparable: []` / `comparable: true` because it does not look at cost, and I preserved that verdict under `scorer_surface` / `scorer_comparable` in `result.json` alongside the derived block.\n\n**What the misses share.** They sit one layer out from the flag's own name. The run anchored hard on the literal `hideBranding` identifier — twelve of its retrievals were `hideBranding`/`hideLogo` text probes — and that lexical net caught exactly the server-side booking handlers and email services that mention the token. What it did not catch is the two ends of the same wire: the *React rendering* end (`BaseScheduledEmail.tsx`, `VerifyEmailByCode.tsx`, `BookerWebWrapper.tsx`, `BookerPlatformWrapper.tsx`, both `useVerifyEmail` hooks) where the flag arrives as a destructured prop or hook argument under a different local name, and the *type and wiring* end (`Calendar.d.ts`, `CalendarEventBuilder.ts`, `di/tokens.ts`, `eventTypeRepository.ts`) where it is a declared field or an injection token rather than a read. The remaining misses — `handlePaymentSuccess.ts`, `handleNoShowFee.ts`, `handleMarkNoShow.ts`, `addGuests.handler.ts`, `confirm.handler.ts`, `connectAndJoin.handler.ts` — are sibling entry points that reach the same builders the found files reach; the run surfaced the shared middle of that fan-in and stopped, ranking near-neighbour workflow files (SMS/WhatsApp reminders, team appearance views, v2 API DTOs) ahead of the actual peer call sites. The whole answer stayed inside the `packages/features/bookings` + `ee/workflows` band where the identifier is greppable; `packages/platform/atoms` and `packages/emails/src/templates` are nearly absent from it.",
+  "ttft_ms": 1579,
+  "type": "result",
+  "duration_ms": 86128,
+  "uuid": "9d7682cb-5dab-4236-b5c0-5de1a0d89bd0",
+  "ttft_stream_ms": 1126,
+  "time_to_request_ms": 22,
+  "queued_turn_count": 0
+}

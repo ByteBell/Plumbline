@@ -1,0 +1,84 @@
+{
+  "duration_api_ms": 551979,
+  "stop_reason": "end_turn",
+  "session_id": "df3e974a-e87f-47a9-a66f-41105062261d",
+  "total_cost_usd": 4.952795,
+  "usage": {
+    "input_tokens": 44,
+    "cache_creation_input_tokens": 221027,
+    "cache_read_input_tokens": 3316800,
+    "output_tokens": 43104,
+    "output_tokens_details": { "thinking_tokens": 26472 },
+    "server_tool_use": { "web_search_requests": 0, "web_fetch_requests": 0 },
+    "service_tier": "standard",
+    "cache_creation": { "ephemeral_1h_input_tokens": 221027, "ephemeral_5m_input_tokens": 0 },
+    "inference_geo": "not_available",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 8912,
+        "cache_read_input_tokens": 248730,
+        "cache_creation_input_tokens": 1512,
+        "cache_creation": { "ephemeral_5m_input_tokens": 0, "ephemeral_1h_input_tokens": 1512 },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 6225,
+      "outputTokens": 16,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.006305,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "claude-haiku-4-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    },
+    "claude-opus-5": {
+      "inputTokens": 44,
+      "outputTokens": 43104,
+      "cacheReadInputTokens": 3316800,
+      "cacheCreationInputTokens": 221027,
+      "webSearchRequests": 0,
+      "costUSD": 4.946490000000001,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "canonicalModel": "claude-opus-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": { "background": 0, "foreground": 0, "unset": 0 },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": { "parent": 0, "user": 0, "system": 0 },
+    "refused": { "depth_limit": 0, "concurrency_limit": 0, "budget": 0 },
+    "by_type": {}
+  },
+  "is_error": false,
+  "num_turns": 53,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## LEDGER (STEP 6.1)\n\n**(a) Obligations**\n\n| ob | phrase | status | closers |\n|---|---|---|---|\n| OB-1 | *\"overwrite existing slots append new ones never remove stale entries\"* (VIOLATOR) | **CLOSED** | `packages/solid-query/src/useQueries.ts` (query) |\n| OB-2 | *\"incremental builder records additions and removals yields whole collection\"* (OWNER) | **CLOSED** | `packages/store/src/lib/IncrementalSetConstructor.ts` (tldraw) |\n| OB-3 | *\"keyed pass drops elements whose keys are gone\"* (OWNER) | **CLOSED** | `packages/system/src/utils/store.ts` (xyflow, `adoptUserNodes`) |\n\n**CONFIRMED (read verbatim)**\n- VIOLATOR — query `packages/solid-query/src/useQueries.ts:187-343`. The reactive results store is only ever written slot-wise: `setState(index, unwrap(unwrappedResult))` inside `for (index < dataResources_.length)` (273-283), and the two whole-array writes (236-242, 340) are Solid store *merges*, which assign indices and extend but never shorten. When `queries` shrinks, the tail of the previous, longer array survives, stays reactive, and is still proxied out at 334-337.\n- OWNER — tldraw `packages/store/src/lib/IncrementalSetConstructor.ts:1-100` (+ unit map to 198): tracks `diff.added` and `diff.removed` as it goes, cancels round-trips, and `get()` returns `{ value, diff }` — the whole set *and* both-direction delta.\n- OWNER — xyflow `packages/system/src/utils/store.ts:129-192` (`adoptUserNodes`): snapshots `tmpLookup`, `nodeLookup.clear()` / `parentLookup.clear()`, then rebuilds keyed by `userNode.id` from the incoming array — entries whose keys are gone are dropped. Convergence in both directions, explicitly.\n- EVIDENCE — query `packages/vue-query/src/useQueries.ts:234-356`: the sibling that does it right (`state.value = getOptimisticResult()`, whole-value replacement). This is what made solid-query's omission legible.\n- EVIDENCE — query `packages/angular-query-experimental/src/inject-queries.ts:286-328`: same, via recomputed signals.\n- EVIDENCE — query `packages/solid-query/src/useMutationState.ts:1-57`: the in-package counterexample — a collection projection replaced wholesale via `replaceEqualDeep`, never patched slot-wise.\n\n**(b) SWEEP MATRIX**\n\n| ob | repos in SWEPT |\n|---|---|\n| OB-1 (12/12) | jotai, tldraw, xyflow, db, query, table, router, zustand, react, primitives, redux-toolkit, redux-devtools |\n| OB-2 (3/5) | reselect, tldraw, db — **row is short: STEP 3.5 did not hold.** `query` and `table` were refused by the stakeout cap on OB-2's phrase and were never swept for it |\n| OB-3 (6/6) | react, xyflow, tldraw, primitives, table, db |\n\n`packages/system/src/utils/store.ts` was reached by the xyflow OB-1 sweep and confirmed by read, not by an OB-3 sweep hit; `packages/query-core/src/queriesObserver.ts` (the in-repo owner of the results-array contract) was retrieved but not read — it ranks in band 2.\n\n[{\"repo\":\"query\",\"files\":[\"packages/solid-query/src/useQueries.ts\",\"packages/vue-query/src/useQueries.ts\",\"packages/angular-query-experimental/src/inject-queries.ts\",\"packages/query-core/src/queriesObserver.ts\",\"packages/svelte-query/src/createQueries.svelte.ts\",\"packages/lit-query/src/createQueriesController.ts\",\"packages/preact-query/src/useQueries.ts\",\"packages/react-query/src/useQueries.ts\",\"packages/solid-query/src/useBaseQuery.ts\",\"packages/solid-query/src/useMutationState.ts\",\"packages/solid-query/src/types.ts\",\"packages/solid-query/src/QueryClient.ts\",\"packages/solid-query/src/index.ts\",\"packages/react-query/src/useSuspenseQueries.ts\",\"packages/preact-query/src/useSuspenseQueries.ts\",\"packages/query-core/src/queryObserver.ts\",\"packages/vue-query/src/useBaseQuery.ts\",\"packages/solid-query/src/useQuery.ts\",\"packages/solid-query/src/useMutation.ts\",\"packages/solid-query/src/useInfiniteQuery.ts\",\"packages/query-core/src/index.ts\",\"packages/solid-query/src/QueryClientProvider.tsx\",\"packages/solid-query/src/isRestoring.ts\",\"packages/query-core/src/query.ts\"],\"pinpoints\":[{\"path\":\"packages/solid-query/src/useQueries.ts\",\"symbol\":\"useQueries.subscribeToObserver\",\"lines\":\"271-292\",\"change\":\"The loop writes setState(index, ...) for each slot of the previous length and never removes trailing slots; make the store equal the new result array (truncate to result.length) instead of assigning per index.\"},{\"path\":\"packages/solid-query/src/useQueries.ts\",\"symbol\":\"useQueries\",\"lines\":\"232-244\",\"change\":\"setState(<new array>) is a Solid store merge: it overwrites indices and appends but leaves the old length, so a shrunk queries array keeps stale entries — reconcile or explicitly shorten the store here.\"},{\"path\":\"packages/solid-query/src/useQueries.ts\",\"symbol\":\"useQueries.getProxies\",\"lines\":\"334-340\",\"change\":\"proxyState is rebuilt with the same merging setter, so stale proxies survive a shrink; replace the projection wholesale rather than merging.\"},{\"path\":\"packages/vue-query/src/useQueries.ts\",\"symbol\":\"useQueries\",\"lines\":\"318-347\",\"change\":\"No change needed — this is the contract to match: state.value is replaced with the full new result on every observer notification.\"},{\"path\":\"packages/angular-query-experimental/src/inject-queries.ts\",\"symbol\":\"injectQueries\",\"lines\":\"286-328\",\"change\":\"No change needed — results are recomputed wholesale into signals; keep as the reference behaviour.\"},{\"path\":\"packages/solid-query/src/useMutationState.ts\",\"symbol\":\"useMutationState\",\"lines\":\"41-53\",\"change\":\"No change needed — the collection projection is replaced wholesale via replaceEqualDeep; this is the in-package pattern useQueries should follow.\"}]},{\"repo\":\"tldraw\",\"files\":[\"packages/store/src/lib/IncrementalSetConstructor.ts\",\"packages/store/src/lib/RecordsDiff.ts\",\"packages/store/src/lib/StoreQueries.ts\",\"packages/store/src/lib/Store.ts\",\"packages/sync-core/src/lib/diff.ts\",\"packages/store/src/index.ts\",\"packages/state/src/lib/ArraySet.ts\",\"packages/utils/src/lib/array.ts\",\"packages/utils/src/lib/object.ts\"],\"pinpoints\":[{\"path\":\"packages/store/src/lib/IncrementalSetConstructor.ts\",\"symbol\":\"IncrementalSetConstructor.get\",\"lines\":\"71-82\",\"change\":\"Owns the converge-in-both-directions contract: additions and removals are both recorded and get() still yields the whole value plus the diff — the contract the non-shrinking projection must be brought in line with.\"}]},{\"repo\":\"xyflow\",\"files\":[\"packages/system/src/utils/store.ts\",\"packages/svelte/src/lib/store/visibleElements.ts\",\"packages/system/src/utils/graph.ts\",\"packages/react/src/hooks/useVisibleEdgeIds.ts\",\"packages/react/src/utils/changes.ts\",\"packages/svelte/src/lib/store/initial-store.svelte.ts\",\"packages/react/src/hooks/useStore.ts\"],\"pinpoints\":[{\"path\":\"packages/system/src/utils/store.ts\",\"symbol\":\"adoptUserNodes\",\"lines\":\"129-192\",\"change\":\"Owns the keyed-pass half of the contract: clears the lookups and rebuilds them keyed by userNode.id from the incoming array, so entries whose keys are gone are dropped — the model the slot-wise update path must adopt.\"}]},{\"repo\":\"db\",\"files\":[\"packages/db-ivm/src/multiset.ts\",\"packages/db/src/collection/changes.ts\",\"packages/solid-db/src/useLiveQuery.ts\",\"packages/svelte-db/src/useLiveQuery.svelte.ts\",\"packages/vue-db/src/useLiveQuery.ts\",\"packages/react-db/src/useLiveQuery.ts\",\"packages/db/src/collection/state.ts\",\"packages/db/src/query/live/collection-subscriber.ts\",\"packages/db/src/collection/change-events.ts\",\"packages/db-ivm/src/graph.ts\",\"packages/db/src/collection/sync.ts\",\"packages/db/src/collection/index.ts\"]},{\"repo\":\"primitives\",\"files\":[\"packages/react/collection/src/collection.tsx\",\"packages/react/collection/src/ordered-dictionary.ts\",\"packages/react/collection/src/collection-legacy.tsx\",\"packages/react/roving-focus/src/roving-focus-group.tsx\"]},{\"repo\":\"router\",\"files\":[\"packages/solid-router/src/Matches.tsx\",\"packages/vue-router/src/Matches.tsx\",\"packages/router-core/src/stores.ts\",\"packages/react-router/src/Matches.tsx\"]},{\"repo\":\"table\",\"files\":[\"packages/table-core/src/utils/getCoreRowModel.ts\",\"packages/table-core/src/utils.ts\",\"packages/angular-table/src/proxy.ts\",\"packages/vue-table/src/merge-proxy.ts\",\"packages/table-core/src/utils/filterRowsUtils.ts\"]},{\"repo\":\"jotai\",\"files\":[\"src/vanilla/utils/splitAtom.ts\",\"src/vanilla/utils/atomFamily.ts\",\"src/vanilla/utils/selectAtom.ts\"]},{\"repo\":\"redux-toolkit\",\"files\":[\"packages/toolkit/src/entities/unsorted_state_adapter.ts\",\"packages/toolkit/src/entities/sorted_state_adapter.ts\",\"packages/toolkit/src/entities/models.ts\"]},{\"repo\":\"redux-devtools\",\"files\":[\"packages/redux-devtools-instrument/src/instrument.ts\",\"packages/redux-devtools-log-monitor/src/LogMonitorEntryList.tsx\",\"packages/redux-devtools-inspector-monitor/src/ActionList.tsx\"]},{\"repo\":\"react\",\"files\":[\"packages/react-reconciler/src/ReactFiberBeginWork.js\"]}]",
+  "ttft_ms": 1492,
+  "type": "result",
+  "duration_ms": 1365431,
+  "uuid": "79fdd813-cfff-4668-9255-3f99955808d3",
+  "ttft_stream_ms": 1034,
+  "time_to_request_ms": 14,
+  "queued_turn_count": 0
+}

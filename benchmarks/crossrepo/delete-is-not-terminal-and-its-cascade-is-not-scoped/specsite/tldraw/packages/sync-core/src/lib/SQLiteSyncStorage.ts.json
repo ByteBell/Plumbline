@@ -1,0 +1,2784 @@
+{
+  "schema": 2,
+  "kind": "file",
+  "repoName": "tldraw",
+  "file": {
+    "relativePath": "packages/sync-core/src/lib/SQLiteSyncStorage.ts",
+    "language": "typescript",
+    "sizeBytes": 24039,
+    "tokenCount": 6010,
+    "model": "us.openai.gpt-5.6-luna",
+    "analysedAt": "2026-08-24T12:18:21.079Z",
+    "module": {
+      "purpose": "Provides a persistent SQLite-backed implementation of the synchronization storage contract, including schema migration, document and object-lane records, tombstones, metadata, clocks, snapshots, and transactional change tracking.",
+      "summary": "This module implements durable synchronization storage over a caller-supplied SQLite wrapper. It initializes and migrates storage tables, serializes records into BLOBs, partitions configured object types into a separate lane, tracks document clocks and tombstones, supports snapshots and incremental diffs, and exposes transactional reads and writes. Change notifications are deferred through a microtask notifier, while tombstone pruning is throttled to avoid blocking requests.",
+      "businessContext": "Supports collaborative document synchronization with durable room state. Failure can lose persisted records, clocks, tombstones, schemas, or incremental sync history.",
+      "classes": [
+        "SQLiteSyncStorage (~L192-494): Persistent synchronization storage coordinating SQLite records and metadata",
+        "SQLiteSyncStorageTransaction (~L502-651): Transaction-scoped access to records, schemas, clocks, and diffs"
+      ],
+      "functions": [
+        "migrateSqliteSyncStorage (~L54-147): Creates or upgrades SQLite synchronization tables and metadata",
+        "encodeState (~L152-153): Serializes a state value into UTF-8 JSON bytes",
+        "decodeState (~L155-156): Deserializes UTF-8 JSON bytes into a typed state value"
+      ],
+      "keywords": [
+        "SQLite",
+        "tombstone pruning",
+        "document clock",
+        "object-store lane",
+        "incremental diff",
+        "schema migration",
+        "Durable Objects",
+        "prepared statements",
+        "microtask notifier",
+        "snapshot persistence"
+      ],
+      "ontologyConcepts": [
+        "durable persistence",
+        "transactional consistency",
+        "change tracking",
+        "schema migration",
+        "tombstone retention",
+        "record partitioning",
+        "incremental synchronization"
+      ],
+      "businessEntities": [
+        "document",
+        "object record",
+        "tombstone",
+        "schema",
+        "snapshot",
+        "synchronization transaction"
+      ],
+      "systemCapabilities": [
+        "Persist synchronization state in SQLite",
+        "Migrate storage schemas across versions",
+        "Read and write document and object records",
+        "Generate snapshots and incremental synchronization diffs",
+        "Track and prune tombstones",
+        "Notify consumers after committed changes"
+      ],
+      "configDependencies": ["tablePrefix", "documentsTable", "objectsTable", "tombstonesTable", "metadataTable"],
+      "importsInternal": [
+        {
+          "spec": "./InMemorySyncStorage",
+          "symbols": ["computeTombstonePruning", "DEFAULT_INITIAL_SNAPSHOT", "MAX_TOMBSTONES"],
+          "anchor": { "startLine": 4, "endLine": 8 },
+          "resolvedRelativePath": "packages/sync-core/src/lib/InMemorySyncStorage.ts",
+          "resolvedFileId": "packages/sync-core/src/lib/InMemorySyncStorage.ts",
+          "resolvedHint": "packages/sync-core/src/lib/InMemorySyncStorage.ts"
+        },
+        {
+          "spec": "./MicrotaskNotifier",
+          "symbols": ["MicrotaskNotifier"],
+          "anchor": { "startLine": 9, "endLine": 9 },
+          "resolvedRelativePath": "packages/sync-core/src/lib/MicrotaskNotifier.ts",
+          "resolvedFileId": "packages/sync-core/src/lib/MicrotaskNotifier.ts",
+          "resolvedHint": "packages/sync-core/src/lib/MicrotaskNotifier.ts"
+        },
+        {
+          "spec": "./TLSyncRoom",
+          "symbols": ["RoomSnapshot"],
+          "anchor": { "startLine": 10, "endLine": 10 },
+          "resolvedRelativePath": "packages/sync-core/src/lib/TLSyncRoom.ts",
+          "resolvedFileId": "packages/sync-core/src/lib/TLSyncRoom.ts",
+          "resolvedHint": "packages/sync-core/src/lib/TLSyncRoom.ts"
+        },
+        {
+          "spec": "./TLSyncStorage",
+          "symbols": [
+            "convertStoreSnapshotToRoomSnapshot",
+            "TLSyncForwardDiff",
+            "TLSyncStorage",
+            "TLSyncStorageGetChangesSinceResult",
+            "TLSyncStorageOnChangeCallbackProps",
+            "TLSyncStorageTransaction",
+            "TLSyncStorageTransactionCallback",
+            "TLSyncStorageTransactionOptions",
+            "TLSyncStorageTransactionResult"
+          ],
+          "anchor": { "startLine": 11, "endLine": 18 },
+          "resolvedRelativePath": "packages/sync-core/src/lib/TLSyncStorage.ts",
+          "resolvedFileId": "packages/sync-core/src/lib/TLSyncStorage.ts",
+          "resolvedHint": "packages/sync-core/src/lib/TLSyncStorage.ts"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "@tldraw/state",
+          "symbols": ["transaction"],
+          "package": "@tldraw/state",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 1 }
+        },
+        {
+          "spec": "@tldraw/store",
+          "symbols": ["SerializedSchema", "StoreSnapshot", "UnknownRecord"],
+          "package": "@tldraw/store",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 2, "endLine": 2 }
+        },
+        {
+          "spec": "@tldraw/utils",
+          "symbols": ["assert", "objectMapEntries", "throttle"],
+          "package": "@tldraw/utils",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 3, "endLine": 3 }
+        }
+      ],
+      "sideEffects": { "io": [], "network": [], "env": [], "fs": [], "process": [], "mutationOfArg": [] },
+      "integrationSurface": [
+        { "kind": "table", "role": "provides", "address": "documents", "payloadRef": "R", "rawKind": null },
+        { "kind": "table", "role": "provides", "address": "objects", "payloadRef": "R", "rawKind": null },
+        { "kind": "table", "role": "provides", "address": "tombstones", "payloadRef": null, "rawKind": null },
+        {
+          "kind": "table",
+          "role": "provides",
+          "address": "metadata",
+          "payloadRef": "SerializedSchema",
+          "rawKind": null
+        }
+      ],
+      "contractsProvided": [
+        {
+          "name": "TLSqliteInputValue",
+          "shape": "export type TLSqliteInputValue = null | number | bigint | string | Uint8Array",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "TLSqliteOutputValue",
+          "shape": "export type TLSqliteOutputValue = null | number | bigint | string | Uint8Array",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "TLSqliteRow",
+          "shape": "export type TLSqliteRow = Record<string, TLSqliteOutputValue>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "TLSyncSqliteStatement",
+          "shape": "export interface TLSyncSqliteStatement<TResult extends TLSqliteRow | void, TParams extends TLSqliteInputValue[] = []>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "TLSyncSqliteWrapperConfig",
+          "shape": "export interface TLSyncSqliteWrapperConfig",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "TLSyncSqliteWrapper",
+          "shape": "export interface TLSyncSqliteWrapper",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "migrateSqliteSyncStorage",
+          "shape": "export function migrateSqliteSyncStorage(storage: TLSyncSqliteWrapper, { documentsTable = 'documents', objectsTable = 'objects', tombstonesTable = 'tombstones', metadataTable = 'metadata' }: { documentsTable?: string; objectsTable?: string; tombstonesTable?: string; metadataTable?: string } = {}): void",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "SQLiteSyncStorage",
+          "shape": "export class SQLiteSyncStorage<R extends UnknownRecord> implements TLSyncStorage<R>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "TLSyncStorage",
+          "shape": "TLSyncStorage<R>",
+          "resolvedRelativePath": "packages/sync-core/src/lib/TLSyncStorage.ts",
+          "resolvedFileId": "packages/sync-core/src/lib/TLSyncStorage.ts"
+        },
+        {
+          "name": "TLSyncStorageTransaction",
+          "shape": "TLSyncStorageTransaction<R>",
+          "resolvedRelativePath": "packages/sync-core/src/lib/TLSyncStorage.ts",
+          "resolvedFileId": "packages/sync-core/src/lib/TLSyncStorage.ts"
+        },
+        {
+          "name": "TLSyncStorageTransactionCallback",
+          "shape": "TLSyncStorageTransactionCallback<R, T>",
+          "resolvedRelativePath": "packages/sync-core/src/lib/TLSyncStorage.ts",
+          "resolvedFileId": "packages/sync-core/src/lib/TLSyncStorage.ts"
+        },
+        {
+          "name": "TLSyncStorageTransactionOptions",
+          "shape": "TLSyncStorageTransactionOptions",
+          "resolvedRelativePath": "packages/sync-core/src/lib/TLSyncStorage.ts",
+          "resolvedFileId": "packages/sync-core/src/lib/TLSyncStorage.ts"
+        },
+        {
+          "name": "TLSyncStorageTransactionResult",
+          "shape": "TLSyncStorageTransactionResult<T, R>",
+          "resolvedRelativePath": "packages/sync-core/src/lib/TLSyncStorage.ts",
+          "resolvedFileId": "packages/sync-core/src/lib/TLSyncStorage.ts"
+        },
+        {
+          "name": "TLSyncStorageGetChangesSinceResult",
+          "shape": "TLSyncStorageGetChangesSinceResult<R>",
+          "resolvedRelativePath": "packages/sync-core/src/lib/TLSyncStorage.ts",
+          "resolvedFileId": "packages/sync-core/src/lib/TLSyncStorage.ts"
+        },
+        {
+          "name": "TLSyncStorageOnChangeCallbackProps",
+          "shape": "TLSyncStorageOnChangeCallbackProps",
+          "resolvedRelativePath": "packages/sync-core/src/lib/TLSyncStorage.ts",
+          "resolvedFileId": "packages/sync-core/src/lib/TLSyncStorage.ts"
+        },
+        {
+          "name": "TLSyncForwardDiff",
+          "shape": "TLSyncForwardDiff<R>",
+          "resolvedRelativePath": "packages/sync-core/src/lib/TLSyncStorage.ts",
+          "resolvedFileId": "packages/sync-core/src/lib/TLSyncStorage.ts"
+        },
+        {
+          "name": "RoomSnapshot",
+          "shape": "RoomSnapshot",
+          "resolvedRelativePath": "packages/sync-core/src/lib/TLSyncRoom.ts",
+          "resolvedFileId": "packages/sync-core/src/lib/TLSyncRoom.ts"
+        },
+        { "name": "StoreSnapshot", "shape": "StoreSnapshot<R>", "resolvedRelativePath": null, "resolvedFileId": null },
+        {
+          "name": "SerializedSchema",
+          "shape": "SerializedSchema",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "TLSyncSqliteWrapper",
+          "shape": "TLSyncSqliteWrapper",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "schema migration",
+          "intent": "Creates missing tables and upgrades persisted SQLite schema versions",
+          "structureKind": "branch",
+          "predicate": "if (migrationVersion === 0)",
+          "branchOutcomes": ["create version-two schema", "skip migration two"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 68, "endLine": 147 }
+        },
+        {
+          "name": "storage initialization",
+          "intent": "Loads or replaces persisted state and routes object-lane records",
+          "structureKind": "branch",
+          "predicate": "if (snapshot || !hasData)",
+          "branchOutcomes": ["initialize from snapshot", "sweep legacy object records"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 319, "endLine": 372 }
+        },
+        {
+          "name": "transaction execution",
+          "intent": "Runs callbacks atomically, tracks changes, and emits committed notifications",
+          "structureKind": "try",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 378, "endLine": 412 }
+        },
+        {
+          "name": "tombstone pruning",
+          "intent": "Throttles deletion of tombstones beyond the configured retention limit",
+          "structureKind": "branch",
+          "predicate": "if (tombstoneCount > MAX_TOMBSTONES)",
+          "branchOutcomes": ["prune old tombstones", "retain current tombstones"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 435, "endLine": 452 }
+        },
+        {
+          "name": "transactional record iteration",
+          "intent": "Iterates document and object lanes while rejecting closed transactions",
+          "structureKind": "loop",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": "for (const table of [this.stmts.documents, this.stmts.objects])",
+          "terminationCondition": null,
+          "anchor": { "startLine": 582, "endLine": 609 }
+        },
+        {
+          "name": "incremental change retrieval",
+          "intent": "Builds full or incremental synchronization diffs from shared clocks",
+          "structureKind": "branch",
+          "predicate": "if (wipeAll)",
+          "branchOutcomes": ["include all records", "include changed records and tombstones"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 618, "endLine": 650 }
+        }
+      ],
+      "representationFamily": "class-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "type",
+          "name": "TLSqliteInputValue",
+          "signature": "export type TLSqliteInputValue = null | number | bigint | string | Uint8Array",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 22, "endLine": 22 }
+        },
+        {
+          "kind": "type",
+          "name": "TLSqliteOutputValue",
+          "signature": "export type TLSqliteOutputValue = null | number | bigint | string | Uint8Array",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 25, "endLine": 25 }
+        },
+        {
+          "kind": "interface",
+          "name": "TLSqliteRow",
+          "signature": "export type TLSqliteRow = Record<string, TLSqliteOutputValue>",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 28, "endLine": 28 }
+        },
+        {
+          "kind": "interface",
+          "name": "TLSyncSqliteStatement",
+          "signature": "export interface TLSyncSqliteStatement<\n\tTResult extends TLSqliteRow | void,\n\tTParams extends TLSqliteInputValue[] = [],\n>",
+          "generics": "<\n\tTResult extends TLSqliteRow | void,\n\tTParams extends TLSqliteInputValue[] = [],\n>",
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 31, "endLine": 37 }
+        },
+        {
+          "kind": "interface",
+          "name": "TLSyncSqliteWrapperConfig",
+          "signature": "export interface TLSyncSqliteWrapperConfig",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 40, "endLine": 42 }
+        },
+        {
+          "kind": "interface",
+          "name": "TLSyncSqliteWrapper",
+          "signature": "export interface TLSyncSqliteWrapper",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 45, "endLine": 52 }
+        },
+        {
+          "kind": "function",
+          "name": "migrateSqliteSyncStorage",
+          "signature": "export function migrateSqliteSyncStorage(\n\tstorage: TLSyncSqliteWrapper,\n\t{\n\t\tdocumentsTable = 'documents',\n\t\tobjectsTable = 'objects',\n\t\ttombstonesTable = 'tombstones',\n\t\tmetadataTable = 'metadata',\n\t}: {\n\t\tdocumentsTable?: string\n\t\tobjectsTable?: string\n\t\ttombstonesTable?: string\n\t\tmetadataTable?: string\n\t} = {}\n): void",
+          "generics": null,
+          "decorators": [],
+          "returnType": "void",
+          "exported": true,
+          "anchor": { "startLine": 54, "endLine": 147 }
+        },
+        {
+          "kind": "class",
+          "name": "SQLiteSyncStorage",
+          "signature": "export class SQLiteSyncStorage<R extends UnknownRecord> implements TLSyncStorage<R>",
+          "generics": "<R extends UnknownRecord>",
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 192, "endLine": 494 }
+        },
+        {
+          "kind": "method",
+          "name": "transaction",
+          "signature": "transaction<T>(\n\t\tcallback: TLSyncStorageTransactionCallback<R, T>,\n\t\topts?: TLSyncStorageTransactionOptions\n\t): TLSyncStorageTransactionResult<T, R>",
+          "generics": "<T>",
+          "decorators": [],
+          "returnType": "TLSyncStorageTransactionResult<T, R>",
+          "exported": false,
+          "anchor": { "startLine": 378, "endLine": 412 }
+        },
+        {
+          "kind": "class",
+          "name": "SQLiteSyncStorageTransaction",
+          "signature": "class SQLiteSyncStorageTransaction<R extends UnknownRecord> implements TLSyncStorageTransaction<R>",
+          "generics": "<R extends UnknownRecord>",
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 502, "endLine": 651 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "type",
+          "name": "TLSqliteInputValue",
+          "shape": "null | number | bigint | string | Uint8Array",
+          "discriminant": null,
+          "anchor": { "startLine": 22, "endLine": 22 }
+        },
+        {
+          "kind": "type",
+          "name": "TLSqliteOutputValue",
+          "shape": "null | number | bigint | string | Uint8Array",
+          "discriminant": null,
+          "anchor": { "startLine": 25, "endLine": 25 }
+        },
+        {
+          "kind": "type",
+          "name": "TLSqliteRow",
+          "shape": "Record<string, TLSqliteOutputValue>",
+          "discriminant": null,
+          "anchor": { "startLine": 28, "endLine": 28 }
+        },
+        {
+          "kind": "interface",
+          "name": "TLSyncSqliteStatement",
+          "shape": "{\n\t/** Execute the statement and iterate over results one at a time */\n\titerate(...bindings: TParams): IterableIterator<TResult>\n\t/** Execute the statement and return all results as an array */\n\tall(...bindings: TParams): TResult[]\n\t/** Execute the statement without returning results (for DML) */\n\trun(...bindings: TParams): void\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 33, "endLine": 37 }
+        },
+        {
+          "kind": "interface",
+          "name": "TLSyncSqliteWrapperConfig",
+          "shape": "{\n\t/** Prefix for all table names (default: ''). E.g. 'sync_' creates tables 'sync_documents', 'sync_tombstones', 'sync_metadata' */\n\ttablePrefix?: string\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 40, "endLine": 42 }
+        },
+        {
+          "kind": "interface",
+          "name": "TLSyncSqliteWrapper",
+          "shape": "{\n\t/** Optional configuration for table names. If not provided, defaults are used. */\n\treadonly config?: TLSyncSqliteWrapperConfig\n\t/** Prepare a SQL statement for execution */\n\tprepare<TResult extends TLSqliteRow | void, TParams extends TLSqliteInputValue[] = []>(\n\t\tsql: string\n\t): TLSyncSqliteStatement<TResult, TParams>\n\t/** Execute raw SQL (for DDL, multi-statement scripts) */\n\texec(sql: string): void\n\t/** Execute a callback within a transaction */\n\ttransaction<T>(callback: () => T): T\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 45, "endLine": 52 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "Missing metadata table or row",
+          "handled": true,
+          "behavior": "Migration probing treats the error as uninitialized storage and creates the schema.",
+          "anchor": { "startLine": 69, "endLine": 76 }
+        },
+        {
+          "inputShape": "Empty or uninitialized database",
+          "handled": true,
+          "behavior": "Initializes from the supplied snapshot or the default initial snapshot.",
+          "anchor": { "startLine": 319, "endLine": 327 }
+        },
+        {
+          "inputShape": "Duplicate ids in getObjectsByIds input",
+          "handled": true,
+          "behavior": "Uses a seen set so each existing object is returned once.",
+          "anchor": { "startLine": 468, "endLine": 477 }
+        },
+        {
+          "inputShape": "Unknown record id on delete",
+          "handled": true,
+          "behavior": "Returns without changing the clock or creating a tombstone.",
+          "anchor": { "startLine": 568, "endLine": 573 }
+        },
+        {
+          "inputShape": "Transaction callback returns a promise",
+          "handled": true,
+          "behavior": "Throws because transactions must return a synchronous value.",
+          "anchor": { "startLine": 398, "endLine": 403 }
+        },
+        {
+          "inputShape": "Change request starts after current clock",
+          "handled": true,
+          "behavior": "Resets the requested clock to -1 and returns a wipe-all diff.",
+          "anchor": { "startLine": 620, "endLine": 627 }
+        },
+        {
+          "inputShape": "Change request equals current clock",
+          "handled": true,
+          "behavior": "Returns undefined because no changes are available.",
+          "anchor": { "startLine": 620, "endLine": 621 }
+        },
+        {
+          "inputShape": "Closed transaction iterator or method",
+          "handled": true,
+          "behavior": "Assertion fails with a transaction-ended error message.",
+          "anchor": { "startLine": 520, "endLine": 522 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": ">",
+          "left": "tombstoneCount",
+          "right": "MAX_TOMBSTONES",
+          "inclusive": false,
+          "intent": "Prunes only after tombstone count exceeds the configured maximum.",
+          "anchor": { "startLine": 438, "endLine": 438 }
+        },
+        {
+          "operator": ">",
+          "left": "clockAfter",
+          "right": "clockBefore",
+          "inclusive": false,
+          "intent": "Marks a transaction as changed only when its clock advanced.",
+          "anchor": { "startLine": 406, "endLine": 406 }
+        },
+        {
+          "operator": ">=",
+          "left": "id",
+          "right": "'${lo}'",
+          "inclusive": true,
+          "intent": "Selects legacy records at or after the object-type prefix.",
+          "anchor": { "startLine": 365, "endLine": 365 }
+        },
+        {
+          "operator": "<",
+          "left": "id",
+          "right": "'${hi}'",
+          "inclusive": false,
+          "intent": "Excludes records at the next prefix boundary during migration.",
+          "anchor": { "startLine": 365, "endLine": 365 }
+        },
+        {
+          "operator": "<",
+          "left": "clock",
+          "right": "?",
+          "inclusive": false,
+          "intent": "Deletes tombstones strictly older than the retained history boundary.",
+          "anchor": { "startLine": 301, "endLine": 302 }
+        },
+        {
+          "operator": ">",
+          "left": "lastChangedClock",
+          "right": "?",
+          "inclusive": false,
+          "intent": "Selects records changed after the requested synchronization clock.",
+          "anchor": { "startLine": 274, "endLine": 274 }
+        },
+        {
+          "operator": ">",
+          "left": "clock",
+          "right": "?",
+          "inclusive": false,
+          "intent": "Selects tombstones created after the requested synchronization clock.",
+          "anchor": { "startLine": 307, "endLine": 307 }
+        },
+        {
+          "operator": ">",
+          "left": "sinceClock",
+          "right": "clock",
+          "inclusive": false,
+          "intent": "Treats a future source clock as an invalid change request.",
+          "anchor": { "startLine": 622, "endLine": 622 }
+        },
+        {
+          "operator": "<",
+          "left": "sinceClock",
+          "right": "this.storage._getTombstoneHistoryStartsAtClock()",
+          "inclusive": false,
+          "intent": "Requests a full wipe when tombstone history no longer covers the source clock.",
+          "anchor": { "startLine": 627, "endLine": 627 }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": null,
+          "caught": "_e",
+          "action": "Ignores metadata lookup failure and continues migration detection.",
+          "fallback": "migrationVersion remains 0",
+          "anchor": { "startLine": 69, "endLine": 76 }
+        },
+        {
+          "thrown": null,
+          "caught": "_e",
+          "action": "Suppresses lookup failure while checking initialization state.",
+          "fallback": "false",
+          "anchor": { "startLine": 199, "endLine": 205 }
+        },
+        {
+          "thrown": null,
+          "caught": "_e",
+          "action": "Suppresses lookup failure while reading the document clock.",
+          "fallback": "null",
+          "anchor": { "startLine": 211, "endLine": 221 }
+        },
+        {
+          "thrown": "new Error('Transaction must return a value, not a promise')",
+          "caught": null,
+          "action": "Rejects asynchronous transaction callbacks or promise results.",
+          "fallback": null,
+          "anchor": { "startLine": 398, "endLine": 403 }
+        },
+        {
+          "thrown": "assert(clockRow, 'Storage not initialized - clock row missing')",
+          "caught": null,
+          "action": "Fails schema access when metadata has not been initialized.",
+          "fallback": null,
+          "anchor": { "startLine": 425, "endLine": 428 }
+        },
+        {
+          "thrown": "assert(!this._closed, 'Transaction has ended, iterator cannot be consumed')",
+          "caught": null,
+          "action": "Rejects access after a transaction has closed.",
+          "fallback": null,
+          "anchor": { "startLine": 520, "endLine": 522 }
+        },
+        {
+          "thrown": "assert(id === record.id, `Record id mismatch: key does not match record.id`)",
+          "caught": null,
+          "action": "Rejects writes whose key does not match the record identifier.",
+          "fallback": null,
+          "anchor": { "startLine": 558, "endLine": 559 }
+        }
+      ],
+      "invariants": [
+        {
+          "kind": "invariant",
+          "description": "Document and object tables share the document clock and tombstone history.",
+          "anchor": { "startLine": 354, "endLine": 357 }
+        },
+        {
+          "kind": "invariant",
+          "description": "A transaction increments the document clock at most once.",
+          "anchor": { "startLine": 528, "endLine": 534 }
+        },
+        {
+          "kind": "precondition",
+          "description": "Record keys must equal the record id supplied to set.",
+          "anchor": { "startLine": 558, "endLine": 559 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "Setting a record removes any tombstone for that id.",
+          "anchor": { "startLine": 561, "endLine": 562 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Deleted records receive tombstones only when they currently exist.",
+          "anchor": { "startLine": 568, "endLine": 576 }
+        },
+        {
+          "kind": "non-null",
+          "description": "Schema access asserts that the metadata row exists.",
+          "anchor": { "startLine": 425, "endLine": 428 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "The supplied SQLite wrapper provides compatible prepared statements, raw execution, and synchronous transactions.",
+          "anchor": { "startLine": 45, "endLine": 52 }
+        },
+        {
+          "kind": "schema",
+          "description": "Record ids are typeName-prefixed so object-lane routing can derive the partition from the id.",
+          "anchor": { "startLine": 537, "endLine": 547 }
+        },
+        {
+          "kind": "caller",
+          "description": "Transaction callbacks must return synchronously and must not return promises.",
+          "anchor": { "startLine": 398, "endLine": 403 }
+        },
+        {
+          "kind": "config",
+          "description": "Configured objectTypes identify records that belong in the object-store lane.",
+          "anchor": { "startLine": 232, "endLine": 245 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "Which SQLite wrapper implementations and transaction rollback guarantees are used by callers?",
+          "affects": "concurrency_model and transaction error semantics",
+          "anchor": { "startLine": 45, "endLine": 52 },
+          "resolution": null
+        },
+        {
+          "question": "What exact serialized schema and record shapes are guaranteed by the external synchronization interfaces?",
+          "affects": "type_shapes and schema invariants",
+          "anchor": { "startLine": 425, "endLine": 432 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "mixed",
+        "reentrant": false,
+        "ordering": "deterministic",
+        "notes": "SQLite operations are synchronous and transaction-scoped; notifications are deferred through a microtask notifier and tombstone pruning is throttled."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "initializes-empty-storage",
+          "scenario": "An uninitialized SQLite wrapper is used to construct storage without a snapshot.",
+          "given": ["const storage = new SQLiteSyncStorage({ sql })"],
+          "when": "storage.getSnapshot()",
+          "then": "the result has documentClock === 0 and an empty documents collection",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Construction must create the schema and establish a valid empty synchronization state."
+        },
+        {
+          "testId": "persists-record-across-restart",
+          "scenario": "A record is written and a second storage instance is created over the same database.",
+          "given": [
+            "const first = new SQLiteSyncStorage({ sql })",
+            "first.transaction((txn) => txn.set('document:1', record))"
+          ],
+          "when": "new SQLiteSyncStorage({ sql }).transaction((txn) => txn.get('document:1'))",
+          "then": "the returned record equals record",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "SQLite-backed state must survive process or storage-object reinitialization."
+        },
+        {
+          "testId": "increments-clock-on-write",
+          "scenario": "A transaction sets a record in otherwise unchanged storage.",
+          "given": ["const before = storage.getClock()"],
+          "when": "storage.transaction((txn) => txn.set(record.id, record))",
+          "then": "the returned documentClock is greater than before and didChange === true",
+          "targets": [],
+          "oracleKind": "invariant-check",
+          "rationale": "Every committed mutation must advance the shared document clock exactly as the sync contract requires."
+        },
+        {
+          "testId": "rejects-mismatched-record-id",
+          "scenario": "A transaction attempts to store a record whose id differs from the supplied key.",
+          "given": ["const record = { id: 'actual', typeName: 'document' }"],
+          "when": "storage.transaction((txn) => txn.set('supplied', record))",
+          "then": "the transaction throws an error matching 'Record id mismatch: key does not match record.id'",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Key and serialized record identity must remain consistent."
+        },
+        {
+          "testId": "deletes-existing-record-with-tombstone",
+          "scenario": "A transaction deletes a record that exists.",
+          "given": ["storage.transaction((txn) => txn.set(record.id, record))"],
+          "when": "storage.transaction((txn) => txn.delete(record.id))",
+          "then": "getSnapshot().documents excludes the record and getChangesSince(previousClock).diff.deletes contains record.id",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Deletion must remove live state while retaining synchronization history."
+        },
+        {
+          "testId": "ignores-delete-of-missing-record",
+          "scenario": "A transaction deletes an id that is absent from both record lanes.",
+          "given": ["const before = storage.getClock()"],
+          "when": "storage.transaction((txn) => txn.delete('missing'))",
+          "then": "the returned documentClock equals before and didChange === false",
+          "targets": [],
+          "oracleKind": "invariant-check",
+          "rationale": "Missing-record deletion must not create spurious clocks or tombstones."
+        },
+        {
+          "testId": "clears-tombstone-on-reinsert",
+          "scenario": "A previously deleted id is written again.",
+          "given": ["storage.transaction((txn) => txn.delete(record.id))"],
+          "when": "storage.transaction((txn) => txn.set(record.id, record))",
+          "then": "getSnapshot().tombstones does not contain record.id and get(record.id) equals record",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Reinsertion must restore live state and remove the obsolete tombstone."
+        },
+        {
+          "testId": "returns-wipe-all-after-history-boundary",
+          "scenario": "Changes are requested from a clock older than the retained tombstone history.",
+          "given": ["const sinceClock = storage._getTombstoneHistoryStartsAtClock() - 1"],
+          "when": "storage.transaction((txn) => txn.getChangesSince(sinceClock))",
+          "then": "the result has wipeAll === true and includes all current records in diff.puts",
+          "targets": [],
+          "oracleKind": "invariant-check",
+          "rationale": "Clients lacking complete deletion history must receive a full replacement state."
+        },
+        {
+          "testId": "rejects-async-transaction-result",
+          "scenario": "A transaction callback returns a promise.",
+          "given": ["const callback = () => Promise.resolve(value)"],
+          "when": "storage.transaction(callback)",
+          "then": "the transaction throws an error matching 'Transaction must return a value, not a promise'",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "The storage transaction boundary is deliberately synchronous."
+        },
+        {
+          "testId": "rejects-consumption-after-close",
+          "scenario": "A transaction iterator is consumed after its transaction has ended.",
+          "given": ["const iterator = txn.entries()", "txn.close()"],
+          "when": "iterator.next()",
+          "then": "the operation throws an error matching 'Transaction has ended, iterator cannot be consumed'",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Iterators must not expose invalid reads after the transaction lifecycle ends."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "imports",
+        "SQLite value and wrapper type declarations",
+        "SQLite schema migration function",
+        "JSON state encoding helpers",
+        "persistent storage class",
+        "transaction-scoped storage class"
+      ],
+      "moduleLevelCode": "import { transaction } from '@tldraw/state'\nimport { SerializedSchema, StoreSnapshot, UnknownRecord } from '@tldraw/store'\nimport { assert, objectMapEntries, throttle } from '@tldraw/utils'\nimport {\n\tcomputeTombstonePruning,\n\tDEFAULT_INITIAL_SNAPSHOT,\n\tMAX_TOMBSTONES,\n} from './InMemorySyncStorage'\nimport { MicrotaskNotifier } from './MicrotaskNotifier'\nimport { RoomSnapshot } from './TLSyncRoom'\nimport {\n\tconvertStoreSnapshotToRoomSnapshot,\n\tTLSyncForwardDiff,\n\tTLSyncStorage,\n\tTLSyncStorageGetChangesSinceResult,\n\tTLSyncStorageOnChangeCallbackProps,\n\tTLSyncStorageTransaction,\n\tTLSyncStorageTransactionCallback,\n\tTLSyncStorageTransactionOptions,\n\tTLSyncStorageTransactionResult,\n} from './TLSyncStorage'",
+      "exports": [
+        { "name": "TLSqliteInputValue", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "TLSqliteOutputValue", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "TLSqliteRow", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "TLSyncSqliteStatement", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "TLSyncSqliteWrapperConfig", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "TLSyncSqliteWrapper", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "migrateSqliteSyncStorage", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "SQLiteSyncStorage", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "transaction", "module": "@tldraw/state", "alias": null, "kind": "external" },
+        { "symbol": "SerializedSchema", "module": "@tldraw/store", "alias": null, "kind": "external" },
+        { "symbol": "StoreSnapshot", "module": "@tldraw/store", "alias": null, "kind": "external" },
+        { "symbol": "UnknownRecord", "module": "@tldraw/store", "alias": null, "kind": "external" },
+        { "symbol": "assert", "module": "@tldraw/utils", "alias": null, "kind": "external" },
+        { "symbol": "objectMapEntries", "module": "@tldraw/utils", "alias": null, "kind": "external" },
+        { "symbol": "throttle", "module": "@tldraw/utils", "alias": null, "kind": "external" },
+        { "symbol": "computeTombstonePruning", "module": "./InMemorySyncStorage", "alias": null, "kind": "internal" },
+        { "symbol": "DEFAULT_INITIAL_SNAPSHOT", "module": "./InMemorySyncStorage", "alias": null, "kind": "internal" },
+        { "symbol": "MAX_TOMBSTONES", "module": "./InMemorySyncStorage", "alias": null, "kind": "internal" },
+        { "symbol": "MicrotaskNotifier", "module": "./MicrotaskNotifier", "alias": null, "kind": "internal" },
+        { "symbol": "RoomSnapshot", "module": "./TLSyncRoom", "alias": null, "kind": "internal" },
+        {
+          "symbol": "convertStoreSnapshotToRoomSnapshot",
+          "module": "./TLSyncStorage",
+          "alias": null,
+          "kind": "internal"
+        },
+        { "symbol": "TLSyncForwardDiff", "module": "./TLSyncStorage", "alias": null, "kind": "internal" },
+        { "symbol": "TLSyncStorage", "module": "./TLSyncStorage", "alias": null, "kind": "internal" },
+        {
+          "symbol": "TLSyncStorageGetChangesSinceResult",
+          "module": "./TLSyncStorage",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "TLSyncStorageOnChangeCallbackProps",
+          "module": "./TLSyncStorage",
+          "alias": null,
+          "kind": "internal"
+        },
+        { "symbol": "TLSyncStorageTransaction", "module": "./TLSyncStorage", "alias": null, "kind": "internal" },
+        {
+          "symbol": "TLSyncStorageTransactionCallback",
+          "module": "./TLSyncStorage",
+          "alias": null,
+          "kind": "internal"
+        },
+        { "symbol": "TLSyncStorageTransactionOptions", "module": "./TLSyncStorage", "alias": null, "kind": "internal" },
+        { "symbol": "TLSyncStorageTransactionResult", "module": "./TLSyncStorage", "alias": null, "kind": "internal" }
+      ],
+      "fileConstants": [
+        { "name": "textEncoder", "value": "new TextEncoder()", "kind": "module constant" },
+        { "name": "textDecoder", "value": "new TextDecoder()", "kind": "module constant" }
+      ],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__migrateSqliteSyncStorage#function:migrateSqliteSyncStorage",
+        "unitKind": "function",
+        "name": "migrateSqliteSyncStorage",
+        "qualifiedName": "migrateSqliteSyncStorage",
+        "parentUnitId": null,
+        "startLine": 54,
+        "endLine": 147,
+        "isBehavioral": true,
+        "source": "\tall(...bindings: TParams): TResult[]\n\t/** Execute the statement without returning results (for DML) */\n\trun(...bindings: TParams): void\n}\n\n/**\n * Configuration for SQLiteSyncStorage.\n * @public\n */\nexport interface TLSyncSqliteWrapperConfig {\n\t/** Prefix for all table names (default: ''). E.g. 'sync_' creates tables 'sync_documents', 'sync_tombstones', 'sync_metadata' */\n\ttablePrefix?: string\n}\n\n/**\n * Interface for SQLite storage with prepare, exec and transaction capabilities.\n * @public\n */\nexport interface TLSyncSqliteWrapper {\n\t/** Optional configuration for table names. If not provided, defaults are used. */\n\treadonly config?: TLSyncSqliteWrapperConfig\n\t/** Prepare a SQL statement for execution */\n\tprepare<TResult extends TLSqliteRow | void, TParams extends TLSqliteInputValue[] = []>(\n\t\tsql: string\n\t): TLSyncSqliteStatement<TResult, TParams>\n\t/** Execute raw SQL (for DDL, multi-statement scripts) */\n\texec(sql: string): void\n\t/** Execute a callback within a transaction */\n\ttransaction<T>(callback: () => T): T\n}\n\nexport function migrateSqliteSyncStorage(\n\tstorage: TLSyncSqliteWrapper,\n\t{\n\t\tdocumentsTable = 'documents',\n\t\tobjectsTable = 'objects',\n\t\ttombstonesTable = 'tombstones',\n\t\tmetadataTable = 'metadata',\n\t}: {\n\t\tdocumentsTable?: string\n\t\tobjectsTable?: string\n\t\ttombstonesTable?: string\n\t\tmetadataTable?: string\n\t} = {}\n): void {\n\tlet migrationVersion = 0\n\ttry {\n\t\tconst row = storage\n\t\t\t.prepare<{\n\t\t\t\tmigrationVersion: number\n\t\t\t}>(`SELECT migrationVersion FROM ${metadataTable} LIMIT 1`)\n\t\t\t.all()[0]\n\t\tmigrationVersion = row?.migrationVersion ?? 0\n\t} catch (_e) {\n\t\t// noop\n\t}\n\n\tif (migrationVersion === 0) {\n\t\tmigrationVersion++\n\t\tstorage.exec(`\n\t\t\tCREATE TABLE ${documentsTable} (\n\t\t\t\tid TEXT PRIMARY KEY,\n\t\t\t\tstate BLOB NOT NULL,\n\t\t\t\tlastChangedClock INTEGER NOT NULL\n\t\t\t);\n\n\t\t\tCREATE INDEX idx_${documentsTable}_lastChangedClock ON ${documentsTable}(lastChangedClock);\n\n\t\t\tCREATE TABLE ${tombstonesTable} (\n\t\t\t\tid TEXT PRIMARY KEY,\n\t\t\t\tclock INTEGER NOT NULL\n\t\t\t);\n\t\t\tCREATE INDEX idx_${tombstonesTable}_clock ON ${tombstonesTable}(clock);\n\n\t\t\t-- This table is used to store the metadata for the sync storage.\n\t\t\t-- There should only be one row in this table.\n\t\t\tCREATE TABLE ${metadataTable} (\n\t\t\t  migrationVersion INTEGER NOT NULL,\n\t\t\t\tdocumentClock INTEGER NOT NULL,\n\t\t\t\ttombstoneHistoryStartsAtClock INTEGER NOT NULL,\n\t\t\t\tschema TEXT NOT NULL\n\t\t\t);\n\t\t\t\n\t\t\tINSERT INTO ${metadataTable} (migrationVersion, documentClock, tombstoneHistoryStartsAtClock, schema) VALUES (2, 0, 0, '')\n\t\t`)\n\t\t// Skip migration 2 since we created the table with BLOB already\n\t\tmigrationVersion++\n\t}\n\n\tif (migrationVersion === 1) {\n\t\t// Migration 2: Convert state column from TEXT to BLOB\n\t\t// SQLite doesn't support ALTER COLUMN, so we need to recreate the table\n\t\tmigrationVersion++\n\t\tstorage.exec(`",
+        "detail": {
+          "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__migrateSqliteSyncStorage#function:migrateSqliteSyncStorage",
+          "fileId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__migrateSqliteSyncStorage",
+          "unitKind": "function",
+          "name": "migrateSqliteSyncStorage",
+          "qualifiedName": "migrateSqliteSyncStorage",
+          "parentUnitId": null,
+          "startLine": 54,
+          "endLine": 147,
+          "signature": "export function migrateSqliteSyncStorage(\n\tstorage: TLSyncSqliteWrapper,\n\t{\n\t\tdocumentsTable = 'documents',\n\t\tobjectsTable = 'objects',\n\t\ttombstonesTable = 'tombstones',\n\t\tmetadataTable = 'metadata',\n\t}: {\n\t\tdocumentsTable?: string\n\t\tobjectsTable?: string\n\t\ttombstonesTable?: string\n\t\tmetadataTable?: string\n\t} = {}\n): void",
+          "parameters": [
+            {
+              "name": "storage",
+              "type": "TLSyncSqliteWrapper",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "documentsTable",
+              "type": "string",
+              "default": "'documents'",
+              "optional": true,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "objectsTable",
+              "type": "string",
+              "default": "'objects'",
+              "optional": true,
+              "variadic": false,
+              "order": 2
+            },
+            {
+              "name": "tombstonesTable",
+              "type": "string",
+              "default": "'tombstones'",
+              "optional": true,
+              "variadic": false,
+              "order": 3
+            },
+            {
+              "name": "metadataTable",
+              "type": "string",
+              "default": "'metadata'",
+              "optional": true,
+              "variadic": false,
+              "order": 4
+            }
+          ],
+          "returnType": "void",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "storage provides prepare, exec, and transaction-compatible SQLite wrapper operations.",
+            "The configured table-name values are valid for interpolation into SQLite statements."
+          ],
+          "postconditions": [
+            "The function returns void after applying any required migration steps.",
+            "When the metadata table has no readable migration version, the configured documents, tombstones, and metadata tables are created with their required indexes and initial metadata row.",
+            "A readable migration version of zero causes the initial schema creation path to run."
+          ],
+          "invariants": [
+            "The migration version is determined from the first row returned by the metadata query.",
+            "Failure while reading the existing migration version is treated as migration version zero.",
+            "Migration execution is performed through the supplied storage wrapper."
+          ],
+          "edgeCases": [
+            "If the metadata query returns no rows, migrationVersion defaults to zero and initial schema creation is attempted.",
+            "If preparing or executing the metadata-version query throws, the error is swallowed and initial migration is attempted.",
+            "If the metadata version is zero, the function creates documents, tombstones, and metadata tables, creates lastChangedClock and clock indexes, inserts initial metadata, and advances the local migration version.",
+            "If the metadata version is one, the function enters the migration-2 state-column conversion path.",
+            "Errors from schema-creation or later migration exec calls are not caught by this function and propagate to the caller.",
+            "Custom table names are substituted into all migration SQL statements."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["Exceptions from schema-creation or migration storage.exec calls propagate to the caller."],
+            "reverts": [],
+            "onInvalidInput": "No explicit validation is performed; invalid table names or incompatible SQL are delegated to SQLite and may cause an exception.",
+            "returnsOnError": null
+          },
+          "stateMutations": [
+            "Creates or recreates SQLite schema tables and indexes through storage.exec.",
+            "Inserts or updates migration metadata in the configured metadata table."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "prepare", "source": "storage", "kind": "external" },
+            { "name": "all", "source": "the prepared migration-version SELECT statement", "kind": "external" },
+            { "name": "exec", "source": "storage", "kind": "external" }
+          ],
+          "symbolReferences": ["TLSyncSqliteWrapper"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Executes SQLite SQL statements against configurable documents, tombstones, and metadata table names. The metadata query reads a single migrationVersion INTEGER column from the first row of the metadata table.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Migrates a SQLite-backed sync storage schema to the expected schema version, creating the required tables and indexes when no metadata exists. It supports configurable table names and performs no return-value reporting.",
+          "specLiterals": [
+            { "kind": "format-string", "value": "documents", "role": "Default name for the documents table." },
+            { "kind": "format-string", "value": "objects", "role": "Default name for the objects table option." },
+            { "kind": "format-string", "value": "tombstones", "role": "Default name for the tombstones table." },
+            { "kind": "format-string", "value": "metadata", "role": "Default name for the metadata table." },
+            {
+              "kind": "sql",
+              "value": "SELECT migrationVersion FROM ${metadataTable} LIMIT 1",
+              "role": "Reads the current schema migration version from the configured metadata table."
+            },
+            { "kind": "magic-number", "value": "0", "role": "Represents an absent or initial migration version." },
+            { "kind": "magic-number", "value": "1", "role": "Selects the migration-2 conversion path." },
+            {
+              "kind": "magic-number",
+              "value": "2",
+              "role": "Initial schema metadata migration version and post-initialization migration version."
+            },
+            {
+              "kind": "sql",
+              "value": "BLOB",
+              "role": "Required SQLite storage type for document state in the created schema."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "migrateSqliteSyncStorage(storage) is called with default table names.",
+              "then": "The query error is suppressed, the initial schema-creation SQL is executed for documents, tombstones, and metadata, and the function completes without returning a value unless schema execution itself fails.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "migrateSqliteSyncStorage(storage, { documentsTable: \"sync_documents\", tombstonesTable: \"sync_tombstones\", metadataTable: \"sync_metadata\" }) is called.",
+              "then": "Migration proceeds as version zero and uses the configured table names in the schema and metadata SQL.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "migrateSqliteSyncStorage(storage) is called.",
+              "then": "The function enters the migration-2 state-column conversion path rather than the initial version-zero schema-creation branch.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "d392461bfda1d2ea8df490350fcf596cb2bdeee340b585ed9b4c6aab51953312"
+        }
+      },
+      {
+        "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__encodeState#function:encodeState",
+        "unitKind": "function",
+        "name": "encodeState",
+        "qualifiedName": "encodeState",
+        "parentUnitId": null,
+        "startLine": 152,
+        "endLine": 153,
+        "isBehavioral": true,
+        "source": "\t\t\t);\n",
+        "detail": {
+          "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__encodeState#function:encodeState",
+          "fileId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__encodeState",
+          "unitKind": "function",
+          "name": "encodeState",
+          "qualifiedName": "encodeState",
+          "parentUnitId": null,
+          "startLine": 152,
+          "endLine": 153,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Defines the state-encoding operation used by the SQLite synchronization storage module; the available source context does not expose its input, output, or encoding guarantees.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "7b0488cc2d78a60565a6279eba4248576701ca56c48e6f25f814bdfaca86a794"
+        }
+      },
+      {
+        "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__decodeState#function:decodeState",
+        "unitKind": "function",
+        "name": "decodeState",
+        "qualifiedName": "decodeState",
+        "parentUnitId": null,
+        "startLine": 155,
+        "endLine": 156,
+        "isBehavioral": true,
+        "source": "\t\t\tSELECT id, CAST(state AS BLOB), lastChangedClock FROM ${documentsTable};\n",
+        "detail": {
+          "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__decodeState#function:decodeState",
+          "fileId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__decodeState",
+          "unitKind": "function",
+          "name": "decodeState",
+          "qualifiedName": "decodeState",
+          "parentUnitId": null,
+          "startLine": 155,
+          "endLine": 156,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Decodes a persisted document state value retrieved from SQLite storage into the in-memory state representation expected by the sync-storage layer.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "f18f0c422d934cc23ced66c0c32f0054139856e2fdfb0ca9bad62a3fc9db49c3"
+        }
+      },
+      {
+        "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage#class:SQLiteSyncStorage",
+        "unitKind": "class",
+        "name": "SQLiteSyncStorage",
+        "qualifiedName": "SQLiteSyncStorage",
+        "parentUnitId": null,
+        "startLine": 192,
+        "endLine": 494,
+        "isBehavioral": true,
+        "source": "\nfunction decodeState<T>(state: Uint8Array): T {\n\treturn JSON.parse(textDecoder.decode(state))\n}\n\n/**\n * SQLite-based implementation of TLSyncStorage.\n * Stores documents, tombstones, metadata, and clock values in SQLite tables.\n *\n * This storage backend provides persistent synchronization state that survives\n * process restarts, unlike InMemorySyncStorage which loses data when the process ends.\n *\n * @example\n * ```ts\n * // With Cloudflare Durable Objects\n * import { SQLiteSyncStorage, DurableObjectSqliteSyncWrapper } from '@tldraw/sync-core'\n *\n * const sql = new DurableObjectSqliteSyncWrapper(this.ctx.storage)\n * const storage = new SQLiteSyncStorage({ sql })\n * ```\n *\n * @example\n * ```ts\n * // With Node.js sqlite (Node 22.5+)\n * import { DatabaseSync } from 'node:sqlite'\n * import { SQLiteSyncStorage, NodeSqliteWrapper } from '@tldraw/sync-core'\n *\n * const db = new DatabaseSync('sync-state.db')\n * const sql = new NodeSqliteWrapper(db)\n * const storage = new SQLiteSyncStorage({ sql })\n * ```\n *\n * @example\n * ```ts\n * // Initialize with an existing snapshot\n * const storage = new SQLiteSyncStorage({ sql, snapshot: existingSnapshot })\n * ```\n *\n * @public\n */\nexport class SQLiteSyncStorage<R extends UnknownRecord> implements TLSyncStorage<R> {\n\t/**\n\t * Check if the storage has been initialized (has data in the clock table).\n\t * Useful for determining whether to load from an external source on first access.\n\t */\n\tstatic hasBeenInitialized(storage: TLSyncSqliteWrapper): boolean {\n\t\tconst prefix = storage.config?.tablePrefix ?? ''\n\t\ttry {\n\t\t\tconst schema = storage\n\t\t\t\t.prepare<{ schema: string }>(`SELECT schema FROM ${prefix}metadata LIMIT 1`)\n\t\t\t\t.all()[0]?.schema\n\t\t\treturn !!schema\n\t\t} catch (_e) {\n\t\t\treturn false\n\t\t}\n\t}\n\n\t/**\n\t * Get the current document clock value from storage without fully initializing.\n\t * Returns null if storage has not been initialized.\n\t * Useful for comparing storage freshness against external sources.\n\t */\n\tstatic getDocumentClock(storage: TLSyncSqliteWrapper): number | null {\n\t\tconst prefix = storage.config?.tablePrefix ?? ''\n\t\ttry {\n\t\t\tconst row = storage\n\t\t\t\t.prepare<{ documentClock: number }>(`SELECT documentClock FROM ${prefix}metadata LIMIT 1`)\n\t\t\t\t.all()[0]\n\t\t\t// documentClock exists but could be 0, so we check if the storage is initialized\n\t\t\tif (row && SQLiteSyncStorage.hasBeenInitialized(storage)) {\n\t\t\t\treturn row.documentClock\n\t\t\t}\n\t\t\treturn null\n\t\t} catch (_e) {\n\t\t\treturn null\n\t\t}\n\t}\n\n\t// Prepared statements - created once, reused many times\n\tprivate readonly stmts\n\n\tprivate readonly sql: TLSyncSqliteWrapper\n\n\t/** @internal */\n\treadonly objectTypes: ReadonlySet<string>\n\n\tconstructor({\n\t\tsql,\n\t\tsnapshot,\n\t\tobjectTypes,\n\t\tonChange,\n\t}: {\n\t\tsql: TLSyncSqliteWrapper\n\t\tsnapshot?: RoomSnapshot | StoreSnapshot<R>\n\t\t/**\n\t\t * Record type names stored in the object-store lane. Records of these types are routed to\n\t\t * a separate table: excluded from `getSnapshot()`, returned by `getObjectsSnapshot()`.\n\t\t * They share the documents' clock, tombstones, and transactions.\n\t\t */\n\t\tobjectTypes?: readonly string[]\n\t\tonChange?(arg: TLSyncStorageOnChangeCallbackProps): unknown\n\t}) {\n\t\tthis.sql = sql\n\t\tthis.objectTypes = new Set(objectTypes ?? [])\n\t\tconst prefix = sql.config?.tablePrefix ?? ''\n\t\tconst documentsTable = `${prefix}documents`\n\t\tconst objectsTable = `${prefix}objects`\n\t\tconst tombstonesTable = `${prefix}tombstones`\n\t\tconst metadataTable = `${prefix}metadata`\n\n\t\tmigrateSqliteSyncStorage(this.sql, {\n\t\t\tdocumentsTable,\n\t\t\tobjectsTable,\n\t\t\ttombstonesTable,\n\t\t\tmetadataTable,\n\t\t})\n\n\t\t// Both record tables have identical shape; prepare the same statements for each.\n\t\tconst makeRecordTableStmts = (table: string) => ({\n\t\t\tget: this.sql.prepare<{ state: Uint8Array }, [id: string]>(\n\t\t\t\t`SELECT state FROM ${table} WHERE id = ?`\n\t\t\t),\n\t\t\tgetWithClock: this.sql.prepare<{ state: Uint8Array; lastChangedClock: number }, [id: string]>(\n\t\t\t\t`SELECT state, lastChangedClock FROM ${table} WHERE id = ?`\n\t\t\t),\n\t\t\tinsert: this.sql.prepare<void, [id: string, state: Uint8Array, lastChangedClock: number]>(\n\t\t\t\t`INSERT OR REPLACE INTO ${table} (id, state, lastChangedClock) VALUES (?, ?, ?)`\n\t\t\t),\n\t\t\tdelete: this.sql.prepare<void, [id: string]>(`DELETE FROM ${table} WHERE id = ?`),\n\t\t\texists: this.sql.prepare<{ id: string }, [id: string]>(\n\t\t\t\t`SELECT id FROM ${table} WHERE id = ?`\n\t\t\t),\n\t\t\titerate: this.sql.prepare<{ state: Uint8Array; lastChangedClock: number }>(\n\t\t\t\t`SELECT state, lastChangedClock FROM ${table}`\n\t\t\t),\n\t\t\titerateEntries: this.sql.prepare<{ id: string; state: Uint8Array }>(\n\t\t\t\t`SELECT id, state FROM ${table}`\n\t\t\t),\n\t\t\titerateKeys: this.sql.prepare<{ id: string }>(`SELECT id FROM ${table}`),\n\t\t\titerateValues: this.sql.prepare<{ state: Uint8Array }>(`SELECT state FROM ${table}`),\n\t\t\tchangedSince: this.sql.prepare<{ state: Uint8Array }, [sinceClock: number]>(\n\t\t\t\t`SELECT state FROM ${table} WHERE lastChangedClock > ?`\n\t\t\t),\n\t\t})\n\n\t\t// Prepare all statements once\n\t\tthis.stmts = {\n\t\t\t// Metadata\n\t\t\tgetDocumentClock: this.sql.prepare<{ documentClock: number }>(\n\t\t\t\t`SELECT documentClock FROM ${metadataTable} LIMIT 1`\n\t\t\t),\n\t\t\tgetTombstoneHistoryStartsAtClock: this.sql.prepare<{ tombstoneHistoryStartsAtClock: number }>(\n\t\t\t\t`SELECT tombstoneHistoryStartsAtClock FROM ${metadataTable}`\n\t\t\t),\n\t\t\tgetSchema: this.sql.prepare<{ schema: string }>(`SELECT schema FROM ${metadataTable}`),\n\t\t\tsetSchema: this.sql.prepare<void, [schema: string]>(`UPDATE ${metadataTable} SET schema = ?`),\n\t\t\tsetTombstoneHistoryStartsAtClock: this.sql.prepare<void, [clock: number]>(\n\t\t\t\t`UPDATE ${metadataTable} SET tombstoneHistoryStartsAtClock = ?`\n\t\t\t),\n\t\t\tincrementDocumentClock: this.sql.prepare<void>(\n\t\t\t\t`UPDATE ${metadataTable} SET documentClock = documentClock + 1`\n\t\t\t),\n\n\t\t\t// Record tables (document lane + object-store lane)\n\t\t\tdocuments: makeRecordTableStmts(documentsTable),\n\t\t\tobjects: makeRecordTableStmts(objectsTable),\n\n\t\t\t// Tombstones\n\t\t\tinsertTombstone: this.sql.prepare<void, [id: string, clock: number]>(\n\t\t\t\t`INSERT OR REPLACE INTO ${tombstonesTable} (id, clock) VALUES (?, ?)`\n\t\t\t),\n\t\t\tdeleteTombstone: this.sql.prepare<void, [id: string]>(\n\t\t\t\t`DELETE FROM ${tombstonesTable} WHERE id = ?`\n\t\t\t),\n\t\t\tdeleteTombstonesBefore: this.sql.prepare<void, [clock: number]>(\n\t\t\t\t`DELETE FROM ${tombstonesTable} WHERE clock < ?`\n\t\t\t),\n\t\t\tcountTombstones: this.sql.prepare<{ count: number }>(\n\t\t\t\t`SELECT count(*) as count FROM ${tombstonesTable}`\n\t\t\t),\n\t\t\titerateTombstones: this.sql.prepare<{ id: string; clock: number }>(\n\t\t\t\t`SELECT id, clock FROM ${tombstonesTable} ORDER BY clock ASC`\n\t\t\t),\n\t\t\tgetTombstonesChangedSince: this.sql.prepare<{ id: string }, [sinceClock: number]>(\n\t\t\t\t`SELECT id FROM ${tombstonesTable} WHERE clock > ?`\n\t\t\t),\n\n\t\t\t// Initial setup (only used when loading a snapshot)\n\t\t\tupdateMetadata: this.sql.prepare<\n\t\t\t\tvoid,\n\t\t\t\t[documentClock: number, tombstoneHistoryStartsAtClock: number, schema: string]\n\t\t\t>(\n\t\t\t\t`UPDATE ${metadataTable} SET documentClock = ?, tombstoneHistoryStartsAtClock = ?, schema = ?`\n\t\t\t),\n\t\t}\n\n\t\t// Check if we already have data\n\t\tconst hasData = SQLiteSyncStorage.hasBeenInitialized(sql)\n\n\t\tif (snapshot || !hasData) {\n\t\t\tsnapshot = convertStoreSnapshotToRoomSnapshot(snapshot ?? DEFAULT_INITIAL_SNAPSHOT)\n\n\t\t\tconst documentClock = snapshot.documentClock ?? snapshot.clock ?? 0\n\t\t\tconst tombstoneHistoryStartsAtClock = snapshot.tombstoneHistoryStartsAtClock ?? documentClock\n\n\t\t\t// Clear existing data\n\t\t\tthis.sql.exec(`\n\t\t\t\tDELETE FROM ${documentsTable};\n\t\t\t\tDELETE FROM ${objectsTable};\n\t\t\t\tDELETE FROM ${tombstonesTable};\n\t\t\t`)\n\n\t\t\t// Insert records, routing object-lane types into their partition (a seed snapshot may\n\t\t\t// carry object-lane records merged in, e.g. loaded from a separate persistence lane)\n\t\t\tfor (const doc of snapshot.documents) {\n\t\t\t\tconst table = this.objectTypes.has(doc.state.typeName)\n\t\t\t\t\t? this.stmts.objects\n\t\t\t\t\t: this.stmts.documents\n\t\t\t\ttable.insert.run(doc.state.id, encodeState(doc.state), doc.lastChangedClock)\n\t\t\t}\n\n\t\t\t// Insert tombstones\n\t\t\tif (snapshot.tombstones) {\n\t\t\t\tfor (const [id, clock] of objectMapEntries(snapshot.tombstones)) {\n\t\t\t\t\tthis.stmts.insertTombstone.run(id, clock)\n\t\t\t\t}\n\t\t\t}\n\n\t\t\t// Insert metadata row\n\t\t\tthis.stmts.updateMetadata.run(\n\t\t\t\tdocumentClock,\n\t\t\t\ttombstoneHistoryStartsAtClock,\n\t\t\t\tJSON.stringify(snapshot.schema)\n\t\t\t)\n\t\t} else {\n\t\t\t// One-time sweep: rooms written before the objects table existed may have object-lane\n\t\t\t// records sitting in the documents table. Record ids are typeName-prefixed, so a PK\n\t\t\t// range scan per object type moves them cheaply (no-op once clean).\n\t\t\tfor (const typeName of this.objectTypes) {\n\t\t\t\tconst lo = `${typeName}:`\n\t\t\t\t// ';' is the next code point after ':' — [lo, hi) covers exactly the `type:` prefix\n\t\t\t\tconst hi = `${typeName};`\n\t\t\t\tthis.sql.exec(`\n\t\t\t\t\tINSERT OR REPLACE INTO ${objectsTable} (id, state, lastChangedClock)\n\t\t\t\t\tSELECT id, state, lastChangedClock FROM ${documentsTable}\n\t\t\t\t\tWHERE id >= '${lo}' AND id < '${hi}';\n\t\t\t\t\tDELETE FROM ${documentsTable} WHERE id >= '${lo}' AND id < '${hi}';\n\t\t\t\t`)\n\t\t\t}\n\t\t}\n\t\tif (onChange) {\n\t\t\tthis.onChange(onChange)\n\t\t}\n\t}\n\n\tprivate notifier = new MicrotaskNotifier<[TLSyncStorageOnChangeCallbackProps]>()\n\tonChange(callback: (arg: TLSyncStorageOnChangeCallbackProps) => void): () => void {\n\t\treturn this.notifier.register(callback)\n\t}\n\n\ttransaction<T>(\n\t\tcallback: TLSyncStorageTransactionCallback<R, T>,\n\t\topts?: TLSyncStorageTransactionOptions\n\t): TLSyncStorageTransactionResult<T, R> {\n\t\tconst clockBefore = this.getClock()\n\t\tconst trackChanges = opts?.emitChanges === 'always'\n\t\treturn this.sql.transaction(() => {\n\t\t\tconst txn = new SQLiteSyncStorageTransaction<R>(this, this.stmts)\n\t\t\tlet result: T\n\t\t\tlet changes: TLSyncForwardDiff<R> | undefined\n\t\t\ttry {\n\t\t\t\tresult = transaction(() => {\n\t\t\t\t\treturn callback(txn)\n\t\t\t\t}) as T\n\t\t\t\tif (trackChanges) {\n\t\t\t\t\tchanges = txn.getChangesSince(clockBefore)?.diff\n\t\t\t\t}\n\t\t\t} finally {\n\t\t\t\ttxn.close()\n\t\t\t}\n\t\t\tif (\n\t\t\t\ttypeof result === 'object' &&\n\t\t\t\tresult &&\n\t\t\t\t'then' in result &&\n\t\t\t\ttypeof result.then === 'function'\n\t\t\t) {\n\t\t\t\tthrow new Error('Transaction must return a value, not a promise')\n\t\t\t}\n\n\t\t\tconst clockAfter = this.getClock()\n\t\t\tconst didChange = clockAfter > clockBefore\n\t\t\tif (didChange) {\n\t\t\t\tthis.notifier.notify({ id: opts?.id, documentClock: clockAfter })\n\t\t\t}\n\t\t\treturn { documentClock: clockAfter, didChange: clockAfter > clockBefore, result, changes }\n\t\t})\n\t}\n\n\tgetClock(): number {\n\t\tconst clockRow = this.stmts.getDocumentClock.all()[0]\n\t\treturn clockRow?.documentClock ?? 0\n\t}\n",
+        "detail": {
+          "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage#class:SQLiteSyncStorage",
+          "fileId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage",
+          "unitKind": "class",
+          "name": "SQLiteSyncStorage",
+          "qualifiedName": "SQLiteSyncStorage",
+          "parentUnitId": null,
+          "startLine": 192,
+          "endLine": 494,
+          "signature": "export class SQLiteSyncStorage<R extends UnknownRecord> implements TLSyncStorage<R>",
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": ["export"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": ["R extends UnknownRecord"],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": ["TLSyncStorage<R>"],
+          "members": [
+            {
+              "name": "hasBeenInitialized",
+              "kind": "method",
+              "type": null,
+              "default": null,
+              "visibility": "public",
+              "static": true
+            },
+            {
+              "name": "getDocumentClock",
+              "kind": "method",
+              "type": null,
+              "default": null,
+              "visibility": "public",
+              "static": true
+            },
+            {
+              "name": "stmts",
+              "kind": "property",
+              "type": null,
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "sql",
+              "kind": "property",
+              "type": "TLSyncSqliteWrapper",
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "objectTypes",
+              "kind": "property",
+              "type": "ReadonlySet<string>",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "constructor",
+              "kind": "constructor",
+              "type": null,
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "notifier",
+              "kind": "property",
+              "type": null,
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "onChange",
+              "kind": "method",
+              "type": null,
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "transaction",
+              "kind": "method",
+              "type": null,
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "getClock",
+              "kind": "method",
+              "type": null,
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "pruneTombstones",
+              "kind": "method",
+              "type": null,
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "getSnapshot",
+              "kind": "method",
+              "type": null,
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "getObjectsByIds",
+              "kind": "method",
+              "type": null,
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "_iterateRecords",
+              "kind": "method",
+              "type": null,
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "_iterateTombstones",
+              "kind": "method",
+              "type": null,
+              "default": null,
+              "visibility": "private",
+              "static": false
+            }
+          ],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "SQLiteSyncStorage provides a persistent SQLite-backed implementation of TLSyncStorage for synchronized records, object-lane records, tombstones, metadata, and document clocks.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "dc7e954895b61117c9418091329b8a4172da4cf095cc25ece25ac102c47a5f34"
+        }
+      },
+      {
+        "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage.hasBeenInitialized#method:SQLiteSyncStorage.hasBeenInitialized",
+        "unitKind": "method",
+        "name": "hasBeenInitialized",
+        "qualifiedName": "SQLiteSyncStorage.hasBeenInitialized",
+        "parentUnitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage#class:SQLiteSyncStorage",
+        "startLine": 197,
+        "endLine": 206,
+        "isBehavioral": true,
+        "source": "/**\n * SQLite-based implementation of TLSyncStorage.\n * Stores documents, tombstones, metadata, and clock values in SQLite tables.\n *\n * This storage backend provides persistent synchronization state that survives\n * process restarts, unlike InMemorySyncStorage which loses data when the process ends.\n *\n * @example\n * ```ts\n * // With Cloudflare Durable Objects",
+        "detail": {
+          "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage.hasBeenInitialized#method:SQLiteSyncStorage.hasBeenInitialized",
+          "fileId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage.hasBeenInitialized",
+          "unitKind": "method",
+          "name": "hasBeenInitialized",
+          "qualifiedName": "SQLiteSyncStorage.hasBeenInitialized",
+          "parentUnitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage#class:SQLiteSyncStorage",
+          "startLine": 197,
+          "endLine": 206,
+          "signature": "hasBeenInitialized(): boolean",
+          "parameters": [],
+          "returnType": "boolean",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": ["Returns a boolean indicating the persisted initialization state of the storage."],
+          "invariants": ["The method does not modify synchronization data or initialization state."],
+          "edgeCases": [
+            "When no initialization marker exists, returns false.",
+            "When the initialization marker exists, returns true."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "SQLite metadata lookup", "source": "SQLite database", "kind": "external" }],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Reports whether the SQLite synchronization storage has already been initialized. The result reflects the persisted initialization state rather than transient process state.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "hasBeenInitialized() is called",
+              "then": "The method returns false.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "hasBeenInitialized() is called",
+              "then": "The method returns true.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "a68f7ef50ce6f045c5d943220ff9fb571616b1218aee371025f5d120260c8594"
+        }
+      },
+      {
+        "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage.getDocumentClock#method:SQLiteSyncStorage.getDocumentClock",
+        "unitKind": "method",
+        "name": "getDocumentClock",
+        "qualifiedName": "SQLiteSyncStorage.getDocumentClock",
+        "parentUnitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage#class:SQLiteSyncStorage",
+        "startLine": 209,
+        "endLine": 222,
+        "isBehavioral": true,
+        "source": " * const sql = new DurableObjectSqliteSyncWrapper(this.ctx.storage)\n * const storage = new SQLiteSyncStorage({ sql })\n * ```\n *\n * @example\n * ```ts\n * // With Node.js sqlite (Node 22.5+)\n * import { DatabaseSync } from 'node:sqlite'\n * import { SQLiteSyncStorage, NodeSqliteWrapper } from '@tldraw/sync-core'\n *\n * const db = new DatabaseSync('sync-state.db')\n * const sql = new NodeSqliteWrapper(db)\n * const storage = new SQLiteSyncStorage({ sql })\n * ```",
+        "detail": {
+          "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage.getDocumentClock#method:SQLiteSyncStorage.getDocumentClock",
+          "fileId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage.getDocumentClock",
+          "unitKind": "method",
+          "name": "getDocumentClock",
+          "qualifiedName": "SQLiteSyncStorage.getDocumentClock",
+          "parentUnitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage#class:SQLiteSyncStorage",
+          "startLine": 209,
+          "endLine": 222,
+          "signature": "getDocumentClock(): number",
+          "parameters": [],
+          "returnType": "number",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": ["Returns the document clock as a number without modifying storage."],
+          "invariants": [
+            "The returned value represents the clock currently associated with the stored document state."
+          ],
+          "edgeCases": ["When storage has no prior document clock, returns the storage-defined initial clock value."],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "SQLite SQL wrapper", "source": "SQLiteSyncStorage.sql", "kind": "internal" }],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Returns the current document clock persisted by the SQLite-backed synchronization storage.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "f644dda7c3ecfe251a3c51d5e2e45b4f4ad7ee88dd1711078de8e106c3375620"
+        }
+      },
+      {
+        "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage.constructor#method:SQLiteSyncStorage.constructor",
+        "unitKind": "method",
+        "name": "constructor",
+        "qualifiedName": "SQLiteSyncStorage.constructor",
+        "parentUnitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage#class:SQLiteSyncStorage",
+        "startLine": 231,
+        "endLine": 372,
+        "isBehavioral": true,
+        "source": " */\nexport class SQLiteSyncStorage<R extends UnknownRecord> implements TLSyncStorage<R> {\n\t/**\n\t * Check if the storage has been initialized (has data in the clock table).\n\t * Useful for determining whether to load from an external source on first access.\n\t */\n\tstatic hasBeenInitialized(storage: TLSyncSqliteWrapper): boolean {\n\t\tconst prefix = storage.config?.tablePrefix ?? ''\n\t\ttry {\n\t\t\tconst schema = storage\n\t\t\t\t.prepare<{ schema: string }>(`SELECT schema FROM ${prefix}metadata LIMIT 1`)\n\t\t\t\t.all()[0]?.schema\n\t\t\treturn !!schema\n\t\t} catch (_e) {\n\t\t\treturn false\n\t\t}\n\t}\n\n\t/**\n\t * Get the current document clock value from storage without fully initializing.\n\t * Returns null if storage has not been initialized.\n\t * Useful for comparing storage freshness against external sources.\n\t */\n\tstatic getDocumentClock(storage: TLSyncSqliteWrapper): number | null {\n\t\tconst prefix = storage.config?.tablePrefix ?? ''\n\t\ttry {\n\t\t\tconst row = storage\n\t\t\t\t.prepare<{ documentClock: number }>(`SELECT documentClock FROM ${prefix}metadata LIMIT 1`)\n\t\t\t\t.all()[0]\n\t\t\t// documentClock exists but could be 0, so we check if the storage is initialized\n\t\t\tif (row && SQLiteSyncStorage.hasBeenInitialized(storage)) {\n\t\t\t\treturn row.documentClock\n\t\t\t}\n\t\t\treturn null\n\t\t} catch (_e) {\n\t\t\treturn null\n\t\t}\n\t}\n\n\t// Prepared statements - created once, reused many times\n\tprivate readonly stmts\n\n\tprivate readonly sql: TLSyncSqliteWrapper\n\n\t/** @internal */\n\treadonly objectTypes: ReadonlySet<string>\n\n\tconstructor({\n\t\tsql,\n\t\tsnapshot,\n\t\tobjectTypes,\n\t\tonChange,\n\t}: {\n\t\tsql: TLSyncSqliteWrapper\n\t\tsnapshot?: RoomSnapshot | StoreSnapshot<R>\n\t\t/**\n\t\t * Record type names stored in the object-store lane. Records of these types are routed to\n\t\t * a separate table: excluded from `getSnapshot()`, returned by `getObjectsSnapshot()`.\n\t\t * They share the documents' clock, tombstones, and transactions.\n\t\t */\n\t\tobjectTypes?: readonly string[]\n\t\tonChange?(arg: TLSyncStorageOnChangeCallbackProps): unknown\n\t}) {\n\t\tthis.sql = sql\n\t\tthis.objectTypes = new Set(objectTypes ?? [])\n\t\tconst prefix = sql.config?.tablePrefix ?? ''\n\t\tconst documentsTable = `${prefix}documents`\n\t\tconst objectsTable = `${prefix}objects`\n\t\tconst tombstonesTable = `${prefix}tombstones`\n\t\tconst metadataTable = `${prefix}metadata`\n\n\t\tmigrateSqliteSyncStorage(this.sql, {\n\t\t\tdocumentsTable,\n\t\t\tobjectsTable,\n\t\t\ttombstonesTable,\n\t\t\tmetadataTable,\n\t\t})\n\n\t\t// Both record tables have identical shape; prepare the same statements for each.\n\t\tconst makeRecordTableStmts = (table: string) => ({\n\t\t\tget: this.sql.prepare<{ state: Uint8Array }, [id: string]>(\n\t\t\t\t`SELECT state FROM ${table} WHERE id = ?`\n\t\t\t),\n\t\t\tgetWithClock: this.sql.prepare<{ state: Uint8Array; lastChangedClock: number }, [id: string]>(\n\t\t\t\t`SELECT state, lastChangedClock FROM ${table} WHERE id = ?`\n\t\t\t),\n\t\t\tinsert: this.sql.prepare<void, [id: string, state: Uint8Array, lastChangedClock: number]>(\n\t\t\t\t`INSERT OR REPLACE INTO ${table} (id, state, lastChangedClock) VALUES (?, ?, ?)`\n\t\t\t),\n\t\t\tdelete: this.sql.prepare<void, [id: string]>(`DELETE FROM ${table} WHERE id = ?`),\n\t\t\texists: this.sql.prepare<{ id: string }, [id: string]>(\n\t\t\t\t`SELECT id FROM ${table} WHERE id = ?`\n\t\t\t),\n\t\t\titerate: this.sql.prepare<{ state: Uint8Array; lastChangedClock: number }>(\n\t\t\t\t`SELECT state, lastChangedClock FROM ${table}`\n\t\t\t),\n\t\t\titerateEntries: this.sql.prepare<{ id: string; state: Uint8Array }>(\n\t\t\t\t`SELECT id, state FROM ${table}`\n\t\t\t),\n\t\t\titerateKeys: this.sql.prepare<{ id: string }>(`SELECT id FROM ${table}`),\n\t\t\titerateValues: this.sql.prepare<{ state: Uint8Array }>(`SELECT state FROM ${table}`),\n\t\t\tchangedSince: this.sql.prepare<{ state: Uint8Array }, [sinceClock: number]>(\n\t\t\t\t`SELECT state FROM ${table} WHERE lastChangedClock > ?`\n\t\t\t),\n\t\t})\n\n\t\t// Prepare all statements once\n\t\tthis.stmts = {\n\t\t\t// Metadata\n\t\t\tgetDocumentClock: this.sql.prepare<{ documentClock: number }>(\n\t\t\t\t`SELECT documentClock FROM ${metadataTable} LIMIT 1`\n\t\t\t),\n\t\t\tgetTombstoneHistoryStartsAtClock: this.sql.prepare<{ tombstoneHistoryStartsAtClock: number }>(\n\t\t\t\t`SELECT tombstoneHistoryStartsAtClock FROM ${metadataTable}`\n\t\t\t),\n\t\t\tgetSchema: this.sql.prepare<{ schema: string }>(`SELECT schema FROM ${metadataTable}`),\n\t\t\tsetSchema: this.sql.prepare<void, [schema: string]>(`UPDATE ${metadataTable} SET schema = ?`),\n\t\t\tsetTombstoneHistoryStartsAtClock: this.sql.prepare<void, [clock: number]>(\n\t\t\t\t`UPDATE ${metadataTable} SET tombstoneHistoryStartsAtClock = ?`\n\t\t\t),\n\t\t\tincrementDocumentClock: this.sql.prepare<void>(\n\t\t\t\t`UPDATE ${metadataTable} SET documentClock = documentClock + 1`\n\t\t\t),\n\n\t\t\t// Record tables (document lane + object-store lane)\n\t\t\tdocuments: makeRecordTableStmts(documentsTable),\n\t\t\tobjects: makeRecordTableStmts(objectsTable),\n\n\t\t\t// Tombstones\n\t\t\tinsertTombstone: this.sql.prepare<void, [id: string, clock: number]>(\n\t\t\t\t`INSERT OR REPLACE INTO ${tombstonesTable} (id, clock) VALUES (?, ?)`\n\t\t\t),\n\t\t\tdeleteTombstone: this.sql.prepare<void, [id: string]>(\n\t\t\t\t`DELETE FROM ${tombstonesTable} WHERE id = ?`\n\t\t\t),\n\t\t\tdeleteTombstonesBefore: this.sql.prepare<void, [clock: number]>(\n\t\t\t\t`DELETE FROM ${tombstonesTable} WHERE clock < ?`\n\t\t\t),\n\t\t\tcountTombstones: this.sql.prepare<{ count: number }>(\n\t\t\t\t`SELECT count(*) as count FROM ${tombstonesTable}`\n\t\t\t),\n\t\t\titerateTombstones: this.sql.prepare<{ id: string; clock: number }>(",
+        "detail": {
+          "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage.constructor#method:SQLiteSyncStorage.constructor",
+          "fileId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage.constructor",
+          "unitKind": "method",
+          "name": "constructor",
+          "qualifiedName": "SQLiteSyncStorage.constructor",
+          "parentUnitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage#class:SQLiteSyncStorage",
+          "startLine": 231,
+          "endLine": 372,
+          "signature": "constructor({ sql, snapshot, objectTypes, onChange, }: { sql: TLSyncSqliteWrapper; snapshot?: RoomSnapshot | StoreSnapshot<R>; objectTypes?: readonly string[]; onChange?(arg: TLSyncStorageOnChangeCallbackProps): unknown })",
+          "parameters": [
+            {
+              "name": "sql",
+              "type": "TLSyncSqliteWrapper",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "snapshot",
+              "type": "RoomSnapshot | StoreSnapshot<R>",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "objectTypes",
+              "type": "readonly string[]",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 2
+            },
+            {
+              "name": "onChange",
+              "type": "(arg: TLSyncStorageOnChangeCallbackProps) => unknown",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 3
+            }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The sql argument provides the TLSyncSqliteWrapper operations required for schema migration and prepared statements."
+          ],
+          "postconditions": [
+            "The storage schema is migrated or initialized for the configured table prefix.",
+            "The SQL wrapper is stored on the instance.",
+            "objectTypes is initialized as a ReadonlySet containing the supplied object type names, or an empty set when objectTypes is omitted.",
+            "Reusable prepared statements for metadata, records, and tombstones are initialized."
+          ],
+          "invariants": [
+            "All record-table statements use the configured table prefix consistently.",
+            "Document and object record tables receive equivalent prepared-statement sets.",
+            "The objectTypes set is created from the constructor input and is not directly exposed as a mutable array."
+          ],
+          "edgeCases": [
+            "When objectTypes is omitted, the instance uses an empty object-type set.",
+            "When the SQL wrapper has no tablePrefix configuration, storage table names use the empty prefix.",
+            "When migration or statement preparation fails, construction does not convert the failure into a fallback storage instance."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [
+              "Errors thrown by migrateSqliteSyncStorage",
+              "Errors thrown by the SQL wrapper during prepared-statement creation"
+            ],
+            "reverts": [],
+            "onInvalidInput": "Propagates failures from schema migration or SQL statement preparation.",
+            "returnsOnError": null
+          },
+          "stateMutations": [
+            "Assigns the sql instance field.",
+            "Assigns the objectTypes instance field.",
+            "Initializes the private reusable prepared-statements field.",
+            "Creates or migrates the configured SQLite storage tables and metadata."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "migrateSqliteSyncStorage", "source": "same module", "kind": "internal" },
+            { "name": "sql.prepare", "source": "TLSyncSqliteWrapper", "kind": "external" },
+            { "name": "Set", "source": "JavaScript standard library", "kind": "external" }
+          ],
+          "symbolReferences": [
+            "TLSyncSqliteWrapper",
+            "RoomSnapshot",
+            "StoreSnapshot<R>",
+            "TLSyncStorageOnChangeCallbackProps",
+            "UnknownRecord"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Initializes a SQLite-backed sync storage instance, including its schema and reusable SQL statements. It records the supplied SQL wrapper and object-type configuration for subsequent storage operations.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "8d7df7e67317085386d9e13060edc0c845aa43fed3b2c43307145c287cc585ae"
+        }
+      },
+      {
+        "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage.transaction#method:SQLiteSyncStorage.transaction",
+        "unitKind": "method",
+        "name": "transaction",
+        "qualifiedName": "SQLiteSyncStorage.transaction",
+        "parentUnitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage#class:SQLiteSyncStorage",
+        "startLine": 378,
+        "endLine": 412,
+        "isBehavioral": true,
+        "source": "\n\t\t\t// Initial setup (only used when loading a snapshot)\n\t\t\tupdateMetadata: this.sql.prepare<\n\t\t\t\tvoid,\n\t\t\t\t[documentClock: number, tombstoneHistoryStartsAtClock: number, schema: string]\n\t\t\t>(\n\t\t\t\t`UPDATE ${metadataTable} SET documentClock = ?, tombstoneHistoryStartsAtClock = ?, schema = ?`\n\t\t\t),\n\t\t}\n\n\t\t// Check if we already have data\n\t\tconst hasData = SQLiteSyncStorage.hasBeenInitialized(sql)\n\n\t\tif (snapshot || !hasData) {\n\t\t\tsnapshot = convertStoreSnapshotToRoomSnapshot(snapshot ?? DEFAULT_INITIAL_SNAPSHOT)\n\n\t\t\tconst documentClock = snapshot.documentClock ?? snapshot.clock ?? 0\n\t\t\tconst tombstoneHistoryStartsAtClock = snapshot.tombstoneHistoryStartsAtClock ?? documentClock\n\n\t\t\t// Clear existing data\n\t\t\tthis.sql.exec(`\n\t\t\t\tDELETE FROM ${documentsTable};\n\t\t\t\tDELETE FROM ${objectsTable};\n\t\t\t\tDELETE FROM ${tombstonesTable};\n\t\t\t`)\n\n\t\t\t// Insert records, routing object-lane types into their partition (a seed snapshot may\n\t\t\t// carry object-lane records merged in, e.g. loaded from a separate persistence lane)\n\t\t\tfor (const doc of snapshot.documents) {\n\t\t\t\tconst table = this.objectTypes.has(doc.state.typeName)\n\t\t\t\t\t? this.stmts.objects\n\t\t\t\t\t: this.stmts.documents\n\t\t\t\ttable.insert.run(doc.state.id, encodeState(doc.state), doc.lastChangedClock)\n\t\t\t}\n",
+        "detail": {
+          "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage.transaction#method:SQLiteSyncStorage.transaction",
+          "fileId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage.transaction",
+          "unitKind": "method",
+          "name": "transaction",
+          "qualifiedName": "SQLiteSyncStorage.transaction",
+          "parentUnitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage#class:SQLiteSyncStorage",
+          "startLine": 378,
+          "endLine": 412,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": ["Operations performed through the transaction context share one atomic SQLite transaction."],
+          "edgeCases": [
+            "If the transaction callback fails, the transaction does not complete normally; exact error propagation and rollback behavior are implementation-defined by the available unit contract."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": ["SQLite-backed storage state when the transaction callback performs writes."],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Executes storage operations within a SQLite transaction, providing an atomic boundary for changes made through the transaction context.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "f9f57d0ca2b041aa5f8ed676142ce777dd57e69396af793ae2cef7d80d9d9439"
+        }
+      },
+      {
+        "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage.pruneTombstones#method:SQLiteSyncStorage.pruneTombstones",
+        "unitKind": "method",
+        "name": "pruneTombstones",
+        "qualifiedName": "SQLiteSyncStorage.pruneTombstones",
+        "parentUnitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage#class:SQLiteSyncStorage",
+        "startLine": 435,
+        "endLine": 452,
+        "isBehavioral": true,
+        "source": "\t\t\t\t\tINSERT OR REPLACE INTO ${objectsTable} (id, state, lastChangedClock)\n\t\t\t\t\tSELECT id, state, lastChangedClock FROM ${documentsTable}\n\t\t\t\t\tWHERE id >= '${lo}' AND id < '${hi}';\n\t\t\t\t\tDELETE FROM ${documentsTable} WHERE id >= '${lo}' AND id < '${hi}';\n\t\t\t\t`)\n\t\t\t}\n\t\t}\n\t\tif (onChange) {\n\t\t\tthis.onChange(onChange)\n\t\t}\n\t}\n\n\tprivate notifier = new MicrotaskNotifier<[TLSyncStorageOnChangeCallbackProps]>()\n\tonChange(callback: (arg: TLSyncStorageOnChangeCallbackProps) => void): () => void {\n\t\treturn this.notifier.register(callback)\n\t}\n\n\ttransaction<T>(",
+        "detail": {
+          "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage.pruneTombstones#method:SQLiteSyncStorage.pruneTombstones",
+          "fileId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage.pruneTombstones",
+          "unitKind": "method",
+          "name": "pruneTombstones",
+          "qualifiedName": "SQLiteSyncStorage.pruneTombstones",
+          "parentUnitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage#class:SQLiteSyncStorage",
+          "startLine": 435,
+          "endLine": 452,
+          "signature": "pruneTombstones(olderThan: number): void",
+          "parameters": [
+            { "name": "olderThan", "type": "number", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "void",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["olderThan is a numeric tombstone-clock threshold."],
+          "postconditions": [
+            "Tombstones older than the threshold are removed from persistent storage.",
+            "Tombstones at or newer than the threshold remain unchanged."
+          ],
+          "invariants": ["Only tombstone records are affected."],
+          "edgeCases": [
+            "If no tombstones satisfy the threshold, storage remains unchanged.",
+            "A threshold that matches a tombstone boundary preserves tombstones at the boundary."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["Underlying SQLite/database errors are propagated."],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": null
+          },
+          "stateMutations": ["Deletes qualifying tombstone rows from the SQLite database."],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "SQLite database execution API", "source": "SQLiteSyncStorage database", "kind": "external" }
+          ],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Removes tombstone records whose clock is older than the supplied threshold from SQLite storage.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "7403f8546913f146542e8956b828685d21857132f7e3a801f50e2da3d999a6ee"
+        }
+      },
+      {
+        "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage.getSnapshot#method:SQLiteSyncStorage.getSnapshot",
+        "unitKind": "method",
+        "name": "getSnapshot",
+        "qualifiedName": "SQLiteSyncStorage.getSnapshot",
+        "parentUnitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage#class:SQLiteSyncStorage",
+        "startLine": 454,
+        "endLine": 462,
+        "isBehavioral": true,
+        "source": "\t\topts?: TLSyncStorageTransactionOptions\n\t): TLSyncStorageTransactionResult<T, R> {\n\t\tconst clockBefore = this.getClock()\n\t\tconst trackChanges = opts?.emitChanges === 'always'\n\t\treturn this.sql.transaction(() => {\n\t\t\tconst txn = new SQLiteSyncStorageTransaction<R>(this, this.stmts)\n\t\t\tlet result: T\n\t\t\tlet changes: TLSyncForwardDiff<R> | undefined\n\t\t\ttry {",
+        "detail": {
+          "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage.getSnapshot#method:SQLiteSyncStorage.getSnapshot",
+          "fileId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage.getSnapshot",
+          "unitKind": "method",
+          "name": "getSnapshot",
+          "qualifiedName": "SQLiteSyncStorage.getSnapshot",
+          "parentUnitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage#class:SQLiteSyncStorage",
+          "startLine": 454,
+          "endLine": 462,
+          "signature": "getSnapshot(): TLSyncStorageSnapshot<R>",
+          "parameters": [],
+          "returnType": "TLSyncStorageSnapshot<R>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [
+            "Returns a TLSyncStorageSnapshot<R> describing the storage state at the time of the call.",
+            "Does not modify the stored records, tombstones, or document clock."
+          ],
+          "invariants": ["The returned snapshot is internally consistent with a single observed storage state."],
+          "edgeCases": [
+            "Empty storage returns an empty snapshot with the storage's current clock state.",
+            "Storage containing records and tombstones returns both according to the snapshot type's representation."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["TLSyncStorageSnapshot"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Returns a snapshot representing the current state of the SQLite-backed sync storage.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "77a26f3867ecfcf4ba7b127cf70074eb0bc430da0a62afe497c137bd39068aeb"
+        }
+      },
+      {
+        "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage.getObjectsByIds#method:SQLiteSyncStorage.getObjectsByIds",
+        "unitKind": "method",
+        "name": "getObjectsByIds",
+        "qualifiedName": "SQLiteSyncStorage.getObjectsByIds",
+        "parentUnitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage#class:SQLiteSyncStorage",
+        "startLine": 468,
+        "endLine": 479,
+        "isBehavioral": true,
+        "source": "\t\t\t\t}\n\t\t\t} finally {\n\t\t\t\ttxn.close()\n\t\t\t}\n\t\t\tif (\n\t\t\t\ttypeof result === 'object' &&\n\t\t\t\tresult &&\n\t\t\t\t'then' in result &&\n\t\t\t\ttypeof result.then === 'function'\n\t\t\t) {\n\t\t\t\tthrow new Error('Transaction must return a value, not a promise')\n\t\t\t}",
+        "detail": {
+          "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage.getObjectsByIds#method:SQLiteSyncStorage.getObjectsByIds",
+          "fileId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage.getObjectsByIds",
+          "unitKind": "method",
+          "name": "getObjectsByIds",
+          "qualifiedName": "SQLiteSyncStorage.getObjectsByIds",
+          "parentUnitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage#class:SQLiteSyncStorage",
+          "startLine": 468,
+          "endLine": 479,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Retrieves the stored objects corresponding to the requested object identifiers. The method preserves the storage layer's defined handling of missing or otherwise unavailable identifiers.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "4be06cdb93a500cf90d77789d3b578c5080aefed1e058bf0c1bf5200be785d85"
+        }
+      },
+      {
+        "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage._iterateRecords#method:SQLiteSyncStorage._iterateRecords",
+        "unitKind": "method",
+        "name": "_iterateRecords",
+        "qualifiedName": "SQLiteSyncStorage._iterateRecords",
+        "parentUnitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage#class:SQLiteSyncStorage",
+        "startLine": 481,
+        "endLine": 487,
+        "isBehavioral": true,
+        "source": "\t\t\tconst clockAfter = this.getClock()\n\t\t\tconst didChange = clockAfter > clockBefore\n\t\t\tif (didChange) {\n\t\t\t\tthis.notifier.notify({ id: opts?.id, documentClock: clockAfter })\n\t\t\t}\n\t\t\treturn { documentClock: clockAfter, didChange: clockAfter > clockBefore, result, changes }\n\t\t})",
+        "detail": {
+          "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage._iterateRecords#method:SQLiteSyncStorage._iterateRecords",
+          "fileId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage._iterateRecords",
+          "unitKind": "method",
+          "name": "_iterateRecords",
+          "qualifiedName": "SQLiteSyncStorage._iterateRecords",
+          "parentUnitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage#class:SQLiteSyncStorage",
+          "startLine": 481,
+          "endLine": 487,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Internal SQLiteSyncStorage helper responsible for iterating stored records.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "5c1c2459b8a339c913722a26e5b8507d9048c545e3822e04cd665c2bcfa1d6fa"
+        }
+      },
+      {
+        "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage._iterateTombstones#method:SQLiteSyncStorage._iterateTombstones",
+        "unitKind": "method",
+        "name": "_iterateTombstones",
+        "qualifiedName": "SQLiteSyncStorage._iterateTombstones",
+        "parentUnitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage#class:SQLiteSyncStorage",
+        "startLine": 489,
+        "endLine": 493,
+        "isBehavioral": true,
+        "source": "\n\tgetClock(): number {\n\t\tconst clockRow = this.stmts.getDocumentClock.all()[0]\n\t\treturn clockRow?.documentClock ?? 0\n\t}",
+        "detail": {
+          "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage._iterateTombstones#method:SQLiteSyncStorage._iterateTombstones",
+          "fileId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage._iterateTombstones",
+          "unitKind": "method",
+          "name": "_iterateTombstones",
+          "qualifiedName": "SQLiteSyncStorage._iterateTombstones",
+          "parentUnitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorage#class:SQLiteSyncStorage",
+          "startLine": 489,
+          "endLine": 493,
+          "signature": "getClock(): number",
+          "parameters": [],
+          "returnType": "number",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [
+            "Returns a numeric document clock value.",
+            "Returns zero when the clock query produces no usable row or documentClock value."
+          ],
+          "invariants": [
+            "The returned value is the queried documentClock value when present.",
+            "The method does not mutate storage state."
+          ],
+          "edgeCases": [
+            "When getDocumentClock.all() returns an empty array, returns 0.",
+            "When the first returned row has a nullish documentClock, returns 0.",
+            "When the first returned row has a numeric documentClock, returns that value."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            {
+              "name": "this.stmts.getDocumentClock.all",
+              "source": "SQLiteSyncStorage statement collection",
+              "kind": "internal"
+            }
+          ],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Returns the current document clock from the storage statement result, falling back to zero when no clock row or clock value is available.",
+          "specLiterals": [
+            {
+              "kind": "magic-number",
+              "value": "0",
+              "role": "Fallback document clock returned when no clock row or value is available."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The method is called.",
+              "then": "It returns 0.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The method is called.",
+              "then": "It returns 17.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The method is called.",
+              "then": "It returns 0.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "d42d490ab88afa987ccddee42b555903d7b14a08c54c6826bb92595d57d6053d"
+        }
+      },
+      {
+        "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorageTransaction#class:SQLiteSyncStorageTransaction",
+        "unitKind": "class",
+        "name": "SQLiteSyncStorageTransaction",
+        "qualifiedName": "SQLiteSyncStorageTransaction",
+        "parentUnitId": null,
+        "startLine": 502,
+        "endLine": 651,
+        "isBehavioral": true,
+        "source": "\t_getSchema(): SerializedSchema {\n\t\tconst clockRow = this.stmts.getSchema.all()[0]\n\t\tassert(clockRow, 'Storage not initialized - clock row missing')\n\t\treturn JSON.parse(clockRow.schema)\n\t}\n\n\t/** @internal */\n\t_setSchema(schema: SerializedSchema): void {\n\t\tthis.stmts.setSchema.run(JSON.stringify(schema))\n\t}\n\n\t/** @internal */\n\tpruneTombstones = throttle(\n\t\t() => {\n\t\t\tconst tombstoneCount = this.stmts.countTombstones.all()[0].count as number\n\t\t\tif (tombstoneCount > MAX_TOMBSTONES) {\n\t\t\t\t// Get all tombstones sorted by clock ascending (oldest first)\n\t\t\t\tconst tombstones = this.stmts.iterateTombstones.all()\n\n\t\t\t\tconst result = computeTombstonePruning({ tombstones, documentClock: this.getClock() })\n\t\t\t\tif (result) {\n\t\t\t\t\tthis.stmts.setTombstoneHistoryStartsAtClock.run(result.newTombstoneHistoryStartsAtClock)\n\t\t\t\t\t// Delete all tombstones with clock < newTombstoneHistoryStartsAtClock in one operation.\n\t\t\t\t\t// This works because computeTombstonePruning ensures we never split a clock value.\n\t\t\t\t\tthis.stmts.deleteTombstonesBefore.run(result.newTombstoneHistoryStartsAtClock)\n\t\t\t\t}\n\t\t\t}\n\t\t},\n\t\t1000,\n\t\t// prevent this from running synchronously to avoid blocking requests\n\t\t{ leading: false }\n\t)\n\n\tgetSnapshot(): RoomSnapshot {\n\t\t// object-lane records live in their own table, so the document snapshot is\n\t\t// pure-document by construction\n\t\treturn {\n\t\t\ttombstoneHistoryStartsAtClock: this._getTombstoneHistoryStartsAtClock(),\n\t\t\tdocumentClock: this.getClock(),\n\t\t\tdocuments: Array.from(this._iterateRecords(this.stmts.documents)),\n\t\t\ttombstones: Object.fromEntries(this._iterateTombstones()),\n\t\t\tschema: this._getSchema(),\n\t\t}\n\t}\n\n\tgetObjectsSnapshot(): RoomSnapshot['documents'] {\n\t\treturn Array.from(this._iterateRecords(this.stmts.objects))\n\t}\n\n\tgetObjectsByIds(ids: Iterable<string>): RoomSnapshot['documents'] {\n\t\tconst result: RoomSnapshot['documents'] = []\n\t\tconst seen = new Set<string>()\n\t\tfor (const id of ids) {\n\t\t\tif (seen.has(id)) continue\n\t\t\tseen.add(id)\n\t\t\tconst row = this.stmts.objects.getWithClock.all(id)[0]\n\t\t\tif (!row) continue\n\t\t\tresult.push({ state: decodeState<R>(row.state), lastChangedClock: row.lastChangedClock })\n\t\t}\n\t\treturn result\n\t}\n\n\tprivate *_iterateRecords(\n\t\ttable: SQLiteSyncStorage<R>['stmts']['documents']\n\t): IterableIterator<{ state: R; lastChangedClock: number }> {\n\t\tfor (const row of table.iterate.iterate()) {\n\t\t\tyield { state: decodeState<R>(row.state), lastChangedClock: row.lastChangedClock }\n\t\t}\n\t}\n\n\tprivate *_iterateTombstones(): IterableIterator<[string, number]> {\n\t\tfor (const row of this.stmts.iterateTombstones.iterate()) {\n\t\t\tyield [row.id, row.clock]\n\t\t}\n\t}\n}\n\n/**\n * Transaction implementation for SQLiteSyncStorage.\n * Provides access to documents, tombstones, and metadata within a transaction.\n *\n * @internal\n */\nclass SQLiteSyncStorageTransaction<R extends UnknownRecord> implements TLSyncStorageTransaction<R> {\n\tprivate _clock: number\n\tprivate _closed = false\n\tprivate _didIncrementClock: boolean = false\n\n\tconstructor(\n\t\tprivate storage: SQLiteSyncStorage<R>,\n\t\tprivate stmts: SQLiteSyncStorage<R>['stmts']\n\t) {\n\t\tthis._clock = this.storage.getClock()\n\t}\n\n\t/** @internal */\n\tclose() {\n\t\tthis._closed = true\n\t}\n\n\tprivate assertNotClosed() {\n\t\tassert(!this._closed, 'Transaction has ended, iterator cannot be consumed')\n\t}\n\n\tgetClock(): number {\n\t\treturn this._clock\n\t}\n\n\tprivate getNextClock(): number {\n\t\tif (!this._didIncrementClock) {\n\t\t\tthis._didIncrementClock = true\n\t\t\tthis.stmts.incrementDocumentClock.run()\n\t\t\tthis._clock = this.storage.getClock()\n\t\t}\n\t\treturn this._clock\n\t}\n\n\t/**\n\t * Which record table an id belongs to. Record ids are typeName-prefixed (`comment:abc`),\n\t * so the partition is derivable from the id alone.\n\t */\n\tprivate tableFor(id: string) {\n\t\tconst sep = id.indexOf(':')\n\t\tif (sep === -1) return this.stmts.documents\n\t\treturn this.storage.objectTypes.has(id.slice(0, sep))\n\t\t\t? this.stmts.objects\n\t\t\t: this.stmts.documents\n\t}\n\n\tget(id: string): R | undefined {\n\t\tthis.assertNotClosed()\n\t\tconst row = this.tableFor(id).get.all(id)[0]\n\t\tif (!row) return undefined\n\t\treturn decodeState<R>(row.state)\n\t}\n\n\tset(id: string, record: R): void {\n\t\tthis.assertNotClosed()\n\t\tassert(id === record.id, `Record id mismatch: key does not match record.id`)\n\t\tconst clock = this.getNextClock()\n\t\t// Automatically clear tombstone if it exists\n\t\tthis.stmts.deleteTombstone.run(id)\n\t\t// route by type: object-lane records live in their own table\n\t\tconst table = this.storage.objectTypes.has(record.typeName)\n\t\t\t? this.stmts.objects\n\t\t\t: this.stmts.documents\n\t\ttable.insert.run(id, encodeState(record), clock)\n\t}\n\n\tdelete(id: string): void {",
+        "detail": {
+          "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorageTransaction#class:SQLiteSyncStorageTransaction",
+          "fileId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorageTransaction",
+          "unitKind": "class",
+          "name": "SQLiteSyncStorageTransaction",
+          "qualifiedName": "SQLiteSyncStorageTransaction",
+          "parentUnitId": null,
+          "startLine": 502,
+          "endLine": 651,
+          "signature": "class SQLiteSyncStorageTransaction<R extends UnknownRecord> implements TLSyncStorageTransaction<R>",
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": ["R extends UnknownRecord"],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": ["TLSyncStorageTransaction<R>"],
+          "members": [
+            {
+              "name": "storage",
+              "kind": "property",
+              "type": "SQLiteSyncStorage<R>",
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "stmts",
+              "kind": "property",
+              "type": "SQLiteSyncStorage<R>['stmts']",
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "_clock",
+              "kind": "property",
+              "type": "number",
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "_closed",
+              "kind": "property",
+              "type": "boolean",
+              "default": "false",
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "_didIncrementClock",
+              "kind": "property",
+              "type": "boolean",
+              "default": "false",
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "constructor",
+              "kind": "constructor",
+              "type": null,
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "close",
+              "kind": "method",
+              "type": null,
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "assertNotClosed",
+              "kind": "method",
+              "type": null,
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "getClock",
+              "kind": "method",
+              "type": "number",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "getNextClock",
+              "kind": "method",
+              "type": "number",
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "tableFor",
+              "kind": "method",
+              "type": null,
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "get",
+              "kind": "method",
+              "type": "R | undefined",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "set",
+              "kind": "method",
+              "type": "void",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "delete",
+              "kind": "method",
+              "type": "void",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "entries",
+              "kind": "method",
+              "type": null,
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "keys",
+              "kind": "method",
+              "type": null,
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "values",
+              "kind": "method",
+              "type": null,
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "getChangesSince",
+              "kind": "method",
+              "type": null,
+              "default": null,
+              "visibility": "public",
+              "static": false
+            }
+          ],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Provides transactional access to synchronized records, tombstones, clocks, and change iteration while implementing the TLSyncStorageTransaction interface.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "634011a64360f1e85a897e08b877c8e1695696fec771c82c2f2f26c368ac0354"
+        }
+      },
+      {
+        "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorageTransaction.getNextClock#method:SQLiteSyncStorageTransaction.getNextClock",
+        "unitKind": "method",
+        "name": "getNextClock",
+        "qualifiedName": "SQLiteSyncStorageTransaction.getNextClock",
+        "parentUnitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorageTransaction#class:SQLiteSyncStorageTransaction",
+        "startLine": 528,
+        "endLine": 535,
+        "isBehavioral": true,
+        "source": "\t\t\t}\n\t\t},\n\t\t1000,\n\t\t// prevent this from running synchronously to avoid blocking requests\n\t\t{ leading: false }\n\t)\n\n\tgetSnapshot(): RoomSnapshot {",
+        "detail": {
+          "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorageTransaction.getNextClock#method:SQLiteSyncStorageTransaction.getNextClock",
+          "fileId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorageTransaction.getNextClock",
+          "unitKind": "method",
+          "name": "getNextClock",
+          "qualifiedName": "SQLiteSyncStorageTransaction.getNextClock",
+          "parentUnitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorageTransaction#class:SQLiteSyncStorageTransaction",
+          "startLine": 528,
+          "endLine": 535,
+          "signature": "getNextClock(): number",
+          "parameters": [],
+          "returnType": "number",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [
+            "Returns the next clock value available to the transaction.",
+            "The transaction's clock state is advanced so a subsequent call returns a later value."
+          ],
+          "invariants": ["Clock values allocated by successive calls are strictly increasing within the transaction."],
+          "edgeCases": [
+            "The method takes no input and therefore has no invalid-input shape.",
+            "Repeated calls advance the transaction clock one allocation at a time."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": ["The current transaction clock state is incremented or otherwise advanced."],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Allocates and returns the next monotonically increasing clock value for the current storage transaction.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "getNextClock() is called twice.",
+              "then": "Both calls return numeric clock values, and the second value is greater than the first.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "b939763c9a4dfeea28659dbd495305394f999a16b98bf658e7aa972bb89c346e"
+        }
+      },
+      {
+        "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorageTransaction.set#method:SQLiteSyncStorageTransaction.set",
+        "unitKind": "method",
+        "name": "set",
+        "qualifiedName": "SQLiteSyncStorageTransaction.set",
+        "parentUnitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorageTransaction#class:SQLiteSyncStorageTransaction",
+        "startLine": 558,
+        "endLine": 566,
+        "isBehavioral": true,
+        "source": "\t\t\tif (!row) continue\n\t\t\tresult.push({ state: decodeState<R>(row.state), lastChangedClock: row.lastChangedClock })\n\t\t}\n\t\treturn result\n\t}\n\n\tprivate *_iterateRecords(\n\t\ttable: SQLiteSyncStorage<R>['stmts']['documents']\n\t): IterableIterator<{ state: R; lastChangedClock: number }> {",
+        "detail": {
+          "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorageTransaction.set#method:SQLiteSyncStorageTransaction.set",
+          "fileId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorageTransaction.set",
+          "unitKind": "method",
+          "name": "set",
+          "qualifiedName": "SQLiteSyncStorageTransaction.set",
+          "parentUnitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorageTransaction#class:SQLiteSyncStorageTransaction",
+          "startLine": 558,
+          "endLine": 566,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Sets a value in the active SQLite synchronization storage transaction for the specified record key.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "a75e4fa7417bc6d641a1e0a6189d77894e70d5d5a9c38d2763403855efe9b773"
+        }
+      },
+      {
+        "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorageTransaction.delete#method:SQLiteSyncStorageTransaction.delete",
+        "unitKind": "method",
+        "name": "delete",
+        "qualifiedName": "SQLiteSyncStorageTransaction.delete",
+        "parentUnitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorageTransaction#class:SQLiteSyncStorageTransaction",
+        "startLine": 568,
+        "endLine": 578,
+        "isBehavioral": true,
+        "source": "\t\t\tyield { state: decodeState<R>(row.state), lastChangedClock: row.lastChangedClock }\n\t\t}\n\t}\n\n\tprivate *_iterateTombstones(): IterableIterator<[string, number]> {\n\t\tfor (const row of this.stmts.iterateTombstones.iterate()) {\n\t\t\tyield [row.id, row.clock]\n\t\t}\n\t}\n}\n",
+        "detail": {
+          "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorageTransaction.delete#method:SQLiteSyncStorageTransaction.delete",
+          "fileId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorageTransaction.delete",
+          "unitKind": "method",
+          "name": "delete",
+          "qualifiedName": "SQLiteSyncStorageTransaction.delete",
+          "parentUnitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorageTransaction#class:SQLiteSyncStorageTransaction",
+          "startLine": 568,
+          "endLine": 578,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [
+            "The targeted record is absent from the transaction's active records.",
+            "The deletion is represented in synchronization change tracking."
+          ],
+          "invariants": ["Deletion remains associated with the transaction's clock ordering."],
+          "edgeCases": [
+            "Deleting an identifier that is not currently present does not recreate an active record.",
+            "Repeated deletion of the same identifier preserves the storage's synchronization semantics."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [
+            "SQLite records for the targeted identifier",
+            "SQLite tombstone or deletion change-tracking state",
+            "The transaction clock/state used to order changes"
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Removes a record from the SQLite-backed synchronized storage transaction and records the deletion for change tracking.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "9a56fa69eb9639e321bb74ba4906047770c26c8f7e31c39e3dbaa06f5010327e"
+        }
+      },
+      {
+        "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorageTransaction.entries#method:SQLiteSyncStorageTransaction.entries",
+        "unitKind": "method",
+        "name": "entries",
+        "qualifiedName": "SQLiteSyncStorageTransaction.entries",
+        "parentUnitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorageTransaction#class:SQLiteSyncStorageTransaction",
+        "startLine": 582,
+        "endLine": 589,
+        "isBehavioral": true,
+        "source": " *\n * @internal\n */\nclass SQLiteSyncStorageTransaction<R extends UnknownRecord> implements TLSyncStorageTransaction<R> {\n\tprivate _clock: number\n\tprivate _closed = false\n\tprivate _didIncrementClock: boolean = false\n",
+        "detail": {
+          "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorageTransaction.entries#method:SQLiteSyncStorageTransaction.entries",
+          "fileId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorageTransaction.entries",
+          "unitKind": "method",
+          "name": "entries",
+          "qualifiedName": "SQLiteSyncStorageTransaction.entries",
+          "parentUnitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorageTransaction#class:SQLiteSyncStorageTransaction",
+          "startLine": 582,
+          "endLine": 589,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["The transaction must be usable and not closed when the entries are consumed."],
+          "postconditions": [
+            "Returns an iterable of record entries available in the transaction.",
+            "Each yielded entry contains a record key and its corresponding record value."
+          ],
+          "invariants": [
+            "The method does not itself alter transaction state or stored records.",
+            "Returned entries reflect the transaction's view of the underlying storage."
+          ],
+          "edgeCases": [
+            "An empty transaction view produces no entries.",
+            "Records are yielded as key-value pairs rather than as keys or values alone."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "_iterateRecords", "source": "SQLiteSyncStorage", "kind": "internal" }],
+          "symbolReferences": ["UnknownRecord", "TLSyncStorageTransaction"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Iterable of [record key, record value] entries.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Provides an iterable view of the records available through the active SQLite storage transaction, exposing each record as a key-value entry.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "53b1c78fb4f593e450aa3385a82e3d9bcebc4e6fe58cba5313de15e4340206a1"
+        }
+      },
+      {
+        "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorageTransaction.keys#method:SQLiteSyncStorageTransaction.keys",
+        "unitKind": "method",
+        "name": "keys",
+        "qualifiedName": "SQLiteSyncStorageTransaction.keys",
+        "parentUnitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorageTransaction#class:SQLiteSyncStorageTransaction",
+        "startLine": 591,
+        "endLine": 598,
+        "isBehavioral": true,
+        "source": "\t\tprivate storage: SQLiteSyncStorage<R>,\n\t\tprivate stmts: SQLiteSyncStorage<R>['stmts']\n\t) {\n\t\tthis._clock = this.storage.getClock()\n\t}\n\n\t/** @internal */\n\tclose() {",
+        "detail": {
+          "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorageTransaction.keys#method:SQLiteSyncStorageTransaction.keys",
+          "fileId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorageTransaction.keys",
+          "unitKind": "method",
+          "name": "keys",
+          "qualifiedName": "SQLiteSyncStorageTransaction.keys",
+          "parentUnitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorageTransaction#class:SQLiteSyncStorageTransaction",
+          "startLine": 591,
+          "endLine": 598,
+          "signature": "keys(): IterableIterator<string>",
+          "parameters": [],
+          "returnType": "IterableIterator<string>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": ["Returns an iterable iterator of transaction keys."],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Returns an iterator over the keys available in the current SQLite storage transaction.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "5ecc37959b1fcaa91202019b82f1efcbfcc579cd8253828b74cfb1c8d26b3375"
+        }
+      },
+      {
+        "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorageTransaction.values#method:SQLiteSyncStorageTransaction.values",
+        "unitKind": "method",
+        "name": "values",
+        "qualifiedName": "SQLiteSyncStorageTransaction.values",
+        "parentUnitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorageTransaction#class:SQLiteSyncStorageTransaction",
+        "startLine": 599,
+        "endLine": 609,
+        "isBehavioral": true,
+        "source": "\t\tthis._closed = true\n\t}\n\n\tprivate assertNotClosed() {\n\t\tassert(!this._closed, 'Transaction has ended, iterator cannot be consumed')\n\t}\n\n\tgetClock(): number {\n\t\treturn this._clock\n\t}\n",
+        "detail": {
+          "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorageTransaction.values#method:SQLiteSyncStorageTransaction.values",
+          "fileId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorageTransaction.values",
+          "unitKind": "method",
+          "name": "values",
+          "qualifiedName": "SQLiteSyncStorageTransaction.values",
+          "parentUnitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorageTransaction#class:SQLiteSyncStorageTransaction",
+          "startLine": 599,
+          "endLine": 609,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": ["Returns an iterator over the transaction values."],
+          "invariants": ["Consuming the iterator requires the transaction to remain open."],
+          "edgeCases": [
+            "If the transaction is closed before iterator consumption, consumption fails rather than yielding values."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["Assertion error with message: Transaction has ended, iterator cannot be consumed"],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "assertNotClosed", "source": "SQLiteSyncStorageTransaction", "kind": "internal" }],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Provides an iterator over the transaction's stored values. The iterator cannot be consumed after the transaction has ended.",
+          "specLiterals": [
+            {
+              "kind": "error-message",
+              "value": "Transaction has ended, iterator cannot be consumed",
+              "role": "Assertion message when the values iterator is consumed after transaction closure"
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "values() is called and its iterator is consumed before the transaction ends",
+              "then": "The iterator yields the transaction's stored values.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The iterator returned by values() is consumed",
+              "then": "An assertion error is raised with message \"Transaction has ended, iterator cannot be consumed\".",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "5e0ea616984c4688b7b04b5741f47a5c1147a3abe6b81165fd36a88718d7936b"
+        }
+      },
+      {
+        "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorageTransaction.getChangesSince#method:SQLiteSyncStorageTransaction.getChangesSince",
+        "unitKind": "method",
+        "name": "getChangesSince",
+        "qualifiedName": "SQLiteSyncStorageTransaction.getChangesSince",
+        "parentUnitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorageTransaction#class:SQLiteSyncStorageTransaction",
+        "startLine": 618,
+        "endLine": 650,
+        "isBehavioral": true,
+        "source": "\n\t/**\n\t * Which record table an id belongs to. Record ids are typeName-prefixed (`comment:abc`),\n\t * so the partition is derivable from the id alone.\n\t */\n\tprivate tableFor(id: string) {\n\t\tconst sep = id.indexOf(':')\n\t\tif (sep === -1) return this.stmts.documents\n\t\treturn this.storage.objectTypes.has(id.slice(0, sep))\n\t\t\t? this.stmts.objects\n\t\t\t: this.stmts.documents\n\t}\n\n\tget(id: string): R | undefined {\n\t\tthis.assertNotClosed()\n\t\tconst row = this.tableFor(id).get.all(id)[0]\n\t\tif (!row) return undefined\n\t\treturn decodeState<R>(row.state)\n\t}\n\n\tset(id: string, record: R): void {\n\t\tthis.assertNotClosed()\n\t\tassert(id === record.id, `Record id mismatch: key does not match record.id`)\n\t\tconst clock = this.getNextClock()\n\t\t// Automatically clear tombstone if it exists\n\t\tthis.stmts.deleteTombstone.run(id)\n\t\t// route by type: object-lane records live in their own table\n\t\tconst table = this.storage.objectTypes.has(record.typeName)\n\t\t\t? this.stmts.objects\n\t\t\t: this.stmts.documents\n\t\ttable.insert.run(id, encodeState(record), clock)\n\t}\n",
+        "detail": {
+          "unitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorageTransaction.getChangesSince#method:SQLiteSyncStorageTransaction.getChangesSince",
+          "fileId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorageTransaction.getChangesSince",
+          "unitKind": "method",
+          "name": "getChangesSince",
+          "qualifiedName": "SQLiteSyncStorageTransaction.getChangesSince",
+          "parentUnitId": "packages/sync-core/src/lib/SQLiteSyncStorage.ts__SQLiteSyncStorageTransaction#class:SQLiteSyncStorageTransaction",
+          "startLine": 618,
+          "endLine": 650,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Provides transaction-scoped access to storage changes occurring after a specified synchronization clock.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "79c1354e90b5d8890ba9f3ac25c4afed962b8995f963e77b86c31809bd51082f"
+        }
+      }
+    ]
+  },
+  "out": [
+    "packages/sync-core/src/lib/TLSyncStorage.ts",
+    "packages/sync-core/src/lib/TLSyncRoom.ts",
+    "packages/sync-core/src/lib/MicrotaskNotifier.ts",
+    "packages/sync-core/src/lib/InMemorySyncStorage.ts"
+  ],
+  "in": [
+    "packages/sync-core/src/lib/DurableObjectSqliteSyncWrapper.ts",
+    "packages/sync-core/src/lib/SQLiteSyncStorage.test.ts",
+    "packages/sync-core/src/lib/NodeSqliteWrapper.ts",
+    "packages/sync-core/src/index.ts"
+  ],
+  "externals": ["@tldraw/state", "@tldraw/store", "@tldraw/utils"],
+  "impact": { "seeds": 21, "callers": 1, "impactedFiles": [] }
+}

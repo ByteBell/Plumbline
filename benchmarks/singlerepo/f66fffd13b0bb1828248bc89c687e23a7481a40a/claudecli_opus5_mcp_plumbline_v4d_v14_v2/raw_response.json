@@ -1,0 +1,71 @@
+{
+  "duration_api_ms": 173401,
+  "stop_reason": "end_turn",
+  "session_id": "bb478f5f-b0d8-4b89-a438-cf13282b56ec",
+  "total_cost_usd": 2.1501164999999993,
+  "usage": {
+    "input_tokens": 36,
+    "cache_creation_input_tokens": 114104,
+    "cache_read_input_tokens": 1331593,
+    "output_tokens": 13724,
+    "output_tokens_details": { "thinking_tokens": 4948 },
+    "server_tool_use": { "web_search_requests": 0, "web_fetch_requests": 0 },
+    "service_tier": "standard",
+    "cache_creation": { "ephemeral_1h_input_tokens": 114104, "ephemeral_5m_input_tokens": 0 },
+    "inference_geo": "not_available",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 3791,
+        "cache_read_input_tokens": 112428,
+        "cache_creation_input_tokens": 1676,
+        "cache_creation": { "ephemeral_5m_input_tokens": 0, "ephemeral_1h_input_tokens": 1676 },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-opus-5": {
+      "inputTokens": 36,
+      "outputTokens": 13724,
+      "cacheReadInputTokens": 1331593,
+      "cacheCreationInputTokens": 114104,
+      "webSearchRequests": 0,
+      "costUSD": 2.1501164999999993,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "canonicalModel": "claude-opus-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": { "background": 0, "foreground": 0, "unset": 0 },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": { "parent": 0, "user": 0, "system": 0 },
+    "refused": { "depth_limit": 0, "concurrency_limit": 0, "budget": 0 },
+    "by_type": {}
+  },
+  "is_error": false,
+  "num_turns": 24,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "{\"contract\": \"Whether Cal.com's own branding is suppressed must be resolved for the *event* being booked, through the single org-aware resolver in `packages/features/profile/lib/hideBranding.ts` (`shouldHideBrandingForEvent` / `shouldHideBrandingForTeamEvent` / `shouldHideBrandingForUserEvent` / `getHideBranding`), which folds the parent organization's `hideBranding` over the team's or the user's own column. Every consumer — the public booking/confirmation pages the attendee sees AND the workflow/automation reminder pipeline that emails or texts them — must obtain the flag from that resolver (and must select `team.parent.hideBranding` / the owner's org profile in the underlying query), so that an attendee-facing automated message and the booking page for the same event agree. Reading a raw `hideBranding` column straight off `eventType.owner`, `booking.user` or `eventType.team` breaks the contract, because the organization-level override is silently dropped and paying org customers keep seeing vendor branding.\", \"defect_location\": {\"repo\": \"calcom/cal.com\", \"summary\": \"The canonical, org-aware rule lives in packages/features/profile/lib/hideBranding.ts:35-45 (`resolveHideBranding` returns true whenever the organization has branding hidden) and is exposed via packages/features/profile/lib/hideBranding.ts:50-80 and :85-181. The booking-page side obeys it: apps/web/server/lib/[user]/[type]/getServerSideProps.ts:299, apps/web/lib/team/[slug]/[type]/getServerSideProps.tsx:199, apps/web/app/(booking-page-wrapper)/team/[slug]/[type]/pageWithCachedData.tsx:36, apps/web/lib/d/[link]/[slug]/getServerSideProps.tsx:61,103, apps/web/lib/org/[orgSlug]/instant-meeting/team/[slug]/[type]/getServerSideProps.ts:85, apps/web/modules/bookings/views/bookings-single-view.getServerSideProps.tsx:253 and packages/features/ee/payments/pages/payment.tsx:58 all call the resolver. The automation side does not. Every workflow-scheduling call site passes the owner's raw column instead: packages/features/bookings/lib/service/RegularBookingService.ts:2618,2793,2808, packages/features/bookings/lib/handleConfirmation.ts:459,472, packages/features/bookings/lib/handleCancelBooking.ts:471, packages/features/bookings/lib/handleBookingRequested.ts:112, packages/features/handleMarkNoShow.ts:377, packages/trpc/server/routers/viewer/bookings/confirm.handler.ts:561, packages/app-store/_utils/payments/handlePaymentSuccess.ts:230, packages/features/ee/round-robin/roundRobinManualReassignment.ts:671 and packages/features/ee/managed-event-types/reassignment/services/ManagedEventManualReassignmentService.ts:188 all use `!!eventType(.owner)?.hideBranding` — no team, no parent organization. The cron send path repeats the mistake in its own vocabulary at packages/features/ee/workflows/api/scheduleEmailReminders.ts:246-248, 274-276 and 433-435 (`eventType?.team?.hideBranding : booking.user?.hideBranding`), fed by the query shape in packages/features/ee/workflows/lib/getWorkflowReminders.ts:40, 170, 197-203, which selects only `team.parentId`/`team.hideBranding` and `user.hideBranding` and never the parent org's flag. The flag then travels untouched through packages/features/ee/workflows/lib/reminders/reminderScheduler.ts:56,97,161,213,248,262-284, packages/features/ee/workflows/lib/reminders/scheduleMandatoryReminder.ts:18-82 and packages/features/ee/workflows/lib/reminders/emailReminderManager.ts:38,115,147,182,204 into packages/features/ee/workflows/lib/service/EmailWorkflowService.ts:229-233,244,487-492, which renders the branded template. EmailWorkflowService.ts:90-93 and WorkflowService.ts:133-136 do call `getHideBranding`, but keyed on the *workflow's* userId/teamId rather than the booked event's owner/team, so they too can disagree with the booking page.\", \"repo\": \"calcom/cal.com\"}, \"answer\": [\"packages/features/profile/lib/hideBranding.ts\", \"packages/features/ee/workflows/api/scheduleEmailReminders.ts\", \"packages/features/bookings/lib/service/RegularBookingService.ts\", \"packages/features/bookings/lib/handleConfirmation.ts\", \"packages/features/bookings/lib/handleCancelBooking.ts\", \"packages/features/bookings/lib/handleBookingRequested.ts\", \"packages/features/handleMarkNoShow.ts\", \"packages/trpc/server/routers/viewer/bookings/confirm.handler.ts\", \"packages/app-store/_utils/payments/handlePaymentSuccess.ts\", \"packages/features/ee/round-robin/roundRobinManualReassignment.ts\", \"packages/features/ee/managed-event-types/reassignment/services/ManagedEventManualReassignmentService.ts\", \"packages/features/ee/workflows/lib/service/EmailWorkflowService.ts\", \"packages/features/ee/workflows/lib/service/WorkflowService.ts\", \"packages/features/ee/workflows/lib/getWorkflowReminders.ts\", \"packages/features/ee/workflows/lib/reminders/reminderScheduler.ts\", \"packages/features/ee/workflows/lib/reminders/emailReminderManager.ts\", \"packages/features/ee/workflows/lib/reminders/scheduleMandatoryReminder.ts\", \"packages/features/tasker/tasks/triggerFormSubmittedNoEvent/triggerFormSubmittedNoEventWorkflow.ts\", \"apps/web/modules/bookings/views/bookings-single-view.getServerSideProps.tsx\", \"apps/web/server/lib/[user]/[type]/getServerSideProps.ts\", \"apps/web/lib/team/[slug]/[type]/getServerSideProps.tsx\", \"apps/web/lib/d/[link]/[slug]/getServerSideProps.tsx\", \"apps/web/app/(booking-page-wrapper)/team/[slug]/[type]/pageWithCachedData.tsx\", \"apps/web/lib/org/[orgSlug]/instant-meeting/team/[slug]/[type]/getServerSideProps.ts\", \"packages/features/ee/payments/pages/payment.tsx\", \"packages/features/ee/workflows/api/scheduleSMSReminders.ts\", \"packages/features/ee/workflows/api/scheduleWhatsappReminders.ts\", \"packages/features/ee/workflows/lib/reminders/templates/customTemplate.ts\", \"packages/features/users/repositories/UserRepository.ts\", \"packages/emails/templates/workflow-email.ts\", \"packages/emails/workflow-email-service.ts\", \"packages/features/bookings/lib/handleSeats/handleSeats.ts\", \"packages/trpc/server/routers/viewer/me/get.handler.ts\", \"packages/features/ee/workflows/lib/types.ts\", \"packages/features/bookings/Booker/types.ts\"]}",
+  "ttft_ms": 1712,
+  "type": "result",
+  "duration_ms": 349014,
+  "uuid": "6c3829a8-a1e3-4fee-b68e-c69826acb9aa",
+  "ttft_stream_ms": 1128,
+  "time_to_request_ms": 28,
+  "queued_turn_count": 0
+}

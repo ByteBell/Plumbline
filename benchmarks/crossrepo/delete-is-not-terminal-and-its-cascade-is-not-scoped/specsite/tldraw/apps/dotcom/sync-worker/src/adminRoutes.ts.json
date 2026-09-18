@@ -1,0 +1,2188 @@
+{
+  "schema": 2,
+  "kind": "file",
+  "repoName": "tldraw",
+  "file": {
+    "relativePath": "apps/dotcom/sync-worker/src/adminRoutes.ts",
+    "language": "typescript",
+    "sizeBytes": 43692,
+    "tokenCount": 10917,
+    "model": "us.openai.gpt-5.6-luna",
+    "analysedAt": "2026-08-24T12:27:48.088Z",
+    "module": {
+      "purpose": "Provides authenticated administrative HTTP routes for inspecting and modifying users, files, outbox effects, durable-object rooms, feature flags, assets, snapshots, welcome templates, and deletion workflows.",
+      "summary": "This module builds the administrator router for the sync worker. It combines authentication and authorization middleware with PostgreSQL queries, durable-object administration, R2 inspection, feature-flag management, outbox controls, snapshot reporting, file deletion and restoration, welcome-template management, and user-deletion workflows. Operations are designed for bounded inspection, best-effort background nudges, explicit validation, and progress reporting over server-sent events.",
+      "businessContext": "Supports tldraw operations and support teams managing files, workspaces, users, assets, rooms, and feature rollout state. Failures can block account remediation, leave deleted data or effects pending, or obscure file-storage and collaboration health.",
+      "classes": [],
+      "functions": [
+        "resolveAllowlistUsers (~L48-76): Resolves allowlist emails to persisted account identifiers",
+        "withResolvedAllowlistLabels (~L85-127): Refreshes allowlist display labels from current accounts",
+        "requireUser (~L135-148): Finds an administrative target user by email or identifier",
+        "maybeHardDeleteLegacyFile (~L786-788): Requests legacy durable-object file deletion",
+        "hardDeleteAppFile (~L790-829): Removes an application file and eagerly deletes assets",
+        "deleteUserFromAnalytics (~L831-877): Requests deletion of user data from analytics",
+        "performUserDeletion (~L879-982): Coordinates group, file, database, Clerk, and analytics deletion",
+        "countRows (~L939-950): Counts related file records while converting failures to warnings",
+        "sendProgress (~L732-741): Emits a user-deletion progress event through an SSE stream"
+      ],
+      "keywords": [
+        "admin routes",
+        "Cloudflare Durable Objects",
+        "effect outbox",
+        "feature flags",
+        "allowlist",
+        "R2 snapshots",
+        "asset association",
+        "PostgreSQL",
+        "server-sent events",
+        "welcome template"
+      ],
+      "ontologyConcepts": [
+        "administrative authorization",
+        "data lifecycle management",
+        "asynchronous effect processing",
+        "snapshot health inspection",
+        "feature rollout control",
+        "resource ownership",
+        "observability reporting",
+        "event streaming"
+      ],
+      "businessEntities": [
+        "User",
+        "File",
+        "Workspace",
+        "Asset",
+        "Room",
+        "Feature flag",
+        "Outbox row",
+        "Welcome template"
+      ],
+      "systemCapabilities": [
+        "Inspect administrative file and room health",
+        "Manage feature flags and allowlists",
+        "Retry or delete pending effects",
+        "Delete and restore files",
+        "Delete users across dependent systems",
+        "Configure welcome templates"
+      ],
+      "configDependencies": [
+        "ANALYTICS_API_URL",
+        "ANALYTICS_API_TOKEN",
+        "USER_CONTENT_URL",
+        "UPLOADS",
+        "ROOMS",
+        "ROOMS_HISTORY_EPHEMERAL"
+      ],
+      "importsInternal": [
+        {
+          "spec": "./assetAssociation",
+          "symbols": ["getUploadObjectName"],
+          "anchor": { "startLine": 20, "endLine": 20 },
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/assetAssociation.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/assetAssociation.ts",
+          "resolvedHint": "apps/dotcom/sync-worker/src/assetAssociation.ts"
+        },
+        {
+          "spec": "./fileStats",
+          "symbols": ["summarizeSnapshotDocuments"],
+          "anchor": { "startLine": 21, "endLine": 21 },
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/fileStats.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/fileStats.ts",
+          "resolvedHint": "apps/dotcom/sync-worker/src/fileStats.ts"
+        },
+        {
+          "spec": "./outboxDrain",
+          "symbols": ["MAX_ATTEMPTS"],
+          "anchor": { "startLine": 22, "endLine": 22 },
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/outboxDrain.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/outboxDrain.ts",
+          "resolvedHint": "apps/dotcom/sync-worker/src/outboxDrain.ts"
+        },
+        {
+          "spec": "./postgres",
+          "symbols": ["createPostgresConnectionPool"],
+          "anchor": { "startLine": 23, "endLine": 23 },
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/postgres.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/postgres.ts",
+          "resolvedHint": "apps/dotcom/sync-worker/src/postgres.ts"
+        },
+        {
+          "spec": "./r2",
+          "symbols": ["getR2KeyForRoom"],
+          "anchor": { "startLine": 24, "endLine": 24 },
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/r2.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/r2.ts",
+          "resolvedHint": "apps/dotcom/sync-worker/src/r2.ts"
+        },
+        {
+          "spec": "./routes/tla/getFileSnapshot",
+          "symbols": ["getFileSnapshot", "returnFileSnapshot"],
+          "anchor": { "startLine": 25, "endLine": 25 },
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/routes/tla/getFileSnapshot.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/routes/tla/getFileSnapshot.ts",
+          "resolvedHint": "apps/dotcom/sync-worker/src/routes/tla/getFileSnapshot.ts"
+        },
+        {
+          "spec": "./types",
+          "symbols": ["Environment"],
+          "anchor": { "startLine": 26, "endLine": 26 },
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/types.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/types.ts",
+          "resolvedHint": "apps/dotcom/sync-worker/src/types.ts"
+        },
+        {
+          "spec": "./undeleteFile",
+          "symbols": ["undeleteFile"],
+          "anchor": { "startLine": 27, "endLine": 27 },
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/undeleteFile.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/undeleteFile.ts",
+          "resolvedHint": "apps/dotcom/sync-worker/src/undeleteFile.ts"
+        },
+        {
+          "spec": "./utils/durableObjects",
+          "symbols": [
+            "getFileEffectProcessor",
+            "getRoomDurableObject",
+            "getRoomDurableObjectById",
+            "getRoomDurableObjectId"
+          ],
+          "anchor": { "startLine": 28, "endLine": 34 },
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/utils/durableObjects.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/utils/durableObjects.ts",
+          "resolvedHint": "apps/dotcom/sync-worker/src/utils/durableObjects.ts"
+        },
+        {
+          "spec": "./utils/featureFlags",
+          "symbols": [
+            "FEATURE_FLAG_KEYS",
+            "FeatureFlagUpdate",
+            "getAllFeatureFlagValues",
+            "getFeatureFlagType",
+            "parseAllowlistEmails",
+            "setFeatureFlag"
+          ],
+          "anchor": { "startLine": 35, "endLine": 43 },
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/utils/featureFlags.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/utils/featureFlags.ts",
+          "resolvedHint": "apps/dotcom/sync-worker/src/utils/featureFlags.ts"
+        },
+        {
+          "spec": "./utils/tla/getAuth",
+          "symbols": ["getClerkClient", "requireAdminAccess", "requireAuth"],
+          "anchor": { "startLine": 44, "endLine": 44 },
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/utils/tla/getAuth.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/utils/tla/getAuth.ts",
+          "resolvedHint": "apps/dotcom/sync-worker/src/utils/tla/getAuth.ts"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "@tldraw/dotcom-shared",
+          "symbols": [
+            "AdminFileAssetsResponseBody",
+            "AdminFileStatsResponseBody",
+            "AdminOutboxRowsResponseBody",
+            "AdminOutboxStatsResponseBody",
+            "AllowlistEntry",
+            "FILE_PREFIX",
+            "FeatureFlagKey",
+            "FeatureFlagValue",
+            "LOCAL_FILE_PREFIX",
+            "PUBLISH_PREFIX",
+            "ROOM_PREFIX",
+            "TlaFile",
+            "WELCOME_CREATE_SOURCE"
+          ],
+          "package": "@tldraw/dotcom-shared",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 14 }
+        },
+        {
+          "spec": "@tldraw/utils",
+          "symbols": ["assert", "retry", "sleep", "uniqueId"],
+          "package": "@tldraw/utils",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 15, "endLine": 15 }
+        },
+        {
+          "spec": "@tldraw/worker-shared",
+          "symbols": ["createRouter"],
+          "package": "@tldraw/worker-shared",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 16, "endLine": 16 }
+        },
+        {
+          "spec": "itty-router",
+          "symbols": ["StatusError", "json"],
+          "package": "itty-router",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 17, "endLine": 17 }
+        },
+        {
+          "spec": "kysely",
+          "symbols": ["sql"],
+          "package": "kysely",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 18, "endLine": 18 }
+        },
+        {
+          "spec": "p-queue",
+          "symbols": ["PQueue"],
+          "package": "p-queue",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 19, "endLine": 19 }
+        }
+      ],
+      "sideEffects": {
+        "io": [
+          "Returns JSON, plain-text, and SSE HTTP responses for administrative operations.",
+          "Logs failed durable-object nudges, analytics deletion, and snapshot-count inspection."
+        ],
+        "network": [
+          "Calls the analytics deletion API with bearer authentication.",
+          "Reads and deletes objects through R2-compatible storage bindings.",
+          "Calls durable-object administration methods and effect-processor alarms."
+        ],
+        "env": ["Reads storage, database, analytics, and content URL bindings from Environment."],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": ["Mutates asset report objects while asynchronous object-head checks settle."]
+      },
+      "integrationSurface": [
+        {
+          "kind": "http",
+          "role": "provides",
+          "address": "GET /app/admin/user?q={q}",
+          "payloadRef": "user, memberships, files",
+          "rawKind": null
+        },
+        {
+          "kind": "http",
+          "role": "provides",
+          "address": "GET /app/admin/outbox",
+          "payloadRef": "AdminOutboxStatsResponseBody",
+          "rawKind": null
+        },
+        {
+          "kind": "http",
+          "role": "provides",
+          "address": "GET /app/admin/outbox/rows",
+          "payloadRef": "AdminOutboxRowsResponseBody",
+          "rawKind": null
+        },
+        {
+          "kind": "http",
+          "role": "provides",
+          "address": "POST /app/admin/outbox/:id/retry",
+          "payloadRef": "{ ok: true }",
+          "rawKind": null
+        },
+        {
+          "kind": "http",
+          "role": "provides",
+          "address": "POST /app/admin/outbox/:id/delete",
+          "payloadRef": "{ ok: true }",
+          "rawKind": null
+        },
+        {
+          "kind": "http",
+          "role": "provides",
+          "address": "GET /app/admin/resolve-do-id/:objectIdOrSlug",
+          "payloadRef": "objectId, match, history",
+          "rawKind": null
+        },
+        {
+          "kind": "http",
+          "role": "provides",
+          "address": "POST /app/admin/close-do-sessions/:objectId",
+          "payloadRef": "durable-object session close result",
+          "rawKind": null
+        },
+        {
+          "kind": "http",
+          "role": "provides",
+          "address": "GET /app/admin/feature-flags",
+          "payloadRef": "Record<string, FeatureFlagValue>",
+          "rawKind": null
+        },
+        {
+          "kind": "http",
+          "role": "provides",
+          "address": "POST /app/admin/feature-flags",
+          "payloadRef": "{ success: true, flag, ...stored }",
+          "rawKind": null
+        },
+        {
+          "kind": "http",
+          "role": "provides",
+          "address": "POST /app/admin/create_legacy_file",
+          "payloadRef": "{ slug: string }",
+          "rawKind": null
+        },
+        {
+          "kind": "http",
+          "role": "provides",
+          "address": "POST /app/admin/hard_delete_file/:fileId",
+          "payloadRef": "Deleted",
+          "rawKind": null
+        },
+        {
+          "kind": "http",
+          "role": "provides",
+          "address": "POST /app/admin/undelete_file/:fileId",
+          "payloadRef": "{ success: true }",
+          "rawKind": null
+        },
+        {
+          "kind": "http",
+          "role": "provides",
+          "address": "GET /app/admin/user/deleted_files?q={q}",
+          "payloadRef": "deleted file rows",
+          "rawKind": null
+        },
+        {
+          "kind": "http",
+          "role": "provides",
+          "address": "POST /app/admin/delete_user?q={q}",
+          "payloadRef": "User deleted",
+          "rawKind": null
+        },
+        {
+          "kind": "http",
+          "role": "provides",
+          "address": "GET /app/admin/delete_user_sse?q={q}",
+          "payloadRef": "text/event-stream",
+          "rawKind": null
+        },
+        {
+          "kind": "http",
+          "role": "provides",
+          "address": "GET /app/admin/file-assets/:slug",
+          "payloadRef": "AdminFileAssetsResponseBody",
+          "rawKind": null
+        },
+        {
+          "kind": "http",
+          "role": "provides",
+          "address": "GET /app/admin/file-stats/:slug",
+          "payloadRef": "AdminFileStatsResponseBody",
+          "rawKind": null
+        },
+        {
+          "kind": "http",
+          "role": "provides",
+          "address": "GET /app/admin/download-tldr/:fileSlug",
+          "payloadRef": "file snapshot",
+          "rawKind": null
+        },
+        {
+          "kind": "http",
+          "role": "provides",
+          "address": "GET /app/admin/download-legacy-tldr/:fileSlug",
+          "payloadRef": "legacy file snapshot",
+          "rawKind": null
+        },
+        {
+          "kind": "http",
+          "role": "provides",
+          "address": "GET /app/admin/welcome-template",
+          "payloadRef": "welcome template row with live",
+          "rawKind": null
+        },
+        {
+          "kind": "http",
+          "role": "provides",
+          "address": "POST /app/admin/welcome-template",
+          "payloadRef": "{ fileId, publishedSlug, updatedAt, live }",
+          "rawKind": null
+        },
+        {
+          "kind": "http",
+          "role": "provides",
+          "address": "POST /app/admin/welcome-template/clear",
+          "payloadRef": "{ cleared: true }",
+          "rawKind": null
+        },
+        {
+          "kind": "http",
+          "role": "consumes",
+          "address": "POST ${env.ANALYTICS_API_URL}/api/user-deletion",
+          "payloadRef": "{ clerk_id: string }",
+          "rawKind": null
+        }
+      ],
+      "contractsProvided": [
+        {
+          "name": "adminRoutes",
+          "shape": "createRouter<Environment>()",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "admin-authentication",
+          "shape": ".all('/app/admin/*', async (req, env) => { const auth = await requireAuth(req, env); await requireAdminAccess(env, auth) })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "admin-user",
+          "shape": "GET /app/admin/user?q={q}",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "admin-outbox-stats",
+          "shape": "GET /app/admin/outbox",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "admin-outbox-rows",
+          "shape": "GET /app/admin/outbox/rows",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "admin-outbox-retry",
+          "shape": "POST /app/admin/outbox/:id/retry",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "admin-outbox-delete",
+          "shape": "POST /app/admin/outbox/:id/delete",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "resolve-durable-object",
+          "shape": "GET /app/admin/resolve-do-id/:objectIdOrSlug",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "close-durable-object-sessions",
+          "shape": "POST /app/admin/close-do-sessions/:objectId",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "feature-flags-read",
+          "shape": "GET /app/admin/feature-flags",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "feature-flags-update",
+          "shape": "POST /app/admin/feature-flags",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "create-legacy-file",
+          "shape": "POST /app/admin/create_legacy_file",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "hard-delete-file",
+          "shape": "POST /app/admin/hard_delete_file/:fileId",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "undelete-file",
+          "shape": "POST /app/admin/undelete_file/:fileId",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "deleted-files",
+          "shape": "GET /app/admin/user/deleted_files?q={q}",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "delete-user",
+          "shape": "POST /app/admin/delete_user?q={q}",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "delete-user-progress",
+          "shape": "GET /app/admin/delete_user_sse?q={q}",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "file-assets-report",
+          "shape": "GET /app/admin/file-assets/:slug",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "file-stats-report",
+          "shape": "GET /app/admin/file-stats/:slug",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "download-file-snapshot",
+          "shape": "GET /app/admin/download-tldr/:fileSlug",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "download-legacy-file-snapshot",
+          "shape": "GET /app/admin/download-legacy-tldr/:fileSlug",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "welcome-template-read",
+          "shape": "GET /app/admin/welcome-template",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "welcome-template-set",
+          "shape": "POST /app/admin/welcome-template",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "welcome-template-clear",
+          "shape": "POST /app/admin/welcome-template/clear",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "Environment",
+          "shape": "Environment",
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/types.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/types.ts"
+        },
+        {
+          "name": "AdminFileAssetsResponseBody",
+          "shape": "AdminFileAssetsResponseBody",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "AdminFileStatsResponseBody",
+          "shape": "AdminFileStatsResponseBody",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "AdminOutboxRowsResponseBody",
+          "shape": "AdminOutboxRowsResponseBody",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "AdminOutboxStatsResponseBody",
+          "shape": "AdminOutboxStatsResponseBody",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "FeatureFlagUpdate",
+          "shape": "FeatureFlagUpdate",
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/utils/featureFlags.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/utils/featureFlags.ts"
+        },
+        { "name": "TlaFile", "shape": "TlaFile", "resolvedRelativePath": null, "resolvedFileId": null },
+        {
+          "name": "allowlist-update",
+          "shape": "{ flag: string, enabled?: boolean, percentage?: number, emails?: unknown }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "analytics-user-deletion",
+          "shape": "{ clerk_id: userId }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "authentication middleware",
+          "intent": "Requires authentication and administrator access for every administrative path.",
+          "structureKind": "async",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 150, "endLine": 154 }
+        },
+        {
+          "name": "outbox inspection and controls",
+          "intent": "Reports pending effects and permits retrying or deleting individual rows.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 190, "endLine": 292 }
+        },
+        {
+          "name": "durable-object resolution",
+          "intent": "Resolves room identifiers and summarizes persisted snapshot history.",
+          "structureKind": "loop",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": "500 pages",
+          "terminationCondition": "cursor",
+          "anchor": { "startLine": 294, "endLine": 360 }
+        },
+        {
+          "name": "feature-flag update",
+          "intent": "Validates flag-specific inputs, resolves allowlists, and persists updates.",
+          "structureKind": "branch",
+          "predicate": "type === 'allowlist'",
+          "branchOutcomes": ["allowlist", "percentage", "boolean"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 386, "endLine": 438 }
+        },
+        {
+          "name": "asset health report",
+          "intent": "Analyzes snapshot assets, bucket presence, database associations, and source validity.",
+          "structureKind": "async",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 530, "endLine": 678 }
+        },
+        {
+          "name": "file statistics report",
+          "intent": "Combines snapshot summary, metadata, storage size, and collaboration counts.",
+          "structureKind": "async",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 680, "endLine": 730 }
+        },
+        {
+          "name": "user deletion SSE",
+          "intent": "Streams deletion progress and converts failures into terminal error events.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 732, "endLine": 785 }
+        },
+        {
+          "name": "user deletion orchestration",
+          "intent": "Deletes solely owned groups, files, database records, Clerk identity, and analytics data.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 879, "endLine": 982 }
+        }
+      ],
+      "representationFamily": "binding",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "variable",
+          "name": "adminRoutes",
+          "signature": "export const adminRoutes = createRouter<Environment>()",
+          "generics": "<Environment>",
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 150, "endLine": 150 }
+        },
+        {
+          "kind": "function",
+          "name": "resolveAllowlistUsers",
+          "signature": "async function resolveAllowlistUsers(\n\tenv: Environment,\n\temails: string[]\n): Promise<AllowlistEntry[]>",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Promise<AllowlistEntry[]>",
+          "exported": false,
+          "anchor": { "startLine": 48, "endLine": 51 }
+        },
+        {
+          "kind": "function",
+          "name": "withResolvedAllowlistLabels",
+          "signature": "async function withResolvedAllowlistLabels(\n\tenv: Environment,\n\tflags: Record<string, FeatureFlagValue>\n): Promise<Record<string, FeatureFlagValue>>",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Promise<Record<string, FeatureFlagValue>>",
+          "exported": false,
+          "anchor": { "startLine": 85, "endLine": 88 }
+        },
+        {
+          "kind": "function",
+          "name": "requireUser",
+          "signature": "async function requireUser(env: Environment, q: string)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 135, "endLine": 135 }
+        },
+        {
+          "kind": "function",
+          "name": "maybeHardDeleteLegacyFile",
+          "signature": "async function maybeHardDeleteLegacyFile({ id, env }: { id: string; env: Environment })",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 786, "endLine": 786 }
+        },
+        {
+          "kind": "function",
+          "name": "hardDeleteAppFile",
+          "signature": "async function hardDeleteAppFile({\n\tpg,\n\tfile,\n\tenv,\n}: {\n\tenv: Environment\n\tpg: ReturnType<typeof createPostgresConnectionPool>\n\tfile: TlaFile\n})",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 790, "endLine": 797 }
+        },
+        {
+          "kind": "function",
+          "name": "deleteUserFromAnalytics",
+          "signature": "async function deleteUserFromAnalytics(\n\tuserId: string,\n\tenv: Environment,\n\tsendProgress?: (step: string, message: string, details?: any) => void\n)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 831, "endLine": 835 }
+        },
+        {
+          "kind": "function",
+          "name": "performUserDeletion",
+          "signature": "async function performUserDeletion(\n\tuserRow: any,\n\tenv: any,\n\tsendProgress?: (step: string, message: string, details?: any) => void\n)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 879, "endLine": 883 }
+        }
+      ],
+      "typeShapes": [],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "Empty allowlist email array",
+          "handled": true,
+          "behavior": "Returns an empty entry list without opening a database connection.",
+          "anchor": { "startLine": 52, "endLine": 52 }
+        },
+        {
+          "inputShape": "Unknown allowlist account",
+          "handled": true,
+          "behavior": "Rejects the save with HTTP 400 and identifies unknown addresses.",
+          "anchor": { "startLine": 63, "endLine": 65 }
+        },
+        {
+          "inputShape": "Missing or non-string user query",
+          "handled": true,
+          "behavior": "Returns HTTP 400 with a missing-query response.",
+          "anchor": { "startLine": 157, "endLine": 160 }
+        },
+        {
+          "inputShape": "Outbox retry or delete for a concurrently removed row",
+          "handled": true,
+          "behavior": "Returns HTTP 404 when the affected-row count is zero.",
+          "anchor": { "startLine": 274, "endLine": 276 }
+        },
+        {
+          "inputShape": "Invalid durable-object identifier or slug",
+          "handled": true,
+          "behavior": "Rejects malformed, truncated, uppercase, or wrong-namespace identifiers with HTTP 400.",
+          "anchor": { "startLine": 303, "endLine": 320 }
+        },
+        {
+          "inputShape": "Room without persisted document information",
+          "handled": true,
+          "behavior": "Returns the object identifier with null match and history.",
+          "anchor": { "startLine": 322, "endLine": 322 }
+        },
+        {
+          "inputShape": "Snapshot with external or malformed asset records",
+          "handled": true,
+          "behavior": "Counts unsupported assets as external and excludes them from upload-health checks.",
+          "anchor": { "startLine": 557, "endLine": 576 }
+        },
+        {
+          "inputShape": "Persistent bucket-head or source-check failure",
+          "handled": true,
+          "behavior": "Leaves bucket status null or source existence unknown and records a warning.",
+          "anchor": { "startLine": 590, "endLine": 636 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": "<",
+          "left": "attempts",
+          "right": "MAX_ATTEMPTS",
+          "inclusive": false,
+          "intent": "Counts rows below the parking threshold as pending.",
+          "anchor": { "startLine": 203, "endLine": 203 }
+        },
+        {
+          "operator": ">=",
+          "left": "attempts",
+          "right": "MAX_ATTEMPTS",
+          "inclusive": true,
+          "intent": "Counts rows at or beyond the threshold as parked.",
+          "anchor": { "startLine": 204, "endLine": 204 }
+        },
+        {
+          "operator": "==",
+          "left": "numUpdatedRows",
+          "right": "0n",
+          "inclusive": true,
+          "intent": "Detects an outbox row deleted concurrently.",
+          "anchor": { "startLine": 274, "endLine": 274 }
+        },
+        {
+          "operator": "==",
+          "left": "numDeletedRows",
+          "right": "0n",
+          "inclusive": true,
+          "intent": "Detects an outbox row already deleted by another actor.",
+          "anchor": { "startLine": 290, "endLine": 290 }
+        },
+        {
+          "operator": ">=",
+          "left": "pages",
+          "right": "500",
+          "inclusive": true,
+          "intent": "Stops history listing after the subrequest safety cap.",
+          "anchor": { "startLine": 350, "endLine": 350 }
+        },
+        {
+          "operator": "<",
+          "left": "percentage",
+          "right": "0",
+          "inclusive": false,
+          "intent": "Rejects percentages below the supported range.",
+          "anchor": { "startLine": 397, "endLine": 397 }
+        },
+        {
+          "operator": ">",
+          "left": "percentage",
+          "right": "100",
+          "inclusive": false,
+          "intent": "Rejects percentages above the supported range.",
+          "anchor": { "startLine": 397, "endLine": 397 }
+        },
+        {
+          "operator": "==",
+          "left": "type",
+          "right": "'allowlist'",
+          "inclusive": true,
+          "intent": "Selects allowlist-specific validation and persistence.",
+          "anchor": { "startLine": 417, "endLine": 417 }
+        },
+        {
+          "operator": "==",
+          "left": "type",
+          "right": "'percentage'",
+          "inclusive": true,
+          "intent": "Selects percentage-specific flag persistence.",
+          "anchor": { "startLine": 431, "endLine": 431 }
+        },
+        {
+          "operator": "==",
+          "left": "a.inBucket",
+          "right": "false",
+          "inclusive": true,
+          "intent": "Counts assets confirmed absent from the upload bucket.",
+          "anchor": { "startLine": 650, "endLine": 650 }
+        },
+        {
+          "operator": "==",
+          "left": "a.inBucket",
+          "right": "null",
+          "inclusive": true,
+          "intent": "Counts unresolved bucket checks as head failures.",
+          "anchor": { "startLine": 651, "endLine": 651 }
+        },
+        {
+          "operator": "==",
+          "left": "ownerCount.count",
+          "right": "1",
+          "inclusive": true,
+          "intent": "Identifies groups for which the target user is the sole owner.",
+          "anchor": { "startLine": 914, "endLine": 914 }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": "StatusError(400, `No tldraw account for: ${unknown.join(', ')}`)",
+          "caught": null,
+          "action": "Rejects saving an allowlist containing unresolved accounts.",
+          "fallback": null,
+          "anchor": { "startLine": 64, "endLine": 65 }
+        },
+        {
+          "thrown": "StatusError(404, 'User not found ' + q)",
+          "caught": null,
+          "action": "Rejects administrative operations targeting an unknown user.",
+          "fallback": null,
+          "anchor": { "startLine": 146, "endLine": 146 }
+        },
+        {
+          "thrown": null,
+          "caught": "poke() failure after outbox retry",
+          "action": "Logs the failure and relies on the sweep alarm.",
+          "fallback": "Returns successful retry response.",
+          "anchor": { "startLine": 278, "endLine": 281 }
+        },
+        {
+          "thrown": "StatusError(400, 'not a valid durable object id for the file namespace')",
+          "caught": "getRoomDurableObjectById failure",
+          "action": "Converts namespace validation failure into an HTTP 400 response.",
+          "fallback": null,
+          "anchor": { "startLine": 317, "endLine": 319 }
+        },
+        {
+          "thrown": null,
+          "caught": "asset head or source existence check failure",
+          "action": "Adds a warning and preserves an unknown status.",
+          "fallback": "inBucket, exists remain null.",
+          "anchor": { "startLine": 589, "endLine": 636 }
+        },
+        {
+          "thrown": null,
+          "caught": "SSE user-deletion workflow error",
+          "action": "Enqueues an error event and closes the stream.",
+          "fallback": "No successful completion event is emitted.",
+          "anchor": { "startLine": 767, "endLine": 779 }
+        },
+        {
+          "thrown": null,
+          "caught": "Analytics API or response failure",
+          "action": "Logs the failure and emits a warning progress event.",
+          "fallback": "User deletion continues.",
+          "anchor": { "startLine": 866, "endLine": 876 }
+        }
+      ],
+      "invariants": [
+        {
+          "kind": "precondition",
+          "description": "Every administrative route is protected by authentication and administrator authorization middleware.",
+          "anchor": { "startLine": 151, "endLine": 154 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "PostgreSQL pools are destroyed in finally blocks for routes that explicitly own them.",
+          "anchor": { "startLine": 168, "endLine": 189 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Allowlist entries are stored by user identifier while displayed email labels are refreshed on read.",
+          "anchor": { "startLine": 85, "endLine": 127 }
+        },
+        {
+          "kind": "ordering",
+          "description": "Outbox rows are presented with pending rows before parked rows and then ascending identifiers.",
+          "anchor": { "startLine": 233, "endLine": 239 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Hard deletion removes referenced upload objects before deleting the file row.",
+          "anchor": { "startLine": 800, "endLine": 823 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "User deletion removes sole-owned groups and dependent files before deleting the user record.",
+          "anchor": { "startLine": 900, "endLine": 973 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "Administrative callers provide valid authentication credentials and administrator privileges.",
+          "anchor": { "startLine": 151, "endLine": 154 }
+        },
+        {
+          "kind": "schema",
+          "description": "PostgreSQL tables and outbox triggers provide the expected file, group, user, asset, and effect relationships.",
+          "anchor": { "startLine": 800, "endLine": 823 }
+        },
+        {
+          "kind": "env",
+          "description": "Storage bindings and durable-object namespaces are configured on the worker environment.",
+          "anchor": { "startLine": 322, "endLine": 340 }
+        },
+        {
+          "kind": "config",
+          "description": "Analytics deletion is optional and requires both analytics URL and token configuration.",
+          "anchor": { "startLine": 837, "endLine": 847 }
+        },
+        {
+          "kind": "caller",
+          "description": "SSE clients consume progress, completion, and error events until the stream closes.",
+          "anchor": { "startLine": 732, "endLine": 785 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "Are all route paths and response bodies consumed only by the administrative web application?",
+          "affects": "public_signatures and endpoint compatibility",
+          "anchor": { "startLine": 150, "endLine": 785 },
+          "resolution": null
+        },
+        {
+          "question": "Does the database schema guarantee that deleting a user cascades every remaining related record as assumed?",
+          "affects": "performUserDeletion behavior and invariants",
+          "anchor": { "startLine": 965, "endLine": 973 },
+          "resolution": null
+        },
+        {
+          "question": "Is the analytics deletion API idempotent for retries after partial user deletion?",
+          "affects": "deleteUserFromAnalytics error and retry semantics",
+          "anchor": { "startLine": 850, "endLine": 876 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "mixed",
+        "reentrant": true,
+        "ordering": "deterministic",
+        "notes": "Routes are asynchronous and perform concurrent Promise.all queries and bounded asset-head checks. PQueue limits asset inspection to five concurrent tasks; database and external mutations are otherwise coordinated per request."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "rejects-non-admin",
+          "scenario": "An authenticated user without admin access requests any admin route.",
+          "given": ["requireAuth(req, env) resolves to auth", "requireAdminAccess(env, auth) throws"],
+          "when": "adminRoutes.fetch(req, env)",
+          "then": "the request is rejected and the route handler is not executed",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "All administrative endpoints share the authorization guard."
+        },
+        {
+          "testId": "rejects-missing-user-query",
+          "scenario": "A user lookup endpoint is called without a string q query parameter.",
+          "given": [],
+          "when": "GET /app/admin/user",
+          "then": "the response status is 400 and the body is Missing query param",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "The endpoint requires an explicit user identifier."
+        },
+        {
+          "testId": "rejects-invalid-outbox-id",
+          "scenario": "An outbox retry or delete request uses a non-numeric id.",
+          "given": [],
+          "when": "POST /app/admin/outbox/not-a-number/retry",
+          "then": "a 400 error with id must be numeric is returned",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Administrative mutations must not issue database operations for malformed identifiers."
+        },
+        {
+          "testId": "rejects-invalid-feature-flag-update",
+          "scenario": "A feature flag update contains an invalid flag or an out-of-range percentage.",
+          "given": ["body = { flag: 'unknown', percentage: 101 }"],
+          "when": "POST /app/admin/feature-flags",
+          "then": "the response is a 400 error and no flag is stored",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "The endpoint validates both the flag key and percentage bounds."
+        },
+        {
+          "testId": "rejects-inapplicable-feature-flag-fields",
+          "scenario": "An update supplies percentage or emails for a flag type that does not support that field.",
+          "given": ["getFeatureFlagType(env, flagKey) resolves to a non-matching type"],
+          "when": "POST /app/admin/feature-flags",
+          "then": "the response is 400 and the inapplicable field is not silently discarded",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "The contract prevents apparently successful but ineffective administrative updates."
+        },
+        {
+          "testId": "rejects-invalid-durable-object-id",
+          "scenario": "A durable-object session close request receives an id that is not 64 lowercase hexadecimal characters.",
+          "given": [],
+          "when": "POST /app/admin/close-do-sessions/invalid",
+          "then": "a 400 error with objectId must be a 64-char lowercase hex string is returned",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "The route enforces the durable-object identifier format before lookup."
+        },
+        {
+          "testId": "returns-not-found-for-missing-file",
+          "scenario": "A file deletion or restoration request references a file that does not exist.",
+          "given": ["the file lookup returns no row", "maybeHardDeleteLegacyFile(...) resolves false"],
+          "when": "POST /app/admin/hard_delete_file/:fileId",
+          "then": "the response status is 404 and the body is File not found",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Missing files must be distinguishable from successful administrative mutations."
+        },
+        {
+          "testId": "rejects-unpublished-welcome-template",
+          "scenario": "An administrator attempts to set an unpublished file as the welcome template.",
+          "given": ["file.published === false"],
+          "when": "POST /app/admin/welcome-template",
+          "then": "a 400 error with File must be published before it can be the welcome template is returned",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "New workspaces can only fork a published snapshot."
+        },
+        {
+          "testId": "reports-missing-snapshot",
+          "scenario": "A file asset or stats report cannot load the persisted snapshot.",
+          "given": ["getFileSnapshot(env, slug, true) resolves null"],
+          "when": "GET /app/admin/file-stats/:slug",
+          "then": "a 404 error with No persisted snapshot for ${slug} is returned",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Reports require a persisted snapshot to produce meaningful data."
+        },
+        {
+          "testId": "retries-outbox-row",
+          "scenario": "An existing outbox row is manually retried.",
+          "given": ["the update affects one row"],
+          "when": "POST /app/admin/outbox/:id/retry",
+          "then": "the row has attempts reset to 0, nextRetryAt set to null, and the response is { ok: true }",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Retry semantics reset delivery state and return success after the database commit."
+        },
+        {
+          "testId": "emits-delete-progress",
+          "scenario": "User deletion is requested through the SSE endpoint.",
+          "given": ["performUserDeletion(userRow, env, sendProgress) completes"],
+          "when": "GET /app/admin/delete_user_sse?q={q}",
+          "then": "the stream emits progress events followed by a complete event and closes",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "The SSE endpoint exposes observable progress and completion for a long-running deletion."
+        },
+        {
+          "testId": "clears-welcome-template",
+          "scenario": "An administrator clears the configured welcome template.",
+          "given": ["welcome_template contains a row"],
+          "when": "POST /app/admin/welcome-template/clear",
+          "then": "the row is deleted and the response is { cleared: true }",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Clearing must revert new workspaces to the committed default snapshot."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "import declarations",
+        "allowlist resolution helpers",
+        "user lookup helper",
+        "exported administrative router and route handlers",
+        "legacy-file deletion helper",
+        "application-file hard-delete helper",
+        "analytics deletion helper",
+        "user deletion orchestration helper"
+      ],
+      "moduleLevelCode": "import declarations and fluent router construction",
+      "exports": [{ "name": "adminRoutes", "kind": "own", "fromSpec": null, "exportedAs": null }],
+      "importSymbolMap": [
+        {
+          "symbol": "AdminFileAssetsResponseBody",
+          "module": "@tldraw/dotcom-shared",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "AdminFileStatsResponseBody",
+          "module": "@tldraw/dotcom-shared",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "AdminOutboxRowsResponseBody",
+          "module": "@tldraw/dotcom-shared",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "AdminOutboxStatsResponseBody",
+          "module": "@tldraw/dotcom-shared",
+          "alias": null,
+          "kind": "external"
+        },
+        { "symbol": "AllowlistEntry", "module": "@tldraw/dotcom-shared", "alias": null, "kind": "external" },
+        { "symbol": "FILE_PREFIX", "module": "@tldraw/dotcom-shared", "alias": null, "kind": "external" },
+        { "symbol": "FeatureFlagKey", "module": "@tldraw/dotcom-shared", "alias": null, "kind": "external" },
+        { "symbol": "FeatureFlagValue", "module": "@tldraw/dotcom-shared", "alias": null, "kind": "external" },
+        { "symbol": "LOCAL_FILE_PREFIX", "module": "@tldraw/dotcom-shared", "alias": null, "kind": "external" },
+        { "symbol": "PUBLISH_PREFIX", "module": "@tldraw/dotcom-shared", "alias": null, "kind": "external" },
+        { "symbol": "ROOM_PREFIX", "module": "@tldraw/dotcom-shared", "alias": null, "kind": "external" },
+        { "symbol": "TlaFile", "module": "@tldraw/dotcom-shared", "alias": null, "kind": "external" },
+        { "symbol": "WELCOME_CREATE_SOURCE", "module": "@tldraw/dotcom-shared", "alias": null, "kind": "external" },
+        { "symbol": "assert", "module": "@tldraw/utils", "alias": null, "kind": "external" },
+        { "symbol": "retry", "module": "@tldraw/utils", "alias": null, "kind": "external" },
+        { "symbol": "sleep", "module": "@tldraw/utils", "alias": null, "kind": "external" },
+        { "symbol": "uniqueId", "module": "@tldraw/utils", "alias": null, "kind": "external" },
+        { "symbol": "createRouter", "module": "@tldraw/worker-shared", "alias": null, "kind": "external" },
+        { "symbol": "StatusError", "module": "itty-router", "alias": null, "kind": "external" },
+        { "symbol": "json", "module": "itty-router", "alias": null, "kind": "external" },
+        { "symbol": "sql", "module": "kysely", "alias": null, "kind": "external" },
+        { "symbol": "PQueue", "module": "p-queue", "alias": null, "kind": "external" },
+        { "symbol": "getUploadObjectName", "module": "./assetAssociation", "alias": null, "kind": "internal" },
+        { "symbol": "summarizeSnapshotDocuments", "module": "./fileStats", "alias": null, "kind": "internal" },
+        { "symbol": "MAX_ATTEMPTS", "module": "./outboxDrain", "alias": null, "kind": "internal" },
+        { "symbol": "createPostgresConnectionPool", "module": "./postgres", "alias": null, "kind": "internal" },
+        { "symbol": "getR2KeyForRoom", "module": "./r2", "alias": null, "kind": "internal" },
+        { "symbol": "getFileSnapshot", "module": "./routes/tla/getFileSnapshot", "alias": null, "kind": "internal" },
+        { "symbol": "returnFileSnapshot", "module": "./routes/tla/getFileSnapshot", "alias": null, "kind": "internal" },
+        { "symbol": "Environment", "module": "./types", "alias": null, "kind": "internal" },
+        { "symbol": "undeleteFile", "module": "./undeleteFile", "alias": null, "kind": "internal" },
+        { "symbol": "getFileEffectProcessor", "module": "./utils/durableObjects", "alias": null, "kind": "internal" },
+        { "symbol": "getRoomDurableObject", "module": "./utils/durableObjects", "alias": null, "kind": "internal" },
+        { "symbol": "getRoomDurableObjectById", "module": "./utils/durableObjects", "alias": null, "kind": "internal" },
+        { "symbol": "getRoomDurableObjectId", "module": "./utils/durableObjects", "alias": null, "kind": "internal" },
+        { "symbol": "FEATURE_FLAG_KEYS", "module": "./utils/featureFlags", "alias": null, "kind": "internal" },
+        { "symbol": "FeatureFlagUpdate", "module": "./utils/featureFlags", "alias": null, "kind": "internal" },
+        { "symbol": "getAllFeatureFlagValues", "module": "./utils/featureFlags", "alias": null, "kind": "internal" },
+        { "symbol": "getFeatureFlagType", "module": "./utils/featureFlags", "alias": null, "kind": "internal" },
+        { "symbol": "parseAllowlistEmails", "module": "./utils/featureFlags", "alias": null, "kind": "internal" },
+        { "symbol": "setFeatureFlag", "module": "./utils/featureFlags", "alias": null, "kind": "internal" },
+        { "symbol": "getClerkClient", "module": "./utils/tla/getAuth", "alias": null, "kind": "internal" },
+        { "symbol": "requireAdminAccess", "module": "./utils/tla/getAuth", "alias": null, "kind": "internal" },
+        { "symbol": "requireAuth", "module": "./utils/tla/getAuth", "alias": null, "kind": "internal" }
+      ],
+      "fileConstants": [],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "apps/dotcom/sync-worker/src/adminRoutes.ts__resolveAllowlistUsers#function:resolveAllowlistUsers",
+        "unitKind": "function",
+        "name": "resolveAllowlistUsers",
+        "qualifiedName": "resolveAllowlistUsers",
+        "parentUnitId": null,
+        "startLine": 48,
+        "endLine": 76,
+        "isBehavioral": true,
+        "source": " * per address, and an email with no tldraw account fails the save instead of being stored as an\n * entry that can never match.\n */\nasync function resolveAllowlistUsers(\n\tenv: Environment,\n\temails: string[]\n): Promise<AllowlistEntry[]> {\n\tif (!emails.length) return []\n\n\tconst db = createPostgresConnectionPool(env, '/app/admin/feature-flags')\n\ttry {\n\t\tconst rows = await db\n\t\t\t.selectFrom('user')\n\t\t\t.select(['id', 'email'])\n\t\t\t.where(sql<string>`lower(email)`, 'in', emails)\n\t\t\t.execute()\n\n\t\tconst byEmail = new Map(rows.map((row) => [row.email.toLowerCase(), row]))\n\t\tconst unknown = emails.filter((email) => !byEmail.has(email))\n\t\tif (unknown.length) {\n\t\t\tthrow new StatusError(400, `No tldraw account for: ${unknown.join(', ')}`)\n\t\t}\n\n\t\t// Store the address as the database has it, not as the admin typed it, so the panel shows the\n\t\t// account's real email.\n\t\treturn emails.map((email) => {\n\t\t\tconst row = byEmail.get(email)!\n\t\t\treturn { userId: row.id, email: row.email }\n\t\t})",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/adminRoutes.ts__resolveAllowlistUsers#function:resolveAllowlistUsers",
+          "fileId": "apps/dotcom/sync-worker/src/adminRoutes.ts__resolveAllowlistUsers",
+          "unitKind": "function",
+          "name": "resolveAllowlistUsers",
+          "qualifiedName": "resolveAllowlistUsers",
+          "parentUnitId": null,
+          "startLine": 48,
+          "endLine": 76,
+          "signature": "async function resolveAllowlistUsers(env: Environment, emails: string[]): Promise<AllowlistEntry[]>",
+          "parameters": [
+            { "name": "env", "type": "Environment", "default": null, "optional": false, "variadic": false, "order": 0 },
+            { "name": "emails", "type": "string[]", "default": null, "optional": false, "variadic": false, "order": 1 }
+          ],
+          "returnType": "Promise<AllowlistEntry[]>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "env is a valid Environment for creating the admin feature-flags database connection.",
+            "emails is an array of email strings."
+          ],
+          "postconditions": [
+            "For non-empty input, every returned entry corresponds to a matching database user.",
+            "Returned entries preserve the input email order.",
+            "Each returned entry contains the matched user's database ID and database-stored email address.",
+            "An empty input array returns an empty array without querying the database."
+          ],
+          "invariants": [
+            "The number of returned entries equals the number of input emails when resolution succeeds.",
+            "Database-stored email casing is preserved in each returned entry.",
+            "Input ordering, including repeated addresses, is preserved in the result."
+          ],
+          "edgeCases": [
+            "An empty emails array returns [] immediately and does not create or query a database connection.",
+            "If one or more input addresses do not resolve to database users, the function throws a StatusError with status 400 and does not return partial results.",
+            "Repeated input addresses produce repeated allowlist entries in the same positions.",
+            "Email lookup uses a lower(email) database expression and indexes retrieved rows by lowercased email."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["StatusError"],
+            "reverts": [],
+            "onInvalidInput": "If any requested email has no matching tldraw account, throw StatusError with HTTP status 400.",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "createPostgresConnectionPool", "source": "admin feature-flags database", "kind": "external" },
+            { "name": "user table select query", "source": "PostgreSQL", "kind": "external" }
+          ],
+          "symbolReferences": ["Environment", "AllowlistEntry", "StatusError"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Returns Promise<AllowlistEntry[]> where each entry has the shape { userId: row.id, email: row.email }. Reads user.id and user.email from the PostgreSQL user table.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Resolves administrator-supplied email addresses to existing tldraw accounts. It returns allowlist entries using the account IDs and canonical email values stored in the database, and rejects addresses without matching accounts.",
+          "specLiterals": [
+            {
+              "kind": "error-message",
+              "value": "No tldraw account for: ",
+              "role": "Prefix of the HTTP 400 error message for unresolved email addresses."
+            },
+            {
+              "kind": "magic-number",
+              "value": "400",
+              "role": "HTTP status code used when one or more email addresses do not resolve to accounts."
+            },
+            {
+              "kind": "sql",
+              "value": "lower(email)",
+              "role": "Database lookup expression used to resolve email addresses case-insensitively at the column-expression level."
+            },
+            {
+              "kind": "format-string",
+              "value": ", ",
+              "role": "Separator used when listing unresolved email addresses in the error message."
+            },
+            {
+              "kind": "format-string",
+              "value": "/app/admin/feature-flags",
+              "role": "Database connection path passed to the PostgreSQL connection-pool factory."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "resolveAllowlistUsers(env, emails) is called",
+              "then": "It resolves to [] without requiring any database user lookup.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "resolveAllowlistUsers(env, emails) is called",
+              "then": "It resolves to one AllowlistEntry per input email, in input order, using each database user's ID and stored email value.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "resolveAllowlistUsers(env, emails) is called",
+              "then": "It rejects with a StatusError whose status is 400 and whose message begins with \"No tldraw account for: \".",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "4cf24c212c03a79bafa05d1c5e15f5d03e82fc8ffe32500a2c38f3224e3726dc"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/adminRoutes.ts__withResolvedAllowlistLabels#function:withResolvedAllowlistLabels",
+        "unitKind": "function",
+        "name": "withResolvedAllowlistLabels",
+        "qualifiedName": "withResolvedAllowlistLabels",
+        "parentUnitId": null,
+        "startLine": 85,
+        "endLine": 127,
+        "isBehavioral": true,
+        "source": " *\n * The stored email is written once at save time and never updated, so it rots: an address change\n * leaves an entry that still *works* — matching is by id — while displaying the old address, and\n * re-saving the list as displayed then 400s on a line the admin cannot pick out from the rest. A\n * deleted account leaves an entry that looks like a live grant and matches nobody. Resolved on read\n * instead, which costs the admin panel one query per page load and the request path nothing.\n */\nasync function withResolvedAllowlistLabels(\n\tenv: Environment,\n\tflags: Record<string, FeatureFlagValue>\n): Promise<Record<string, FeatureFlagValue>> {\n\tconst entriesOf = (flag: FeatureFlagValue) =>\n\t\tflag.type === 'allowlist' && Array.isArray(flag.users) ? flag.users : []\n\n\tconst ids = [\n\t\t...new Set(Object.values(flags).flatMap((flag) => entriesOf(flag).map((e) => e.userId))),\n\t]\n\tif (!ids.length) return flags\n\n\tconst db = createPostgresConnectionPool(env, '/app/admin/feature-flags')\n\tlet emailById: Map<string, string>\n\ttry {\n\t\tconst rows = await db\n\t\t\t.selectFrom('user')\n\t\t\t.select(['id', 'email'])\n\t\t\t.where('id', 'in', ids)\n\t\t\t.execute()\n\t\temailById = new Map(rows.map((row) => [row.id, row.email]))\n\t} finally {\n\t\tawait db.destroy()\n\t}\n\n\treturn Object.fromEntries(\n\t\tObject.entries(flags).map(([key, flag]) => {\n\t\t\tif (flag.type !== 'allowlist') return [key, flag]\n\t\t\treturn [\n\t\t\t\tkey,\n\t\t\t\t{\n\t\t\t\t\t...flag,\n\t\t\t\t\tusers: entriesOf(flag).map((entry) => {\n\t\t\t\t\t\tconst email = emailById.get(entry.userId)\n\t\t\t\t\t\treturn email ? { ...entry, email } : { ...entry, missing: true }\n\t\t\t\t\t}),",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/adminRoutes.ts__withResolvedAllowlistLabels#function:withResolvedAllowlistLabels",
+          "fileId": "apps/dotcom/sync-worker/src/adminRoutes.ts__withResolvedAllowlistLabels",
+          "unitKind": "function",
+          "name": "withResolvedAllowlistLabels",
+          "qualifiedName": "withResolvedAllowlistLabels",
+          "parentUnitId": null,
+          "startLine": 85,
+          "endLine": 127,
+          "signature": "async function withResolvedAllowlistLabels(env: Environment, flags: Record<string, FeatureFlagValue>): Promise<Record<string, FeatureFlagValue>>",
+          "parameters": [
+            { "name": "env", "type": "Environment", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "flags",
+              "type": "Record<string, FeatureFlagValue>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "Promise<Record<string, FeatureFlagValue>>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "env is suitable for creating the admin feature-flags database connection.",
+            "flags is a record whose values conform to FeatureFlagValue."
+          ],
+          "postconditions": [
+            "Every allowlist entry with a matching database user has its email replaced with the current database email.",
+            "Every allowlist entry without a matching database user has missing set to true.",
+            "Non-allowlist flags are returned unchanged.",
+            "The database connection is destroyed after a database query completes or fails."
+          ],
+          "invariants": [
+            "Allowlist entry user IDs and all other entry properties are preserved.",
+            "The database is queried at most once per invocation.",
+            "Only distinct user IDs from allowlist entries are queried.",
+            "If no allowlist user IDs exist, the input flags object is returned without creating a database connection."
+          ],
+          "edgeCases": [
+            "An empty flags record or flags with no allowlist users returns the original flags object without a database query.",
+            "Non-allowlist feature flags remain unchanged and do not contribute user IDs.",
+            "Duplicate user IDs across flags are queried only once.",
+            "An allowlist user ID absent from the database is retained with missing set to true.",
+            "A database query failure is propagated after connection cleanup."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [
+              "Any error thrown by database connection creation, query execution, or connection destruction is propagated."
+            ],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "createPostgresConnectionPool", "source": "imported database dependency", "kind": "external" },
+            { "name": "selectFrom", "source": "Postgres query builder", "kind": "external" },
+            { "name": "select", "source": "Postgres query builder", "kind": "external" },
+            { "name": "where", "source": "Postgres query builder", "kind": "external" },
+            { "name": "execute", "source": "Postgres query builder", "kind": "external" },
+            { "name": "destroy", "source": "Postgres connection pool", "kind": "external" }
+          ],
+          "symbolReferences": ["Environment", "FeatureFlagValue", "user"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Queries the user table for columns id and email where id is in the distinct set of allowlist user IDs. Returns a Record<string, FeatureFlagValue> with resolved allowlist user entries.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Resolves the current email labels for users referenced by allowlist feature flags. It preserves unresolved entries while marking them as missing and leaves non-allowlist flags unchanged.",
+          "specLiterals": [
+            {
+              "kind": "enum-value",
+              "value": "allowlist",
+              "role": "Identifies feature flag values whose user labels must be resolved."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "withResolvedAllowlistLabels is called.",
+              "then": "The returned allowlist entry retains its existing properties and has email set to \"current@example.com\".",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "withResolvedAllowlistLabels is called.",
+              "then": "The returned entry retains its existing properties and has missing set to true.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "withResolvedAllowlistLabels is called.",
+              "then": "The exact input flags object is returned and no database connection is created.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "bb9d820819df9491427b37a098525adaaf07e877f9c62c3f5653bc847913e88f"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/adminRoutes.ts__requireUser#function:requireUser",
+        "unitKind": "function",
+        "name": "requireUser",
+        "qualifiedName": "requireUser",
+        "parentUnitId": null,
+        "startLine": 135,
+        "endLine": 148,
+        "isBehavioral": true,
+        "source": "\tconst db = createPostgresConnectionPool(env, '/app/admin/user')\n\tconst userRow = await db\n\t\t.selectFrom('user')\n\t\t.where((eb) => eb.or([eb('email', '=', q), eb('id', '=', q)]))\n\t\t.selectAll()\n\t\t.executeTakeFirst()\n\n\tif (!userRow) {\n\t\tthrow new StatusError(404, 'User not found ' + q)\n\t}\n\treturn userRow\n}\n\nexport const adminRoutes = createRouter<Environment>()",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/adminRoutes.ts__requireUser#function:requireUser",
+          "fileId": "apps/dotcom/sync-worker/src/adminRoutes.ts__requireUser",
+          "unitKind": "function",
+          "name": "requireUser",
+          "qualifiedName": "requireUser",
+          "parentUnitId": null,
+          "startLine": 135,
+          "endLine": 148,
+          "signature": null,
+          "parameters": [
+            { "name": "env", "type": null, "default": null, "optional": false, "variadic": false, "order": 0 },
+            { "name": "q", "type": null, "default": null, "optional": false, "variadic": false, "order": 1 }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "env must provide the configuration required to create the PostgreSQL connection pool.",
+            "q is used as the lookup value for either the user's email or ID."
+          ],
+          "postconditions": [
+            "On success, returns the first user row matching q by email or ID.",
+            "The lookup applies an OR condition between email equality and ID equality."
+          ],
+          "invariants": [
+            "A user is considered found if either email equals q or ID equals q.",
+            "Only the first matching row is returned."
+          ],
+          "edgeCases": [
+            "If no row matches either email or ID, raises StatusError with status 404.",
+            "If multiple rows could match, returns only the first row selected by the database query.",
+            "The same q value is compared against both the email and ID columns."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["StatusError"],
+            "reverts": [],
+            "onInvalidInput": "A missing match is treated as not found and raises StatusError(404, 'User not found ' + q).",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "createPostgresConnectionPool", "source": "imported dependency", "kind": "external" },
+            { "name": "selectFrom", "source": "PostgreSQL query builder", "kind": "external" },
+            { "name": "where", "source": "PostgreSQL query builder", "kind": "external" },
+            { "name": "selectAll", "source": "PostgreSQL query builder", "kind": "external" },
+            { "name": "executeTakeFirst", "source": "PostgreSQL query builder", "kind": "external" }
+          ],
+          "symbolReferences": ["StatusError", "user"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Asynchronously looks up a user by email or ID using the admin user database connection. It returns the first matching user or raises a not-found status error when no match exists.",
+          "specLiterals": [
+            {
+              "kind": "error-message",
+              "value": "User not found ",
+              "role": "Prefix of the not-found error message returned when no user matches the query."
+            },
+            { "kind": "magic-number", "value": "404", "role": "HTTP status code used for a missing user." }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "requireUser(env, q) is awaited.",
+              "then": "The matching user row is returned.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "requireUser(env, q) is awaited.",
+              "then": "A StatusError is raised with status 404 and message 'User not found ' + q.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "955c0f4a1b0e321814b72876e6bb2d864050970777a795f790b2ea9c55b89d51"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/adminRoutes.ts__adminRoutes#module:adminRoutes",
+        "unitKind": "module",
+        "name": "adminRoutes",
+        "qualifiedName": "adminRoutes",
+        "parentUnitId": null,
+        "startLine": 150,
+        "endLine": 785,
+        "isBehavioral": true,
+        "source": "\t\tconst auth = await requireAuth(req, env)\n\t\tawait requireAdminAccess(env, auth)\n\t})\n\t.get('/app/admin/user', async (res, env) => {\n\t\tconst q = res.query['q']\n\t\tif (typeof q !== 'string') {\n\t\t\treturn new Response('Missing query param', { status: 400 })\n\t\t}\n\t\tconst userRow = await requireUser(env, q)\n\t\tconst db = createPostgresConnectionPool(env, '/app/admin/user')\n\t\ttry {\n\t\t\tconst memberships = await db\n\t\t\t\t.selectFrom('group_user')\n\t\t\t\t.innerJoin('group', 'group.id', 'group_user.groupId')\n\t\t\t\t.where('group_user.userId', '=', userRow.id)\n\t\t\t\t.select(['group.id', 'group.name', 'group.isDeleted', 'group_user.role'])\n\t\t\t\t.execute()\n\t\t\tconst files = await db\n\t\t\t\t.selectFrom('file')\n\t\t\t\t.leftJoin('group_file', 'group_file.fileId', 'file.id')\n\t\t\t\t.where('file.isDeleted', '=', false)\n\t\t\t\t.where((eb) =>\n\t\t\t\t\teb.or([\n\t\t\t\t\t\teb('file.ownerId', '=', userRow.id),\n\t\t\t\t\t\teb(\n\t\t\t\t\t\t\t'group_file.groupId',\n\t\t\t\t\t\t\t'in',\n\t\t\t\t\t\t\tmemberships.length ? memberships.map((m) => m.id) : ['']\n\t\t\t\t\t\t),\n\t\t\t\t\t])\n\t\t\t\t)\n\t\t\t\t// distinctOn dedupes before the limit is applied, so a file matching both the owner\n\t\t\t\t// clause and multiple group memberships (join fanout) still only counts once against\n\t\t\t\t// the 500 cap.\n\t\t\t\t.distinctOn('file.id')\n\t\t\t\t.orderBy('file.id')\n\t\t\t\t.selectAll('file')\n\t\t\t\t.limit(500)\n\t\t\t\t.execute()\n\t\t\treturn json({ user: userRow, memberships, files })\n\t\t} finally {\n\t\t\tawait db.destroy()\n\t\t}\n\t})\n\t.get('/app/admin/outbox', async (res, env) => {\n\t\tconst db = createPostgresConnectionPool(env, '/app/admin/outbox')\n\t\ttry {\n\t\t\tconst stats = await db\n\t\t\t\t.selectFrom('effect_outbox')\n\t\t\t\t.select((eb) => [\n\t\t\t\t\teb.fn.countAll<number>().filterWhere('attempts', '<', MAX_ATTEMPTS).as('pending'),\n\t\t\t\t\teb.fn.countAll<number>().filterWhere('attempts', '>=', MAX_ATTEMPTS).as('parked'),\n\t\t\t\t\teb.fn.min('createdAt').filterWhere('attempts', '<', MAX_ATTEMPTS).as('oldestPending'),\n\t\t\t\t])\n\t\t\t\t.executeTakeFirstOrThrow()\n\t\t\tconst result: AdminOutboxStatsResponseBody = {\n\t\t\t\toutbox: {\n\t\t\t\t\tpending: Number(stats.pending),\n\t\t\t\t\tparked: Number(stats.parked),\n\t\t\t\t\toldestPendingAgeSeconds: stats.oldestPending\n\t\t\t\t\t\t? Math.round((Date.now() - new Date(stats.oldestPending).getTime()) / 1000)\n\t\t\t\t\t\t: null,\n\t\t\t\t},\n\t\t\t}\n\t\t\treturn json(result)\n\t\t} finally {\n\t\t\tawait db.destroy()\n\t\t}\n\t})\n\t// Up to 100 outbox rows for manual inspection. Batches the current 'file' row per file-table\n\t// entity in one query (rather than N+1) so the operator can compare payload vs. live state\n\t// without a separate lookup per row.\n\t.get('/app/admin/outbox/rows', async (_res, env) => {\n\t\tconst db = createPostgresConnectionPool(env, '/app/admin/outbox/rows')\n\t\ttry {\n\t\t\t// Pending rows first, then parked, so old parked rows can't crowd new pending rows out\n\t\t\t// of the 100-row cap.\n\t\t\tconst rows = await db\n\t\t\t\t.selectFrom('effect_outbox')\n\t\t\t\t.selectAll()\n\t\t\t\t.orderBy(sql`(\"attempts\" >= ${sql.raw(String(MAX_ATTEMPTS))})`)\n\t\t\t\t.orderBy('id')\n\t\t\t\t.limit(100)\n\t\t\t\t.execute()\n\n\t\t\tconst fileIds = [\n\t\t\t\t...new Set(rows.filter((r) => r.tableName === 'file').map((r) => r.entityId)),\n\t\t\t]\n\t\t\tconst currentFiles = fileIds.length\n\t\t\t\t? await db.selectFrom('file').where('id', 'in', fileIds).selectAll().execute()\n\t\t\t\t: []\n\t\t\tconst currentFileById = new Map(currentFiles.map((f) => [f.id, f]))\n\n\t\t\tconst now = Date.now()\n\t\t\tconst result: AdminOutboxRowsResponseBody = {\n\t\t\t\trows: rows.map((row) => ({\n\t\t\t\t\t...row,\n\t\t\t\t\tcreatedAt: row.createdAt.toISOString(),\n\t\t\t\t\tnextRetryAt: row.nextRetryAt ? row.nextRetryAt.toISOString() : null,\n\t\t\t\t\tageSeconds: Math.round((now - row.createdAt.getTime()) / 1000),\n\t\t\t\t\tparked: row.attempts >= MAX_ATTEMPTS,\n\t\t\t\t\tcurrentEntity:\n\t\t\t\t\t\trow.tableName === 'file' ? (currentFileById.get(row.entityId) ?? null) : null,\n\t\t\t\t})),\n\t\t\t}\n\t\t\treturn json(result)\n\t\t} finally {\n\t\t\tawait db.destroy()\n\t\t}\n\t})\n\t.post('/app/admin/outbox/:id/retry', async (res, env) => {\n\t\tconst id = Number(res.params.id)\n\t\tif (Number.isNaN(id)) {\n\t\t\tthrow new StatusError(400, 'id must be numeric')\n\t\t}\n\n\t\tconst db = createPostgresConnectionPool(env, '/app/admin/outbox/retry')\n\t\tlet numUpdatedRows: bigint\n\t\ttry {\n\t\t\tconst result = await db\n\t\t\t\t.updateTable('effect_outbox')\n\t\t\t\t.set({ attempts: 0, nextRetryAt: null })\n\t\t\t\t.where('id', '=', id)\n\t\t\t\t.executeTakeFirst()\n\t\t\tnumUpdatedRows = result.numUpdatedRows\n\t\t} finally {\n\t\t\tawait db.destroy()\n\t\t}\n\t\t// The drain (or another operator) may have deleted the row concurrently.\n\t\tif (numUpdatedRows === 0n) {\n\t\t\tthrow new StatusError(404, `Outbox row ${id} not found`)\n\t\t}\n\t\t// Best-effort nudge: the reset already committed, so a poke failure must not 500 this\n\t\t// request; the sweep alarm picks the row up within 30s regardless.\n\t\ttry {\n\t\t\tawait getFileEffectProcessor(env).poke()\n\t\t} catch (e) {\n\t\t\tconsole.error(`Failed to poke effect processor after resetting outbox row ${id}`, e)\n\t\t}\n\t\treturn json({ ok: true })\n\t})\n\t.post('/app/admin/outbox/:id/delete', async (res, env) => {\n\t\tconst id = Number(res.params.id)\n\t\tif (Number.isNaN(id)) {\n\t\t\tthrow new StatusError(400, 'id must be numeric')\n\t\t}\n\n\t\tconst db = createPostgresConnectionPool(env, '/app/admin/outbox/delete')\n\t\tlet numDeletedRows: bigint\n\t\ttry {\n\t\t\tconst result = await db.deleteFrom('effect_outbox').where('id', '=', id).executeTakeFirst()\n\t\t\tnumDeletedRows = result.numDeletedRows\n\t\t} finally {\n\t\t\tawait db.destroy()\n\t\t}\n\t\t// The drain (or another operator) may have already deleted the row.\n\t\tif (numDeletedRows === 0n) {\n\t\t\tthrow new StatusError(404, `Outbox row ${id} not found`)\n\t\t}\n\t\treturn json({ ok: true })\n\t})\n\t// Maps a durable object id or room slug to the room's activity signals. The id is a one-way\n\t// hash of the room name, but the room object stores its own identity, so it is asked directly —\n\t// a never-initialized id resolves to null. A slug (anything that isn't 64-char hex) is hashed\n\t// forward via idFromName. The brief wake is storage-read only; no room boot. Persist history\n\t// comes from the version-cache bucket: one timestamped snapshot per persist, so save cadence\n\t// separates an actively edited room from a parked tab holding a socket open.\n\t.get('/app/admin/resolve-do-id/:objectIdOrSlug', async (res, env) => {\n\t\tconst param = res.params.objectIdOrSlug\n\t\tlet objectId: string\n\t\tif (/^[0-9a-f]{64}$/.test(param)) {\n\t\t\tobjectId = param\n\t\t} else if (/^[0-9a-fA-F]{16,}$/.test(param)) {\n\t\t\t// hex is a subset of the slug charset — without this, a truncated or uppercase id would\n\t\t\t// hash as a slug and report a confident \"never initialized\"\n\t\t\tthrow new StatusError(\n\t\t\t\t400,\n\t\t\t\t'looks like a truncated or uppercase durable object id — paste the full 64-char lowercase hex'\n\t\t\t)\n\t\t} else if (/^[a-zA-Z0-9_-]+$/.test(param)) {\n\t\t\tobjectId = getRoomDurableObjectId(env, param).toString()\n\t\t} else {\n\t\t\tthrow new StatusError(400, 'pass a 64-char hex durable object id or a room slug')\n\t\t}\n\t\tlet roomDo: ReturnType<typeof getRoomDurableObjectById>\n\t\ttry {\n\t\t\t// idFromString rejects hex that fails the namespace checksum (garbage, or an id copied\n\t\t\t// from another durable object class)\n\t\t\troomDo = getRoomDurableObjectById(env, objectId)\n\t\t} catch {\n\t\t\tthrow new StatusError(400, 'not a valid durable object id for the file namespace')\n\t\t}\n\t\tconst info = await roomDo.__admin__getDocumentInfo()\n\t\tif (!info) return json({ objectId, match: null, history: null })\n\n\t\t// Stream the stats instead of collecting objects, so any number of snapshots fits. Keys are\n\t\t// ISO timestamps (oldest first); min/max tracking keeps the newest save correct either way.\n\t\tconst prefix = `${getR2KeyForRoom({ slug: info.slug, isApp: info.isApp })}/`\n\t\tlet saves = 0\n\t\tlet totalBytes = 0\n\t\tlet firstAt: number | null = null\n\t\tlet lastAt: number | null = null\n\t\tlet latestSize: number | null = null\n\t\tlet cursor: string | undefined\n\t\tlet pages = 0\n\t\tlet listTruncated = false\n\t\tdo {\n\t\t\tconst page = await env.ROOMS_HISTORY_EPHEMERAL.list({ prefix, cursor })\n\t\t\tfor (const obj of page.objects) {\n\t\t\t\tsaves++\n\t\t\t\ttotalBytes += obj.size\n\t\t\t\tconst t = obj.uploaded.getTime()\n\t\t\t\tif (firstAt === null || t < firstAt) firstAt = t\n\t\t\t\tif (lastAt === null || t > lastAt) {\n\t\t\t\t\tlastAt = t\n\t\t\t\t\tlatestSize = obj.size\n\t\t\t\t}\n\t\t\t}\n\t\t\tcursor = page.truncated ? page.cursor : undefined\n\t\t\t// subrequest backstop: 500 pages = 500k snapshots, far beyond any real room\n\t\t\tif (++pages >= 500 && cursor) {\n\t\t\t\tlistTruncated = true\n\t\t\t\tbreak\n\t\t\t}\n\t\t} while (cursor)\n\n\t\treturn json({\n\t\t\tobjectId,\n\t\t\tmatch: info,\n\t\t\thistory: {\n\t\t\t\tsaves,\n\t\t\t\tfirstSaveAt: firstAt !== null ? new Date(firstAt).toISOString() : null,\n\t\t\t\tlastSaveAt: lastAt !== null ? new Date(lastAt).toISOString() : null,\n\t\t\t\tavgSecondsBetweenSaves:\n\t\t\t\t\tsaves > 1 && firstAt !== null && lastAt !== null\n\t\t\t\t\t\t? Math.round((lastAt - firstAt) / 1000 / (saves - 1))\n\t\t\t\t\t\t: null,\n\t\t\t\tlatestSizeBytes: latestSize,\n\t\t\t\ttotalSizeBytes: totalBytes,\n\t\t\t\tlistTruncated,\n\t\t\t},\n\t\t})\n\t})\n\t// Force-closes every session on a file room with CLIENT_TOO_OLD. Shipped clients treat that\n\t// as terminal — no reconnect, a \"please reload\" screen — so a room held awake around the\n\t// clock by parked background tabs on stale bundles can finally hibernate. Resolve the id\n\t// first and check the verdict: this closes actively edited sessions just the same.\n\t.post('/app/admin/close-do-sessions/:objectId', async (res, env) => {\n\t\tconst objectId = res.params.objectId\n\t\tif (!/^[0-9a-f]{64}$/.test(objectId)) {\n\t\t\tthrow new StatusError(400, 'objectId must be a 64-char lowercase hex string')\n\t\t}\n\t\tlet roomDo: ReturnType<typeof getRoomDurableObjectById>\n\t\ttry {\n\t\t\troomDo = getRoomDurableObjectById(env, objectId)\n\t\t} catch {\n\t\t\tthrow new StatusError(400, 'not a valid durable object id for the file namespace')\n\t\t}\n\t\treturn json(await roomDo.__admin__closeAllSessions())\n\t})\n\t.get('/app/admin/feature-flags', async (_req, env) => {\n\t\treturn json(await withResolvedAllowlistLabels(env, await getAllFeatureFlagValues(env)))\n\t})\n\t.post('/app/admin/feature-flags', async (req, env) => {\n\t\tconst body: any = await req.json()\n\t\tconst { flag, enabled, percentage, emails } = body\n\n\t\tif (typeof flag !== 'string') {\n\t\t\tthrow new StatusError(400, 'flag (string) is required')\n\t\t}\n\t\tif (enabled !== undefined && typeof enabled !== 'boolean') {\n\t\t\tthrow new StatusError(400, 'enabled must be a boolean')\n\t\t}\n\t\tif (\n\t\t\tpercentage !== undefined &&\n\t\t\t(typeof percentage !== 'number' || percentage < 0 || percentage > 100)\n\t\t) {\n\t\t\tthrow new StatusError(400, 'percentage must be a number between 0 and 100')\n\t\t}\n\n\t\tif (!FEATURE_FLAG_KEYS.includes(flag as FeatureFlagKey)) {\n\t\t\tthrow new StatusError(400, `Invalid flag. Must be one of: ${FEATURE_FLAG_KEYS.join(', ')}`)\n\t\t}\n\t\tconst flagKey = flag as FeatureFlagKey\n\n\t\t// A field that means nothing for this flag's type is refused rather than dropped. It used to be\n\t\t// dropped silently and still answered `{success: true, users: […]}`, so an admin could send an\n\t\t// allowlist to a percentage flag, be told it saved, and have nothing stored anywhere.\n\t\tconst type = getFeatureFlagType(env, flagKey)\n\t\tif (percentage !== undefined && type !== 'percentage') {\n\t\t\tthrow new StatusError(400, `\"${flagKey}\" is a ${type} flag; percentage does not apply to it`)\n\t\t}\n\t\tif (emails !== undefined && type !== 'allowlist') {\n\t\t\tthrow new StatusError(400, `\"${flagKey}\" is a ${type} flag; emails do not apply to it`)\n\t\t}\n\n\t\tlet update: FeatureFlagUpdate\n\t\tif (type === 'allowlist') {\n\t\t\tlet users: AllowlistEntry[] | undefined\n\t\t\tif (emails !== undefined) {\n\t\t\t\t// An allowlist is edited as emails and stored as user ids. Parsing before resolving means a\n\t\t\t\t// typo is rejected at the point someone can still fix it, rather than sitting in the list\n\t\t\t\t// looking like it grants access while matching nothing; resolving at save time means an email\n\t\t\t\t// with no tldraw account fails the save instead of being stored as an entry that can never\n\t\t\t\t// match.\n\t\t\t\tlet parsed: string[]\n\t\t\t\ttry {\n\t\t\t\t\tparsed = parseAllowlistEmails(emails)\n\t\t\t\t} catch (e) {\n\t\t\t\t\tthrow new StatusError(400, e instanceof Error ? e.message : String(e))\n\t\t\t\t}\n\t\t\t\tusers = await resolveAllowlistUsers(env, parsed)\n\t\t\t}\n\t\t\tupdate = { type, enabled, users }\n\t\t} else if (type === 'percentage') {\n\t\t\tupdate = { type, enabled, percentage }\n\t\t} else {\n\t\t\tupdate = { type, enabled }\n\t\t}\n\n\t\tawait setFeatureFlag(env, flagKey, update)\n\t\tconst { type: _type, ...stored } = update\n\t\treturn json({ success: true, flag, ...stored })\n\t})\n\t.post('/app/admin/create_legacy_file', async (_res, env) => {\n\t\tconst slug = uniqueId()\n\t\tawait getRoomDurableObject(env, slug).__admin__createLegacyRoom(slug)\n\t\treturn json({ slug })\n\t})\n\t.post('/app/admin/hard_delete_file/:fileId', async (res, env) => {\n\t\tconst fileId = res.params.fileId\n\t\tassert(typeof fileId === 'string', 'fileId is required')\n\n\t\tconst pg = createPostgresConnectionPool(env, '/app/admin/hard_delete_file')\n\t\tconst file = await pg.selectFrom('file').where('id', '=', fileId).selectAll().executeTakeFirst()\n\t\tif (!file) {\n\t\t\tif (await maybeHardDeleteLegacyFile({ id: fileId, env })) {\n\t\t\t\treturn new Response('deleted')\n\t\t\t} else {\n\t\t\t\treturn new Response('File not found', { status: 404 })\n\t\t\t}\n\t\t}\n\t\treturn await hardDeleteAppFile({ pg, file, env })\n\t})\n\t.post('/app/admin/undelete_file/:fileId', async (res, env) => {\n\t\tconst fileId = res.params.fileId\n\t\tassert(typeof fileId === 'string', 'fileId is required')\n\n\t\tconst pg = createPostgresConnectionPool(env, '/app/admin/undelete_file')\n\t\tconst outcome = await undeleteFile(pg, fileId)\n\t\tif (outcome.result === 'not_found') {\n\t\t\treturn new Response('File not found', { status: 404 })\n\t\t}\n\t\tif (outcome.result === 'not_deleted') {\n\t\t\treturn new Response('File is not deleted', { status: 400 })\n\t\t}\n\t\tif (outcome.result === 'group_deleted') {\n\t\t\treturn new Response('Owning workspace is deleted — restore the workspace first', {\n\t\t\t\tstatus: 409,\n\t\t\t})\n\t\t}\n\t\t// Best-effort nudge so the restore's effects land promptly; the sweep backstops it, so a\n\t\t// poke failure must not fail the request (the restore already committed; a retry would\n\t\t// just 400 with 'File is not deleted').\n\t\tawait getFileEffectProcessor(env)\n\t\t\t.poke()\n\t\t\t.catch(() => {})\n\t\treturn json({ success: true })\n\t})\n\t// Deleted files the user OWNS: legacy direct owner, their home workspace (group id = user\n\t// id), or a workspace where they hold the owner role. Mere memberships and guest files are\n\t// excluded — the per-row Undelete button restores files, so the list must only contain files\n\t// the user legitimately owns. Queried from Postgres because the synced store never surfaces\n\t// deleted files: the client filters on file.isDeleted, and the join rows that sync a file\n\t// (file_state, group_file) are removed on delete.\n\t.get('/app/admin/user/deleted_files', async (res, env) => {\n\t\tconst q = res.query['q']\n\t\tif (typeof q !== 'string') {\n\t\t\treturn new Response('Missing query param', { status: 400 })\n\t\t}\n\t\tconst userRow = await requireUser(env, q)\n\t\tconst pg = createPostgresConnectionPool(env, '/app/admin/user/deleted_files')\n\t\tconst files = await pg\n\t\t\t.selectFrom('file')\n\t\t\t.leftJoin('group', 'group.id', 'file.owningGroupId')\n\t\t\t.leftJoin('group_user', (join) =>\n\t\t\t\tjoin\n\t\t\t\t\t.onRef('group_user.groupId', '=', 'file.owningGroupId')\n\t\t\t\t\t.on('group_user.userId', '=', userRow.id)\n\t\t\t)\n\t\t\t.where('file.isDeleted', '=', true)\n\t\t\t// A deleted file whose owning workspace is also deleted can't be restored (undeleteFile\n\t\t\t// blocks it, see undeleteFile.ts) until the workspace is restored first, so hide it here.\n\t\t\t.where((eb) =>\n\t\t\t\teb.or([eb('group.isDeleted', '=', false), eb('file.owningGroupId', 'is', null)])\n\t\t\t)\n\t\t\t.where((eb) =>\n\t\t\t\teb.or([\n\t\t\t\t\teb('file.ownerId', '=', userRow.id),\n\t\t\t\t\teb('file.owningGroupId', '=', userRow.id),\n\t\t\t\t\teb(\n\t\t\t\t\t\t'file.owningGroupId',\n\t\t\t\t\t\t'in',\n\t\t\t\t\t\teb\n\t\t\t\t\t\t\t.selectFrom('group_user')\n\t\t\t\t\t\t\t.select('group_user.groupId')\n\t\t\t\t\t\t\t.where('group_user.userId', '=', userRow.id)\n\t\t\t\t\t\t\t.where('group_user.role', '=', 'owner')\n\t\t\t\t\t),\n\t\t\t\t])\n\t\t\t)\n\t\t\t.selectAll('file')\n\t\t\t.select(['group.name as workspaceName', 'group_user.role as workspaceRole'])\n\t\t\t.orderBy('file.updatedAt', 'desc')\n\t\t\t.execute()\n\t\treturn json(files)\n\t})\n\t.post('/app/admin/delete_user', async (res, env) => {\n\t\tconst q = res.query['q']\n\t\tif (typeof q !== 'string') {\n\t\t\treturn new Response('Missing query param', { status: 400 })\n\t\t}\n\t\tconst userRow = await requireUser(env, q)\n\n\t\tawait performUserDeletion(userRow, env)\n\n\t\treturn new Response('User deleted', { status: 200 })\n\t})\n\t.get('/app/admin/delete_user_sse', async (res, env) => {\n\t\tconst q = res.query['q']\n\t\tif (typeof q !== 'string') {\n\t\t\treturn new Response('Missing query param', { status: 400 })\n\t\t}\n\n\t\tconst userRow = await requireUser(env, q)\n\n\t\treturn new Response(\n\t\t\tnew ReadableStream({\n\t\t\t\tasync start(controller) {\n\t\t\t\t\ttry {\n\t\t\t\t\t\t// Helper function to send progress events\n\t\t\t\t\t\tconst sendProgress = (step: string, message: string, details?: any) => {\n\t\t\t\t\t\t\tconst event = {\n\t\t\t\t\t\t\t\ttype: 'progress',\n\t\t\t\t\t\t\t\tstep,\n\t\t\t\t\t\t\t\tmessage,\n\t\t\t\t\t\t\t\ttimestamp: Date.now(),\n\t\t\t\t\t\t\t\tdetails,\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t\tcontroller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify(event)}\\n\\n`))\n\t\t\t\t\t\t}\n\n\t\t\t\t\t\tsendProgress('starting', 'Beginning user deletion process...', { userId: userRow.id })\n\n\t\t\t\t\t\tawait performUserDeletion(userRow, env, sendProgress)\n\n\t\t\t\t\t\t// Send completion event\n\t\t\t\t\t\tconst completionEvent = {\n\t\t\t\t\t\t\ttype: 'complete',\n\t\t\t\t\t\t\tstep: 'finished',\n\t\t\t\t\t\t\tmessage: 'User deletion completed successfully',\n\t\t\t\t\t\t\ttimestamp: Date.now(),\n\t\t\t\t\t\t\tdetails: { userId: userRow.id },\n\t\t\t\t\t\t}\n\t\t\t\t\t\tcontroller.enqueue(\n\t\t\t\t\t\t\tnew TextEncoder().encode(`data: ${JSON.stringify(completionEvent)}\\n\\n`)\n\t\t\t\t\t\t)\n\t\t\t\t\t} catch (error) {\n\t\t\t\t\t\t// Send error event\n\t\t\t\t\t\tconst errorEvent = {\n\t\t\t\t\t\t\ttype: 'error',\n\t\t\t\t\t\t\tstep: 'error',\n\t\t\t\t\t\t\tmessage: error instanceof Error ? error.message : 'Unknown error occurred',\n\t\t\t\t\t\t\ttimestamp: Date.now(),\n\t\t\t\t\t\t\tdetails: { error: error instanceof Error ? error.stack : String(error) },\n\t\t\t\t\t\t}\n\t\t\t\t\t\tcontroller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify(errorEvent)}\\n\\n`))\n\t\t\t\t\t} finally {\n\t\t\t\t\t\tcontroller.close()\n\t\t\t\t\t}\n\t\t\t\t},\n\t\t\t}),\n\t\t\t{\n\t\t\t\theaders: {\n\t\t\t\t\t'Content-Type': 'text/event-stream',\n\t\t\t\t\t'Cache-Control': 'no-cache',\n\t\t\t\t\tConnection: 'keep-alive',\n\t\t\t\t\t'Access-Control-Allow-Origin': '*',\n\t\t\t\t\t'Access-Control-Allow-Headers': 'Cache-Control',\n\t\t\t\t},\n\t\t\t}\n\t\t)\n\t})\n\t// Read-only asset health report for a file: is each asset's object still in the uploads\n\t// bucket, and is it associated with the file? Explains files stuck in a zero-progress\n\t// association loop.\n\t.get('/app/admin/file-assets/:slug', async (res, env) => {\n\t\tconst slug = res.params.slug\n\t\tassert(typeof slug === 'string', 'slug is required')\n\n\t\tconst pg = createPostgresConnectionPool(env, '/app/admin/file-assets')\n\t\tconst file = await pg\n\t\t\t.selectFrom('file')\n\t\t\t.where('id', '=', slug)\n\t\t\t.select(['id', 'name', 'ownerId', 'owningGroupId', 'isDeleted', 'createSource'])\n\t\t\t.executeTakeFirst()\n\n\t\tconst snapshot = await getFileSnapshot(env, slug, true)\n\t\tif (!snapshot) {\n\t\t\tthrow new StatusError(404, `No persisted snapshot for ${slug}`)\n\t\t}\n\n\t\t// Mirrors how the association pass parses asset records (see associatePendingAssets)\n\t\tconst userContentUrl = env.USER_CONTENT_URL\n\t\tconst assets: Array<{\n\t\t\tassetId: string\n\t\t\tobjectName: string\n\t\t\tsrc: string\n\t\t\tfileIdMeta: string | null\n\t\t\tassociated: boolean\n\t\t\toldFormatUrl: boolean\n\t\t\tinBucket: boolean | null\n\t\t\tsizeBytes: number | null\n\t\t}> = []\n\t\tlet totalShapes = 0\n\t\tconst shapesByType: Record<string, number> = {}\n\t\t// Assets the association pass can never act on (bookmarks, non-http srcs, R2-invalid\n\t\t// object names). Counted instead of reported as missing uploads.\n\t\tlet external = 0\n\t\tfor (const { state } of snapshot.documents) {\n\t\t\tconst record = state as any\n\t\t\tif (record.typeName === 'shape') {\n\t\t\t\ttotalShapes++\n\t\t\t\tshapesByType[record.type] = (shapesByType[record.type] ?? 0) + 1\n\t\t\t\tcontinue\n\t\t\t}\n\t\t\tif (record.typeName !== 'asset') continue\n\t\t\tconst src = record.props?.src\n\t\t\tif (!src) continue\n\t\t\tconst objectName = getUploadObjectName(record)\n\t\t\tif (!objectName) {\n\t\t\t\texternal++\n\t\t\t\tcontinue\n\t\t\t}\n\t\t\tconst fileIdMeta = record.meta?.fileId ?? null\n\t\t\tconst associated = fileIdMeta === slug\n\t\t\tassets.push({\n\t\t\t\tassetId: record.id,\n\t\t\t\tobjectName,\n\t\t\t\tsrc,\n\t\t\t\tfileIdMeta,\n\t\t\t\tassociated,\n\t\t\t\toldFormatUrl:\n\t\t\t\t\tassociated &&\n\t\t\t\t\tsrc.startsWith('http') &&\n\t\t\t\t\t!!userContentUrl &&\n\t\t\t\t\t!src.startsWith(userContentUrl),\n\t\t\t\t// null until the head check settles; a failed check stays null so R2 flakiness\n\t\t\t\t// doesn't read as a confirmed-missing object\n\t\t\t\tinBucket: null,\n\t\t\t\tsizeBytes: null,\n\t\t\t})\n\t\t}\n\n\t\t// Bounded concurrency keeps us inside the worker's connection budget; persistent head\n\t\t// failures become warnings rather than failing the report\n\t\tconst warnings: string[] = []\n\t\tconst headQueue = new PQueue({ concurrency: 5 })\n\t\tawait headQueue.addAll(\n\t\t\tassets.map((asset) => async () => {\n\t\t\t\ttry {\n\t\t\t\t\tconst head = await retry(() => env.UPLOADS.head(asset.objectName), {\n\t\t\t\t\t\tattempts: 2,\n\t\t\t\t\t\twaitDuration: 500,\n\t\t\t\t\t})\n\t\t\t\t\tasset.inBucket = !!head\n\t\t\t\t\tasset.sizeBytes = head?.size ?? null\n\t\t\t\t} catch (e) {\n\t\t\t\t\twarnings.push(`head failed for ${asset.objectName}: ${e}`)\n\t\t\t\t}\n\t\t\t})\n\t\t)\n\n\t\t// Cross-check the asset table both ways: which fileId the DB thinks owns each referenced\n\t\t// object, and rows claimed by this file whose objects the snapshot no longer references\n\t\tconst referencedSet = new Set(assets.map((a) => a.objectName))\n\t\tconst [dbRowsForReferenced, rowsForThisFile] = await Promise.all([\n\t\t\treferencedSet.size > 0\n\t\t\t\t? pg\n\t\t\t\t\t\t.selectFrom('asset')\n\t\t\t\t\t\t.where('objectName', 'in', [...referencedSet])\n\t\t\t\t\t\t.select(['objectName', 'fileId'])\n\t\t\t\t\t\t.execute()\n\t\t\t\t: [],\n\t\t\tpg.selectFrom('asset').where('fileId', '=', slug).select(['objectName']).execute(),\n\t\t])\n\t\tconst dbFileIdByObjectName = new Map(dbRowsForReferenced.map((r) => [r.objectName, r.fileId]))\n\t\tconst orphaned = rowsForThisFile.filter((row) => !referencedSet.has(row.objectName)).length\n\n\t\t// Mirrors loadCreateSourceData: exists means seeding from this source would find content.\n\t\t// Readonly and snapshot prefixes need slug translation to check, so they report null (not\n\t\t// checked), as does a failed check.\n\t\tlet source: { raw: string; exists: boolean | null } | null = null\n\t\tif (file?.createSource) {\n\t\t\tconst raw = file.createSource\n\t\t\tconst [prefix, id] = raw.split('/')\n\t\t\tlet exists: boolean | null = null\n\t\t\ttry {\n\t\t\t\tif (raw === WELCOME_CREATE_SOURCE || prefix === LOCAL_FILE_PREFIX) {\n\t\t\t\t\texists = true\n\t\t\t\t} else if (prefix === FILE_PREFIX && id) {\n\t\t\t\t\texists = !!(await env.ROOMS.head(getR2KeyForRoom({ slug: id, isApp: true })))\n\t\t\t\t} else if (prefix === PUBLISH_PREFIX && id) {\n\t\t\t\t\texists = !!(await pg\n\t\t\t\t\t\t.selectFrom('file')\n\t\t\t\t\t\t.where('publishedSlug', '=', id)\n\t\t\t\t\t\t.where('published', '=', true)\n\t\t\t\t\t\t.select('id')\n\t\t\t\t\t\t.executeTakeFirst())\n\t\t\t\t} else if (prefix === ROOM_PREFIX && id) {\n\t\t\t\t\texists = !!(await env.ROOMS.head(getR2KeyForRoom({ slug: id, isApp: false })))\n\t\t\t\t}\n\t\t\t} catch (e) {\n\t\t\t\twarnings.push(`createSource check failed for ${raw}: ${e}`)\n\t\t\t\texists = null\n\t\t\t}\n\t\t\tsource = { raw, exists }\n\t\t}\n\n\t\tlet associated = 0\n\t\tlet oldFormatUrls = 0\n\t\tlet missingInBucket = 0\n\t\tlet headFailures = 0\n\t\tlet totalSizeBytes = 0\n\t\tlet largestSizeBytes = 0\n\t\tfor (const a of assets) {",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/adminRoutes.ts__adminRoutes#module:adminRoutes",
+          "fileId": "apps/dotcom/sync-worker/src/adminRoutes.ts__adminRoutes",
+          "unitKind": "module",
+          "name": "adminRoutes",
+          "qualifiedName": "adminRoutes",
+          "parentUnitId": null,
+          "startLine": 150,
+          "endLine": 785,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [
+            {
+              "name": "resolveAllowlistUsers",
+              "kind": "function",
+              "type": null,
+              "default": null,
+              "visibility": null,
+              "static": false
+            },
+            {
+              "name": "withResolvedAllowlistLabels",
+              "kind": "function",
+              "type": null,
+              "default": null,
+              "visibility": null,
+              "static": false
+            },
+            {
+              "name": "requireUser",
+              "kind": "function",
+              "type": null,
+              "default": null,
+              "visibility": null,
+              "static": false
+            },
+            {
+              "name": "maybeHardDeleteLegacyFile",
+              "kind": "function",
+              "type": null,
+              "default": null,
+              "visibility": null,
+              "static": false
+            },
+            {
+              "name": "hardDeleteAppFile",
+              "kind": "function",
+              "type": null,
+              "default": null,
+              "visibility": null,
+              "static": false
+            },
+            {
+              "name": "deleteUserFromAnalytics",
+              "kind": "function",
+              "type": null,
+              "default": null,
+              "visibility": null,
+              "static": false
+            },
+            {
+              "name": "performUserDeletion",
+              "kind": "function",
+              "type": null,
+              "default": null,
+              "visibility": null,
+              "static": false
+            },
+            {
+              "name": "performUserDeletion.sendProgress",
+              "kind": "function",
+              "type": null,
+              "default": null,
+              "visibility": null,
+              "static": false
+            },
+            {
+              "name": "fileStats.countRows",
+              "kind": "function",
+              "type": null,
+              "default": null,
+              "visibility": null,
+              "static": false
+            }
+          ],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Module containing the administrative route handler and its supporting user, file, analytics, and progress-reporting helpers.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "ba18a36dc2cc9c90249147915f884c63b7fb9745a004041556bf7f8d3111e7e3"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/adminRoutes.ts__maybeHardDeleteLegacyFile#function:maybeHardDeleteLegacyFile",
+        "unitKind": "function",
+        "name": "maybeHardDeleteLegacyFile",
+        "qualifiedName": "maybeHardDeleteLegacyFile",
+        "parentUnitId": null,
+        "startLine": 786,
+        "endLine": 788,
+        "isBehavioral": true,
+        "source": "\t\t\tif (a.associated) associated++\n\t\t\tif (a.oldFormatUrl) oldFormatUrls++\n\t\t\tif (a.inBucket === false) missingInBucket++",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/adminRoutes.ts__maybeHardDeleteLegacyFile#function:maybeHardDeleteLegacyFile",
+          "fileId": "apps/dotcom/sync-worker/src/adminRoutes.ts__maybeHardDeleteLegacyFile",
+          "unitKind": "function",
+          "name": "maybeHardDeleteLegacyFile",
+          "qualifiedName": "maybeHardDeleteLegacyFile",
+          "parentUnitId": null,
+          "startLine": 786,
+          "endLine": 788,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [
+            "The associated counter is incremented for each item whose associated property is truthy.",
+            "The old-format URL counter is incremented for each item whose oldFormatUrl property is truthy.",
+            "The missing-in-bucket counter is incremented only for items whose inBucket property is strictly false."
+          ],
+          "invariants": [
+            "The missing-in-bucket count is not incremented for undefined, null, or other falsy values of inBucket."
+          ],
+          "edgeCases": [
+            "An item with associated set to a falsy value does not increment the associated counter.",
+            "An item with oldFormatUrl set to a falsy value does not increment the old-format URL counter.",
+            "An item whose inBucket value is absent or truthy does not increment the missing-in-bucket counter."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [
+            "Local associated counter is incremented conditionally.",
+            "Local oldFormatUrls counter is incremented conditionally.",
+            "Local missingInBucket counter is incremented when inBucket is strictly false."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Conditionally handles a legacy file based on the file's metadata and tracks the associated, legacy-format, and missing-in-bucket classifications observed during processing.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "ce1337c6d52531116eb370aaa483aa00d8aee65355fcecf21cbcf3a7952bc2ca"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/adminRoutes.ts__hardDeleteAppFile#function:hardDeleteAppFile",
+        "unitKind": "function",
+        "name": "hardDeleteAppFile",
+        "qualifiedName": "hardDeleteAppFile",
+        "parentUnitId": null,
+        "startLine": 790,
+        "endLine": 829,
+        "isBehavioral": true,
+        "source": "\t\t\tif (a.sizeBytes !== null) {\n\t\t\t\ttotalSizeBytes += a.sizeBytes\n\t\t\t\tlargestSizeBytes = Math.max(largestSizeBytes, a.sizeBytes)\n\t\t\t}\n\t\t}\n\n\t\tconst report: AdminFileAssetsResponseBody = {\n\t\t\tfile: file ?? null,\n\t\t\tsource,\n\t\t\tshapes: { total: totalShapes, byType: shapesByType },\n\t\t\tassets: {\n\t\t\t\t// Every asset record in the snapshot; the upload-oriented counts below exclude\n\t\t\t\t// the `external` ones\n\t\t\t\ttotal: assets.length + external,\n\t\t\t\tassociated,\n\t\t\t\tpending: assets.length - associated,\n\t\t\t\texternal,\n\t\t\t\toldFormatUrls,\n\t\t\t\tmissingInBucket,\n\t\t\t\theadFailures,\n\t\t\t\ttotalSizeBytes,\n\t\t\t\tlargestSizeBytes,\n\t\t\t\tproblems: assets\n\t\t\t\t\t.filter((a) => !a.associated || a.inBucket !== true)\n\t\t\t\t\t.map((a) => ({\n\t\t\t\t\t\tassetId: a.assetId,\n\t\t\t\t\t\tobjectName: a.objectName,\n\t\t\t\t\t\tsrc: a.src,\n\t\t\t\t\t\tfileIdMeta: a.fileIdMeta,\n\t\t\t\t\t\tinBucket: a.inBucket,\n\t\t\t\t\t\tdbRow: dbFileIdByObjectName.has(a.objectName)\n\t\t\t\t\t\t\t? { fileId: dbFileIdByObjectName.get(a.objectName)! }\n\t\t\t\t\t\t\t: null,\n\t\t\t\t\t})),\n\t\t\t},\n\t\t\tdbRows: { forThisFile: rowsForThisFile.length, orphaned },\n\t\t\twarnings,\n\t\t}\n\t\treturn json(report)\n\t})",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/adminRoutes.ts__hardDeleteAppFile#function:hardDeleteAppFile",
+          "fileId": "apps/dotcom/sync-worker/src/adminRoutes.ts__hardDeleteAppFile",
+          "unitKind": "function",
+          "name": "hardDeleteAppFile",
+          "qualifiedName": "hardDeleteAppFile",
+          "parentUnitId": null,
+          "startLine": 790,
+          "endLine": 829,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Performs the hard-deletion operation for an application file. The available source excerpt does not expose its callable surface or detailed behavioral guarantees.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "30bce67212f13914fe4c0077e4208dcd88888087f67ce1fa0524aa3ccf17a04a"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/adminRoutes.ts__deleteUserFromAnalytics#function:deleteUserFromAnalytics",
+        "unitKind": "function",
+        "name": "deleteUserFromAnalytics",
+        "qualifiedName": "deleteUserFromAnalytics",
+        "parentUnitId": null,
+        "startLine": 831,
+        "endLine": 877,
+        "isBehavioral": true,
+        "source": "\t// perf reports, migration bugs, and support threads without anyone having to open it — and\n\t// without putting anything a user typed into the report. Read AdminFileStatsResponseBody\n\t// before adding a field: staying content-free is the point of this endpoint.\n\t.get('/app/admin/file-stats/:slug', async (res, env) => {\n\t\tconst slug = res.params.slug\n\t\tassert(typeof slug === 'string', 'slug is required')\n\n\t\tconst warnings: string[] = []\n\t\tconst pg = createPostgresConnectionPool(env, '/app/admin/file-stats')\n\t\tconst [fileRow, snapshot, head] = await Promise.all([\n\t\t\tpg\n\t\t\t\t.selectFrom('file')\n\t\t\t\t.where('id', '=', slug)\n\t\t\t\t.select([\n\t\t\t\t\t'ownerId',\n\t\t\t\t\t'owningGroupId',\n\t\t\t\t\t'createdAt',\n\t\t\t\t\t'updatedAt',\n\t\t\t\t\t'isDeleted',\n\t\t\t\t\t'isEmpty',\n\t\t\t\t\t'published',\n\t\t\t\t\t'shared',\n\t\t\t\t\t'sharedLinkType',\n\t\t\t\t\t'createSource',\n\t\t\t\t])\n\t\t\t\t.executeTakeFirst(),\n\t\t\tgetFileSnapshot(env, slug, true),\n\t\t\tenv.ROOMS.head(getR2KeyForRoom({ slug, isApp: true })).catch((e) => {\n\t\t\t\t// Label only: an R2 error stringifies to the object key, which names the board\n\t\t\t\tconsole.error('file-stats snapshot head failed', e)\n\t\t\t\twarnings.push('snapshot head failed')\n\t\t\t\treturn null\n\t\t\t}),\n\t\t])\n\t\tif (!snapshot) {\n\t\t\tthrow new StatusError(404, `No persisted snapshot for ${slug}`)\n\t\t}\n\n\t\tconst summary = summarizeSnapshotDocuments(snapshot.documents)\n\n\t\t// file_visitor, comment_thread, and comment all have a fileId index. file_state is\n\t\t// deliberately not counted here: its primary key is (userId, fileId), so counting by fileId\n\t\t// would sequentially scan the whole table.\n\t\tconst countRows = async (\n\t\t\tlabel: string,\n\t\t\tquery: Promise<{ count: number | string | bigint } | undefined>\n\t\t) => {",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/adminRoutes.ts__deleteUserFromAnalytics#function:deleteUserFromAnalytics",
+          "fileId": "apps/dotcom/sync-worker/src/adminRoutes.ts__deleteUserFromAnalytics",
+          "unitKind": "function",
+          "name": "deleteUserFromAnalytics",
+          "qualifiedName": "deleteUserFromAnalytics",
+          "parentUnitId": null,
+          "startLine": 831,
+          "endLine": 877,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Deletes a user's analytics data according to the function's analytics-retention contract. The available source context does not expose its signature or observable implementation details.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "062d0013f5f2c842d35eb0b514d266015568056b151bba7115f002c9400f18db"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/adminRoutes.ts__performUserDeletion#function:performUserDeletion",
+        "unitKind": "function",
+        "name": "performUserDeletion",
+        "qualifiedName": "performUserDeletion",
+        "parentUnitId": null,
+        "startLine": 879,
+        "endLine": 982,
+        "isBehavioral": true,
+        "source": "\t\t\t\treturn Number((await query)?.count ?? 0)\n\t\t\t} catch (e) {\n\t\t\t\t// Label only: a query error can carry table, column, and parameter detail\n\t\t\t\tconsole.error(`file-stats ${label} count failed`, e)\n\t\t\t\twarnings.push(`${label} count failed`)\n\t\t\t\treturn 0\n\t\t\t}\n\t\t}\n\t\tconst [visitors, commentThreads, comments] = await Promise.all([\n\t\t\tcountRows(\n\t\t\t\t'file_visitor',\n\t\t\t\tpg\n\t\t\t\t\t.selectFrom('file_visitor')\n\t\t\t\t\t.where('fileId', '=', slug)\n\t\t\t\t\t.select((eb) => eb.fn.countAll<number>().as('count'))\n\t\t\t\t\t.executeTakeFirst()\n\t\t\t),\n\t\t\tcountRows(\n\t\t\t\t'comment_thread',\n\t\t\t\tpg\n\t\t\t\t\t.selectFrom('comment_thread')\n\t\t\t\t\t.where('fileId', '=', slug)\n\t\t\t\t\t.where('isDeleted', '=', false)\n\t\t\t\t\t.select((eb) => eb.fn.countAll<number>().as('count'))\n\t\t\t\t\t.executeTakeFirst()\n\t\t\t),\n\t\t\tcountRows(\n\t\t\t\t'comment',\n\t\t\t\tpg\n\t\t\t\t\t.selectFrom('comment')\n\t\t\t\t\t.where('fileId', '=', slug)\n\t\t\t\t\t.where('isDeleted', '=', false)\n\t\t\t\t\t.select((eb) => eb.fn.countAll<number>().as('count'))\n\t\t\t\t\t.executeTakeFirst()\n\t\t\t),\n\t\t])\n\n\t\tconst schema = snapshot.schema as\n\t\t\t| { schemaVersion?: number; sequences?: Record<string, number> }\n\t\t\t| undefined\n\t\tconst createSourceKind = fileRow?.createSource?.split('/')[0] ?? null\n\n\t\tconst { recordsByTypeName, ...snapshotStats } = summary\n\t\tconst stats: AdminFileStatsResponseBody = {\n\t\t\tfile: fileRow\n\t\t\t\t? {\n\t\t\t\t\t\townerType: fileRow.ownerId ? 'user' : fileRow.owningGroupId ? 'group' : 'none',\n\t\t\t\t\t\tcreatedAt: fileRow.createdAt,\n\t\t\t\t\t\tupdatedAt: fileRow.updatedAt,\n\t\t\t\t\t\tisDeleted: fileRow.isDeleted,\n\t\t\t\t\t\tisEmpty: fileRow.isEmpty,\n\t\t\t\t\t\tpublished: fileRow.published,\n\t\t\t\t\t\tshared: fileRow.shared,\n\t\t\t\t\t\tsharedLinkType: fileRow.sharedLinkType,\n\t\t\t\t\t\tcreateSourceKind,\n\t\t\t\t\t}\n\t\t\t\t: null,\n\t\t\tsnapshot: {\n\t\t\t\tsizeBytes: head?.size ?? null,\n\t\t\t\tclock: snapshot.clock ?? null,\n\t\t\t\tdocumentClock: snapshot.documentClock ?? null,\n\t\t\t\ttombstones: Object.keys(snapshot.tombstones ?? {}).length,\n\t\t\t\trecords: snapshot.documents.length,\n\t\t\t\trecordsByTypeName,\n\t\t\t\tschemaVersion: schema?.schemaVersion ?? null,\n\t\t\t\tsequences: schema?.sequences ?? null,\n\t\t\t},\n\t\t\t...snapshotStats,\n\t\t\tcollaboration: { visitors, commentThreads, comments },\n\t\t\twarnings,\n\t\t}\n\t\treturn json(stats)\n\t})\n\t.get('/app/admin/download-tldr/:fileSlug', async (res, env) => {\n\t\tconst fileSlug = res.params.fileSlug\n\t\tassert(typeof fileSlug === 'string', 'fileSlug is required')\n\t\treturn await returnFileSnapshot(env, fileSlug, true)\n\t})\n\t.get('/app/admin/download-legacy-tldr/:fileSlug', async (res, env) => {\n\t\tconst fileSlug = res.params.fileSlug\n\t\tassert(typeof fileSlug === 'string', 'fileSlug is required')\n\t\treturn await returnFileSnapshot(env, fileSlug, false)\n\t})\n\t// The current welcome template (the file new workspaces fork their first file from), or\n\t// null when none is set and the committed default is used. Also reports whether the marked\n\t// file is still live and published: the resolver silently falls back to the default if it\n\t// isn't, so the admin needs to see a stale pointer rather than assume it's working. See\n\t// resolveWelcomeSnapshot.\n\t.get('/app/admin/welcome-template', async (_res, env) => {\n\t\tconst pg = createPostgresConnectionPool(env, '/app/admin/welcome-template')\n\t\tconst row = await pg.selectFrom('welcome_template').selectAll().executeTakeFirst()\n\t\tif (!row) return json(null)\n\t\tconst file = await pg\n\t\t\t.selectFrom('file')\n\t\t\t.where('id', '=', row.fileId)\n\t\t\t.select(['published', 'isDeleted'])\n\t\t\t.executeTakeFirst()\n\t\tconst live = !!file && !file.isDeleted && file.published\n\t\treturn json({ ...row, live })\n\t})\n\t// Mark a published file as the welcome template. We store its publishedSlug, so the file\n\t// must be published first; new workspaces then fork its published snapshot.\n\t.post('/app/admin/welcome-template', async (req, env) => {\n\t\tconst { fileId } = (await req.json()) as { fileId?: unknown }",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/adminRoutes.ts__performUserDeletion#function:performUserDeletion",
+          "fileId": "apps/dotcom/sync-worker/src/adminRoutes.ts__performUserDeletion",
+          "unitKind": "function",
+          "name": "performUserDeletion",
+          "qualifiedName": "performUserDeletion",
+          "parentUnitId": null,
+          "startLine": 879,
+          "endLine": 982,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Performs the deletion workflow for a user and coordinates the associated cleanup operations.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "a09b3ef8fc0c8953aa34f5a977e3b3d08a43b723a487e3cc66784bd36cb63a10"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/adminRoutes.ts__performUserDeletion.sendProgress#function:performUserDeletion.sendProgress",
+        "unitKind": "function",
+        "name": "sendProgress",
+        "qualifiedName": "performUserDeletion.sendProgress",
+        "parentUnitId": "apps/dotcom/sync-worker/src/adminRoutes.ts__adminRoutes#module:adminRoutes",
+        "startLine": 739,
+        "endLine": 747,
+        "isBehavioral": true,
+        "source": "\t\t\t\t\t\t.selectFrom('asset')\n\t\t\t\t\t\t.where('objectName', 'in', [...referencedSet])\n\t\t\t\t\t\t.select(['objectName', 'fileId'])\n\t\t\t\t\t\t.execute()\n\t\t\t\t: [],\n\t\t\tpg.selectFrom('asset').where('fileId', '=', slug).select(['objectName']).execute(),\n\t\t])\n\t\tconst dbFileIdByObjectName = new Map(dbRowsForReferenced.map((r) => [r.objectName, r.fileId]))\n\t\tconst orphaned = rowsForThisFile.filter((row) => !referencedSet.has(row.objectName)).length",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/adminRoutes.ts__performUserDeletion.sendProgress#function:performUserDeletion.sendProgress",
+          "fileId": "apps/dotcom/sync-worker/src/adminRoutes.ts__performUserDeletion.sendProgress",
+          "unitKind": "function",
+          "name": "sendProgress",
+          "qualifiedName": "performUserDeletion.sendProgress",
+          "parentUnitId": "apps/dotcom/sync-worker/src/adminRoutes.ts__adminRoutes#module:adminRoutes",
+          "startLine": 739,
+          "endLine": 747,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "This function is identified as the progress-reporting helper associated with performUserDeletion. The supplied source excerpt does not expose its callable surface or observable behavior.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "a0d3c73d2a1da26a7be797bc6b4e31007288f33ba6d5b7c39c4c62304aba6c93"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/adminRoutes.ts__fileStats.countRows#function:fileStats.countRows",
+        "unitKind": "function",
+        "name": "countRows",
+        "qualifiedName": "fileStats.countRows",
+        "parentUnitId": "apps/dotcom/sync-worker/src/adminRoutes.ts__adminRoutes#module:adminRoutes",
+        "startLine": 939,
+        "endLine": 950,
+        "isBehavioral": true,
+        "source": "\t\t\t\tdocumentClock: snapshot.documentClock ?? null,\n\t\t\t\ttombstones: Object.keys(snapshot.tombstones ?? {}).length,\n\t\t\t\trecords: snapshot.documents.length,\n\t\t\t\trecordsByTypeName,\n\t\t\t\tschemaVersion: schema?.schemaVersion ?? null,\n\t\t\t\tsequences: schema?.sequences ?? null,\n\t\t\t},\n\t\t\t...snapshotStats,\n\t\t\tcollaboration: { visitors, commentThreads, comments },\n\t\t\twarnings,\n\t\t}\n\t\treturn json(stats)",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/adminRoutes.ts__fileStats.countRows#function:fileStats.countRows",
+          "fileId": "apps/dotcom/sync-worker/src/adminRoutes.ts__fileStats.countRows",
+          "unitKind": "function",
+          "name": "countRows",
+          "qualifiedName": "fileStats.countRows",
+          "parentUnitId": "apps/dotcom/sync-worker/src/adminRoutes.ts__adminRoutes#module:adminRoutes",
+          "startLine": 939,
+          "endLine": 950,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Provides a row-count value used in file statistics.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "810f7d3498520badd958cd41093806abeab402760ec6e0dc975f6507608b946b"
+        }
+      }
+    ]
+  },
+  "out": [
+    "apps/dotcom/sync-worker/src/outboxDrain.ts",
+    "apps/dotcom/sync-worker/src/types.ts",
+    "apps/dotcom/sync-worker/src/utils/tla/getAuth.ts",
+    "apps/dotcom/sync-worker/src/routes/tla/getFileSnapshot.ts",
+    "apps/dotcom/sync-worker/src/utils/durableObjects.ts",
+    "apps/dotcom/sync-worker/src/utils/featureFlags.ts",
+    "apps/dotcom/sync-worker/src/assetAssociation.ts",
+    "apps/dotcom/sync-worker/src/undeleteFile.ts",
+    "apps/dotcom/sync-worker/src/fileStats.ts",
+    "apps/dotcom/sync-worker/src/r2.ts",
+    "apps/dotcom/sync-worker/src/postgres.ts"
+  ],
+  "in": ["apps/dotcom/sync-worker/src/adminFeatureFlagRoutes.test.ts", "apps/dotcom/sync-worker/src/worker.ts"],
+  "externals": ["@tldraw/dotcom-shared", "@tldraw/utils", "@tldraw/worker-shared", "itty-router", "kysely", "p-queue"],
+  "impact": { "seeds": 10, "callers": 0, "impactedFiles": [] }
+}

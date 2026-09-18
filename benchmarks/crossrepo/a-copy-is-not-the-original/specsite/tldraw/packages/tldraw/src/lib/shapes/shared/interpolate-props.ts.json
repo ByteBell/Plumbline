@@ -1,0 +1,488 @@
+{
+  "schema": 2,
+  "kind": "file",
+  "repoName": "tldraw",
+  "file": {
+    "relativePath": "packages/tldraw/src/lib/shapes/shared/interpolate-props.ts",
+    "language": "typescript",
+    "sizeBytes": 1490,
+    "tokenCount": 373,
+    "model": "us.openai.gpt-5.6-luna",
+    "analysedAt": "2026-08-24T12:12:27.856Z",
+    "module": {
+      "purpose": "Provides shared interpolation logic for transitioning between tldraw draw-shape segment collections.",
+      "summary": "This module decodes vector paths from two collections of draw segments, normalizes their point counts by repeating each collection's final point, interpolates coordinates and optional depth values according to progress, and re-encodes the result as one freehand segment. It is a synchronous geometry utility used by shape interpolation workflows.",
+      "businessContext": "Supports smooth visual transitions for freehand drawing shapes in the tldraw editor. Failure can produce malformed or discontinuous shape animations.",
+      "classes": [],
+      "functions": ["interpolateSegments (~L4-49): Interpolates decoded points into one freehand segment."],
+      "keywords": [
+        "TLDrawShapeSegment",
+        "b64Vecs",
+        "VecModel",
+        "freehand interpolation",
+        "path decoding",
+        "path encoding",
+        "point normalization",
+        "coordinate lerp"
+      ],
+      "ontologyConcepts": [
+        "geometric interpolation",
+        "shape morphing",
+        "point correspondence",
+        "path encoding",
+        "fallback normalization"
+      ],
+      "businessEntities": ["draw shape", "shape segment", "vector point", "freehand path"],
+      "systemCapabilities": [
+        "Interpolate drawing geometry",
+        "Normalize segment point counts",
+        "Encode interpolated vector paths"
+      ],
+      "configDependencies": [],
+      "importsInternal": [],
+      "importsExternal": [
+        {
+          "spec": "@tldraw/editor",
+          "symbols": ["TLDrawShapeSegment", "VecModel", "b64Vecs", "lerp"],
+          "package": "@tldraw/editor",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 1 }
+        }
+      ],
+      "sideEffects": { "io": [], "network": [], "env": [], "fs": [], "process": [], "mutationOfArg": [] },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "interpolateSegments",
+          "shape": "interpolateSegments(startSegments: TLDrawShapeSegment[], endSegments: TLDrawShapeSegment[], progress: number): TLDrawShapeSegment[]",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "TLDrawShapeSegment",
+          "shape": "TLDrawShapeSegment[]",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        { "name": "VecModel", "shape": "VecModel[]", "resolvedRelativePath": null, "resolvedFileId": null },
+        {
+          "name": "b64Vecs.decodePoints",
+          "shape": "b64Vecs.decodePoints(segment.path, segment.dim)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "b64Vecs.encodePoints",
+          "shape": "b64Vecs.encodePoints(interpolatedPoints)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        { "name": "lerp", "shape": "lerp(start, end, progress)", "resolvedRelativePath": null, "resolvedFileId": null }
+      ],
+      "sectionMap": [
+        {
+          "name": "point extraction",
+          "intent": "Decode and flatten points from both input segment collections.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 12, "endLine": 18 }
+        },
+        {
+          "name": "point count normalization",
+          "intent": "Create equal-length point arrays using final-point fallbacks.",
+          "structureKind": "loop",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": "i < maxLength",
+          "terminationCondition": null,
+          "anchor": { "startLine": 24, "endLine": 28 }
+        },
+        {
+          "name": "depth interpolation",
+          "intent": "Interpolate depth only when both corresponding points define it.",
+          "structureKind": "branch",
+          "predicate": "pointsToUseEnd[k].z !== undefined && point.z !== undefined",
+          "branchOutcomes": ["both z values defined: interpolate z", "either z value undefined: retain default z"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 31, "endLine": 35 }
+        },
+        {
+          "name": "coordinate interpolation",
+          "intent": "Interpolate x and y coordinates for every normalized point.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 31, "endLine": 40 }
+        },
+        {
+          "name": "single-segment result",
+          "intent": "Encode interpolated points into one freehand segment.",
+          "structureKind": "io",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 42, "endLine": 49 }
+        }
+      ],
+      "representationFamily": "function-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "function",
+          "name": "interpolateSegments",
+          "signature": "export function interpolateSegments(\n\tstartSegments: TLDrawShapeSegment[],\n\tendSegments: TLDrawShapeSegment[],\n\tprogress: number\n): TLDrawShapeSegment[] {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "TLDrawShapeSegment[]",
+          "exported": true,
+          "anchor": { "startLine": 4, "endLine": 8 }
+        }
+      ],
+      "typeShapes": [],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "Both segment arrays are empty",
+          "handled": true,
+          "behavior": "maxLength is zero and the function returns one free segment with an empty encoded path.",
+          "anchor": { "startLine": 20, "endLine": 28 }
+        },
+        {
+          "inputShape": "One segment array decodes to no points while the other contains points",
+          "handled": false,
+          "behavior": "The fallback expression yields undefined points for the empty side, and interpolation can fail when reading point coordinates.",
+          "anchor": { "startLine": 25, "endLine": 39 }
+        },
+        {
+          "inputShape": "Input collections contain different numbers of points",
+          "handled": true,
+          "behavior": "The shorter collection repeats its final decoded point until both normalized arrays have equal length.",
+          "anchor": { "startLine": 20, "endLine": 28 }
+        },
+        {
+          "inputShape": "Corresponding points omit z",
+          "handled": true,
+          "behavior": "The interpolated point receives the default depth value 0.5 unless both z values are defined.",
+          "anchor": { "startLine": 32, "endLine": 35 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": "<",
+          "left": "i",
+          "right": "maxLength",
+          "inclusive": false,
+          "intent": "Processes indices from zero through the final normalized point.",
+          "anchor": { "startLine": 25, "endLine": 25 }
+        },
+        {
+          "operator": "!=",
+          "left": "pointsToUseEnd[k].z",
+          "right": "undefined",
+          "inclusive": false,
+          "intent": "Checks whether the ending point has a defined depth value using strict inequality.",
+          "anchor": { "startLine": 33, "endLine": 33 }
+        },
+        {
+          "operator": "!=",
+          "left": "point.z",
+          "right": "undefined",
+          "inclusive": false,
+          "intent": "Checks whether the starting point has a defined depth value using strict inequality.",
+          "anchor": { "startLine": 33, "endLine": 33 }
+        }
+      ],
+      "errorHandling": [],
+      "invariants": [
+        {
+          "kind": "invariant",
+          "description": "Both normalized point arrays contain maxLength entries before interpolation.",
+          "anchor": { "startLine": 20, "endLine": 28 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "The function always returns an array containing one freehand segment.",
+          "anchor": { "startLine": 43, "endLine": 48 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Coordinates are interpolated using the same progress value for both axes.",
+          "anchor": { "startLine": 36, "endLine": 39 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Depth defaults to 0.5 when either corresponding point lacks z.",
+          "anchor": { "startLine": 32, "endLine": 35 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "schema",
+          "description": "Decoded non-empty segment collections provide points with x and y coordinates.",
+          "anchor": { "startLine": 13, "endLine": 17 }
+        },
+        {
+          "kind": "caller",
+          "description": "Callers provide a progress value appropriate for the imported interpolation routine.",
+          "anchor": { "startLine": 4, "endLine": 8 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "Should an empty input collection be rejected or represented by repeated fallback points?",
+          "affects": "edge_cases and input validation",
+          "anchor": { "startLine": 25, "endLine": 27 },
+          "resolution": null
+        },
+        {
+          "question": "Are progress values outside the usual interpolation range intentionally supported?",
+          "affects": "interpolation semantics",
+          "anchor": { "startLine": 34, "endLine": 38 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "sync",
+        "reentrant": true,
+        "ordering": "deterministic",
+        "notes": "Uses only local arrays and deterministic decoding, interpolation, and encoding operations."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "interpolates-point-coordinates",
+          "scenario": "Two segments with matching point counts are interpolated at the requested progress.",
+          "given": [
+            "startSegments = [{ type: 'free', path: encodePoints([{ x: 0, y: 0 }]) }]",
+            "endSegments = [{ type: 'free', path: encodePoints([{ x: 10, y: 20 }]) }]",
+            "progress = 0.5"
+          ],
+          "when": "interpolateSegments(startSegments, endSegments, progress)",
+          "then": "The returned segment contains a point with x equal to 5 and y equal to 10.",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Guards linear interpolation of point coordinates."
+        },
+        {
+          "testId": "pads-shorter-point-list",
+          "scenario": "The start and end segments contain different numbers of points.",
+          "given": [
+            "startSegments = [{ type: 'free', path: encodePoints([{ x: 0, y: 0 }]) }]",
+            "endSegments = [{ type: 'free', path: encodePoints([{ x: 10, y: 10 }, { x: 20, y: 20 }]) }]",
+            "progress = 0"
+          ],
+          "when": "interpolateSegments(startSegments, endSegments, progress)",
+          "then": "The returned segment contains two points and the missing start point is the final available start point.",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins the contract for equalizing point-list lengths by repeating the final point."
+        },
+        {
+          "testId": "returns-single-free-segment",
+          "scenario": "Interpolation is performed over one or more input segments.",
+          "given": [
+            "startSegments = [{ type: 'free', path: encodePoints([{ x: 0, y: 0 }]) }]",
+            "endSegments = [{ type: 'free', path: encodePoints([{ x: 1, y: 1 }]) }]"
+          ],
+          "when": "interpolateSegments(startSegments, endSegments, 0.5)",
+          "then": "The result is an array containing exactly one segment whose type is 'free'.",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Guards the output representation independently of the number of input segments."
+        },
+        {
+          "testId": "defaults-missing-z",
+          "scenario": "Interpolated points do not provide z coordinates.",
+          "given": [
+            "startSegments = [{ type: 'free', path: encodePoints([{ x: 0, y: 0 }]) }]",
+            "endSegments = [{ type: 'free', path: encodePoints([{ x: 10, y: 10 }]) }]"
+          ],
+          "when": "interpolateSegments(startSegments, endSegments, 0.5)",
+          "then": "The returned point has z equal to 0.5.",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins the default depth value when either endpoint lacks z."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": ["editor geometry import", "interpolateSegments function"],
+      "moduleLevelCode": "import { TLDrawShapeSegment, VecModel, b64Vecs, lerp } from '@tldraw/editor'",
+      "exports": [{ "name": "interpolateSegments", "kind": "own", "fromSpec": null, "exportedAs": null }],
+      "importSymbolMap": [
+        { "symbol": "TLDrawShapeSegment", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "VecModel", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "b64Vecs", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "lerp", "module": "@tldraw/editor", "alias": null, "kind": "external" }
+      ],
+      "fileConstants": [],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/shared/interpolate-props.ts__interpolateSegments#function:interpolateSegments",
+        "unitKind": "function",
+        "name": "interpolateSegments",
+        "qualifiedName": "interpolateSegments",
+        "parentUnitId": null,
+        "startLine": 4,
+        "endLine": 49,
+        "isBehavioral": true,
+        "source": "export function interpolateSegments(\n\tstartSegments: TLDrawShapeSegment[],\n\tendSegments: TLDrawShapeSegment[],\n\tprogress: number\n): TLDrawShapeSegment[] {\n\tconst startPoints: VecModel[] = []\n\tconst endPoints: VecModel[] = []\n\n\t// Extract all points from startSegments and endSegments\n\tstartSegments.forEach((segment) =>\n\t\tstartPoints.push(...b64Vecs.decodePoints(segment.path, segment.dim))\n\t)\n\tendSegments.forEach((segment) =>\n\t\tendPoints.push(...b64Vecs.decodePoints(segment.path, segment.dim))\n\t)\n\n\tconst maxLength = Math.max(startPoints.length, endPoints.length)\n\tconst pointsToUseStart: VecModel[] = []\n\tconst pointsToUseEnd: VecModel[] = []\n\n\t// Ensure both arrays have the same length\n\tfor (let i = 0; i < maxLength; i++) {\n\t\tpointsToUseStart.push(startPoints[i] || startPoints[startPoints.length - 1])\n\t\tpointsToUseEnd.push(endPoints[i] || endPoints[endPoints.length - 1])\n\t}\n\n\t// Interpolate points\n\tconst interpolatedPoints = pointsToUseStart.map((point, k) => {\n\t\tlet z = 0.5\n\t\tif (pointsToUseEnd[k].z !== undefined && point.z !== undefined) {\n\t\t\tz = lerp(point.z, pointsToUseEnd[k].z as number, progress)\n\t\t}\n\t\treturn {\n\t\t\tx: lerp(point.x, pointsToUseEnd[k].x, progress),\n\t\t\ty: lerp(point.y, pointsToUseEnd[k].y, progress),\n\t\t\tz,\n\t\t}\n\t})\n\t// Return all interpolated points in a single segment\n\treturn [\n\t\t{\n\t\t\ttype: 'free',\n\t\t\tpath: b64Vecs.encodePoints(interpolatedPoints),\n\t\t},\n\t]\n}",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/shared/interpolate-props.ts__interpolateSegments#function:interpolateSegments",
+          "fileId": "packages/tldraw/src/lib/shapes/shared/interpolate-props.ts__interpolateSegments",
+          "unitKind": "function",
+          "name": "interpolateSegments",
+          "qualifiedName": "interpolateSegments",
+          "parentUnitId": null,
+          "startLine": 4,
+          "endLine": 49,
+          "signature": "export function interpolateSegments(\n\tstartSegments: TLDrawShapeSegment[],\n\tendSegments: TLDrawShapeSegment[],\n\tprogress: number\n): TLDrawShapeSegment[]",
+          "parameters": [
+            {
+              "name": "startSegments",
+              "type": "TLDrawShapeSegment[]",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "endSegments",
+              "type": "TLDrawShapeSegment[]",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            { "name": "progress", "type": "number", "default": null, "optional": false, "variadic": false, "order": 2 }
+          ],
+          "returnType": "TLDrawShapeSegment[]",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "Each segment path must be decodable by b64Vecs.decodePoints using its dimension metadata.",
+            "When either input produces points, both inputs must produce at least one point for interpolation to have defined behavior."
+          ],
+          "postconditions": [
+            "Returns an array containing exactly one segment.",
+            "The returned segment has type 'free'.",
+            "The returned path encodes one interpolated point for each position up to the longer decoded point array length.",
+            "Each output point contains x, y, and z coordinates."
+          ],
+          "invariants": [
+            "All input segments are flattened into a single point sequence before interpolation.",
+            "If one decoded point sequence is shorter, its final point is reused for missing positions.",
+            "When both corresponding points have defined z values, z is linearly interpolated; otherwise output z is 0.5."
+          ],
+          "edgeCases": [
+            "Both inputs contain no decoded points: returns one free segment whose path encodes an empty point array.",
+            "Inputs contain different numbers of decoded points: the shorter sequence is extended by repeating its final point.",
+            "Exactly one input contains no decoded points while the other contains points: interpolation attempts to access a missing point and throws a runtime TypeError.",
+            "Malformed or undecodable segment paths: errors from point decoding propagate because the function does not catch them.",
+            "Progress values outside the usual 0-to-1 range are passed directly to lerp without clamping."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [
+              "Runtime TypeError when one side has no decoded points and the other side has at least one point",
+              "Errors raised by b64Vecs.decodePoints or b64Vecs.encodePoints"
+            ],
+            "reverts": [],
+            "onInvalidInput": "No explicit validation or recovery is performed; runtime and dependency errors propagate.",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "b64Vecs.decodePoints", "source": null, "kind": "external" },
+            { "name": "lerp", "source": null, "kind": "external" },
+            { "name": "b64Vecs.encodePoints", "source": null, "kind": "external" }
+          ],
+          "symbolReferences": ["TLDrawShapeSegment", "VecModel", "b64Vecs"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Interpolates the decoded points from two collections of draw-shape segments at the specified progress and returns them as one freehand segment.",
+          "specLiterals": [
+            { "kind": "enum-value", "value": "free", "role": "The returned segment's required type." },
+            {
+              "kind": "magic-number",
+              "value": "0.5",
+              "role": "Fallback z coordinate when either corresponding point lacks a defined z value."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "interpolateSegments is called with progress 0.5.",
+              "then": "It returns exactly one segment of type 'free'; each coordinate is the linear midpoint of the corresponding start and end coordinates.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "interpolateSegments is called.",
+              "then": "The final start point is reused for every missing start position, and the result still contains one output point per position in the longer sequence.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "interpolateSegments is called.",
+              "then": "It returns one free segment encoding an empty point sequence.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "2e122246ae4a37943ea059d6ab67901c410e927e0fe6c829fb804914d2e31e83"
+        }
+      }
+    ]
+  },
+  "out": [],
+  "in": [
+    "packages/tldraw/src/lib/shapes/highlight/HighlightShapeUtil.tsx",
+    "packages/tldraw/src/lib/shapes/draw/DrawShapeUtil.tsx"
+  ],
+  "externals": ["@tldraw/editor"],
+  "impact": { "seeds": 1, "callers": 0, "impactedFiles": [] }
+}

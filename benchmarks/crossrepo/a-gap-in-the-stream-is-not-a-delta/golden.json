@@ -1,0 +1,56 @@
+{
+  "id": "xrepo-v6-17-a-gap-in-the-stream-is-not-a-delta-medium",
+  "question": "An incremental subscriber in one of these libraries is fed a running sequence of changes against a baseline it is assumed to hold. When the producer cannot honour that assumption - the subscriber joined late, the window it was tracking moved, the upstream restarted, the portion of the data it had asked for was narrowed and then widened again - what arrives is not a change against the baseline the subscriber holds but a change against a baseline it never saw. It applies it anyway, because nothing in the protocol distinguishes 'here is what changed' from 'you have missed something, start again': both are just the next batch. The result is a local view that no longer corresponds to any state the producer was ever in, and it stays wrong indefinitely, because every subsequent correct batch is applied on top of the corruption. The contract is that a stream of changes is only meaningful relative to a known baseline, so a subscriber must be able to detect that it has lost the baseline and must recover by re-reading the whole rather than by continuing to patch. Elsewhere in the folder the difference is explicit: one library's diff type carries, per record, whether the entry was added, changed or removed, and its constructor can be asked for the diff between two whole snapshots, so a recovery is expressible in the same vocabulary as an increment. Which files apply an increment against a baseline they may not hold, and which own the increment-versus-snapshot contract they have to be brought in line with?",
+  "anchor": {
+    "repo": "db",
+    "pinned_commit": "7f0fa36ff6d48b0494ed5f6a1223fd18c317e41f",
+    "fix_pr": "https://github.com/TanStack/db/pull/1756",
+    "pr_number": 1756,
+    "pr_title": "fix(db): harden incremental subset recovery",
+    "fix_merged": "2026-08-24",
+    "fix_merge_commit": "8f432ba226df",
+    "parent_is_buggy": true
+  },
+  "counts": {
+    "min_repos": 2,
+    "min_files": 5
+  },
+  "repo_commits": {
+    "db": "7f0fa36ff6d48b0494ed5f6a1223fd18c317e41f",
+    "tldraw": "5590d14d8edd4faab7dc1177b6e1adb28876fd23"
+  },
+  "expected": [
+    {
+      "repo": "db",
+      "knowledgeId": "659659a1-0515-4ae1-92a9-1961c8c10abe",
+      "files": [
+        "packages/db/src/collection/changes.ts",
+        "packages/db/src/collection/subscription.ts",
+        "packages/db/src/query/live-query-collection.ts",
+        "packages/db/src/query/live/collection-subscriber.ts"
+      ]
+    },
+    {
+      "repo": "tldraw",
+      "knowledgeId": "91b23c56-1aee-5c86-a34b-c66f8970d025",
+      "files": ["packages/store/src/lib/RecordsDiff.ts"]
+    }
+  ],
+  "grader_notes": {
+    "why_cross_repo": "ANCHOR (TanStack/db #1756, merged 2026-08-24 as 8f432ba226df, AFTER the pinned commit 7f0fa36ff6). Removed-line liveness at the pin: changes.ts 20/20 (100%), subscription.ts 59/69 (86%), live-query-collection.ts 1/1, collection-subscriber.ts 19/20 (95%). Citations: tldraw's RecordsDiff.ts is a diff that says per record whether it was added, updated or removed, - so 'you have missed something' and 'here is what changed' are expressible in one vocabulary rather than two.",
+    "verification_method": "(1) Mined from `pin..origin/main`, pin-is-ancestor True. (2) FOUR of the fix's ten source files are deliberately excluded from gold because they are already gold in xrepo-v6-1: query/live/collection-config-builder.ts, collection/sync.ts, electric-db-collection/src/electric.ts and trailbase-db-collection/src/trailbase.ts; db/src/query/effect.ts is excluded because it is gold in xrepo-v6-11 and types.ts because it is gold in xrepo-v6-1. What remains is the four files that carry the subscriber-side defect. (3) Citation paths confirmed at the pin and read. (4) Overlap check: 0 shared (repo,file) pairs after those exclusions. (5) Contract check: v6-1 is about a failed FIRST load being terminal; this is about a subscriber that has lost its baseline mid-stream.",
+    "difficulty_design": "Only 2 repositories, and the narrowest breadth of the set - the difficulty is entirely in-repo selection across four files in three different db subsystems, plus recognising that a diff type in a drawing library is the same contract. 5 files / 2 repos.",
+    "rejected_candidates": ""
+  },
+  "calibration": {
+    "probe": "claudecli_opus5_bare (Opus 5, Bash/Read/Grep/Glob over the pinned checkouts, sandbox-exec gold-blind, one fresh headless session)",
+    "date": "2026-09-10",
+    "recall": 0.8,
+    "precision": 0.118,
+    "returned": 34,
+    "gold": 5,
+    "cost_usd": 6.16,
+    "rule": "hard requires recall < 0.6; medium requires recall <= 0.8; above that the case is easy",
+    "label_from_probe": "medium"
+  }
+}

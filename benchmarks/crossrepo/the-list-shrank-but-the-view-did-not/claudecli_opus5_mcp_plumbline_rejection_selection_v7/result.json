@@ -1,0 +1,629 @@
+{
+  "arm": "claudecli_opus5_mcp_plumbline_rejection_selection_v7",
+  "contract": "A reactive projection of a collection must converge on its source in BOTH directions on every update: the update path must make the projection equal to the new collection, not merely assign each new item to a slot. Removals are as much a part of an update as insertions, so any slot whose source element is gone must be dropped in the same pass that overwrites surviving slots and appends new ones \u2014 however many elements disappear at once.",
+  "defect_location": {
+    "repo": "tldraw",
+    "summary": "UNCONFIRMED violator. What IS confirmed from verbatim source is the contract the violating update path must be brought in line with, and it is owned in two repositories that do not import one another. tldraw/packages/store/src/lib/IncrementalSetConstructor.ts:25-102 holds the additive-and-subtractive half: private _add records into this.diff.added (lines 91-102) and the remove path records into this.diff.removed, while get() at lines 71-82 returns { value: this.nextValue!, diff: this.diff! } \u2014 the builder tracks both directions as it goes and can still yield the whole set. react/packages/react-reconciler/src/ReactChildFiber.js holds the rendered half: after walking the new children slot by slot it reaches lines 1266-1268, '// We've reached the end of the new children. We can delete the rest.' -> deleteRemainingChildren(returnFiber, oldFiber), with the same drop applied at :1770 and :2031 \u2014 a keyed pass that removes the children whose keys are gone. Candidate violators were opened and all RULED OUT against source because each converges: jotai/src/vanilla/utils/splitAtom.ts:64-136 rebuilds atomList/keyList from scratch each pass; tldraw/packages/editor/src/lib/editor/derivations/parentsToChildren.ts:94-110 splices removed shapes and then compacts with arr.length = writeIdx; xyflow/packages/system/src/utils/store.ts:143-144 calls nodeLookup.clear(); parentLookup.clear() before re-adopting; db/packages/vue-db/src/useLiveQuery.ts:362-363 does internalData.length = 0 then push(...), db/packages/svelte-db/src/useLiveQuery.svelte.ts:380-381 reassigns internalData = [] then pushes, db/packages/solid-db/src/useLiveQuery.ts:348-350 uses reconcile(Array.from(...)), db/packages/react-db/src/useLiveQuery.ts:525-542 rebuilds data from a captured entries array; query/packages/vue-query/src/useQueries.ts:346 replaces state.value wholesale, query/packages/solid-query/src/useQueries.ts:232-244 resets the whole store on queries.length change, and query/packages/angular-query-experimental/src/inject-queries.ts:319-328 maps a fresh signal per result. The unshrinking projection therefore sits in one of the retrieved-but-unopened candidates ranked above \u2014 most plausibly the rendered collection primitives in primitives/packages/react/collection/src/collection.tsx and its sibling collection-legacy.tsx \u2014 and I am reporting that as a lead, not a verdict, because I did not read it."
+  },
+  "case_id": "xrepo-v6-21-the-list-shrank-but-the-view-did-not-medium",
+  "case_question": "A reactive projection of a collection in one of these libraries is maintained in place: when the underlying collection changes, the projection's existing slots are overwritten one by one and new slots are appended. Nothing removes slots. So the projection is correct whenever the collection grows or stays the same size and wrong whenever it shrinks - the tail of the previous, longer collection is still there, still reactive, and still rendered, and shrinking by more than one at a time leaves more than one stale entry behind. The bug is structural rather than arithmetic: the update path was written as 'assign each new item to a slot' rather than 'make the projection equal to the new collection'. The contract is that a projection must converge on the source in both directions, and that removals are as much a part of an update as insertions. Elsewhere in the folder that symmetry is explicit: one library's incremental builder records additions and removals as it goes and can still yield the whole, and another renders its collection through a keyed pass that drops the elements whose keys are gone. Which files update a projection without shrinking it, and which own the converge-in-both-directions contract they have to be brought in line with?",
+  "retrieved": 60,
+  "gold_counts": {
+    "min_repos": 3,
+    "min_files": 4
+  },
+  "gold_size": 4,
+  "gold_repo_count": 3,
+  "metrics": {
+    "recall@10": 0.25,
+    "recall@25": 0.25,
+    "recall@50": 0.25,
+    "recall@100": 0.25,
+    "precision@5": 0.2,
+    "precision@10": 0.1,
+    "MRR": 1.0,
+    "first_hit_rank": 1,
+    "hits_at_25": "1/4",
+    "repo_recall": 1.0,
+    "repos_found": "3/3",
+    "repos_named": 15,
+    "invalid_path_rate": 0.0,
+    "cap_at_run_time": 100
+  },
+  "prf": {
+    "full_list": {
+      "precision": 0.0167,
+      "recall": 0.25,
+      "f1": 0.0312,
+      "hits": 1,
+      "retrieved": 60,
+      "gold_size": 4
+    },
+    "@10": {
+      "precision": 0.1,
+      "recall": 0.25,
+      "f1": 0.1429,
+      "hits": 1,
+      "retrieved": 10,
+      "gold_size": 4
+    },
+    "@25": {
+      "precision": 0.04,
+      "recall": 0.25,
+      "f1": 0.069,
+      "hits": 1,
+      "retrieved": 25,
+      "gold_size": 4
+    },
+    "@50": {
+      "precision": 0.02,
+      "recall": 0.25,
+      "f1": 0.037,
+      "hits": 1,
+      "retrieved": 50,
+      "gold_size": 4
+    },
+    "@100": {
+      "precision": 0.0167,
+      "recall": 0.25,
+      "f1": 0.0312,
+      "hits": 1,
+      "retrieved": 60,
+      "gold_size": 4
+    }
+  },
+  "hits": ["tldraw::packages/store/src/lib/IncrementalSetConstructor.ts"],
+  "ranked_detail": [
+    {
+      "rank": 1,
+      "repo": "tldraw",
+      "path": "packages/store/src/lib/IncrementalSetConstructor.ts",
+      "gold": true,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 2,
+      "repo": "react",
+      "path": "packages/react-reconciler/src/ReactChildFiber.js",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 3,
+      "repo": "primitives",
+      "path": "packages/react/collection/src/collection.tsx",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 4,
+      "repo": "query",
+      "path": "packages/query-core/src/queriesObserver.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 5,
+      "repo": "db",
+      "path": "packages/vue-db/src/useLiveQuery.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 6,
+      "repo": "xyflow",
+      "path": "packages/system/src/utils/store.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 7,
+      "repo": "jotai",
+      "path": "src/vanilla/utils/splitAtom.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 8,
+      "repo": "table",
+      "path": "packages/table-core/src/utils/getCoreRowModel.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 9,
+      "repo": "router",
+      "path": "packages/router-core/src/Matches.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 10,
+      "repo": "redux-devtools",
+      "path": "packages/redux-devtools-instrument/src/instrument.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 11,
+      "repo": "redux-toolkit",
+      "path": "packages/toolkit/src/entities/sorted_state_adapter.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 12,
+      "repo": "zustand",
+      "path": "src/vanilla.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 13,
+      "repo": "reselect",
+      "path": "src/lruMemoize.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 14,
+      "repo": "react-redux",
+      "path": "src/types.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 15,
+      "repo": "redux",
+      "path": "src/utils/symbol-observable.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 16,
+      "repo": "tldraw",
+      "path": "packages/store/src/lib/StoreQueries.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 17,
+      "repo": "react",
+      "path": "packages/react-reconciler/src/ReactInternalTypes.js",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 18,
+      "repo": "primitives",
+      "path": "packages/react/collection/src/collection-legacy.tsx",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 19,
+      "repo": "query",
+      "path": "packages/solid-query/src/useQueries.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 20,
+      "repo": "db",
+      "path": "packages/svelte-db/src/useLiveQuery.svelte.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 21,
+      "repo": "xyflow",
+      "path": "packages/svelte/src/lib/store/visibleElements.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 22,
+      "repo": "jotai",
+      "path": "src/vanilla/utils.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 23,
+      "repo": "table",
+      "path": "packages/table-core/src/utils/filterRowsUtils.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 24,
+      "repo": "router",
+      "path": "packages/react-router/src/Matches.tsx",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 25,
+      "repo": "redux-devtools",
+      "path": "packages/redux-devtools-app-core/src/utils/updateState.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 26,
+      "repo": "redux-toolkit",
+      "path": "packages/toolkit/src/entities/unsorted_state_adapter.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 27,
+      "repo": "zustand",
+      "path": "src/middleware/subscribeWithSelector.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 28,
+      "repo": "reselect",
+      "path": "src/types.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 29,
+      "repo": "tldraw",
+      "path": "packages/editor/src/lib/editor/derivations/shapeIdsInCurrentPage.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 30,
+      "repo": "primitives",
+      "path": "packages/react/collection/src/ordered-dictionary.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 31,
+      "repo": "query",
+      "path": "packages/vue-query/src/useQueries.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 32,
+      "repo": "db",
+      "path": "packages/solid-db/src/useLiveQuery.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 33,
+      "repo": "xyflow",
+      "path": "packages/react/src/store/index.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 34,
+      "repo": "jotai",
+      "path": "src/vanilla/utils/selectAtom.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 35,
+      "repo": "table",
+      "path": "packages/table-core/src/utils/getGroupedRowModel.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 36,
+      "repo": "router",
+      "path": "packages/solid-router/src/Matches.tsx",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 37,
+      "repo": "redux-devtools",
+      "path": "packages/redux-devtools-inspector-monitor/src/DevtoolsInspector.tsx",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 38,
+      "repo": "redux-toolkit",
+      "path": "packages/toolkit/src/entities/state_adapter.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 39,
+      "repo": "tldraw",
+      "path": "packages/editor/src/lib/editor/derivations/parentsToChildren.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 40,
+      "repo": "primitives",
+      "path": "packages/react/roving-focus/src/roving-focus-group.tsx",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 41,
+      "repo": "query",
+      "path": "packages/lit-query/src/createQueriesController.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 42,
+      "repo": "db",
+      "path": "packages/react-db/src/useLiveQuery.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 43,
+      "repo": "xyflow",
+      "path": "packages/svelte/src/lib/store/index.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 44,
+      "repo": "table",
+      "path": "packages/table-core/src/core/row.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 45,
+      "repo": "router",
+      "path": "packages/vue-router/src/Matches.tsx",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 46,
+      "repo": "redux-toolkit",
+      "path": "packages/toolkit/src/entities/models.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 47,
+      "repo": "tldraw",
+      "path": "packages/store/src/lib/setUtils.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 48,
+      "repo": "query",
+      "path": "packages/angular-query-experimental/src/inject-queries.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 49,
+      "repo": "db",
+      "path": "packages/db/src/collection/changes.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 50,
+      "repo": "xyflow",
+      "path": "packages/react/src/utils/changes.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 51,
+      "repo": "table",
+      "path": "packages/table-core/src/utils/getExpandedRowModel.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 52,
+      "repo": "tldraw",
+      "path": "packages/store/src/lib/AtomMap.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 53,
+      "repo": "query",
+      "path": "packages/react-query/src/useQueries.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 54,
+      "repo": "db",
+      "path": "packages/db/src/collection/subscription.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 55,
+      "repo": "xyflow",
+      "path": "packages/svelte/src/lib/store/initial-store.svelte.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 56,
+      "repo": "tldraw",
+      "path": "packages/editor/src/lib/editor/derivations/bindingsIndex.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 57,
+      "repo": "query",
+      "path": "packages/preact-query/src/useQueries.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 58,
+      "repo": "db",
+      "path": "packages/db-ivm/src/multiset.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 59,
+      "repo": "xyflow",
+      "path": "packages/react/src/hooks/useNodesData.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 60,
+      "repo": "tldraw",
+      "path": "packages/state/src/lib/Computed.ts",
+      "gold": false,
+      "exists_at_pin": true
+    }
+  ],
+  "rank_policy": "block-interleave",
+  "invalid_paths": [],
+  "missed_gold": [
+    "query::packages/svelte-query/src/useMutationState.svelte.ts",
+    "query::packages/svelte-query/src/containers.svelte.ts",
+    "xyflow::packages/react/src/container/NodeRenderer/index.tsx"
+  ],
+  "retriever": {
+    "surface": "plumbline MCP alone: the ByteBell IR knowledge graph. No filesystem, shell or grep.",
+    "repo_pins": {
+      "redux": "3aa561f9fc13f3287e6d83764f85fe0e82437c5f",
+      "xyflow": "360f5b13e2bc6899ea06b4be1a49b068d86926cf",
+      "redux-toolkit": "b1c5130154c454ca8387f55da6122fcb507c560c",
+      "query": "46d7f02f1c7b9fcd3255082cc7103e8bfa3dab76",
+      "react-redux": "ad5d1e0816d0cb1464b25cf2853f2a7d73433f5b",
+      "table": "d08af367e11c539bb7e18c2472aa761149ef6db6",
+      "reselect": "950112a328f71d97d18fd543159d6fdefa432b38",
+      "tldraw": "5590d14d8edd4faab7dc1177b6e1adb28876fd23",
+      "react": "3a717e42438afac81020cdec297dadb5613a4304",
+      "redux-devtools": "f4b4668c30ae08920c59a76cc4629c35c16ef0fa",
+      "jotai": "5c4ca26b0db5571114be58393e17854a771f7790",
+      "router": "3dee5b2e9453d01a3172c73426959007b290b3fc",
+      "zustand": "beca84e600e4e250f6b244d22878e72948f331c7",
+      "primitives": "58164e06ca67dff9a68dd375d858180cfdc8ec27",
+      "db": "7f0fa36ff6d48b0494ed5f6a1223fd18c317e41f",
+      "zod": "912f0f51b0ced654d0069741e7160834dca742ee"
+    },
+    "checkout_verified": "run.sh gates on git rev-parse HEAD == pinned commit for all 15 repositories before launch",
+    "isolation": "kernel-enforced by sandbox-exec: gold, the answer vault and every sibling arm are unreadable; no session transcript is readable; fresh cwd",
+    "surface_pure": true
+  },
+  "cost": {
+    "session_id": "78134570-70e4-44a9-bab6-b20e7d4dba3f",
+    "arm": "claudecli_opus5_mcp_plumbline_rejection_selection_v7",
+    "case": "xrepo-v6-21-the-list-shrank-but-the-view-did-not-medium",
+    "model": "claude-opus-5",
+    "launch": "fresh isolated `claude -p` under sandbox-exec, --strict-mcp-config",
+    "price_per_mtok_usd": {
+      "input": 5.0,
+      "output": 25.0,
+      "cache_write": 10.0,
+      "cache_read": 0.5
+    },
+    "usd_per_query_cli": 10.629868499999999,
+    "usd_per_query_list_price": 10.621541,
+    "duration_ms": 2368786,
+    "wall_seconds": 4303,
+    "num_turns": 62,
+    "tokens": {
+      "input": 70,
+      "output": 96932,
+      "cache_creation": 393322,
+      "cache_read": 8529341
+    },
+    "tokens_retrieved": 153898,
+    "cache_clean": false,
+    "cache_mode": "warm",
+    "cache_note": "fresh session, no --resume/--continue: every cache_read is cache THIS session created and read back, which the run conditions permit",
+    "tool_calls": {
+      "ToolSearch": 2,
+      "mcp__plumbline__roll_call": 1,
+      "mcp__plumbline__rap_sheet": 1,
+      "mcp__plumbline__stakeout": 22,
+      "Bash": 5,
+      "mcp__plumbline__the_receipts": 16,
+      "mcp__plumbline__manhunt": 6,
+      "mcp__plumbline__dragnet": 2,
+      "mcp__plumbline__case_file": 2,
+      "mcp__plumbline__shakedown": 2,
+      "mcp__plumbline__collateral_damage": 2
+    },
+    "disallowed_tool_calls": {},
+    "non_retrieval_tool_calls": {
+      "ToolSearch": 2
+    },
+    "misfired_tool_calls": {},
+    "mcp_tool_calls": {
+      "mcp__plumbline__roll_call": 1,
+      "mcp__plumbline__rap_sheet": 1,
+      "mcp__plumbline__stakeout": 22,
+      "mcp__plumbline__the_receipts": 16,
+      "mcp__plumbline__manhunt": 6,
+      "mcp__plumbline__dragnet": 2,
+      "mcp__plumbline__case_file": 2,
+      "mcp__plumbline__shakedown": 2,
+      "mcp__plumbline__collateral_damage": 2
+    },
+    "permission_denials": 0,
+    "surface_pure": true,
+    "surface_pure_note": "Any Bash/Read/Grep/Glob call is a surface violation: the knowledge graph is the whole search surface.",
+    "allowed_tools_source": "run.sh --allowedTools",
+    "allowed_tools": [
+      "Bash",
+      "ScheduleWakeup",
+      "TodoWrite",
+      "ToolSearch",
+      "mcp__plumbline__blueprint",
+      "mcp__plumbline__case_file",
+      "mcp__plumbline__case_notes",
+      "mcp__plumbline__cold_case",
+      "mcp__plumbline__collateral_damage",
+      "mcp__plumbline__cross_repo_lookup",
+      "mcp__plumbline__dragnet",
+      "mcp__plumbline__evidence_locker",
+      "mcp__plumbline__file_a_complaint",
+      "mcp__plumbline__interrogation",
+      "mcp__plumbline__kingpin",
+      "mcp__plumbline__manhunt",
+      "mcp__plumbline__mugshot",
+      "mcp__plumbline__paper_trail",
+      "mcp__plumbline__pull_the_evidence",
+      "mcp__plumbline__rap_sheet",
+      "mcp__plumbline__read_the_fine_print",
+      "mcp__plumbline__roll_call",
+      "mcp__plumbline__shakedown",
+      "mcp__plumbline__stakeout",
+      "mcp__plumbline__the_receipts"
+    ],
+    "sandbox": {
+      "mechanism": "sandbox-exec (macOS seatbelt), profile pinned at sandbox.sb",
+      "gold_readable": false,
+      "other_arms_readable": false,
+      "transcripts_readable": false,
+      "out_of_arena_paths_attempted": {},
+      "reads_refused_by_kernel": 0,
+      "contamination_possible": false,
+      "gate4_verified": "run.sh proved golden.json unreadable under this profile before launch"
+    },
+    "transcript": "/Users/sauravverma/.claude/projects/-private-tmp-xrepo-runs-medium-the-list-shrank-but-the-view-did-not-claudecli-opus5-mcp-plumbline-rejection-selection-v7-20260917T224805Z-42635/78134570-70e4-44a9-bab6-b20e7d4dba3f.jsonl"
+  },
+  "comparable": true
+}

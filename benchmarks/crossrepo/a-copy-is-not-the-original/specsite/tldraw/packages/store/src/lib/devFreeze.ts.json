@@ -1,0 +1,482 @@
+{
+  "schema": 2,
+  "kind": "file",
+  "repoName": "tldraw",
+  "file": {
+    "relativePath": "packages/store/src/lib/devFreeze.ts",
+    "language": "typescript",
+    "sizeBytes": 1284,
+    "tokenCount": 321,
+    "model": "us.openai.gpt-5.6-luna",
+    "analysedAt": "2026-08-24T12:21:49.637Z",
+    "module": {
+      "purpose": "Provides a development-only utility that recursively validates and freezes JavaScript objects to detect unintended mutations and unsupported prototype data.",
+      "summary": "This module exports a generic helper for enforcing immutability during development. It first bypasses all work outside development mode, rejects objects with unsupported prototypes, preserves already frozen values, recursively freezes nested object properties, and finally freezes the input object itself. The validation permits arrays, ordinary objects, null-prototype objects, and structured-clone object prototypes while reporting unsupported data through both logging and an exception.",
+      "businessContext": "Supports tldraw's development-time data integrity and immutability checks. If it fails, invalid record data or accidental mutations may escape detection during development.",
+      "classes": [],
+      "functions": ["devFreeze (~L18-52): Recursively validates and freezes objects only during development"],
+      "keywords": [
+        "development immutability",
+        "Object.freeze",
+        "structured clone",
+        "prototype validation",
+        "recursive freezing",
+        "record data",
+        "mutation detection"
+      ],
+      "ontologyConcepts": [
+        "immutability",
+        "runtime validation",
+        "recursive traversal",
+        "prototype safety",
+        "development diagnostics"
+      ],
+      "businessEntities": ["record", "object", "property", "prototype"],
+      "systemCapabilities": [
+        "Freeze development objects",
+        "Validate supported object prototypes",
+        "Detect nested mutation risks",
+        "Reject non-JavaScript record data"
+      ],
+      "configDependencies": [],
+      "importsInternal": [
+        {
+          "spec": "./isDev",
+          "symbols": ["isDev"],
+          "anchor": { "startLine": 2, "endLine": 2 },
+          "resolvedRelativePath": "packages/store/src/lib/isDev.ts",
+          "resolvedFileId": "packages/store/src/lib/isDev.ts",
+          "resolvedHint": "packages/store/src/lib/isDev.ts"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "@tldraw/utils",
+          "symbols": ["STRUCTURED_CLONE_OBJECT_PROTOTYPE"],
+          "package": "@tldraw/utils",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 1 }
+        }
+      ],
+      "sideEffects": {
+        "io": ["Logs an error to the console when an object has an unsupported prototype."],
+        "network": [],
+        "env": [],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": ["Recursively freezes nested object properties and then freezes the input object."]
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "devFreeze",
+          "shape": "devFreeze<T>(object: T): T",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "isDev",
+          "shape": "isDev()",
+          "resolvedRelativePath": "packages/store/src/lib/isDev.ts",
+          "resolvedFileId": "packages/store/src/lib/isDev.ts"
+        },
+        {
+          "name": "STRUCTURED_CLONE_OBJECT_PROTOTYPE",
+          "shape": "STRUCTURED_CLONE_OBJECT_PROTOTYPE",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "development guard",
+          "intent": "Returns the original value without validation or mutation outside development mode.",
+          "structureKind": "branch",
+          "predicate": "!isDev()",
+          "branchOutcomes": [
+            "development mode disabled: return object",
+            "development mode enabled: continue validation"
+          ],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 19, "endLine": 19 }
+        },
+        {
+          "name": "prototype validation",
+          "intent": "Rejects objects whose prototypes cannot represent supported record data.",
+          "structureKind": "branch",
+          "predicate": "proto &&\n\t\t!(\n\t\t\tArray.isArray(object) ||\n\t\t\tproto === Object.prototype ||\n\t\t\tproto === null ||\n\t\t\tproto === STRUCTURED_CLONE_OBJECT_PROTOTYPE\n\t\t)",
+          "branchOutcomes": ["unsupported prototype: log and throw", "supported prototype: continue"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 22, "endLine": 33 }
+        },
+        {
+          "name": "already frozen shortcut",
+          "intent": "Avoids repeated traversal when the input object is already frozen.",
+          "structureKind": "branch",
+          "predicate": "Object.isFrozen(object)",
+          "branchOutcomes": ["frozen: return object", "not frozen: inspect properties"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 35, "endLine": 37 }
+        },
+        {
+          "name": "property collection",
+          "intent": "Collects all own property names before recursive freezing.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 39, "endLine": 40 }
+        },
+        {
+          "name": "nested object traversal",
+          "intent": "Recursively freezes each own property containing a truthy object value.",
+          "structureKind": "loop",
+          "predicate": "value && typeof value === 'object'",
+          "branchOutcomes": [],
+          "bounds": "propNames",
+          "terminationCondition": null,
+          "anchor": { "startLine": 42, "endLine": 49 }
+        },
+        {
+          "name": "final freeze",
+          "intent": "Freezes the validated object and returns the same object reference.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 51, "endLine": 52 }
+        }
+      ],
+      "representationFamily": "function-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "function",
+          "name": "devFreeze",
+          "signature": "export function devFreeze<T>(object: T): T",
+          "generics": "<T>",
+          "decorators": [],
+          "returnType": "T",
+          "exported": true,
+          "anchor": { "startLine": 18, "endLine": 18 }
+        }
+      ],
+      "typeShapes": [],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "Any value when development mode is disabled",
+          "handled": true,
+          "behavior": "Returns the input unchanged without inspecting or freezing it.",
+          "anchor": { "startLine": 19, "endLine": 19 }
+        },
+        {
+          "inputShape": "Object with a non-supported JavaScript prototype",
+          "handled": true,
+          "behavior": "Logs an error and throws an Error identifying non-JavaScript data.",
+          "anchor": { "startLine": 22, "endLine": 33 }
+        },
+        {
+          "inputShape": "Already frozen object",
+          "handled": true,
+          "behavior": "Returns immediately without recursively traversing properties.",
+          "anchor": { "startLine": 35, "endLine": 37 }
+        },
+        {
+          "inputShape": "Nested object-valued property",
+          "handled": true,
+          "behavior": "Recursively validates and freezes the nested value before freezing the parent.",
+          "anchor": { "startLine": 43, "endLine": 49 }
+        },
+        {
+          "inputShape": "Falsy or non-object property value",
+          "handled": true,
+          "behavior": "Skips recursive processing and continues through the remaining properties.",
+          "anchor": { "startLine": 46, "endLine": 48 }
+        }
+      ],
+      "boundaryConditions": [],
+      "errorHandling": [
+        {
+          "thrown": "new Error('cannot include non-js data in a record')",
+          "caught": null,
+          "action": "Logs the unsupported object and throws the validation error.",
+          "fallback": null,
+          "anchor": { "startLine": 31, "endLine": 32 }
+        }
+      ],
+      "invariants": [
+        {
+          "kind": "postcondition",
+          "description": "In development mode, every reachable truthy object-valued own property is recursively processed before the parent.",
+          "anchor": { "startLine": 42, "endLine": 49 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "A non-frozen development-mode input is frozen before being returned.",
+          "anchor": { "startLine": 51, "endLine": 52 }
+        },
+        {
+          "kind": "invariant",
+          "description": "The returned value is the original input reference rather than a clone.",
+          "anchor": { "startLine": 19, "endLine": 19 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Only arrays and approved prototypes are accepted for development-mode record data.",
+          "anchor": { "startLine": 22, "endLine": 30 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "Callers provide values compatible with Object.getPrototypeOf and Object.getOwnPropertyNames during development execution.",
+          "anchor": { "startLine": 21, "endLine": 21 }
+        },
+        {
+          "kind": "init-order",
+          "description": "The imported development-mode predicate and structured-clone prototype constant are initialized before invocation.",
+          "anchor": { "startLine": 1, "endLine": 2 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "Does the development-mode predicate depend on an environment variable or another runtime configuration source?",
+          "affects": "configDependencies and environment assumptions",
+          "anchor": { "startLine": 2, "endLine": 2 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "sync",
+        "reentrant": true,
+        "ordering": "deterministic",
+        "notes": "The helper performs synchronous prototype checks, property traversal, recursive calls, and freezing."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "returns-object-unchanged-outside-development",
+          "scenario": "When development mode is disabled, the input object is returned without freezing.",
+          "given": ["isDev() === false", "const object = { a: 1 }"],
+          "when": "devFreeze(object)",
+          "then": "result === object && Object.isFrozen(object) === false",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Guards the production-mode no-op behavior."
+        },
+        {
+          "testId": "freezes-object-and-nested-values-in-development",
+          "scenario": "When development mode is enabled, an ordinary object and its nested object values are recursively frozen.",
+          "given": ["isDev() === true", "const object = { nested: { a: 1 } }"],
+          "when": "devFreeze(object)",
+          "then": "Object.isFrozen(object) === true && Object.isFrozen(object.nested) === true",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins recursive freezing of nested object properties."
+        },
+        {
+          "testId": "preserves-already-frozen-object",
+          "scenario": "When the input is already frozen in development mode, the same object reference is returned.",
+          "given": ["isDev() === true", "const object = Object.freeze({ a: 1 })"],
+          "when": "devFreeze(object)",
+          "then": "devFreeze(object) === object",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Guards identity preservation for already-frozen values."
+        },
+        {
+          "testId": "rejects-non-javascript-prototype",
+          "scenario": "When a non-array object has a prototype outside the supported JavaScript prototypes, freezing fails.",
+          "given": ["isDev() === true", "const object = Object.create({ custom: true })"],
+          "when": "devFreeze(object)",
+          "then": "throws Error('cannot include non-js data in a record')",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Prevents unsupported prototype-bearing data from entering records."
+        },
+        {
+          "testId": "allows-supported-prototype-values",
+          "scenario": "When the input is an array or has Object.prototype, null, or the structured-clone prototype, development freezing succeeds.",
+          "given": [
+            "isDev() === true",
+            "const values = [[], {}, Object.create(null), Object.create(STRUCTURED_CLONE_OBJECT_PROTOTYPE)]"
+          ],
+          "when": "values.map(devFreeze)",
+          "then": "values.every((value) => Object.isFrozen(value)) === true",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Guards the complete allowlist of supported object prototypes."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "import { STRUCTURED_CLONE_OBJECT_PROTOTYPE } from '@tldraw/utils'",
+        "import { isDev } from './isDev'",
+        "export function devFreeze<T>(object: T): T"
+      ],
+      "moduleLevelCode": "import { STRUCTURED_CLONE_OBJECT_PROTOTYPE } from '@tldraw/utils'\nimport { isDev } from './isDev'",
+      "exports": [{ "name": "devFreeze", "kind": "own", "fromSpec": null, "exportedAs": null }],
+      "importSymbolMap": [
+        { "symbol": "STRUCTURED_CLONE_OBJECT_PROTOTYPE", "module": "@tldraw/utils", "alias": null, "kind": "external" },
+        { "symbol": "isDev", "module": "./isDev", "alias": null, "kind": "internal" }
+      ],
+      "fileConstants": [],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/store/src/lib/devFreeze.ts__devFreeze#function:devFreeze",
+        "unitKind": "function",
+        "name": "devFreeze",
+        "qualifiedName": "devFreeze",
+        "parentUnitId": null,
+        "startLine": 18,
+        "endLine": 52,
+        "isBehavioral": true,
+        "source": "export function devFreeze<T>(object: T): T {\n\tif (!isDev()) return object\n\n\tconst proto = Object.getPrototypeOf(object)\n\tif (\n\t\tproto &&\n\t\t!(\n\t\t\tArray.isArray(object) ||\n\t\t\tproto === Object.prototype ||\n\t\t\tproto === null ||\n\t\t\tproto === STRUCTURED_CLONE_OBJECT_PROTOTYPE\n\t\t)\n\t) {\n\t\tconsole.error('cannot include non-js data in a record', object)\n\t\tthrow new Error('cannot include non-js data in a record')\n\t}\n\n\tif (Object.isFrozen(object)) {\n\t\treturn object\n\t}\n\n\t// Retrieve the property names defined on object\n\tconst propNames = Object.getOwnPropertyNames(object)\n\n\t// Recursively freeze properties before freezing self\n\tfor (const name of propNames) {\n\t\tconst value = (object as any)[name]\n\n\t\tif (value && typeof value === 'object') {\n\t\t\tdevFreeze(value)\n\t\t}\n\t}\n\n\treturn Object.freeze(object)\n}",
+        "detail": {
+          "unitId": "packages/store/src/lib/devFreeze.ts__devFreeze#function:devFreeze",
+          "fileId": "packages/store/src/lib/devFreeze.ts__devFreeze",
+          "unitKind": "function",
+          "name": "devFreeze",
+          "qualifiedName": "devFreeze",
+          "parentUnitId": null,
+          "startLine": 18,
+          "endLine": 52,
+          "signature": "export function devFreeze<T>(object: T): T",
+          "parameters": [
+            { "name": "object", "type": "T", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "T",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": ["T"],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [
+            "Returns the original input value.",
+            "In development mode, any supported object graph reachable through own properties is frozen unless the input was already frozen.",
+            "In development mode, an object with an unsupported non-null prototype is rejected before freezing."
+          ],
+          "invariants": [
+            "The input object identity is preserved.",
+            "Nested object-valued own properties are processed before the containing object is frozen.",
+            "Already frozen values are returned without recursive processing."
+          ],
+          "edgeCases": [
+            "When development mode is disabled, the input is returned immediately without prototype validation or freezing.",
+            "When the input is already frozen in development mode, it is returned unchanged.",
+            "Arrays, ordinary objects, null-prototype objects, and objects using STRUCTURED_CLONE_OBJECT_PROTOTYPE are eligible for recursive freezing.",
+            "An object with a non-null prototype other than Object.prototype, STRUCTURED_CLONE_OBJECT_PROTOTYPE, or an array prototype logs an error and throws.",
+            "Object-valued own properties are recursively processed; primitive-valued properties are not recursively processed."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["Error"],
+            "reverts": [],
+            "onInvalidInput": "In development mode, objects with unsupported non-null prototypes cause an error to be logged and an Error to be thrown.",
+            "returnsOnError": null
+          },
+          "stateMutations": [
+            "Freezes the input object and recursively reachable object-valued own properties in development mode."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "isDev", "source": null, "kind": "external" },
+            { "name": "Object.getPrototypeOf", "source": "Object", "kind": "external" },
+            { "name": "Array.isArray", "source": "Array", "kind": "external" },
+            { "name": "Object.isFrozen", "source": "Object", "kind": "external" },
+            { "name": "Object.getOwnPropertyNames", "source": "Object", "kind": "external" },
+            { "name": "Object.freeze", "source": "Object", "kind": "external" },
+            { "name": "console.error", "source": "console", "kind": "external" },
+            { "name": "devFreeze", "source": "devFreeze", "kind": "internal" }
+          ],
+          "symbolReferences": ["STRUCTURED_CLONE_OBJECT_PROTOTYPE", "isDev"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Returns the supplied value unchanged outside development mode. In development mode, it recursively freezes supported object graphs and rejects objects containing non-JavaScript data prototypes.",
+          "specLiterals": [
+            {
+              "kind": "error-message",
+              "value": "cannot include non-js data in a record",
+              "role": "Logged and thrown error message when an unsupported object prototype is encountered."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "devFreeze(object) is called.",
+              "then": "The exact same object reference is returned and the object remains unfrozen.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "devFreeze(object) is called.",
+              "then": "The exact same reference is returned and both the outer object and nested object are frozen.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "devFreeze(object) is called.",
+              "then": "console.error is called with \"cannot include non-js data in a record\" and an Error with that message is thrown.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "98d0a2d2d4fdc72e08fab3a69db0c2a12a868506c920b90f8698a962bb58f1c4"
+        }
+      }
+    ]
+  },
+  "out": ["packages/store/src/lib/isDev.ts"],
+  "in": [
+    "packages/store/src/lib/StoreSchema.ts",
+    "packages/store/src/lib/devFreeze.test.ts",
+    "packages/store/src/lib/Store.ts",
+    "packages/store/src/index.ts"
+  ],
+  "externals": ["@tldraw/utils"],
+  "impact": {
+    "seeds": 1,
+    "callers": 2,
+    "impactedFiles": ["packages/store/src/lib/StoreSchema.ts", "packages/store/src/lib/Store.ts"]
+  }
+}

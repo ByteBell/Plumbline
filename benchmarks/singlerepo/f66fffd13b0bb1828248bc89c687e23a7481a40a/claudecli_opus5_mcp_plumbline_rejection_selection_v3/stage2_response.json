@@ -1,0 +1,71 @@
+{
+  "duration_api_ms": 144120,
+  "stop_reason": "end_turn",
+  "session_id": "621b4e5b-2ab3-46f3-8deb-219f7477ab37",
+  "total_cost_usd": 1.2068134999999998,
+  "usage": {
+    "input_tokens": 26,
+    "cache_creation_input_tokens": 56571,
+    "cache_read_input_tokens": 738547,
+    "output_tokens": 10868,
+    "output_tokens_details": { "thinking_tokens": 4667 },
+    "server_tool_use": { "web_search_requests": 0, "web_fetch_requests": 0 },
+    "service_tier": "standard",
+    "cache_creation": { "ephemeral_1h_input_tokens": 56571, "ephemeral_5m_input_tokens": 0 },
+    "inference_geo": "not_available",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 2188,
+        "cache_read_input_tokens": 70675,
+        "cache_creation_input_tokens": 3070,
+        "cache_creation": { "ephemeral_5m_input_tokens": 0, "ephemeral_1h_input_tokens": 3070 },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-opus-5": {
+      "inputTokens": 26,
+      "outputTokens": 10868,
+      "cacheReadInputTokens": 738547,
+      "cacheCreationInputTokens": 56571,
+      "webSearchRequests": 0,
+      "costUSD": 1.2068134999999998,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "canonicalModel": "claude-opus-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": { "background": 0, "foreground": 0, "unset": 0 },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": { "parent": 0, "user": 0, "system": 0 },
+    "refused": { "depth_limit": 0, "concurrency_limit": 0, "budget": 0 },
+    "by_type": {}
+  },
+  "is_error": false,
+  "num_turns": 15,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Scored and written.\n\n**Gold file:** `gold.json` (no `golden.json` in the case dir). I read `ranked.json` in full before opening it.\n\n**Shape:** `ranked.json` is a flat array of 75 paths — single-repo shape, which is exactly the form `gold.json`'s `gold` list uses. No flattening was needed; the scorer classified the case `single-repo`, `gold_schema: verified-no-split`.\n\n**Metrics** (`score_arm.py`, exit 0):\n\n```\nhits / gold_total     5 / 8\nrecall@10             0.375\nrecall@20             0.375\nrecall@25             0.375\nrecall@50             0.625\nrecall@75 (full)      0.625\nprecision@5           0.600\nMRR                   1.000\ncore_recall@10        null   (gold has no core/propagation split)\npropagation_recall@20 null\n```\n\n`score_arm.py` does not emit precision@10, precision@20, F1@20 or F1_full_list — it computes only `recall@{10,20,25,50,75}`, `precision@5`, `MRR` and the two split recalls. Per the rule I did not substitute my own arithmetic for the four it does not produce.\n\n**found** (rank in the frozen list)\n- 1 `packages/features/ee/workflows/lib/service/EmailWorkflowService.ts`\n- 3 `packages/features/ee/workflows/api/scheduleEmailReminders.ts`\n- 5 `packages/features/bookings/lib/service/RegularBookingService.ts`\n- 37 `packages/features/tasker/tasks/sendWorkflowEmails.ts`\n- 38 `packages/features/ee/workflows/lib/types.ts`\n\n**missed_gold**\n- `apps/api/v2/src/ee/bookings/2024-04-15/controllers/bookings.controller.ts`\n- `apps/api/v2/src/ee/bookings/2024-08-13/services/input.service.ts`\n- `packages/prisma/zod-utils.ts`\n\n**Surface verdict: NOT comparable.** One reason, and it is not about tool use: prompt caching was active — `cache_read=4274360`, `cache_creation=267479`, so the $5.88 and the token counts are a warm-session figure that cannot be put beside cold runs. The tool surface itself is clean: 25 calls, all `mcp__plumbline__*` (roll_call 1, blueprint 4, rap_sheet 1, stakeout 4, manhunt 1, case_file 1, collateral_damage 8, the_receipts 4) plus one `ToolSearch` to load the schemas; no filesystem or shell tool, no `Write`, and the retriever's own search tool (`stakeout`) was called 4 times, so what was measured is that retriever. Note that `score_arm.py`'s own surface block reports `not_comparable: []` and `comparable: true` — its check does not look at cost or caching. I kept its block verbatim in `result.json` under `surface_scorer` and put the authoritative block, with the caching reason, in `surface`; `surface_note` records the divergence.\n\n**What the misses share.** All five hits sit inside `packages/features/*` — the workflow/booking service layer that is reachable by import edges from the branding resolver and the email workflow service, which is exactly where the eight `collateral_damage` folds were seeded. The three misses sit in two registers that layer does not point at. `packages/prisma/zod-utils.ts` is the shared schema/type home one level upstream of the whole feature tree: the arm did recover a types file, but the in-package one (`workflows/lib/types.ts`, rank 38), not the cross-package schema that declares the shape. The two `apps/api/v2` files are the platform API's own booking entry point — a parallel NestJS adapter that re-declares the same booking input independently rather than importing the feature services, so it carries no edge back to any seed. The single `apps/api/v2` path the answer does contain (`modules/workflows/workflows.repository.ts`, rank 75) lands in the workflows module rather than the bookings one, which is the same boundary being missed from the other side.",
+  "ttft_ms": 1526,
+  "type": "result",
+  "duration_ms": 145104,
+  "uuid": "d687771c-afed-42e8-b717-8759ab9132d0",
+  "ttft_stream_ms": 1128,
+  "time_to_request_ms": 19,
+  "queued_turn_count": 0
+}

@@ -1,0 +1,71 @@
+{
+  "duration_api_ms": 63897,
+  "stop_reason": "end_turn",
+  "session_id": "fb76ce9a-d5a9-4a9a-aa47-4912f9e255bc",
+  "total_cost_usd": 1.071334,
+  "usage": {
+    "input_tokens": 12,
+    "cache_creation_input_tokens": 81414,
+    "cache_read_input_tokens": 268918,
+    "output_tokens": 4907,
+    "output_tokens_details": { "thinking_tokens": 630 },
+    "server_tool_use": { "web_search_requests": 0, "web_fetch_requests": 0 },
+    "service_tier": "standard",
+    "cache_creation": { "ephemeral_1h_input_tokens": 81414, "ephemeral_5m_input_tokens": 0 },
+    "inference_geo": "not_available",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 2090,
+        "cache_read_input_tokens": 66520,
+        "cache_creation_input_tokens": 1863,
+        "cache_creation": { "ephemeral_5m_input_tokens": 0, "ephemeral_1h_input_tokens": 1863 },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-opus-5": {
+      "inputTokens": 12,
+      "outputTokens": 4907,
+      "cacheReadInputTokens": 268918,
+      "cacheCreationInputTokens": 81414,
+      "webSearchRequests": 0,
+      "costUSD": 1.071334,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "canonicalModel": "claude-opus-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": { "background": 0, "foreground": 0, "unset": 0 },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": { "parent": 0, "user": 0, "system": 0 },
+    "refused": { "depth_limit": 0, "concurrency_limit": 0, "budget": 0 },
+    "by_type": {}
+  },
+  "is_error": false,
+  "num_turns": 9,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Both files written. Report:\n\n**Order and inputs.** I read `ranked.json` in full before opening any gold. Gold file used: `gold.json` (no `golden.json` in the case dir). Answer shape: a **flat single-repo array** of 76 paths — no repo/files wrapper — matching gold's flat `gold` list; the scorer applied its 75-entry `list_cap`, so rank 76 (`apps/web/modules/bookings/hooks/useVerifyEmail.ts`... actually that is rank 75) — the capped-off entry is the 76th path, `packages/features/ee/...` per the list order; scored `retrieved: 75`, `returned_before_cap: 75`.\n\n**Metrics** (from `score_arm.py`, unedited):\n\n| metric | value |\n|---|---|\n| hits / gold_total | 11 / 31 |\n| recall@10 | 0.161 |\n| recall@20 | 0.258 |\n| recall@25 | 0.258 |\n| recall@50 | 0.323 |\n| recall@75 (full list) | 0.355 |\n| precision@5 | 0.600 |\n| MRR | 0.500 |\n\n`score_arm.py` does not emit precision@10, precision@20, F1@20 or F1_full_list, and I did not hand-compute them — per the rules, only scorer output is comparable with the series. The scorer's `degenerate_ks` is empty; `core_recall@10` / `propagation_recall@20` are null (gold has no split — `gold_schema: verified-no-split`).\n\n**found (11):** `packages/features/auth/lib/verifyEmail.ts`, `packages/app-store/_utils/payments/handlePaymentSuccess.ts`, `packages/features/handleMarkNoShow.ts`, `packages/features/ee/managed-event-types/reassignment/services/ManagedEventManualReassignmentService.ts`, `packages/features/ee/workflows/lib/service/EmailWorkflowService.ts`, `packages/emails/src/templates/VerifyEmailByCode.tsx`, `packages/emails/templates/attendee-verify-email.ts`, `packages/trpc/server/routers/viewer/auth/sendVerifyEmailCode.handler.ts`, `packages/emails/src/templates/BaseScheduledEmail.tsx`, `packages/emails/lib/types/email-types.ts`, `apps/web/modules/bookings/hooks/useVerifyEmail.ts`\n\n**missed_gold (20):** `apps/web/modules/bookings/components/BookerWebWrapper.tsx`, `packages/features/CalendarEventBuilder.ts`, `packages/features/bookings/lib/getBookingToDelete.ts`, `packages/features/bookings/lib/handleBookingRequested.ts`, `packages/features/bookings/lib/handleCancelBooking.ts`, `packages/features/bookings/lib/handleConfirmation.ts`, `packages/features/bookings/lib/handleNewBooking/getEventTypesFromDB.ts`, `packages/features/bookings/lib/payment/getBooking.ts`, `packages/features/bookings/lib/payment/handleNoShowFee.ts`, `packages/features/bookings/lib/service/RegularBookingService.ts`, `packages/features/bookings/repositories/BookingRepository.ts`, `packages/features/di/tokens.ts`, `packages/features/eventtypes/repositories/eventTypeRepository.ts`, `packages/platform/atoms/booker/BookerPlatformWrapper.tsx`, `packages/platform/atoms/hooks/useVerifyEmail.ts`, `packages/trpc/server/routers/loggedInViewer/connectAndJoin.handler.ts`, `packages/trpc/server/routers/viewer/auth/sendVerifyEmailCode.schema.ts`, `packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts`, `packages/trpc/server/routers/viewer/bookings/confirm.handler.ts`, `packages/types/Calendar.d.ts`\n\n**Surface verdict: NOT comparable.** One reason: prompt caching was live for the run (`cache_read=2708030`, `cache_creation=175010`), so its $4.08 is not comparable with cold runs. Everything else is clean — `commands.log` is present (30 calls), every call is a plumbline MCP tool plus two `ToolSearch` schema loads (exempt, not a repo-reading surface), no filesystem or shell tool appeared, and the retriever's own search tools did fire (`stakeout` 8, `shakedown` 3, `manhunt` 4). The counts in `commands.log` match the run's self-report exactly this time. Note the scorer's own surface block reported `not_comparable: []`; I overrode it with the caching reason as the spec requires.\n\n**What the misses share.** They are almost entirely the booking-domain and data-access layer: the `packages/features/bookings/**` handlers and services (`handleConfirmation`, `handleCancelBooking`, `handleBookingRequested`, `RegularBookingService`, the payment `getBooking` / `handleNoShowFee` pair), the repositories and DI tokens behind them (`BookingRepository`, `eventTypeRepository`, `features/di/tokens.ts`), the type surface they all thread through (`packages/types/Calendar.d.ts`, `CalendarEventBuilder.ts`), the tRPC booking mutations (`confirm`, `addGuests`, `connectAndJoin`), and the platform-atoms twins of files that *were* found (`platform/atoms/hooks/useVerifyEmail.ts`, `BookerPlatformWrapper.tsx`, `sendVerifyEmailCode.schema.ts`). The 11 hits cluster in the opposite register: the email-rendering package and the verification/branding-flag files whose names carry the mechanism's vocabulary. So what was recovered is the presentation-and-flag layer; what was missed is the booking-construction and persistence layer that supplies the payload, along with each found file's parallel sibling in the platform/schema dimension.",
+  "ttft_ms": 2234,
+  "type": "result",
+  "duration_ms": 64909,
+  "uuid": "99407a6f-5aec-4626-8771-14b500b37f3f",
+  "ttft_stream_ms": 1846,
+  "time_to_request_ms": 25,
+  "queued_turn_count": 0
+}

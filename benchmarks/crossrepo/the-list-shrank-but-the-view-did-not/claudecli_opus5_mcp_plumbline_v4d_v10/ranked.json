@@ -1,0 +1,89 @@
+[
+  {
+    "repo": "query",
+    "files": [
+      "packages/solid-query/src/useQueries.ts",
+      "packages/solid-query/src/useBaseQuery.ts",
+      "packages/query-core/src/queriesObserver.ts",
+      "packages/lit-query/src/createQueriesController.ts"
+    ],
+    "pinpoints": [
+      {
+        "path": "packages/solid-query/src/useQueries.ts",
+        "symbol": "useQueries",
+        "lines": "261-292",
+        "change": "The observer subscription loops `for (index < dataResources_.length)` and writes `setState(index, unwrap(unwrappedResult))` slot-by-slot; it must make the store equal the new result array (e.g. `setState(reconcile(result))` / explicit truncation) so surplus slots are dropped when the queries array shrinks."
+      },
+      {
+        "path": "packages/solid-query/src/useQueries.ts",
+        "symbol": "useQueries",
+        "lines": "232-244",
+        "change": "The only whole-array write, `setState(observer.getOptimisticResult(...)[1]())`, is a Solid store merge that overwrites indices and appends but never shortens `state`; it must replace the value wholesale."
+      },
+      {
+        "path": "packages/solid-query/src/useQueries.ts",
+        "symbol": "dataResources / getProxies",
+        "lines": "246-259, 334-340",
+        "change": "`dataResources` is memoised on `state.length` and `proxyState` is built from `state.map`, so both inherit the stale tail; they converge once `state` is made to equal the source."
+      },
+      {
+        "path": "packages/solid-query/src/useBaseQuery.ts",
+        "symbol": "reconcileFn",
+        "lines": "27-60",
+        "change": "Already the keyed converge helper in this same folder - `reconcile(data, { key: reconcileOption })(store.data)` drops entries whose keys are gone; it is the form useQueries must adopt. Its own store write path (181-390) was not read and should be checked for the same slot-only shape."
+      },
+      {
+        "path": "packages/query-core/src/queriesObserver.ts",
+        "symbol": "QueriesObserver.setQueries / #onUpdate",
+        "lines": "121-158, 298-304",
+        "change": "Already correct - `this.#result = newResult` replaces the array wholesale and surplus observers are destroyed on a structural change; it is the upstream whole-value contract the Solid adapter must copy instead of re-deriving index by index."
+      },
+      {
+        "path": "packages/lit-query/src/createQueriesController.ts",
+        "symbol": "QueriesController.refreshOptions / createResult / trackResult",
+        "lines": "485-540, 585-607",
+        "change": "Undecided - its own update path was never read; verify whether the controller's tracked results projection is replaced wholesale or written per index."
+      }
+    ]
+  },
+  {
+    "repo": "tldraw",
+    "files": ["packages/store/src/lib/IncrementalSetConstructor.ts"],
+    "pinpoints": [
+      {
+        "path": "packages/store/src/lib/IncrementalSetConstructor.ts",
+        "symbol": "IncrementalSetConstructor",
+        "lines": "71-82, 122-135, 177-190",
+        "change": "Authoring site of the symmetry: `add` and `remove` are both recorded as the build proceeds and `get()` still yields the whole `value` alongside the `added`/`removed` diff. No change needed here beyond being the contract the projection updates are brought in line with."
+      }
+    ]
+  },
+  {
+    "repo": "db",
+    "files": [
+      "packages/solid-db/src/useLiveQuery.ts",
+      "packages/vue-db/src/useLiveQuery.ts",
+      "packages/svelte-db/src/useLiveQuery.svelte.ts"
+    ],
+    "pinpoints": [
+      {
+        "path": "packages/solid-db/src/useLiveQuery.ts",
+        "symbol": "syncDataFromCollection",
+        "lines": "344-351",
+        "change": "Owns the keyed converge-in-both-directions form for the rendered collection - `setData(prev => reconcile(Array.from(currentCollection.values()))(prev))`, a keyed pass that drops the entries whose keys are gone. This is the template for the defective adapter."
+      },
+      {
+        "path": "packages/vue-db/src/useLiveQuery.ts",
+        "symbol": "syncDataFromCollection",
+        "lines": "358-364",
+        "change": "Same contract expressed as `internalData.length = 0; internalData.push(...)` - a whole-value rewrite that shrinks. Already compliant."
+      },
+      {
+        "path": "packages/svelte-db/src/useLiveQuery.svelte.ts",
+        "symbol": "syncDataFromCollection",
+        "lines": "376-383",
+        "change": "Same contract expressed as `internalData = []` then push inside `untrack` - whole-value, shrinks. Already compliant."
+      }
+    ]
+  }
+]

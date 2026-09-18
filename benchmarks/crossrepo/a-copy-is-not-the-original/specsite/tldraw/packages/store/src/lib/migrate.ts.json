@@ -1,0 +1,1624 @@
+{
+  "schema": 2,
+  "kind": "file",
+  "repoName": "tldraw",
+  "file": {
+    "relativePath": "packages/store/src/lib/migrate.ts",
+    "language": "typescript",
+    "sizeBytes": 20485,
+    "tokenCount": 5121,
+    "model": "us.openai.gpt-5.6-luna",
+    "analysedAt": "2026-08-24T12:21:58.697Z",
+    "module": {
+      "purpose": "Defines the migration model and utilities used to validate, order, and construct schema migrations for persisted store data.",
+      "summary": "This module provides migration declarations for record-, store-, and storage-scoped transformations, along with compatibility types for the legacy migration system. It constructs migration sequences, generates stable migration identifiers, combines dependency declarations, validates sequential identifiers, parses migration IDs, and performs dependency-aware topological sorting with cycle detection. It also defines migration result and failure-reason representations used by persistence code.",
+      "businessContext": "Supports versioned persistence for tldraw stores and their records. Failures can prevent stored documents from loading or cause incompatible schema data to be applied.",
+      "classes": [],
+      "functions": [
+        "squashDependsOn (~L6-22): Combines standalone dependency declarations into adjacent migrations.",
+        "createMigrationSequence (~L53-69): Builds and validates a migration sequence.",
+        "createMigrationIds (~L98-107): Generates formatted migration identifiers from version numbers.",
+        "createRecordMigrationSequence (~L126-147): Creates filtered record-scoped migration sequences.",
+        "sortMigrations (~L287-386): Topologically orders migrations while prioritizing explicit dependencies.",
+        "parseMigrationId (~L392-395): Splits a migration identifier into sequence and version.",
+        "validateMigrationId (~L397-408): Checks migration identifier format and sequence ownership.",
+        "validateMigrations (~L425-462): Validates sequence identifiers and contiguous migration versions."
+      ],
+      "keywords": [
+        "schema migration",
+        "topological sort",
+        "Kahn's algorithm",
+        "migration dependency",
+        "record migration",
+        "store migration",
+        "storage migration",
+        "migration identifier",
+        "legacy migration",
+        "cycle detection"
+      ],
+      "ontologyConcepts": [
+        "schema evolution",
+        "dependency ordering",
+        "data transformation",
+        "backward compatibility",
+        "validation",
+        "versioning",
+        "error classification"
+      ],
+      "businessEntities": [
+        "Migration",
+        "MigrationSequence",
+        "SerializedStore",
+        "SerializedSchema",
+        "Record",
+        "Storage",
+        "MigrationResult"
+      ],
+      "systemCapabilities": [
+        "Construct migration sequences",
+        "Generate migration identifiers",
+        "Validate migration definitions",
+        "Order dependent migrations",
+        "Detect circular dependencies",
+        "Support legacy migration formats"
+      ],
+      "configDependencies": [],
+      "importsInternal": [
+        {
+          "spec": "./BaseRecord",
+          "symbols": ["UnknownRecord"],
+          "anchor": { "startLine": 2, "endLine": 2 },
+          "resolvedRelativePath": "packages/store/src/lib/BaseRecord.ts",
+          "resolvedFileId": "packages/store/src/lib/BaseRecord.ts",
+          "resolvedHint": "packages/store/src/lib/BaseRecord.ts"
+        },
+        {
+          "spec": "./Store",
+          "symbols": ["SerializedStore"],
+          "anchor": { "startLine": 3, "endLine": 3 },
+          "resolvedRelativePath": "packages/store/src/lib/Store.ts",
+          "resolvedFileId": "packages/store/src/lib/Store.ts",
+          "resolvedHint": "packages/store/src/lib/Store.ts"
+        },
+        {
+          "spec": "./StoreSchema",
+          "symbols": ["SerializedSchema"],
+          "anchor": { "startLine": 4, "endLine": 4 },
+          "resolvedRelativePath": "packages/store/src/lib/StoreSchema.ts",
+          "resolvedFileId": "packages/store/src/lib/StoreSchema.ts",
+          "resolvedHint": "packages/store/src/lib/StoreSchema.ts"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "@tldraw/utils",
+          "symbols": ["assert", "objectMapEntries"],
+          "package": "@tldraw/utils",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 1 }
+        }
+      ],
+      "sideEffects": { "io": [], "network": [], "env": [], "fs": [], "process": [], "mutationOfArg": [] },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "createMigrationSequence",
+          "shape": "export function createMigrationSequence({ sequence, sequenceId, retroactive = true }: { sequenceId: string; retroactive?: boolean; sequence: Array<Migration | StandaloneDependsOn> }): MigrationSequence",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "createMigrationIds",
+          "shape": "export function createMigrationIds<const ID extends string, const Versions extends Record<string, number>>(sequenceId: ID, versions: Versions): { [K in keyof Versions]: `${ID}/${Versions[K]}` }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "createRecordMigrationSequence",
+          "shape": "export function createRecordMigrationSequence(opts: { recordType: string; filter?(record: UnknownRecord): boolean; retroactive?: boolean; sequenceId: string; sequence: Omit<Extract<Migration, { scope: 'record' }>, 'scope'>[] }): MigrationSequence",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "LegacyMigration",
+          "shape": "export interface LegacyMigration<Before = any, After = any> { up: (oldState: Before) => After; down: (newState: After) => Before }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "MigrationId",
+          "shape": "export type MigrationId = `${string}/${number}`",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "StandaloneDependsOn",
+          "shape": "export interface StandaloneDependsOn { readonly dependsOn: readonly MigrationId[] }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "Migration",
+          "shape": "export type Migration = { readonly id: MigrationId; readonly dependsOn?: readonly MigrationId[] | undefined } & ({ readonly scope: 'record'; readonly filter?: (record: UnknownRecord) => boolean; readonly up: (oldState: UnknownRecord) => void | UnknownRecord; readonly down?: (newState: UnknownRecord) => void | UnknownRecord } | { readonly scope: 'store'; readonly up: (oldState: SerializedStore<UnknownRecord>) => void | SerializedStore<UnknownRecord>; readonly down?: (newState: SerializedStore<UnknownRecord>) => void | SerializedStore<UnknownRecord> } | { readonly scope: 'storage'; readonly up: (storage: SynchronousRecordStorage<UnknownRecord>) => void; readonly down?: never })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "SynchronousRecordStorage",
+          "shape": "export interface SynchronousRecordStorage<R extends UnknownRecord> { get(id: string): R | undefined; set(id: string, record: R): void; delete(id: string): void; keys(): Iterable<string>; values(): Iterable<R>; entries(): Iterable<[string, R]> }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "SynchronousStorage",
+          "shape": "export interface SynchronousStorage<R extends UnknownRecord> extends SynchronousRecordStorage<R> { getSchema(): SerializedSchema; setSchema(schema: SerializedSchema): void }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "LegacyBaseMigrationsInfo",
+          "shape": "export interface LegacyBaseMigrationsInfo { firstVersion: number; currentVersion: number; migrators: { [version: number]: LegacyMigration } }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "LegacyMigrations",
+          "shape": "export interface LegacyMigrations extends LegacyBaseMigrationsInfo { subTypeKey?: string; subTypeMigrations?: Record<string, LegacyBaseMigrationsInfo> }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "MigrationSequence",
+          "shape": "export interface MigrationSequence { sequenceId: string; retroactive: boolean; sequence: Migration[] }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sortMigrations",
+          "shape": "export function sortMigrations(migrations: Migration[]): Migration[]",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "parseMigrationId",
+          "shape": "export function parseMigrationId(id: MigrationId): { sequenceId: string; version: number }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "validateMigrations",
+          "shape": "export function validateMigrations(migrations: MigrationSequence)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "MigrationResult",
+          "shape": "export type MigrationResult<T> = { type: 'success'; value: T } | { type: 'error'; reason: MigrationFailureReason }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "MigrationFailureReason",
+          "shape": "export const MigrationFailureReason = { IncompatibleSubtype: 'incompatible-subtype', UnknownType: 'unknown-type', TargetVersionTooNew: 'target-version-too-new', TargetVersionTooOld: 'target-version-too-old', MigrationError: 'migration-error', UnrecognizedSubtype: 'unrecognized-subtype' } as const",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "UnknownRecord",
+          "shape": "UnknownRecord",
+          "resolvedRelativePath": "packages/store/src/lib/BaseRecord.ts",
+          "resolvedFileId": "packages/store/src/lib/BaseRecord.ts"
+        },
+        {
+          "name": "SerializedStore",
+          "shape": "SerializedStore<UnknownRecord>",
+          "resolvedRelativePath": "packages/store/src/lib/Store.ts",
+          "resolvedFileId": "packages/store/src/lib/Store.ts"
+        },
+        {
+          "name": "SerializedSchema",
+          "shape": "SerializedSchema",
+          "resolvedRelativePath": "packages/store/src/lib/StoreSchema.ts",
+          "resolvedFileId": "packages/store/src/lib/StoreSchema.ts"
+        },
+        {
+          "name": "assert",
+          "shape": "assert(condition, message)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "objectMapEntries",
+          "shape": "objectMapEntries(versions)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "dependency-squashing",
+          "intent": "Combines standalone dependency declarations with the next migration.",
+          "structureKind": "loop",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": "i >= 0",
+          "terminationCondition": null,
+          "anchor": { "startLine": 6, "endLine": 22 }
+        },
+        {
+          "name": "migration-sequence-construction",
+          "intent": "Normalizes, validates, and returns a migration sequence.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 53, "endLine": 69 }
+        },
+        {
+          "name": "record-sequence-filtering",
+          "intent": "Adds record scope and composes record-type and custom filters.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 126, "endLine": 147 }
+        },
+        {
+          "name": "dependency-graph-building",
+          "intent": "Builds implicit and explicit dependency edges with in-degree counts.",
+          "structureKind": "loop",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": "for (const m of migrations)",
+          "terminationCondition": null,
+          "anchor": { "startLine": 316, "endLine": 344 }
+        },
+        {
+          "name": "priority-topological-sort",
+          "intent": "Selects ready migrations by urgency and processes dependency releases.",
+          "structureKind": "loop",
+          "predicate": "ready.length > 0",
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 350, "endLine": 379 }
+        },
+        {
+          "name": "cycle-validation",
+          "intent": "Rejects incomplete processing when dependency cycles remain.",
+          "structureKind": "branch",
+          "predicate": "result.length !== migrations.length",
+          "branchOutcomes": ["cycle detected", "all migrations processed"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 382, "endLine": 386 }
+        },
+        {
+          "name": "migration-sequence-validation",
+          "intent": "Checks sequence identity and contiguous version numbering.",
+          "structureKind": "loop",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": "i < migrations.sequence.length",
+          "terminationCondition": null,
+          "anchor": { "startLine": 425, "endLine": 462 }
+        }
+      ],
+      "representationFamily": "module",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "function",
+          "name": "createMigrationSequence",
+          "signature": "export function createMigrationSequence({",
+          "generics": null,
+          "decorators": [],
+          "returnType": "MigrationSequence",
+          "exported": true,
+          "anchor": { "startLine": 53, "endLine": 61 }
+        },
+        {
+          "kind": "function",
+          "name": "createMigrationIds",
+          "signature": "export function createMigrationIds<",
+          "generics": "const ID extends string,\n\tconst Versions extends Record<string, number>,",
+          "decorators": [],
+          "returnType": "{ [K in keyof Versions]: `${ID}/${Versions[K]}` }",
+          "exported": true,
+          "anchor": { "startLine": 98, "endLine": 101 }
+        },
+        {
+          "kind": "function",
+          "name": "createRecordMigrationSequence",
+          "signature": "export function createRecordMigrationSequence(opts: {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "MigrationSequence",
+          "exported": true,
+          "anchor": { "startLine": 126, "endLine": 132 }
+        },
+        {
+          "kind": "function",
+          "name": "sortMigrations",
+          "signature": "export function sortMigrations(migrations: Migration[]): Migration[] {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Migration[]",
+          "exported": true,
+          "anchor": { "startLine": 287, "endLine": 287 }
+        },
+        {
+          "kind": "function",
+          "name": "parseMigrationId",
+          "signature": "export function parseMigrationId(id: MigrationId): { sequenceId: string; version: number } {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "{ sequenceId: string; version: number }",
+          "exported": true,
+          "anchor": { "startLine": 392, "endLine": 392 }
+        },
+        {
+          "kind": "function",
+          "name": "validateMigrations",
+          "signature": "export function validateMigrations(migrations: MigrationSequence) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 425, "endLine": 425 }
+        },
+        {
+          "kind": "interface",
+          "name": "LegacyMigration",
+          "signature": "export interface LegacyMigration<Before = any, After = any> {",
+          "generics": "<Before = any, After = any>",
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 159, "endLine": 159 }
+        },
+        {
+          "kind": "interface",
+          "name": "StandaloneDependsOn",
+          "signature": "export interface StandaloneDependsOn {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 189, "endLine": 189 }
+        },
+        {
+          "kind": "type",
+          "name": "Migration",
+          "signature": "export type Migration = {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 207, "endLine": 207 }
+        },
+        {
+          "kind": "interface",
+          "name": "SynchronousRecordStorage",
+          "signature": "export interface SynchronousRecordStorage<R extends UnknownRecord> {",
+          "generics": "<R extends UnknownRecord>",
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 244, "endLine": 244 }
+        },
+        {
+          "kind": "interface",
+          "name": "SynchronousStorage",
+          "signature": "export interface SynchronousStorage<R extends UnknownRecord> extends SynchronousRecordStorage<R> {",
+          "generics": "<R extends UnknownRecord>",
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 257, "endLine": 257 }
+        },
+        {
+          "kind": "interface",
+          "name": "LegacyBaseMigrationsInfo",
+          "signature": "export interface LegacyBaseMigrationsInfo {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 270, "endLine": 270 }
+        },
+        {
+          "kind": "interface",
+          "name": "LegacyMigrations",
+          "signature": "export interface LegacyMigrations extends LegacyBaseMigrationsInfo {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 280, "endLine": 280 }
+        },
+        {
+          "kind": "interface",
+          "name": "MigrationSequence",
+          "signature": "export interface MigrationSequence {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 292, "endLine": 292 }
+        },
+        {
+          "kind": "type",
+          "name": "MigrationId",
+          "signature": "export type MigrationId = `${string}/${number}`",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 174, "endLine": 174 }
+        },
+        {
+          "kind": "type",
+          "name": "MigrationResult",
+          "signature": "export type MigrationResult<T> =",
+          "generics": "<T>",
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 464, "endLine": 464 }
+        },
+        {
+          "kind": "const",
+          "name": "MigrationFailureReason",
+          "signature": "export const MigrationFailureReason = {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 469, "endLine": 469 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "interface",
+          "name": "LegacyMigration",
+          "shape": "{\n\t// eslint-disable-next-line tldraw/method-signature-style\n\tup: (oldState: Before) => After\n\t// eslint-disable-next-line tldraw/method-signature-style\n\tdown: (newState: After) => Before\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 159, "endLine": 163 }
+        },
+        {
+          "kind": "interface",
+          "name": "StandaloneDependsOn",
+          "shape": "{\n\treadonly dependsOn: readonly MigrationId[]\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 189, "endLine": 191 }
+        },
+        {
+          "kind": "type",
+          "name": "Migration",
+          "shape": "{\n\treadonly id: MigrationId\n\treadonly dependsOn?: readonly MigrationId[] | undefined\n} & (\n\t| {\n\t\t\treadonly scope: 'record'\n\t\t\t// eslint-disable-next-line tldraw/method-signature-style\n\t\t\treadonly filter?: (record: UnknownRecord) => boolean\n\t\t\t// eslint-disable-next-line tldraw/method-signature-style\n\t\t\treadonly up: (oldState: UnknownRecord) => void | UnknownRecord\n\t\t\t// eslint-disable-next-line tldraw/method-signature-style\n\t\t\treadonly down?: (newState: UnknownRecord) => void | UnknownRecord\n\t  }\n\t| {\n\t\t\treadonly scope: 'store'\n\t\t\t// eslint-disable-next-line tldraw/method-signature-style\n\t\t\treadonly up: (\n\t\t\t\toldState: SerializedStore<UnknownRecord>\n\t\t\t) => void | SerializedStore<UnknownRecord>\n\t\t\t// eslint-disable-next-line tldraw/method-signature-style\n\t\t\treadonly down?: (\n\t\t\t\tnewState: SerializedStore<UnknownRecord>\n\t\t\t) => void | SerializedStore<UnknownRecord>\n\t  }\n\t| {\n\t\t\treadonly scope: 'storage'\n\t\t\t// eslint-disable-next-line tldraw/method-signature-style\n\t\t\treadonly up: (storage: SynchronousRecordStorage<UnknownRecord>) => void\n\t\t\treadonly down?: never\n\t  }\n)",
+          "discriminant": "scope",
+          "anchor": { "startLine": 207, "endLine": 241 }
+        },
+        {
+          "kind": "interface",
+          "name": "SynchronousRecordStorage",
+          "shape": "{\n\tget(id: string): R | undefined\n\tset(id: string, record: R): void\n\tdelete(id: string): void\n\tkeys(): Iterable<string>\n\tvalues(): Iterable<R>\n\tentries(): Iterable<[string, R]>\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 244, "endLine": 251 }
+        },
+        {
+          "kind": "interface",
+          "name": "SynchronousStorage",
+          "shape": "{\n\tgetSchema(): SerializedSchema\n\tsetSchema(schema: SerializedSchema): void\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 257, "endLine": 260 }
+        },
+        {
+          "kind": "interface",
+          "name": "LegacyBaseMigrationsInfo",
+          "shape": "{\n\tfirstVersion: number\n\tcurrentVersion: number\n\tmigrators: { [version: number]: LegacyMigration }\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 270, "endLine": 274 }
+        },
+        {
+          "kind": "interface",
+          "name": "LegacyMigrations",
+          "shape": "{\n\tsubTypeKey?: string\n\tsubTypeMigrations?: Record<string, LegacyBaseMigrationsInfo>\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 280, "endLine": 283 }
+        },
+        {
+          "kind": "interface",
+          "name": "MigrationSequence",
+          "shape": "{\n\tsequenceId: string\n\t/**\n\t * retroactive should be true if the migrations should be applied to snapshots that were created before\n\t * this migration sequence was added to the schema.\n\t *\n\t * In general:\n\t *\n\t * - retroactive should be true when app developers create their own new migration sequences.\n\t * - retroactive should be false when library developers ship a migration sequence. When you install a library for the first time, any migrations that were added in the library before that point should generally _not_ be applied to your existing data.\n\t */\n\tretroactive: boolean\n\tsequence: Migration[]\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 292, "endLine": 307 }
+        },
+        {
+          "kind": "union",
+          "name": "MigrationResult",
+          "shape": "| { type: 'success'; value: T }\n\t| { type: 'error'; reason: MigrationFailureReason }",
+          "discriminant": "type",
+          "anchor": { "startLine": 464, "endLine": 466 }
+        },
+        {
+          "kind": "alias",
+          "name": "MigrationFailureReason",
+          "shape": "(typeof MigrationFailureReason)[keyof typeof MigrationFailureReason]",
+          "discriminant": null,
+          "anchor": { "startLine": 479, "endLine": 479 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "empty migration array",
+          "handled": true,
+          "behavior": "Sorting returns an empty array; sequence validation returns without version checks.",
+          "anchor": { "startLine": 288, "endLine": 288 }
+        },
+        {
+          "inputShape": "standalone dependency declaration without a preceding migration",
+          "handled": true,
+          "behavior": "The declaration is not inserted into the result and therefore contributes no dependency.",
+          "anchor": { "startLine": 10, "endLine": 16 }
+        },
+        {
+          "inputShape": "duplicate or overlapping dependency",
+          "handled": true,
+          "behavior": "The dependency edge is retained once so in-degree counts remain correct.",
+          "anchor": { "startLine": 337, "endLine": 344 }
+        },
+        {
+          "inputShape": "circular migration dependencies",
+          "handled": true,
+          "behavior": "An assertion is raised identifying the first unprocessed migration.",
+          "anchor": { "startLine": 382, "endLine": 386 }
+        },
+        {
+          "inputShape": "empty sequence identifier or identifier containing slash",
+          "handled": true,
+          "behavior": "Validation asserts that the sequence identifier is non-empty and contains no slash.",
+          "anchor": { "startLine": 427, "endLine": 433 }
+        },
+        {
+          "inputShape": "migration versions that do not start at one or increment contiguously",
+          "handled": true,
+          "behavior": "Validation raises an assertion describing the expected identifier.",
+          "anchor": { "startLine": 438, "endLine": 462 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": ">=",
+          "left": "i",
+          "right": "0",
+          "inclusive": true,
+          "intent": "Iterates backward through every sequence element including index zero.",
+          "anchor": { "startLine": 8, "endLine": 8 }
+        },
+        {
+          "operator": "==",
+          "left": "migrations.length",
+          "right": "0",
+          "inclusive": true,
+          "intent": "Returns immediately when no migrations need sorting.",
+          "anchor": { "startLine": 288, "endLine": 288 }
+        },
+        {
+          "operator": "==",
+          "left": "urgencyScore",
+          "right": "bestCandidateScore",
+          "inclusive": true,
+          "intent": "Uses migration identifier ordering to break equal urgency scores.",
+          "anchor": { "startLine": 365, "endLine": 367 }
+        },
+        {
+          "operator": "<",
+          "left": "m.id.localeCompare(bestCandidate?.id ?? '')",
+          "right": "0",
+          "inclusive": false,
+          "intent": "Prefers the lexicographically lower migration identifier.",
+          "anchor": { "startLine": 367, "endLine": 367 }
+        },
+        {
+          "operator": "==",
+          "left": "inDegree.get(depId)",
+          "right": "0",
+          "inclusive": true,
+          "intent": "Queues a dependent once all incoming edges are removed.",
+          "anchor": { "startLine": 378, "endLine": 378 }
+        },
+        {
+          "operator": "!=",
+          "left": "result.length",
+          "right": "migrations.length",
+          "inclusive": false,
+          "intent": "Detects migrations left unprocessed by the topological sort.",
+          "anchor": { "startLine": 382, "endLine": 382 }
+        },
+        {
+          "operator": "==",
+          "left": "n",
+          "right": "1",
+          "inclusive": true,
+          "intent": "Requires the first migration version to be one.",
+          "anchor": { "startLine": 441, "endLine": 441 }
+        },
+        {
+          "operator": "==",
+          "left": "m",
+          "right": "n + 1",
+          "inclusive": true,
+          "intent": "Requires each subsequent migration version to increment by one.",
+          "anchor": { "startLine": 455, "endLine": 455 }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": "assert(false, `Circular dependency in migrations: ${unprocessed[0].id}`)",
+          "caught": null,
+          "action": "Aborts sorting when not all migrations were processed.",
+          "fallback": null,
+          "anchor": { "startLine": 384, "endLine": 384 }
+        },
+        {
+          "thrown": "assert(...)",
+          "caught": null,
+          "action": "Rejects invalid sequence identifiers, migration identifiers, and version progression.",
+          "fallback": null,
+          "anchor": { "startLine": 427, "endLine": 462 }
+        }
+      ],
+      "invariants": [
+        {
+          "kind": "invariant",
+          "description": "Migration identifiers in a sequence must use the sequence identifier as their prefix.",
+          "anchor": { "startLine": 397, "endLine": 408 }
+        },
+        {
+          "kind": "ordering",
+          "description": "Migration versions within a validated sequence begin at one and increase by one.",
+          "anchor": { "startLine": 438, "endLine": 462 }
+        },
+        {
+          "kind": "invariant",
+          "description": "A sorted migration result contains every input migration exactly once unless validation throws.",
+          "anchor": { "startLine": 382, "endLine": 386 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Duplicate implicit and explicit dependency edges are counted only once.",
+          "anchor": { "startLine": 337, "endLine": 344 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "schema",
+          "description": "Migration identifiers are expected to follow the sequenceId/version format.",
+          "anchor": { "startLine": 397, "endLine": 408 }
+        },
+        {
+          "kind": "caller",
+          "description": "Migration transformation functions and storage implementations satisfy the declared scope-specific contracts.",
+          "anchor": { "startLine": 207, "endLine": 241 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "Should explicit dependencies on migrations absent from the supplied array be ignored or validated elsewhere?",
+          "affects": "sortMigrations dependency validation",
+          "anchor": { "startLine": 333, "endLine": 335 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "sync",
+        "reentrant": true,
+        "ordering": "deterministic",
+        "notes": "All operations are synchronous and use local data structures; no shared mutable state or asynchronous work is present."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "creates-valid-migration-sequence",
+          "scenario": "A valid sequence with consecutive migration IDs is created.",
+          "given": [
+            "sequenceId: 'com.myapp.book'",
+            "sequence: [{ id: 'com.myapp.book/1', scope: 'record', up: (r) => r }]"
+          ],
+          "when": "createMigrationSequence({ sequenceId: 'com.myapp.book', sequence })",
+          "then": "result.sequenceId === 'com.myapp.book' && result.sequence.length === 1",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins construction and validation of a minimally valid migration sequence."
+        },
+        {
+          "testId": "rejects-nonconsecutive-migration-ids",
+          "scenario": "A migration sequence skips a version number.",
+          "given": [
+            "sequenceId: 'app'",
+            "sequence: [{ id: 'app/1', scope: 'record', up: (r) => r }, { id: 'app/3', scope: 'record', up: (r) => r }]"
+          ],
+          "when": "validateMigrations({ sequenceId: 'app', retroactive: true, sequence })",
+          "then": "throws an assertion error",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Guards the required contiguous version progression."
+        },
+        {
+          "testId": "formats-migration-ids",
+          "scenario": "Named version numbers are converted into sequence-qualified migration IDs.",
+          "given": ["versions: { addGenre: 1, addPublisher: 2 }"],
+          "when": "createMigrationIds('com.myapp.book', versions)",
+          "then": "result equals { addGenre: 'com.myapp.book/1', addPublisher: 'com.myapp.book/2' }",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins the public migration ID formatting contract."
+        },
+        {
+          "testId": "sorts-implicit-and-explicit-dependencies",
+          "scenario": "Migrations are supplied out of order with both sequence and explicit dependencies.",
+          "given": [
+            "migrations: [{ id: 'app/2', scope: 'record', up: (r) => r }, { id: 'app/1', scope: 'record', up: (r) => r }, { id: 'lib/1', scope: 'record', up: (r) => r, dependsOn: ['app/1'] }]"
+          ],
+          "when": "sortMigrations(migrations)",
+          "then": "result.map((m) => m.id) equals ['app/1', 'app/2', 'lib/1']",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Guards topological ordering across implicit and explicit dependency edges."
+        },
+        {
+          "testId": "rejects-circular-dependencies",
+          "scenario": "Migrations form a dependency cycle.",
+          "given": [
+            "migrations: [{ id: 'app/1', scope: 'record', up: (r) => r, dependsOn: ['lib/1'] }, { id: 'lib/1', scope: 'record', up: (r) => r, dependsOn: ['app/1'] }]"
+          ],
+          "when": "sortMigrations(migrations)",
+          "then": "throws an assertion error containing 'Circular dependency in migrations:'",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins cycle detection rather than silently returning a partial order."
+        },
+        {
+          "testId": "parses-migration-id",
+          "scenario": "A migration ID contains a sequence identifier and numeric version.",
+          "given": ["id: 'com.myapp.book/5'"],
+          "when": "parseMigrationId(id)",
+          "then": "result equals { sequenceId: 'com.myapp.book', version: 5 }",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Guards the ID decomposition used by migration ordering."
+        },
+        {
+          "testId": "filters-record-migrations",
+          "scenario": "A record migration sequence receives records of matching and non-matching types.",
+          "given": ["recordType: 'book'", "sequence: [{ id: 'app/1', up: (r) => ({ ...r, migrated: true }) }]"],
+          "when": "createRecordMigrationSequence({ recordType: 'book', sequenceId: 'app', sequence })",
+          "then": "the generated migration filter returns true for a record with typeName === 'book' and false for a record with a different typeName",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins automatic record-type filtering."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "imports",
+        "private dependency-squashing helper",
+        "migration sequence factory",
+        "migration identifier factory",
+        "record migration sequence factory",
+        "legacy and current migration type declarations",
+        "migration sorting function",
+        "migration ID parsing and validation helpers",
+        "migration sequence validation function",
+        "migration result and failure-reason declarations"
+      ],
+      "moduleLevelCode": "import { assert, objectMapEntries } from '@tldraw/utils'\nimport { UnknownRecord } from './BaseRecord'\nimport { SerializedStore } from './Store'\nimport { SerializedSchema } from './StoreSchema'",
+      "exports": [
+        { "name": "createMigrationSequence", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "createMigrationIds", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "createRecordMigrationSequence", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "LegacyMigration", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "MigrationId", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "StandaloneDependsOn", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "Migration", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "SynchronousRecordStorage", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "SynchronousStorage", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "LegacyBaseMigrationsInfo", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "LegacyMigrations", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "MigrationSequence", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sortMigrations", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "parseMigrationId", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "validateMigrations", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "MigrationResult", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "MigrationFailureReason", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "assert", "module": "@tldraw/utils", "alias": null, "kind": "external" },
+        { "symbol": "objectMapEntries", "module": "@tldraw/utils", "alias": null, "kind": "external" },
+        { "symbol": "UnknownRecord", "module": "./BaseRecord", "alias": null, "kind": "internal" },
+        { "symbol": "SerializedStore", "module": "./Store", "alias": null, "kind": "internal" },
+        { "symbol": "SerializedSchema", "module": "./StoreSchema", "alias": null, "kind": "internal" }
+      ],
+      "fileConstants": [
+        {
+          "name": "MigrationFailureReason",
+          "value": "{\n\tIncompatibleSubtype: 'incompatible-subtype',\n\tUnknownType: 'unknown-type',\n\tTargetVersionTooNew: 'target-version-too-new',\n\tTargetVersionTooOld: 'target-version-too-old',\n\tMigrationError: 'migration-error',\n\tUnrecognizedSubtype: 'unrecognized-subtype',\n}",
+          "kind": "object"
+        }
+      ],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/store/src/lib/migrate.ts__squashDependsOn#function:squashDependsOn",
+        "unitKind": "function",
+        "name": "squashDependsOn",
+        "qualifiedName": "squashDependsOn",
+        "parentUnitId": null,
+        "startLine": 6,
+        "endLine": 22,
+        "isBehavioral": true,
+        "source": "function squashDependsOn(sequence: Array<Migration | StandaloneDependsOn>): Migration[] {\n\tconst result: Migration[] = []\n\tfor (let i = sequence.length - 1; i >= 0; i--) {\n\t\tconst elem = sequence[i]\n\t\tif (!('id' in elem)) {\n\t\t\tconst dependsOn = elem.dependsOn\n\t\t\tconst prev = result[0]\n\t\t\tif (prev) {\n\t\t\t\tresult[0] = {\n\t\t\t\t\t...prev,\n\t\t\t\t\tdependsOn: dependsOn.concat(prev.dependsOn ?? []),\n\t\t\t\t}\n\t\t\t}\n\t\t} else {\n\t\t\tresult.unshift(elem)\n\t\t}\n\t}",
+        "detail": {
+          "unitId": "packages/store/src/lib/migrate.ts__squashDependsOn#function:squashDependsOn",
+          "fileId": "packages/store/src/lib/migrate.ts__squashDependsOn",
+          "unitKind": "function",
+          "name": "squashDependsOn",
+          "qualifiedName": "squashDependsOn",
+          "parentUnitId": null,
+          "startLine": 6,
+          "endLine": 22,
+          "signature": "function squashDependsOn(sequence: Array<Migration | StandaloneDependsOn>): Migration[]",
+          "parameters": [
+            {
+              "name": "sequence",
+              "type": "Array<Migration | StandaloneDependsOn>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "Migration[]",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "sequence is an array whose elements are Migration or StandaloneDependsOn values.",
+            "Each element is non-null and supports the shape required by its declared union member."
+          ],
+          "postconditions": [
+            "Returns a Migration[] containing all input migrations in their original relative order.",
+            "Standalone dependsOn declarations that precede a migration are appended to that migration's dependency list in their original sequence order.",
+            "Standalone dependsOn declarations without a following migration are not represented in the result."
+          ],
+          "invariants": [
+            "The result contains no standalone dependency declarations.",
+            "Existing migration dependsOn entries are preserved and remain after merged standalone dependencies.",
+            "Input migration order is preserved."
+          ],
+          "edgeCases": [
+            "An empty sequence returns an empty array.",
+            "A sequence containing only standalone dependency declarations returns an empty array.",
+            "A standalone dependency declaration before a migration is merged into that migration.",
+            "Multiple consecutive standalone dependency declarations before a migration are merged in their original order.",
+            "A sequence containing migrations without standalone declarations returns the migrations in the same order, without changing their dependency values."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Behavior is not defined for nullish or malformed values outside the Migration | StandaloneDependsOn type union.",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["Migration", "StandaloneDependsOn"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Transforms a sequence containing migrations and standalone dependency declarations into migrations only. Standalone dependencies are merged into the next migration in sequence order, while declarations without a following migration are discarded.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "squashDependsOn is called with that sequence.",
+              "then": "The result contains one migration whose dependsOn value is [\"a\", \"b\"].",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "squashDependsOn is called.",
+              "then": "The result contains the migration with the standalone dependencies before [\"existing\"], preserving the migration's other fields.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "squashDependsOn is called.",
+              "then": "Those declarations are omitted from the returned Migration[] result.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "64ab9a707ddf3e0727871ffb88fe9e76063e097d99bac6ad43d520e492e4cfba"
+        }
+      },
+      {
+        "unitId": "packages/store/src/lib/migrate.ts__createMigrationSequence#function:createMigrationSequence",
+        "unitKind": "function",
+        "name": "createMigrationSequence",
+        "qualifiedName": "createMigrationSequence",
+        "parentUnitId": null,
+        "startLine": 53,
+        "endLine": 69,
+        "isBehavioral": true,
+        "source": " * @public\n */\nexport function createMigrationSequence({\n\tsequence,\n\tsequenceId,\n\tretroactive = true,\n}: {\n\tsequenceId: string\n\tretroactive?: boolean\n\tsequence: Array<Migration | StandaloneDependsOn>\n}): MigrationSequence {\n\tconst migrations: MigrationSequence = {\n\t\tsequenceId,\n\t\tretroactive,\n\t\tsequence: squashDependsOn(sequence),\n\t}\n\tvalidateMigrations(migrations)",
+        "detail": {
+          "unitId": "packages/store/src/lib/migrate.ts__createMigrationSequence#function:createMigrationSequence",
+          "fileId": "packages/store/src/lib/migrate.ts__createMigrationSequence",
+          "unitKind": "function",
+          "name": "createMigrationSequence",
+          "qualifiedName": "createMigrationSequence",
+          "parentUnitId": null,
+          "startLine": 53,
+          "endLine": 69,
+          "signature": "export function createMigrationSequence({\n\tsequence,\n\tsequenceId,\n\tretroactive = true,\n}: {\n\tsequenceId: string\n\tretroactive?: boolean\n\tsequence: Array<Migration | StandaloneDependsOn>\n}): MigrationSequence",
+          "parameters": [
+            {
+              "name": "sequence",
+              "type": "Array<Migration | StandaloneDependsOn>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "sequenceId",
+              "type": "string",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "retroactive",
+              "type": "boolean",
+              "default": "true",
+              "optional": true,
+              "variadic": false,
+              "order": 2
+            }
+          ],
+          "returnType": "MigrationSequence",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "sequenceId is a string.",
+            "sequence is an array of Migration or StandaloneDependsOn values.",
+            "The resulting sequence must satisfy the validation rules enforced by validateMigrations."
+          ],
+          "postconditions": [
+            "Returns a MigrationSequence whose sequenceId equals the supplied sequenceId.",
+            "Returns a MigrationSequence whose retroactive value equals the supplied retroactive value, defaulting to true when omitted.",
+            "The returned sequence is the result of applying squashDependsOn to the supplied sequence.",
+            "The resulting MigrationSequence has been passed to validateMigrations before normal return."
+          ],
+          "invariants": [
+            "The sequenceId and retroactive values are preserved in the constructed object.",
+            "The returned sequence is normalized before validation."
+          ],
+          "edgeCases": [
+            "When retroactive is omitted, the constructed sequence uses true.",
+            "When sequence contains StandaloneDependsOn entries, they are normalized through squashDependsOn before validation.",
+            "If validation fails, the function does not complete normally and propagates the failure from validateMigrations."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [
+              "The validation error produced by validateMigrations when the constructed migration sequence is invalid."
+            ],
+            "reverts": [],
+            "onInvalidInput": "Delegates invalid migration-sequence handling to validateMigrations.",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "squashDependsOn", "source": "packages/store/src/lib/migrate.ts", "kind": "internal" },
+            { "name": "validateMigrations", "source": "packages/store/src/lib/migrate.ts", "kind": "internal" }
+          ],
+          "symbolReferences": ["Migration", "StandaloneDependsOn", "MigrationSequence"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Creates a migration sequence with the supplied identifier and retroactivity setting. The input sequence is normalized by squashing standalone dependencies and the resulting migration sequence is validated before being returned.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "17a869275b60c6aebd60f134873c062f7c6c71076615ce9a691e1682ee85f496"
+        }
+      },
+      {
+        "unitId": "packages/store/src/lib/migrate.ts__createMigrationIds#function:createMigrationIds",
+        "unitKind": "function",
+        "name": "createMigrationIds",
+        "qualifiedName": "createMigrationIds",
+        "parentUnitId": null,
+        "startLine": 98,
+        "endLine": 107,
+        "isBehavioral": true,
+        "source": " */\nexport function createMigrationIds<\n\tconst ID extends string,\n\tconst Versions extends Record<string, number>,\n>(sequenceId: ID, versions: Versions): { [K in keyof Versions]: `${ID}/${Versions[K]}` } {\n\t// Note: not objectMapFromEntries — `keyof Versions` is not narrowed to `string`, which that\n\t// helper requires.\n\treturn Object.fromEntries(\n\t\tobjectMapEntries(versions).map(([key, version]) => [key, `${sequenceId}/${version}`] as const)\n\t) as any",
+        "detail": {
+          "unitId": "packages/store/src/lib/migrate.ts__createMigrationIds#function:createMigrationIds",
+          "fileId": "packages/store/src/lib/migrate.ts__createMigrationIds",
+          "unitKind": "function",
+          "name": "createMigrationIds",
+          "qualifiedName": "createMigrationIds",
+          "parentUnitId": null,
+          "startLine": 98,
+          "endLine": 107,
+          "signature": "export function createMigrationIds<const ID extends string, const Versions extends Record<string, number>>(sequenceId: ID, versions: Versions): { [K in keyof Versions]: `${ID}/${Versions[K]}` }",
+          "parameters": [
+            { "name": "sequenceId", "type": "ID", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "versions",
+              "type": "Versions",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "{ [K in keyof Versions]: `${ID}/${Versions[K]}` }",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": ["const ID extends string", "const Versions extends Record<string, number>"],
+          "logicOutline": [],
+          "preconditions": ["sequenceId is a string.", "versions is a record whose values are numeric versions."],
+          "postconditions": [
+            "Returns an object with the same keys as versions.",
+            "Each returned value is the string `${sequenceId}/${version}` for the corresponding input version."
+          ],
+          "invariants": [
+            "The input key-to-version correspondence is preserved.",
+            "No input object or version value is mutated."
+          ],
+          "edgeCases": [
+            "An empty versions object produces an empty object.",
+            "Negative, fractional, or otherwise runtime-provided numeric values are converted to strings using template-string interpolation.",
+            "Runtime inputs that do not satisfy the expected object/record shape may cause the underlying entry or object-construction operations to throw."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["Errors propagated from objectMapEntries or Object.fromEntries."],
+            "reverts": [],
+            "onInvalidInput": "Not explicitly handled; invalid runtime inputs are delegated to the underlying entry and object-construction operations.",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "objectMapEntries", "source": null, "kind": "internal" },
+            { "name": "Object.fromEntries", "source": "JavaScript standard library", "kind": "external" }
+          ],
+          "symbolReferences": ["Record"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Returns a plain object whose keys match the enumerable entries of versions and whose values use the format `${sequenceId}/${version}`.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Creates migration identifiers by combining a sequence identifier with each numeric version while preserving the version mapping's keys.",
+          "specLiterals": [
+            {
+              "kind": "format-string",
+              "value": "${sequenceId}/${version}",
+              "role": "Canonical migration identifier format combining the sequence identifier and version with a slash separator."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "createMigrationIds(sequenceId, versions) is called.",
+              "then": "The result is { initial: \"main/1\", followup: \"main/2\" } with the same keys.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "createMigrationIds(sequenceId, versions) is called.",
+              "then": "The result is an empty object.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "ed20cf3ea14a6bf371c49b14ef37e1f817061b78ca4ea9fff07176a4d81c55a0"
+        }
+      },
+      {
+        "unitId": "packages/store/src/lib/migrate.ts__createRecordMigrationSequence#function:createRecordMigrationSequence",
+        "unitKind": "function",
+        "name": "createRecordMigrationSequence",
+        "qualifiedName": "createRecordMigrationSequence",
+        "parentUnitId": null,
+        "startLine": 126,
+        "endLine": 147,
+        "isBehavioral": true,
+        "source": "export function createRecordMigrationSequence(opts: {\n\trecordType: string\n\tfilter?(record: UnknownRecord): boolean\n\tretroactive?: boolean\n\tsequenceId: string\n\tsequence: Omit<Extract<Migration, { scope: 'record' }>, 'scope'>[]\n}): MigrationSequence {\n\tconst sequenceId = opts.sequenceId\n\treturn createMigrationSequence({\n\t\tsequenceId,\n\t\tretroactive: opts.retroactive ?? true,\n\t\tsequence: opts.sequence.map((m) => ({\n\t\t\t...m,\n\t\t\tscope: 'record',\n\t\t\tfilter: (r: UnknownRecord) =>\n\t\t\t\tr.typeName === opts.recordType && (m.filter?.(r) ?? true) && (opts.filter?.(r) ?? true),\n\t\t})),\n\t})\n}\n\n/**\n * Legacy migration interface for backward compatibility.",
+        "detail": {
+          "unitId": "packages/store/src/lib/migrate.ts__createRecordMigrationSequence#function:createRecordMigrationSequence",
+          "fileId": "packages/store/src/lib/migrate.ts__createRecordMigrationSequence",
+          "unitKind": "function",
+          "name": "createRecordMigrationSequence",
+          "qualifiedName": "createRecordMigrationSequence",
+          "parentUnitId": null,
+          "startLine": 126,
+          "endLine": 147,
+          "signature": "export function createRecordMigrationSequence(opts: { recordType: string; filter?(record: UnknownRecord): boolean; retroactive?: boolean; sequenceId: string; sequence: Omit<Extract<Migration, { scope: 'record' }>, 'scope'>[] }): MigrationSequence",
+          "parameters": [
+            {
+              "name": "opts",
+              "type": "{ recordType: string; filter?(record: UnknownRecord): boolean; retroactive?: boolean; sequenceId: string; sequence: Omit<Extract<Migration, { scope: 'record' }>, 'scope'>[] }",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "MigrationSequence",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "opts.recordType is a string.",
+            "opts.sequenceId is a string.",
+            "opts.sequence is an array of record migration definitions without the scope property.",
+            "Any supplied filter functions accept an UnknownRecord and return a boolean."
+          ],
+          "postconditions": [
+            "Delegates creation of the resulting MigrationSequence to createMigrationSequence.",
+            "Every mapped migration has scope set to 'record'.",
+            "Every mapped migration filter requires the record type to equal opts.recordType.",
+            "A migration-level filter, when present, must return true for the mapped filter to return true.",
+            "A sequence-level filter, when present, must return true for the mapped filter to return true.",
+            "opts.retroactive defaults to true when it is undefined."
+          ],
+          "invariants": [
+            "The migration-level and sequence-level filters are combined conjunctively.",
+            "The sequence-level filter is not evaluated when the record type or migration-level filter fails.",
+            "The original migration properties are preserved except that scope and filter are assigned by this function."
+          ],
+          "edgeCases": [
+            "When retroactive is undefined, createMigrationSequence receives retroactive: true.",
+            "When retroactive is explicitly false, createMigrationSequence receives retroactive: false.",
+            "When no sequence-level filter is supplied, the sequence-level condition evaluates as true.",
+            "When no migration-level filter is supplied, the migration-level condition evaluates as true.",
+            "A record whose typeName differs from recordType is rejected by every generated filter.",
+            "An empty sequence is mapped to an empty sequence and passed to createMigrationSequence."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [
+              "Exceptions thrown by createMigrationSequence or by supplied filter callbacks propagate to the caller."
+            ],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "createMigrationSequence", "source": null, "kind": "internal" }],
+          "symbolReferences": ["UnknownRecord", "Migration", "MigrationSequence"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Creates a migration sequence for record-scoped migrations. Each migration is restricted to records matching the requested record type and, when provided, both migration-level and sequence-level filters.",
+          "specLiterals": [
+            {
+              "kind": "enum-value",
+              "value": "record",
+              "role": "Sets the scope of every generated migration and identifies the record migration type."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "8a0f6f47da8840fd4354c42278c8e360470ec6c8fdf8fad8c44fabb8accd7dcf"
+        }
+      },
+      {
+        "unitId": "packages/store/src/lib/migrate.ts__sortMigrations#function:sortMigrations",
+        "unitKind": "function",
+        "name": "sortMigrations",
+        "qualifiedName": "sortMigrations",
+        "parentUnitId": null,
+        "startLine": 287,
+        "endLine": 388,
+        "isBehavioral": true,
+        "source": "\tsequenceId: string\n\t/**\n\t * retroactive should be true if the migrations should be applied to snapshots that were created before\n\t * this migration sequence was added to the schema.\n\t *\n\t * In general:\n\t *\n\t * - retroactive should be true when app developers create their own new migration sequences.\n\t * - retroactive should be false when library developers ship a migration sequence. When you install a library for the first time, any migrations that were added in the library before that point should generally _not_ be applied to your existing data.\n\t */\n\tretroactive: boolean\n\tsequence: Migration[]\n}\n\n/**\n * Sorts migrations using a distance-minimizing topological sort.\n *\n * This function respects two types of dependencies:\n * 1. Implicit sequence dependencies (foo/1 must come before foo/2)\n * 2. Explicit dependencies via `dependsOn` property\n *\n * The algorithm minimizes the total distance between migrations and their explicit\n * dependencies in the final ordering, while maintaining topological correctness.\n * This means when migration A depends on migration B, A will be scheduled as close\n * as possible to B (while respecting all constraints).\n *\n * Implementation uses Kahn's algorithm with priority scoring:\n * - Builds dependency graph and calculates in-degrees\n * - Uses priority queue that prioritizes migrations which unblock explicit dependencies\n * - Processes migrations in urgency order while maintaining topological constraints\n * - Detects cycles by ensuring all migrations are processed\n *\n * @param migrations - Array of migrations to sort\n * @returns Sorted array of migrations in execution order\n * @throws Assertion error if circular dependencies are detected\n * @example\n * ```ts\n * const sorted = sortMigrations([\n *   { id: 'app/2', scope: 'record', up: (r) => r },\n *   { id: 'app/1', scope: 'record', up: (r) => r },\n *   { id: 'lib/1', scope: 'record', up: (r) => r, dependsOn: ['app/1'] }\n * ])\n * // Result: [app/1, app/2, lib/1] (respects both sequence and explicit deps)\n * ```\n * @public\n */\nexport function sortMigrations(migrations: Migration[]): Migration[] {\n\tif (migrations.length === 0) return []\n\n\t// Build dependency graph and calculate in-degrees\n\tconst byId = new Map(migrations.map((m) => [m.id, m]))\n\tconst dependents = new Map<MigrationId, Set<MigrationId>>() // who depends on this\n\tconst inDegree = new Map<MigrationId, number>()\n\tconst explicitDeps = new Map<MigrationId, Set<MigrationId>>() // explicit dependsOn relationships\n\n\t// Initialize\n\tfor (const m of migrations) {\n\t\tinDegree.set(m.id, 0)\n\t\tdependents.set(m.id, new Set())\n\t\texplicitDeps.set(m.id, new Set())\n\t}\n\n\t// Add implicit sequence dependencies and explicit dependencies\n\tfor (const m of migrations) {\n\t\tconst { version, sequenceId } = parseMigrationId(m.id)\n\n\t\t// Implicit dependency on previous in sequence\n\t\tconst prevId = `${sequenceId}/${version - 1}` as MigrationId\n\t\tif (byId.has(prevId)) {\n\t\t\tdependents.get(prevId)!.add(m.id)\n\t\t\tinDegree.set(m.id, inDegree.get(m.id)! + 1)\n\t\t}\n\n\t\t// Explicit dependencies\n\t\tif (m.dependsOn) {\n\t\t\tfor (const depId of m.dependsOn) {\n\t\t\t\tif (!byId.has(depId)) continue\n\t\t\t\texplicitDeps.get(m.id)!.add(depId)\n\t\t\t\t// A dependency that is also the implicit predecessor, or that is listed twice, must\n\t\t\t\t// only count once: the edge is only ever removed once, so a double-counted in-degree\n\t\t\t\t// would leave the migration unprocessed and be reported as a circular dependency.\n\t\t\t\tconst dependentsOfDep = dependents.get(depId)!\n\t\t\t\tif (dependentsOfDep.has(m.id)) continue\n\t\t\t\tdependentsOfDep.add(m.id)\n\t\t\t\tinDegree.set(m.id, inDegree.get(m.id)! + 1)\n\t\t\t}\n\t\t}\n\t}\n\n\t// Priority queue: migrations ready to process (in-degree 0)\n\tconst ready = migrations.filter((m) => inDegree.get(m.id) === 0)\n\tconst result: Migration[] = []\n\tconst processed = new Set<MigrationId>()\n\n\twhile (ready.length > 0) {\n\t\t// Calculate urgency scores for ready migrations and pick the best one\n\t\tlet bestCandidate: Migration | undefined\n\t\tlet bestCandidateScore = -Infinity\n\n\t\tfor (const m of ready) {\n\t\t\tlet urgencyScore = 0\n",
+        "detail": {
+          "unitId": "packages/store/src/lib/migrate.ts__sortMigrations#function:sortMigrations",
+          "fileId": "packages/store/src/lib/migrate.ts__sortMigrations",
+          "unitKind": "function",
+          "name": "sortMigrations",
+          "qualifiedName": "sortMigrations",
+          "parentUnitId": null,
+          "startLine": 287,
+          "endLine": 388,
+          "signature": "export function sortMigrations(migrations: Migration[]): Migration[]",
+          "parameters": [
+            {
+              "name": "migrations",
+              "type": "Migration[]",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "Migration[]",
+          "decorators": [],
+          "modifiersApplied": ["export"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "Each migration has an identifier parseable by parseMigrationId.",
+            "Migration identifiers are suitable as unique graph keys."
+          ],
+          "postconditions": [
+            "Returns all input migrations exactly once in a dependency-valid execution order.",
+            "Every present predecessor migration in the same sequence appears before its successor.",
+            "Every explicit dependency that is present in the input appears before the migration that depends on it.",
+            "When multiple migrations are ready, selection follows the distance-minimizing urgency ordering."
+          ],
+          "invariants": [
+            "A migration is processed only after all present implicit and explicit dependencies have been processed.",
+            "An explicit dependency edge that duplicates an implicit predecessor edge is counted only once.",
+            "Explicit dependencies referring to migrations absent from the input do not create graph edges.",
+            "If the input is non-empty and not cyclic, the result length equals the input length."
+          ],
+          "edgeCases": [
+            "An empty migrations array returns an empty array.",
+            "A migration whose explicit dependency is absent from the input is still eligible based on the dependencies that are present.",
+            "A migration explicitly depending on its implicit predecessor does not receive a duplicate dependency edge.",
+            "Circular implicit or explicit dependencies prevent completion and raise an assertion error.",
+            "Multiple migrations with zero in-degree are selected according to the urgency-based priority ordering rather than arbitrary dependency processing."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["Assertion error when circular dependencies prevent all migrations from being processed"],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "parseMigrationId", "source": "packages/store/src/lib/migrate.ts", "kind": "internal" }],
+          "symbolReferences": ["Migration", "MigrationId"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Sorts migrations into an execution order that satisfies implicit sequence and explicit dependency constraints while minimizing distance between migrations and their explicit dependencies.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "sortMigrations([]) is called.",
+              "then": "The result is an empty array.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "sortMigrations is called.",
+              "then": "The result is app/1, app/2, lib/1, preserving the sequence dependency app/1 before app/2 and the explicit dependency app/1 before lib/1.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "sortMigrations is called.",
+              "then": "The function raises an assertion error instead of returning a partial ordering.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "8c25ee132305c2aea148849f8d28c9754b9375401dd94c44d6bf298ce24c8e3a"
+        }
+      },
+      {
+        "unitId": "packages/store/src/lib/migrate.ts__parseMigrationId#function:parseMigrationId",
+        "unitKind": "function",
+        "name": "parseMigrationId",
+        "qualifiedName": "parseMigrationId",
+        "parentUnitId": null,
+        "startLine": 392,
+        "endLine": 395,
+        "isBehavioral": true,
+        "source": "\t\t\t\t\turgencyScore += 1\n\n\t\t\t\t\t// Priority 2: If this migration is explicitly depended on by others, boost priority\n\t\t\t\t\tif (explicitDeps.get(depId)!.has(m.id)) {",
+        "detail": {
+          "unitId": "packages/store/src/lib/migrate.ts__parseMigrationId#function:parseMigrationId",
+          "fileId": "packages/store/src/lib/migrate.ts__parseMigrationId",
+          "unitKind": "function",
+          "name": "parseMigrationId",
+          "qualifiedName": "parseMigrationId",
+          "parentUnitId": null,
+          "startLine": 392,
+          "endLine": 395,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Provides the parseMigrationId function for interpreting migration identifiers. The supplied source excerpt does not expose its parameter, return, or parsing details.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "b75442d15a06f8afaff5bc392ec49199d6fc59184f070d3064c66306a74b36dd"
+        }
+      },
+      {
+        "unitId": "packages/store/src/lib/migrate.ts__validateMigrationId#function:validateMigrationId",
+        "unitKind": "function",
+        "name": "validateMigrationId",
+        "qualifiedName": "validateMigrationId",
+        "parentUnitId": null,
+        "startLine": 397,
+        "endLine": 408,
+        "isBehavioral": true,
+        "source": "\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\n\t\t\tif (\n\t\t\t\turgencyScore > bestCandidateScore ||\n\t\t\t\t// Tiebreaker: prefer lower sequence/version\n\t\t\t\t(urgencyScore === bestCandidateScore && m.id.localeCompare(bestCandidate?.id ?? '') < 0)\n\t\t\t) {\n\t\t\t\tbestCandidate = m\n\t\t\t\tbestCandidateScore = urgencyScore\n\t\t\t}",
+        "detail": {
+          "unitId": "packages/store/src/lib/migrate.ts__validateMigrationId#function:validateMigrationId",
+          "fileId": "packages/store/src/lib/migrate.ts__validateMigrationId",
+          "unitKind": "function",
+          "name": "validateMigrationId",
+          "qualifiedName": "validateMigrationId",
+          "parentUnitId": null,
+          "startLine": 397,
+          "endLine": 408,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Validates whether a migration identifier satisfies the module's accepted migration-ID contract.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "ecc624837038bf9eaf3f4fbb5db87bb4ad819e8fc8eae49600bd8c64abc07efa"
+        }
+      },
+      {
+        "unitId": "packages/store/src/lib/migrate.ts__validateMigrations#function:validateMigrations",
+        "unitKind": "function",
+        "name": "validateMigrations",
+        "qualifiedName": "validateMigrations",
+        "parentUnitId": null,
+        "startLine": 425,
+        "endLine": 462,
+        "isBehavioral": true,
+        "source": "\t\t\t\tif (inDegree.get(depId) === 0) {\n\t\t\t\t\tready.push(byId.get(depId)!)\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n\n\t// Check for cycles - if we didn't process all migrations, there's a cycle\n\tif (result.length !== migrations.length) {\n\t\tconst unprocessed = migrations.filter((m) => !processed.has(m.id))\n\t\tassert(false, `Circular dependency in migrations: ${unprocessed[0].id}`)\n\t}\n\n\treturn result\n}\n\n/**\n * Parses a migration ID to extract the sequence ID and version number.\n *\n * Migration IDs follow the format `sequenceId/version`, and this function splits\n * them into their component parts. This is used internally for sorting migrations\n * and understanding their relationships.\n * @param id - The migration ID to parse\n * @returns Object containing the sequence ID and numeric version\n * @example\n * ```ts\n * const { sequenceId, version } = parseMigrationId('com.myapp.book/5')\n * // sequenceId: 'com.myapp.book', version: 5\n * ```\n * @internal\n */\nexport function parseMigrationId(id: MigrationId): { sequenceId: string; version: number } {\n\tconst [sequenceId, version] = id.split('/')\n\treturn { sequenceId, version: parseInt(version) }\n}\n\nfunction validateMigrationId(id: string, expectedSequenceId?: string) {\n\tif (expectedSequenceId) {",
+        "detail": {
+          "unitId": "packages/store/src/lib/migrate.ts__validateMigrations#function:validateMigrations",
+          "fileId": "packages/store/src/lib/migrate.ts__validateMigrations",
+          "unitKind": "function",
+          "name": "validateMigrations",
+          "qualifiedName": "validateMigrations",
+          "parentUnitId": null,
+          "startLine": 425,
+          "endLine": 462,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Validates a collection of migrations according to the module's migration-validation rules and reports invalid migration definitions through its defined failure behavior.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "6a2cade20efbb8a5180ea27a318eb7c1ded2caa81cf34d98fbdbebc660fb61be"
+        }
+      }
+    ]
+  },
+  "out": [
+    "packages/store/src/lib/BaseRecord.ts",
+    "packages/store/src/lib/Store.ts",
+    "packages/store/src/lib/StoreSchema.ts"
+  ],
+  "in": [
+    "packages/store/src/lib/migrate.test.ts",
+    "packages/store/src/lib/Store.test.ts",
+    "packages/store/src/lib/test/testSchema.v1.ts",
+    "packages/store/src/lib/StoreSchema.test.ts",
+    "packages/store/src/lib/StoreSchema.ts",
+    "packages/store/src/index.ts"
+  ],
+  "externals": ["@tldraw/utils"],
+  "impact": { "seeds": 8, "callers": 3, "impactedFiles": [] }
+}

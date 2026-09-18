@@ -20,11 +20,11 @@
     "query": "46d7f02f1c7b9fcd3255082cc7103e8bfa3dab76",
     "redux-toolkit": "b1c5130154c454ca8387f55da6122fcb507c560c",
     "db": "7f0fa36ff6d48b0494ed5f6a1223fd18c317e41f",
-    "table": "d08af367e11c539bb7e18c2472aa761149ef6db6",
-    "react": "3a717e42438afac81020cdec297dadb5613a4304",
+    "table": "ce123bc6651bcbf188f3198627c6bb0b10588162",
+    "react": "1d4758e0f6aae560024b36ce07ed8a67b3f7d78f",
     "xyflow": "360f5b13e2bc6899ea06b4be1a49b068d86926cf",
     "jotai": "5c4ca26b0db5571114be58393e17854a771f7790",
-    "zustand": "beca84e600e4e250f6b244d22878e72948f331c7"
+    "zustand": "b57db4f86ef179285da216eeb291266da82c361c"
   },
   "expected": [
     {
@@ -50,7 +50,7 @@
     {
       "repo": "table",
       "knowledgeId": "08e0b828-ac04-4dce-8e73-eb2ceb151072",
-      "files": ["packages/table-core/src/features/RowPagination.ts"]
+      "files": ["packages/table-core/src/features/row-pagination/rowPaginationFeature.utils.ts"]
     },
     {
       "repo": "react",
@@ -76,5 +76,6 @@
   "grader_notes": {
     "why_cross_repo": "ANCHOR (real bug, tldraw PR #10509 'fix(editor): clear laser trails when the current page changes', merged 2026-08-25 as f20b9a5a5700 \u2014 AFTER the pinned commit): at the pin, ScribbleManager's internal Session interface carries no page identity at all, so laser scribbles keep ticking and rendering after a page switch; the fix adds a pageId to Session and drops sessions whose page is no longer current. ECOSYSTEM: query's QueryObserver is the direct analog \u2014 a holder living above the query it observes, owning #currentQueryInitialState, #selectFn/#selectResult/#selectError, #lastQueryWithDefinedData, #currentThenable, #staleTimeoutId and #refetchIntervalId (:48-69); #updateQuery :703-720 swaps the current query when queryHash changes but does NOT clear the select cache or thenable, and setOptions :138-165/:199-220 only conditionally re-arms the timers. redux-toolkit's buildHooks.ts keys the in-flight subscription promise to stableArg \u2014 promiseRef :1745-1767, unsubscribe-and-replace on arg change :1787-1802, skipToken teardown :1779-1783. db's react-db useLiveQuery.ts already implements the contract: deps are the declared scope (:339-345) and there is a literal 'Reset refs when collection changes' block at :416-421. table's RowPagination.ts owns pageIndex above the row set it indexes into: autoResetPageIndex :35, _autoResetPageIndex :75/:218-238, invoked from the row-model rebuilds that mark a scope change (getCoreRowModel.ts:79, getFilteredRowModel.ts:148, getSortedRowModel.ts:118, getGroupedRowModel.ts:171). react owns the framework primitive that ties an ephemeral holder's lifetime to a declared scope: areHookInputsEqual :456-500 plus updateEffectImpl :2657-2695, which flags HookHasEffect so the commit phase runs the previous destroy() first \u2014 `useEffect(fn, [currentPageId])` is literally the shape of the tldraw fix. xyflow's store holds the in-progress connection gesture above the nodes/edges scope: connection seeded at initialState.ts:136, cancelConnection/updateConnection at store/index.ts:441-448, reset() at :450 reachable only from StoreUpdater's unmount cleanup, while setNodes :99-141 replaces the whole node set without touching connection. jotai's useAtomValue.ts stores the value together with the store and atom it came from (:125-140) and discards it when either changes (:143-146). zustand's persist.ts holds hydration state in a closure that outlives the (storage, name) scope: hasHydrated/hydrationVersion :200-206, toggled :263/:325, and setOptions :338-346 swaps storage and name WITHOUT resetting them. NOTED-NOT-REQUIRED: table RowExpanding.ts:57/:103/:190-210 is a byte-for-byte sibling of _autoResetPageIndex; react ReactChildFiber.js:842-880 is the key-based remount path; jotai useHydrateAtoms.ts:25-61 keys hydration by store. EXCLUDED: query queriesObserver.ts (an orchestrator over observers, subsumed by queryObserver.ts) and query.ts (the Query IS the scope, not a holder above it); react-redux Provider.tsx (a subscription is a resource, and it is already correctly keyed); table RowSelection.ts (no scope is declared, so there is nothing to retrieve on).",
     "grep_resistance": "The question withholds ScribbleManager, pageId, scribble, laser, autoReset, autoResetPageIndex, queryHash, stableArg, hasHydrated, useEffect and cleanup. 'Scope' is described, never named as an identifier. Grepping 'reset' returns thousands of unranked hits across ten repos; the discriminating question - which resets are triggered BY A SCOPE CHANGE rather than by a user action - cannot be answered lexically."
-  }
+  },
+  "repin_note": "Repinned react/zustand/table to the plumbline-indexed commits on 2026-09-16. react ReactFiberHooks.js is byte-identical across the move. zustand persist.ts changed by one line (clearStorage now does ++hydrationVersion), but the versioned-invalidation mechanism it is gold for already existed at the previous pin (hydrationVersion is declared and compared at lines 203/262/298/314/330 in both); the commit extends that rule to one more call site rather than introducing or removing it, so the file still owns the contract. table underwent its v8 rewrite: features/ went from 14 flat modules to 65 nested ones and RowPagination.ts no longer exists. Gold remapped to row-pagination/rowPaginationFeature.utils.ts, which holds the implementations of table_autoResetPageIndex and table_resetPageIndex - the scope-change reset this case is about. rowPaginationFeature.ts only binds those functions and types.ts only declares them, so neither defines the contract."
 }

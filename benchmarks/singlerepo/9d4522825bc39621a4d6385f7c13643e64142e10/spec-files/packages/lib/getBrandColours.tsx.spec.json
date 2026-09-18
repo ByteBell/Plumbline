@@ -1,0 +1,1818 @@
+{
+  "schema": 2,
+  "kind": "file",
+  "repoName": "cal.diy",
+  "file": {
+    "relativePath": "packages/lib/getBrandColours.tsx",
+    "language": "typescript",
+    "sizeBytes": 5930,
+    "tokenCount": 1483,
+    "model": "us.openai.gpt-5.6-luna",
+    "analysedAt": "2026-08-25T14:49:41.124Z",
+    "module": {
+      "purpose": "Provides brand-color normalization, validation, palette generation, and WCAG contrast selection for embedded theming.",
+      "summary": "This module transforms light and dark brand color inputs into normalized six-digit hexadecimal values, generates lighter and darker palette shades, selects readable foreground colors using luminance and contrast calculations, and exposes a hook that assembles light and dark theme tokens. It also validates hexadecimal input and falls back to configured defaults.",
+      "businessContext": "Supports branded embedded scheduling interfaces. If color processing fails, embeds may render invalid CSS colors or unreadable text, degrading customer branding and accessibility.",
+      "classes": [],
+      "functions": [
+        "fallBackHex (~L19-24): Returns a valid supplied color or the appropriate default brand color.",
+        "isValidHexCode (~L26-34): Checks whether a string matches supported hexadecimal color syntax.",
+        "getValidHEX (~L37-45): Validates hexadecimal input and returns a fallback when invalid.",
+        "hexToRgb (~L47-64): Converts a six-digit hexadecimal color into numeric RGB channels.",
+        "rgbToHex (~L66-69): Converts numeric RGB channels into a hexadecimal color string.",
+        "lighten (~L71-83): Blends a hexadecimal color toward white by an intensity factor.",
+        "darken (~L85-97): Scales hexadecimal RGB channels by a darkening intensity factor.",
+        "normalizeHexCode (~L99-118): Removes prefixes and expands shorthand hexadecimal color values.",
+        "createColorMap (~L120-146): Builds brand palette shades for light and dark intensity levels.",
+        "getWCAGContrastColor (~L148-156): Chooses black or white text based on background luminance.",
+        "checkWCAGContrastColor (~L158-174): Determines whether two colors meet the minimum contrast ratio.",
+        "useGetBrandingColours (~L180-217): Produces light and dark branded theme tokens from embed colors."
+      ],
+      "keywords": [
+        "brand colors",
+        "hexadecimal colors",
+        "RGB conversion",
+        "color palette",
+        "WCAG contrast",
+        "luminance",
+        "embedded theming",
+        "CSS variables",
+        "light mode",
+        "dark mode"
+      ],
+      "ontologyConcepts": [
+        "color normalization",
+        "fallback handling",
+        "palette generation",
+        "luminance analysis",
+        "accessibility validation",
+        "theme composition"
+      ],
+      "businessEntities": ["brand color", "theme", "color palette", "light theme", "dark theme", "CSS token"],
+      "systemCapabilities": [
+        "Validate hexadecimal brand colors",
+        "Generate branded color palettes",
+        "Normalize shorthand color values",
+        "Calculate WCAG contrast suitability",
+        "Compose light and dark theme tokens"
+      ],
+      "configDependencies": ["DEFAULT_LIGHT_BRAND_COLOR", "DEFAULT_DARK_BRAND_COLOR"],
+      "importsInternal": [
+        {
+          "spec": "./constants",
+          "symbols": ["DEFAULT_DARK_BRAND_COLOR", "DEFAULT_LIGHT_BRAND_COLOR"],
+          "anchor": { "startLine": 3, "endLine": 3 },
+          "resolvedRelativePath": "packages/lib/constants.ts",
+          "resolvedFileId": "packages/lib/constants.ts",
+          "resolvedHint": "packages/lib/constants.ts"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "@calcom/embed-core/embed-iframe",
+          "symbols": ["useBrandColors"],
+          "package": "@calcom/embed-core",
+          "subpath": "embed-iframe",
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 1 }
+        }
+      ],
+      "sideEffects": { "io": [], "network": [], "env": [], "fs": [], "process": [], "mutationOfArg": [] },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "fallBackHex",
+          "shape": "export function fallBackHex(val: string | null, dark: boolean): string",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "isValidHexCode",
+          "shape": "export function isValidHexCode(hexColor: string): boolean",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "createColorMap",
+          "shape": "export const createColorMap = (brandColor: string)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "checkWCAGContrastColor",
+          "shape": "export function checkWCAGContrastColor(background: string, target: string)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "useGetBrandingColours",
+          "shape": "export default useGetBrandingColours;",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "useBrandColors",
+          "shape": "import { useBrandColors } from \"@calcom/embed-core/embed-iframe\";",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "DEFAULT_DARK_BRAND_COLOR",
+          "shape": "import { DEFAULT_DARK_BRAND_COLOR, DEFAULT_LIGHT_BRAND_COLOR } from \"./constants\";",
+          "resolvedRelativePath": "packages/lib/constants.ts",
+          "resolvedFileId": "packages/lib/constants.ts"
+        },
+        {
+          "name": "DEFAULT_LIGHT_BRAND_COLOR",
+          "shape": "import { DEFAULT_DARK_BRAND_COLOR, DEFAULT_LIGHT_BRAND_COLOR } from \"./constants\";",
+          "resolvedRelativePath": "packages/lib/constants.ts",
+          "resolvedFileId": "packages/lib/constants.ts"
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "input-validation",
+          "intent": "Validates supplied colors and selects configured defaults.",
+          "structureKind": "branch",
+          "predicate": "if (val && isValidHexCode(val))",
+          "branchOutcomes": ["valid supplied color", "default light or dark color"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 20, "endLine": 23 }
+        },
+        {
+          "name": "hexadecimal-normalization",
+          "intent": "Removes prefixes and expands three-character hexadecimal values.",
+          "structureKind": "branch",
+          "predicate": "if (hex.length === 3)",
+          "branchOutcomes": ["expand shorthand", "retain normalized value"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 102, "endLine": 115 }
+        },
+        {
+          "name": "palette-generation",
+          "intent": "Generates lighter and darker palette entries from a brand color.",
+          "structureKind": "loop",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": "[50, 100, 200, 300, 400]",
+          "terminationCondition": null,
+          "anchor": { "startLine": 136, "endLine": 144 }
+        },
+        {
+          "name": "contrast-selection",
+          "intent": "Chooses readable foreground color using luminance threshold.",
+          "structureKind": "branch",
+          "predicate": "return luminance < 0.5 ? \"#FFFFFF\" : \"#000000\";",
+          "branchOutcomes": ["white text", "black text"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 155, "endLine": 155 }
+        },
+        {
+          "name": "theme-composition",
+          "intent": "Assembles light and dark branded theme token objects.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 197, "endLine": 217 }
+        }
+      ],
+      "representationFamily": "function-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "function",
+          "name": "fallBackHex",
+          "signature": "export function fallBackHex(val: string | null, dark: boolean): string",
+          "generics": null,
+          "decorators": [],
+          "returnType": "string",
+          "exported": true,
+          "anchor": { "startLine": 19, "endLine": 19 }
+        },
+        {
+          "kind": "function",
+          "name": "isValidHexCode",
+          "signature": "export function isValidHexCode(hexColor: string): boolean",
+          "generics": null,
+          "decorators": [],
+          "returnType": "boolean",
+          "exported": true,
+          "anchor": { "startLine": 26, "endLine": 26 }
+        },
+        {
+          "kind": "function",
+          "name": "createColorMap",
+          "signature": "export const createColorMap = (brandColor: string) => {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 120, "endLine": 120 }
+        },
+        {
+          "kind": "function",
+          "name": "checkWCAGContrastColor",
+          "signature": "export function checkWCAGContrastColor(background: string, target: string) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 158, "endLine": 158 }
+        },
+        {
+          "kind": "function",
+          "name": "useGetBrandingColours",
+          "signature": "const useGetBrandingColours = ({\n  lightVal = BRAND_COLOR,\n  darkVal = DARK_BRAND_COLOR,\n}: {\n  lightVal: string | undefined | null;\n  darkVal: string | undefined | null;\n}) => {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 180, "endLine": 186 }
+        },
+        {
+          "kind": "function",
+          "name": "getValidHEX",
+          "signature": "const getValidHEX = (hex: string, defaultHex: string): string => {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "string",
+          "exported": false,
+          "anchor": { "startLine": 37, "endLine": 37 }
+        },
+        {
+          "kind": "function",
+          "name": "hexToRgb",
+          "signature": "function hexToRgb(hex: string): Rgb {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Rgb",
+          "exported": false,
+          "anchor": { "startLine": 47, "endLine": 47 }
+        },
+        {
+          "kind": "function",
+          "name": "rgbToHex",
+          "signature": "function rgbToHex(r: number, g: number, b: number): string {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "string",
+          "exported": false,
+          "anchor": { "startLine": 66, "endLine": 66 }
+        },
+        {
+          "kind": "function",
+          "name": "lighten",
+          "signature": "function lighten(hex: string, intensity: number): string {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "string",
+          "exported": false,
+          "anchor": { "startLine": 71, "endLine": 71 }
+        },
+        {
+          "kind": "function",
+          "name": "darken",
+          "signature": "function darken(hex: string, intensity: number): string {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "string",
+          "exported": false,
+          "anchor": { "startLine": 85, "endLine": 85 }
+        },
+        {
+          "kind": "function",
+          "name": "normalizeHexCode",
+          "signature": "function normalizeHexCode(hex: string | null, dark: boolean) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 99, "endLine": 99 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "type",
+          "name": "Rgb",
+          "shape": "{\n  r: number;\n  g: number;\n  b: number;\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 8, "endLine": 12 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "null or empty brand color",
+          "handled": true,
+          "behavior": "Uses the light or dark default brand color.",
+          "anchor": { "startLine": 100, "endLine": 101 }
+        },
+        {
+          "inputShape": "three-character hexadecimal color",
+          "handled": true,
+          "behavior": "Duplicates each hexadecimal character to produce six characters.",
+          "anchor": { "startLine": 104, "endLine": 115 }
+        },
+        {
+          "inputShape": "invalid hexadecimal color passed to hexToRgb",
+          "handled": true,
+          "behavior": "Throws an Error with the message Invalid Hex colour.",
+          "anchor": { "startLine": 52, "endLine": 54 }
+        },
+        {
+          "inputShape": "invalid palette color",
+          "handled": true,
+          "behavior": "Uses the supplied default hexadecimal value during palette construction.",
+          "anchor": { "startLine": 197, "endLine": 198 }
+        },
+        {
+          "inputShape": "low-luminance background",
+          "handled": true,
+          "behavior": "Selects white as the contrast color.",
+          "anchor": { "startLine": 155, "endLine": 155 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": "<",
+          "left": "luminance",
+          "right": "0.5",
+          "inclusive": false,
+          "intent": "Uses white text below the luminance threshold.",
+          "anchor": { "startLine": 155, "endLine": 155 }
+        },
+        {
+          "operator": ">=",
+          "left": "contrastRadio",
+          "right": "MIN_CONTRAST_RATIO",
+          "inclusive": true,
+          "intent": "Accepts color pairs meeting the minimum contrast ratio.",
+          "anchor": { "startLine": 172, "endLine": 172 }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": "new Error(\"Invalid Hex colour\")",
+          "caught": null,
+          "action": "Stops RGB conversion when the input does not match the six-digit hexadecimal pattern.",
+          "fallback": null,
+          "anchor": { "startLine": 52, "endLine": 54 }
+        }
+      ],
+      "invariants": [
+        {
+          "kind": "postcondition",
+          "description": "Invalid or absent light and dark colors resolve to configured defaults.",
+          "anchor": { "startLine": 197, "endLine": 198 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Generated palette entries use numeric keys for brand intensity levels.",
+          "anchor": { "startLine": 121, "endLine": 145 }
+        },
+        {
+          "kind": "non-null",
+          "description": "Successful hexadecimal parsing returns numeric red, green, and blue channels.",
+          "anchor": { "startLine": 57, "endLine": 63 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "Theme output contains both light and dark token groups.",
+          "anchor": { "startLine": 200, "endLine": 215 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "Callers provide hexadecimal brand colors compatible with the conversion and palette-generation routines.",
+          "anchor": { "startLine": 47, "endLine": 64 }
+        },
+        {
+          "kind": "init-order",
+          "description": "The branding hook is called within the React context required by useBrandColors.",
+          "anchor": { "startLine": 187, "endLine": 187 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "Does the embed color provider guarantee that brandColor is a valid hexadecimal value before normalization?",
+          "affects": "input validation and theme composition",
+          "anchor": { "startLine": 187, "endLine": 193 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "sync",
+        "reentrant": true,
+        "ordering": "deterministic",
+        "notes": "Color transformations are synchronous and operate on local values; the exported hook reads embed context."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "accepts-three-or-six-digit-hex",
+          "scenario": "A valid three- or six-digit hexadecimal color is checked.",
+          "given": ["hexColorPattern = /^#([0-9A-Fa-f]{3}){1,2}$/"],
+          "when": "isValidHexCode(\"#abc\")",
+          "then": "returns true",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Preserves the accepted hexadecimal color formats."
+        },
+        {
+          "testId": "falls-back-for-invalid-color",
+          "scenario": "A missing or invalid brand color is supplied.",
+          "given": ["val = null", "dark = false"],
+          "when": "fallBackHex(val, dark)",
+          "then": "returns BRAND_COLOR",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Guards light and dark default selection for invalid input."
+        },
+        {
+          "testId": "expands-short-brand-color",
+          "scenario": "A three-digit brand color is normalized before generating the color map.",
+          "given": ["brandColor = \"a0e\""],
+          "when": "createColorMap(brandColor)",
+          "then": "the returned map contains 500 equal to \"#a0e\" and derived shade values",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins the map shape and the source color representation."
+        },
+        {
+          "testId": "requires-wcag-contrast",
+          "scenario": "Background and target colors are compared against the minimum contrast ratio.",
+          "given": ["background = \"#000000\"", "target = \"#FFFFFF\""],
+          "when": "checkWCAGContrastColor(background, target)",
+          "then": "returns true",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Verifies the exported accessibility contrast decision."
+        },
+        {
+          "testId": "returns-light-and-dark-theme",
+          "scenario": "Branding colors are resolved with defaults when no embed brand color is provided.",
+          "given": [
+            "useBrandColors() returns an object whose brandColor is falsy",
+            "lightVal = undefined",
+            "darkVal = undefined"
+          ],
+          "when": "useGetBrandingColours({ lightVal, darkVal })",
+          "then": "returns an object with light and dark themes containing cal-brand, cal-brand-emphasis, cal-brand-subtle, cal-brand-text, and cal-brand-accent",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Pins the public theme structure and default-color behavior."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "import declarations",
+        "default brand color constants",
+        "Rgb type alias",
+        "exported validation functions",
+        "private hexadecimal and RGB helpers",
+        "exported palette generator",
+        "contrast helpers",
+        "branding theme hook",
+        "default export"
+      ],
+      "moduleLevelCode": "import { useBrandColors } from \"@calcom/embed-core/embed-iframe\";\n\nimport { DEFAULT_DARK_BRAND_COLOR, DEFAULT_LIGHT_BRAND_COLOR } from \"./constants\";",
+      "exports": [
+        { "name": "fallBackHex", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "isValidHexCode", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "createColorMap", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "checkWCAGContrastColor", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "useGetBrandingColours", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "useBrandColors", "module": "@calcom/embed-core/embed-iframe", "alias": null, "kind": "external" },
+        { "symbol": "DEFAULT_DARK_BRAND_COLOR", "module": "./constants", "alias": null, "kind": "internal" },
+        { "symbol": "DEFAULT_LIGHT_BRAND_COLOR", "module": "./constants", "alias": null, "kind": "internal" }
+      ],
+      "fileConstants": [
+        { "name": "BRAND_COLOR", "value": "DEFAULT_LIGHT_BRAND_COLOR", "kind": "const" },
+        { "name": "DARK_BRAND_COLOR", "value": "DEFAULT_DARK_BRAND_COLOR", "kind": "const" }
+      ],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/lib/getBrandColours.tsx__fallBackHex#function:fallBackHex",
+        "unitKind": "function",
+        "name": "fallBackHex",
+        "qualifiedName": "fallBackHex",
+        "parentUnitId": null,
+        "startLine": 19,
+        "endLine": 24,
+        "isBehavioral": true,
+        "source": "export function fallBackHex(val: string | null, dark: boolean): string {\n  if (val && isValidHexCode(val)) {\n    return val;\n  }\n  return dark ? DARK_BRAND_COLOR : BRAND_COLOR;\n}",
+        "detail": {
+          "unitId": "packages/lib/getBrandColours.tsx__fallBackHex#function:fallBackHex",
+          "fileId": "packages/lib/getBrandColours.tsx__fallBackHex",
+          "unitKind": "function",
+          "name": "fallBackHex",
+          "qualifiedName": "fallBackHex",
+          "parentUnitId": null,
+          "startLine": 19,
+          "endLine": 24,
+          "signature": "export function fallBackHex(val: string | null, dark: boolean): string",
+          "parameters": [
+            {
+              "name": "val",
+              "type": "string | null",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            { "name": "dark", "type": "boolean", "default": null, "optional": false, "variadic": false, "order": 1 }
+          ],
+          "returnType": "string",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["val is either a string or null.", "dark is a boolean."],
+          "postconditions": [
+            "Returns a string.",
+            "A valid hexadecimal color value is returned unchanged.",
+            "An invalid or null value produces the dark brand color when dark is true, otherwise the standard brand color."
+          ],
+          "invariants": [
+            "The input value is not mutated.",
+            "The result is always either the valid input value or one of the two brand-color fallback constants."
+          ],
+          "edgeCases": [
+            "When val is null, the function returns DARK_BRAND_COLOR if dark is true and BRAND_COLOR otherwise.",
+            "When val is a non-valid hexadecimal color string, the function returns DARK_BRAND_COLOR if dark is true and BRAND_COLOR otherwise.",
+            "When val is a valid hexadecimal color string, the function returns val unchanged regardless of dark."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Invalid or null color values are replaced with the brand-color fallback selected by dark.",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "isValidHexCode", "source": "same module", "kind": "internal" }],
+          "symbolReferences": ["DARK_BRAND_COLOR", "BRAND_COLOR", "isValidHexCode"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Returns the supplied value unchanged when it is a valid hexadecimal color code. Otherwise, returns the dark or standard brand color fallback according to the dark flag.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "fallBackHex(val, dark) is called",
+              "then": "The returned string equals val exactly.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "fallBackHex(val, dark) is called",
+              "then": "The returned string equals DARK_BRAND_COLOR.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "fallBackHex(val, dark) is called",
+              "then": "The returned string equals BRAND_COLOR.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "c724071691855ad7dde3c3c2259b96be6ba2aec1b136fde8f4651b32f355556b"
+        }
+      },
+      {
+        "unitId": "packages/lib/getBrandColours.tsx__isValidHexCode#function:isValidHexCode",
+        "unitKind": "function",
+        "name": "isValidHexCode",
+        "qualifiedName": "isValidHexCode",
+        "parentUnitId": null,
+        "startLine": 26,
+        "endLine": 34,
+        "isBehavioral": true,
+        "source": "export function isValidHexCode(hexColor: string): boolean {\n  // Regular expression for hex color code pattern\n  const hexColorPattern = /^#([0-9A-Fa-f]{3}){1,2}$/;\n\n  // Check if hex color code matches pattern\n  const isHexColor = hexColorPattern.test(hexColor);\n\n  return isHexColor;\n}",
+        "detail": {
+          "unitId": "packages/lib/getBrandColours.tsx__isValidHexCode#function:isValidHexCode",
+          "fileId": "packages/lib/getBrandColours.tsx__isValidHexCode",
+          "unitKind": "function",
+          "name": "isValidHexCode",
+          "qualifiedName": "isValidHexCode",
+          "parentUnitId": null,
+          "startLine": 26,
+          "endLine": 34,
+          "signature": "export function isValidHexCode(hexColor: string): boolean",
+          "parameters": [
+            { "name": "hexColor", "type": "string", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "boolean",
+          "decorators": [],
+          "modifiersApplied": ["export"],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["The argument is a string."],
+          "postconditions": [
+            "Returns true if the input matches the accepted hexadecimal color pattern.",
+            "Returns false if the input does not match the accepted hexadecimal color pattern."
+          ],
+          "invariants": ["The input is not modified.", "The function has no observable side effects."],
+          "edgeCases": [
+            "Three-digit hexadecimal colors prefixed with # are accepted.",
+            "Six-digit hexadecimal colors prefixed with # are accepted.",
+            "Four- or five-digit values, missing # prefixes, extra characters, invalid hexadecimal characters, and empty strings return false.",
+            "Both uppercase and lowercase hexadecimal digits are accepted."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": "Returns false.", "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Validates whether a string is a hexadecimal color code using the accepted three- or six-digit format prefixed with #. Returns true only for strings matching the supported hex color pattern.",
+          "specLiterals": [
+            {
+              "kind": "regex",
+              "value": "/^#([0-9A-Fa-f]{3}){1,2}$/",
+              "role": "Defines the accepted three- and six-digit hexadecimal color string format."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "isValidHexCode is called.",
+              "then": "It returns true.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "isValidHexCode is called.",
+              "then": "It returns true.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "isValidHexCode is called.",
+              "then": "It returns false.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "4ed793d43305f2d4efed523c31127fa01df5f753187f2e3edf08e11ec236d1db"
+        }
+      },
+      {
+        "unitId": "packages/lib/getBrandColours.tsx__getValidHEX#function:getValidHEX",
+        "unitKind": "function",
+        "name": "getValidHEX",
+        "qualifiedName": "getValidHEX",
+        "parentUnitId": null,
+        "startLine": 37,
+        "endLine": 45,
+        "isBehavioral": true,
+        "source": "const getValidHEX = (hex: string, defaultHex: string): string => {\n  const hexColor = /^#?([0-9A-F]{3}|[0-9A-F]{4}|[0-9A-F]{6}|[0-9A-F]{8})$/i.test(hex.replace(\"##\", \"#\"));\n  if (hexColor) {\n    return hex;\n  }\n  return defaultHex;\n};\n\nfunction hexToRgb(hex: string): Rgb {",
+        "detail": {
+          "unitId": "packages/lib/getBrandColours.tsx__getValidHEX#function:getValidHEX",
+          "fileId": "packages/lib/getBrandColours.tsx__getValidHEX",
+          "unitKind": "function",
+          "name": "getValidHEX",
+          "qualifiedName": "getValidHEX",
+          "parentUnitId": null,
+          "startLine": 37,
+          "endLine": 45,
+          "signature": "const getValidHEX = (hex: string, defaultHex: string): string =>",
+          "parameters": [
+            { "name": "hex", "type": "string", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "defaultHex",
+              "type": "string",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "string",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["hex and defaultHex are strings."],
+          "postconditions": [
+            "Returns the original hex value when it matches the accepted hexadecimal format after replacing the first occurrence of \"##\" with \"#\".",
+            "Returns defaultHex when the normalized hex value does not match the accepted format."
+          ],
+          "invariants": [
+            "Accepted values contain 3, 4, 6, or 8 hexadecimal digits with an optional leading #.",
+            "Hexadecimal digit matching is case-insensitive.",
+            "A valid input is returned exactly as originally supplied, without normalization."
+          ],
+          "edgeCases": [
+            "A value with 3, 4, 6, or 8 hexadecimal digits, with or without a leading #, is accepted.",
+            "An input beginning with \"##\" is tested after its first double-hash is reduced to \"#\"; if valid, the original unnormalized input is returned.",
+            "Values with other digit counts, non-hexadecimal characters, or an empty string return defaultHex.",
+            "The replacement of \"##\" with \"#\" affects only the first occurrence, following String.replace string-replacement semantics."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Returns defaultHex for a string that does not match the accepted hexadecimal format.",
+            "returnsOnError": "defaultHex"
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Validates a hexadecimal colour string and returns it unchanged when valid; otherwise returns the supplied default hexadecimal value.",
+          "specLiterals": [
+            {
+              "kind": "regex",
+              "value": "/^#?([0-9A-F]{3}|[0-9A-F]{4}|[0-9A-F]{6}|[0-9A-F]{8})$/i",
+              "role": "Defines the accepted hexadecimal colour formats and case-insensitive matching."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "getValidHEX is called",
+              "then": "It returns \"#abc\".",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "getValidHEX is called",
+              "then": "It returns \"#000000\".",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "getValidHEX is called",
+              "then": "It returns the original string \"##abc\", because validation reduces the first \"##\" to \"#\" but the return value is not normalized.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "ead7c14f56de9b44132fc65db98ddad6b6a97584ac46168c1b575bdec71c09cc"
+        }
+      },
+      {
+        "unitId": "packages/lib/getBrandColours.tsx__hexToRgb#function:hexToRgb",
+        "unitKind": "function",
+        "name": "hexToRgb",
+        "qualifiedName": "hexToRgb",
+        "parentUnitId": null,
+        "startLine": 47,
+        "endLine": 64,
+        "isBehavioral": true,
+        "source": "  const colorParts = /^#?([a-f\\d]{2})([a-f\\d]{2})([a-f\\d]{2})$/i.exec(sanitizedHex);\n\n  if (!colorParts) {\n    throw new Error(\"Invalid Hex colour\");\n  }\n\n  const [, r, g, b] = colorParts;\n\n  return {\n    r: parseInt(r, 16),\n    g: parseInt(g, 16),\n    b: parseInt(b, 16),\n  } as Rgb;\n}\n\nfunction rgbToHex(r: number, g: number, b: number): string {\n  const toHex = (c: number) => `0${c.toString(16)}`.slice(-2);\n  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;",
+        "detail": {
+          "unitId": "packages/lib/getBrandColours.tsx__hexToRgb#function:hexToRgb",
+          "fileId": "packages/lib/getBrandColours.tsx__hexToRgb",
+          "unitKind": "function",
+          "name": "hexToRgb",
+          "qualifiedName": "hexToRgb",
+          "parentUnitId": null,
+          "startLine": 47,
+          "endLine": 64,
+          "signature": "function hexToRgb(sanitizedHex: string): Rgb",
+          "parameters": [
+            {
+              "name": "sanitizedHex",
+              "type": "string",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "Rgb",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["The input is provided as a string."],
+          "postconditions": [
+            "For valid input, returns an object with numeric r, g, and b properties.",
+            "Each returned RGB component is the base-16 numeric value of its corresponding two-digit hexadecimal pair."
+          ],
+          "invariants": [
+            "Input must match exactly six hexadecimal digits with an optional leading #.",
+            "Hexadecimal matching is case-insensitive."
+          ],
+          "edgeCases": [
+            "A valid six-digit hexadecimal string without # is accepted.",
+            "A valid six-digit hexadecimal string with # is accepted.",
+            "Input that does not contain exactly six hexadecimal digits, including malformed or three-digit values, causes an Error to be thrown."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["Error"],
+            "reverts": [],
+            "onInvalidInput": "Throws an Error when the input does not match the accepted six-digit hexadecimal format.",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "RegExp.prototype.exec", "source": null, "kind": "external" },
+            { "name": "parseInt", "source": null, "kind": "external" }
+          ],
+          "symbolReferences": ["Rgb"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Converts a six-digit hexadecimal colour string, with an optional leading #, into an RGB object containing numeric r, g, and b components.",
+          "specLiterals": [
+            {
+              "kind": "regex",
+              "value": "^#?([a-f\\d]{2})([a-f\\d]{2})([a-f\\d]{2})$",
+              "role": "Defines the accepted optional-prefix, six-digit hexadecimal input format."
+            },
+            {
+              "kind": "error-message",
+              "value": "Invalid Hex colour",
+              "role": "Error message raised for input that does not match the hexadecimal format."
+            },
+            {
+              "kind": "magic-number",
+              "value": "16",
+              "role": "Specifies base-16 conversion of each hexadecimal colour component."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "hexToRgb is called.",
+              "then": "It returns { r: 26, g: 43, b: 60 }.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "hexToRgb is called.",
+              "then": "It returns { r: 255, g: 240, b: 0 }.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "hexToRgb is called.",
+              "then": "It throws an Error with the message \"Invalid Hex colour\".",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "205be67bb8f243b38b90380566ead1a17ef58b34bf6bb48553e85305df3a1ceb"
+        }
+      },
+      {
+        "unitId": "packages/lib/getBrandColours.tsx__rgbToHex#function:rgbToHex",
+        "unitKind": "function",
+        "name": "rgbToHex",
+        "qualifiedName": "rgbToHex",
+        "parentUnitId": null,
+        "startLine": 66,
+        "endLine": 69,
+        "isBehavioral": true,
+        "source": "\nfunction lighten(hex: string, intensity: number): string {\n  const color = hexToRgb(`#${hex}`);\n",
+        "detail": {
+          "unitId": "packages/lib/getBrandColours.tsx__rgbToHex#function:rgbToHex",
+          "fileId": "packages/lib/getBrandColours.tsx__rgbToHex",
+          "unitKind": "function",
+          "name": "rgbToHex",
+          "qualifiedName": "rgbToHex",
+          "parentUnitId": null,
+          "startLine": 66,
+          "endLine": 69,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "The contract for rgbToHex cannot be determined because the supplied unit source is for a different function, lighten. No callable surface or behavioral guarantees are asserted beyond the identified function name.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "b04594fca01a701207ba490329377444ea78900ce9b7dedd92963f22232e98b9"
+        }
+      },
+      {
+        "unitId": "packages/lib/getBrandColours.tsx__lighten#function:lighten",
+        "unitKind": "function",
+        "name": "lighten",
+        "qualifiedName": "lighten",
+        "parentUnitId": null,
+        "startLine": 71,
+        "endLine": 83,
+        "isBehavioral": true,
+        "source": "    return \"\";\n  }\n\n  const r = Math.round(color.r + (255 - color.r) * intensity);\n  const g = Math.round(color.g + (255 - color.g) * intensity);\n  const b = Math.round(color.b + (255 - color.b) * intensity);\n\n  return rgbToHex(r, g, b);\n}\n\nfunction darken(hex: string, intensity: number): string {\n  const color = hexToRgb(hex);\n",
+        "detail": {
+          "unitId": "packages/lib/getBrandColours.tsx__lighten#function:lighten",
+          "fileId": "packages/lib/getBrandColours.tsx__lighten",
+          "unitKind": "function",
+          "name": "lighten",
+          "qualifiedName": "lighten",
+          "parentUnitId": null,
+          "startLine": 71,
+          "endLine": 83,
+          "signature": "function lighten(hex: string, intensity: number): string",
+          "parameters": [
+            { "name": "hex", "type": "string", "default": null, "optional": false, "variadic": false, "order": 0 },
+            { "name": "intensity", "type": "number", "default": null, "optional": false, "variadic": false, "order": 1 }
+          ],
+          "returnType": "string",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [
+            "Returns the result of converting the adjusted RGB channels back to a hexadecimal color string.",
+            "Each adjusted RGB channel is rounded to the nearest integer before conversion."
+          ],
+          "invariants": [
+            "The same intensity is applied independently to the red, green, and blue channels.",
+            "The target color for the adjustment is white, with channel value 255.",
+            "The function does not mutate its input arguments."
+          ],
+          "edgeCases": [
+            "An intensity of 0 preserves the input RGB channel values after rounding and hexadecimal conversion.",
+            "An intensity of 1 moves every RGB channel to 255, producing the hexadecimal representation of white.",
+            "Non-boundary or out-of-range intensity values are passed through the channel interpolation formula without an additional stated clamp."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "hexToRgb", "source": "local function in packages/lib/getBrandColours.tsx", "kind": "internal" },
+            { "name": "rgbToHex", "source": "local function in packages/lib/getBrandColours.tsx", "kind": "internal" }
+          ],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Accepts a hexadecimal color string and numeric intensity; returns a hexadecimal color string produced by rgbToHex.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Lightens a hexadecimal color by interpolating each RGB channel toward white according to the supplied intensity, then returns the resulting hexadecimal color.",
+          "specLiterals": [
+            {
+              "kind": "magic-number",
+              "value": "255",
+              "role": "White RGB channel value used as the interpolation target for all three color channels."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "lighten is called with that color and 0.",
+              "then": "The returned color represents RGB channels (100, 150, 200), subject to rgbToHex formatting.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "lighten is called.",
+              "then": "The returned color represents RGB channels (255, 255, 255).",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "lighten is called.",
+              "then": "The adjusted channels are rounded from (177.5, 202.5, 227.5) before conversion, yielding RGB values (178, 203, 228).",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "88bb814f4f6694a8694202acccb7fa38e99c8763881e691bea219c75f9c8fb5c"
+        }
+      },
+      {
+        "unitId": "packages/lib/getBrandColours.tsx__darken#function:darken",
+        "unitKind": "function",
+        "name": "darken",
+        "qualifiedName": "darken",
+        "parentUnitId": null,
+        "startLine": 85,
+        "endLine": 97,
+        "isBehavioral": true,
+        "source": "    return \"\";\n  }\n\n  const r = Math.round(color.r * intensity);\n  const g = Math.round(color.g * intensity);\n  const b = Math.round(color.b * intensity);\n\n  return rgbToHex(r, g, b);\n}\n\nfunction normalizeHexCode(hex: string | null, dark: boolean) {\n  if (!hex) {\n    return !dark ? BRAND_COLOR : DARK_BRAND_COLOR;",
+        "detail": {
+          "unitId": "packages/lib/getBrandColours.tsx__darken#function:darken",
+          "fileId": "packages/lib/getBrandColours.tsx__darken",
+          "unitKind": "function",
+          "name": "darken",
+          "qualifiedName": "darken",
+          "parentUnitId": null,
+          "startLine": 85,
+          "endLine": 97,
+          "signature": "function darken(color: RGB, intensity: number): string",
+          "parameters": [
+            { "name": "color", "type": "RGB", "default": null, "optional": false, "variadic": false, "order": 0 },
+            { "name": "intensity", "type": "number", "default": null, "optional": false, "variadic": false, "order": 1 }
+          ],
+          "returnType": "string",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["color provides numeric r, g, and b channels.", "intensity is numeric."],
+          "postconditions": [
+            "Each RGB channel is multiplied by intensity and rounded with Math.round before hexadecimal conversion.",
+            "Returns the hexadecimal color string produced from the transformed channels."
+          ],
+          "invariants": [
+            "Channels are transformed independently.",
+            "The result is produced through the shared RGB-to-hex conversion."
+          ],
+          "edgeCases": [
+            "An intensity of 0 transforms every channel to 0 before conversion.",
+            "Fractional channel results are rounded independently using Math.round."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "rgbToHex", "source": "same module", "kind": "internal" }],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Returns a hexadecimal color string generated from the transformed r, g, and b channel values.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Converts an RGB color to a darkened hexadecimal color by scaling each channel by the supplied intensity and rounding the results.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "darken is called with the color and intensity.",
+              "then": "Each channel is multiplied by 0.5, rounded independently, and the resulting channels are passed to RGB-to-hex conversion.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "e9d6e7e699d7708aa69bfbdba91f0ee2941a0035ad2fcfec4c23c5684b0f5aa9"
+        }
+      },
+      {
+        "unitId": "packages/lib/getBrandColours.tsx__normalizeHexCode#function:normalizeHexCode",
+        "unitKind": "function",
+        "name": "normalizeHexCode",
+        "qualifiedName": "normalizeHexCode",
+        "parentUnitId": null,
+        "startLine": 99,
+        "endLine": 118,
+        "isBehavioral": true,
+        "source": "\n  hex = hex.replace(\"#\", \"\");\n\n  // If the length of the hex code is 3, double up each character\n  // e.g. fff => ffffff or a0e => aa00ee\n  if (hex.length === 3) {\n    hex = hex\n      .split(\"\")\n      .map(function (hex) {\n        return hex + hex;\n      })\n      .join(\"\");\n  }\n\n  return hex;\n}\n\nexport const createColorMap = (brandColor: string) => {\n  const response: Record<string, string> = {\n    500: `#${brandColor}`.replace(\"##\", \"#\"),",
+        "detail": {
+          "unitId": "packages/lib/getBrandColours.tsx__normalizeHexCode#function:normalizeHexCode",
+          "fileId": "packages/lib/getBrandColours.tsx__normalizeHexCode",
+          "unitKind": "function",
+          "name": "normalizeHexCode",
+          "qualifiedName": "normalizeHexCode",
+          "parentUnitId": null,
+          "startLine": 99,
+          "endLine": 118,
+          "signature": "normalizeHexCode(hex: string): string",
+          "parameters": [
+            { "name": "hex", "type": "string", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "string",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["The input is a string."],
+          "postconditions": [
+            "The returned value is the transformed input string.",
+            "The first occurrence of \"#\" is removed, if present.",
+            "If the resulting string has length 3, each character is duplicated to produce a six-character string."
+          ],
+          "invariants": [
+            "Characters are preserved in their original order.",
+            "The function does not alter letter casing.",
+            "Strings whose post-removal length is not 3 are not expanded."
+          ],
+          "edgeCases": [
+            "An input beginning with a single \"#\" has that prefix removed.",
+            "A three-character value such as \"fff\" is expanded to \"ffffff\".",
+            "A three-character value such as \"#a0e\" becomes \"aa00ee\" after prefix removal and expansion.",
+            "An input without a leading \"#\" is still expanded when its length is 3.",
+            "An empty string is returned unchanged.",
+            "A string containing multiple \"#\" characters has only the first occurrence removed."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "The TypeScript contract requires a string; no explicit validation or fallback is performed.",
+            "returnsOnError": null
+          },
+          "stateMutations": ["Reassigns the local hex parameter variable; no external state is mutated."],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Normalizes a hexadecimal color string by removing the first hash character and expanding three-character hex codes to six characters.",
+          "specLiterals": [
+            { "kind": "format-string", "value": "#", "role": "Character removed from the hexadecimal color string." },
+            {
+              "kind": "magic-number",
+              "value": "3",
+              "role": "Length threshold identifying shorthand three-character hexadecimal colors."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "normalizeHexCode(hex) is called",
+              "then": "It returns \"ffffff\".",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "normalizeHexCode(hex) is called",
+              "then": "It returns \"aa00ee\".",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "normalizeHexCode(hex) is called",
+              "then": "It returns \"123456\" without changing the character casing or order.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "8935028d8fe2098558ebf136985989d2831da488baa1558b22e3d1f19ee47764"
+        }
+      },
+      {
+        "unitId": "packages/lib/getBrandColours.tsx__createColorMap#function:createColorMap",
+        "unitKind": "function",
+        "name": "createColorMap",
+        "qualifiedName": "createColorMap",
+        "parentUnitId": null,
+        "startLine": 120,
+        "endLine": 146,
+        "isBehavioral": true,
+        "source": "  const intensityMap: {\n    [key: number]: number;\n  } = {\n    50: 0.95,\n    100: 0.9,\n    200: 0.75,\n    300: 0.6,\n    400: 0.3,\n    600: 0.9,\n    700: 0.75,\n    800: 0.6,\n    900: 0.49,\n  };\n\n  [50, 100, 200, 300, 400].forEach((level) => {\n    response[level] = lighten(brandColor, intensityMap[level]);\n  });\n\n  [600, 700, 800, 900].forEach((level) => {\n    response[level] = darken(brandColor, intensityMap[level]);\n  });\n  return response;\n};\n\nfunction getWCAGContrastColor(background: string): string {\n  // Convert the hex background color to RGB\n  const { r, g, b } = hexToRgb(background);",
+        "detail": {
+          "unitId": "packages/lib/getBrandColours.tsx__createColorMap#function:createColorMap",
+          "fileId": "packages/lib/getBrandColours.tsx__createColorMap",
+          "unitKind": "function",
+          "name": "createColorMap",
+          "qualifiedName": "createColorMap",
+          "parentUnitId": null,
+          "startLine": 120,
+          "endLine": 146,
+          "signature": "createColorMap(brandColor: string)",
+          "parameters": [
+            {
+              "name": "brandColor",
+              "type": "string",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "{ [key: number]: string }",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["brandColor is passed to the lighten and darken color transformation functions."],
+          "postconditions": [
+            "Returns an object containing generated color values for levels 50, 100, 200, 300, 400, 600, 700, 800, and 900.",
+            "Levels 50, 100, 200, 300, and 400 are generated by lightening brandColor.",
+            "Levels 600, 700, 800, and 900 are generated by darkening brandColor."
+          ],
+          "invariants": [
+            "The returned map contains exactly the configured shade levels.",
+            "Each configured level is assigned one generated color string.",
+            "The lightening and darkening intensity associated with each level is fixed."
+          ],
+          "edgeCases": [
+            "Any brandColor accepted or rejected by the delegated lighten and darken functions is handled according to those functions' behavior.",
+            "No value is generated for level 500 or for levels outside the configured set."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Delegates invalid brandColor handling to lighten and darken.",
+            "returnsOnError": null
+          },
+          "stateMutations": ["Mutates the locally created response map before returning it."],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "lighten", "source": "packages/lib/getBrandColours.tsx", "kind": "internal" },
+            { "name": "darken", "source": "packages/lib/getBrandColours.tsx", "kind": "internal" }
+          ],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Returns an object keyed by numeric shade levels, with string color values.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Creates a color map from a brand color by generating lighter shades for levels 50–400 and darker shades for levels 600–900.",
+          "specLiterals": [
+            { "kind": "magic-number", "value": "50: 0.95", "role": "Lightening intensity for shade level 50." },
+            { "kind": "magic-number", "value": "100: 0.9", "role": "Lightening intensity for shade level 100." },
+            { "kind": "magic-number", "value": "200: 0.75", "role": "Lightening intensity for shade level 200." },
+            { "kind": "magic-number", "value": "300: 0.6", "role": "Lightening intensity for shade level 300." },
+            { "kind": "magic-number", "value": "400: 0.3", "role": "Lightening intensity for shade level 400." },
+            { "kind": "magic-number", "value": "600: 0.9", "role": "Darkening intensity for shade level 600." },
+            { "kind": "magic-number", "value": "700: 0.75", "role": "Darkening intensity for shade level 700." },
+            { "kind": "magic-number", "value": "800: 0.6", "role": "Darkening intensity for shade level 800." },
+            { "kind": "magic-number", "value": "900: 0.49", "role": "Darkening intensity for shade level 900." }
+          ],
+          "declaredConstants": [
+            {
+              "name": "intensityMap",
+              "value": "{ 50: 0.95, 100: 0.9, 200: 0.75, 300: 0.6, 400: 0.3, 600: 0.9, 700: 0.75, 800: 0.6, 900: 0.49 }",
+              "kind": "object"
+            }
+          ],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "createColorMap is called",
+              "then": "The result has entries for exactly levels 50, 100, 200, 300, 400, 600, 700, 800, and 900.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "createColorMap is called",
+              "then": "The values for levels 50, 100, 200, 300, and 400 correspond to lighten(brandColor, 0.95), lighten(brandColor, 0.9), lighten(brandColor, 0.75), lighten(brandColor, 0.6), and lighten(brandColor, 0.3), respectively.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "createColorMap is called",
+              "then": "The values for levels 600, 700, 800, and 900 correspond to darken(brandColor, 0.9), darken(brandColor, 0.75), darken(brandColor, 0.6), and darken(brandColor, 0.49), respectively.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "5465635d9226b202c5dc8d8295c0ee7b286313c0f6b4db209c5dcd95941f7b0c"
+        }
+      },
+      {
+        "unitId": "packages/lib/getBrandColours.tsx__getWCAGContrastColor#function:getWCAGContrastColor",
+        "unitKind": "function",
+        "name": "getWCAGContrastColor",
+        "qualifiedName": "getWCAGContrastColor",
+        "parentUnitId": null,
+        "startLine": 148,
+        "endLine": 156,
+        "isBehavioral": true,
+        "source": "  const luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;\n\n  // If the luminance is less than 0.5, use white as the text color, otherwise use black\n  return luminance < 0.5 ? \"#FFFFFF\" : \"#000000\";\n}\n\nexport function checkWCAGContrastColor(background: string, target: string) {\n  const backgroundRGB = hexToRgb(background);\n  const targetRGB = hexToRgb(target);",
+        "detail": {
+          "unitId": "packages/lib/getBrandColours.tsx__getWCAGContrastColor#function:getWCAGContrastColor",
+          "fileId": "packages/lib/getBrandColours.tsx__getWCAGContrastColor",
+          "unitKind": "function",
+          "name": "getWCAGContrastColor",
+          "qualifiedName": "getWCAGContrastColor",
+          "parentUnitId": null,
+          "startLine": 148,
+          "endLine": 156,
+          "signature": "export function getWCAGContrastColor(background: string)",
+          "parameters": [
+            {
+              "name": "background",
+              "type": "string",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "string",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["background is a color string accepted by hexToRgb."],
+          "postconditions": [
+            "Returns exactly \"#FFFFFF\" when the calculated luminance is less than 0.5.",
+            "Returns exactly \"#000000\" when the calculated luminance is greater than or equal to 0.5."
+          ],
+          "invariants": [
+            "Luminance is calculated as (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255.",
+            "The returned text color is always either white or black in uppercase hexadecimal form."
+          ],
+          "edgeCases": [
+            "A background with luminance exactly 0.5 selects black because the comparison is strictly less than 0.5.",
+            "A dark background selects white text.",
+            "A light background selects black text."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "hexToRgb", "source": "packages/lib/getBrandColours.tsx", "kind": "internal" }],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Determines whether white or black text provides stronger contrast against a background color. The choice is based on weighted RGB luminance with a threshold of 0.5.",
+          "specLiterals": [
+            { "kind": "magic-number", "value": "0.2126", "role": "Red-channel luminance weighting." },
+            { "kind": "magic-number", "value": "0.7152", "role": "Green-channel luminance weighting." },
+            { "kind": "magic-number", "value": "0.0722", "role": "Blue-channel luminance weighting." },
+            { "kind": "magic-number", "value": "255", "role": "RGB luminance normalization divisor." },
+            {
+              "kind": "magic-number",
+              "value": "0.5",
+              "role": "Threshold separating white-text and black-text choices."
+            },
+            {
+              "kind": "enum-value",
+              "value": "#FFFFFF",
+              "role": "Returned text color for backgrounds with luminance below 0.5."
+            },
+            {
+              "kind": "enum-value",
+              "value": "#000000",
+              "role": "Returned text color for backgrounds with luminance at or above 0.5."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "getWCAGContrastColor is called with the background.",
+              "then": "It returns #FFFFFF.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "getWCAGContrastColor is called with the background.",
+              "then": "It returns #000000.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "51c72d377beedc1d2e3518dd9602a2c034d80e7991ecc84c555bcb6f1dd56b8d"
+        }
+      },
+      {
+        "unitId": "packages/lib/getBrandColours.tsx__checkWCAGContrastColor#function:checkWCAGContrastColor",
+        "unitKind": "function",
+        "name": "checkWCAGContrastColor",
+        "qualifiedName": "checkWCAGContrastColor",
+        "parentUnitId": null,
+        "startLine": 158,
+        "endLine": 174,
+        "isBehavioral": true,
+        "source": "  const targetLuminance = (0.2126 * targetRGB.r + 0.7152 * targetRGB.g + 0.0722 * targetRGB.b) / 255;\n\n  const contrastRadio =\n    (Math.max(bgLuminance, targetLuminance) + 0.05) / (Math.min(targetLuminance, bgLuminance) + 0.05);\n\n  const MIN_CONTRAST_RATIO = 4.5; // used for BGs\n\n  return contrastRadio >= MIN_CONTRAST_RATIO;\n}\n\n/**\n * Given a light and dark brand color value, update the css variables\n * within the document to reflect the new brand colors.\n */\nconst useGetBrandingColours = ({\n  lightVal = BRAND_COLOR,\n  darkVal = DARK_BRAND_COLOR,",
+        "detail": {
+          "unitId": "packages/lib/getBrandColours.tsx__checkWCAGContrastColor#function:checkWCAGContrastColor",
+          "fileId": "packages/lib/getBrandColours.tsx__checkWCAGContrastColor",
+          "unitKind": "function",
+          "name": "checkWCAGContrastColor",
+          "qualifiedName": "checkWCAGContrastColor",
+          "parentUnitId": null,
+          "startLine": 158,
+          "endLine": 174,
+          "signature": null,
+          "parameters": [],
+          "returnType": "boolean",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "targetRGB provides numeric r, g, and b channel values compatible with the luminance calculation.",
+            "bgLuminance is a numeric background relative-luminance value on the same 0-to-1 scale as the calculated target luminance."
+          ],
+          "postconditions": ["Returns a boolean indicating whether the contrast ratio is at least 4.5."],
+          "invariants": [
+            "Target luminance is calculated using the RGB coefficients 0.2126, 0.7152, and 0.0722 and normalization by 255.",
+            "The contrast ratio places the larger luminance in the numerator and the smaller luminance in the denominator.",
+            "A contrast ratio exactly equal to 4.5 passes."
+          ],
+          "edgeCases": [
+            "A contrast ratio greater than or equal to 4.5 returns true.",
+            "A contrast ratio below 4.5 returns false.",
+            "No explicit validation or fallback behaviour is shown for malformed RGB values or non-numeric background luminance."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Determines whether a target RGB color has sufficient WCAG contrast against a supplied background luminance. It returns true when the calculated contrast ratio meets the minimum background contrast threshold.",
+          "specLiterals": [
+            {
+              "kind": "magic-number",
+              "value": "0.2126",
+              "role": "Red-channel coefficient used to calculate target luminance."
+            },
+            {
+              "kind": "magic-number",
+              "value": "0.7152",
+              "role": "Green-channel coefficient used to calculate target luminance."
+            },
+            {
+              "kind": "magic-number",
+              "value": "0.0722",
+              "role": "Blue-channel coefficient used to calculate target luminance."
+            },
+            { "kind": "magic-number", "value": "255", "role": "RGB channel normalization divisor." },
+            {
+              "kind": "magic-number",
+              "value": "0.05",
+              "role": "WCAG contrast-ratio offset applied to both luminances."
+            },
+            { "kind": "magic-number", "value": "4.5", "role": "Minimum contrast ratio required for backgrounds." }
+          ],
+          "declaredConstants": [{ "name": "MIN_CONTRAST_RATIO", "value": "4.5", "kind": "number" }],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "checkWCAGContrastColor is called",
+              "then": "It returns true because the calculated contrast ratio is 21.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "checkWCAGContrastColor is called",
+              "then": "It returns false because the calculated contrast ratio is 1.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "cca7bd43551dc1333f4574663828c5e381bf9eb84dc3d08b35ee4de2a533c96f"
+        }
+      },
+      {
+        "unitId": "packages/lib/getBrandColours.tsx__useGetBrandingColours#function:useGetBrandingColours",
+        "unitKind": "function",
+        "name": "useGetBrandingColours",
+        "qualifiedName": "useGetBrandingColours",
+        "parentUnitId": null,
+        "startLine": 180,
+        "endLine": 217,
+        "isBehavioral": true,
+        "source": "\n  lightVal = embedBrandingColors.brandColor || lightVal;\n\n  // convert to 6 digit equivalent if 3 digit code is entered\n  lightVal = normalizeHexCode(lightVal, false);\n\n  darkVal = normalizeHexCode(darkVal, true);\n\n  const lightColourMap = createColorMap(getValidHEX(lightVal, BRAND_COLOR));\n  const darkColourMap = createColorMap(getValidHEX(darkVal, DARK_BRAND_COLOR));\n\n  const theme = {\n    light: {\n      \"cal-brand\": lightColourMap[\"500\"],\n      \"cal-brand-emphasis\": lightColourMap[\"400\"],\n      \"cal-brand-subtle\": lightColourMap[\"200\"],\n      \"cal-brand-text\": getWCAGContrastColor(lightColourMap[\"500\"]),\n      \"cal-brand-accent\": getWCAGContrastColor(lightColourMap[\"500\"]),\n    },\n    dark: {\n      \"cal-brand\": darkColourMap[\"500\"],\n      \"cal-brand-emphasis\": darkColourMap[\"600\"],\n      \"cal-brand-subtle\": darkColourMap[\"800\"],\n      \"cal-brand-text\": getWCAGContrastColor(darkColourMap[\"500\"]),\n      \"cal-brand-accent\": getWCAGContrastColor(darkColourMap[\"500\"]),\n    },\n  };\n  return theme;\n};\n\nexport default useGetBrandingColours;\n",
+        "detail": {
+          "unitId": "packages/lib/getBrandColours.tsx__useGetBrandingColours#function:useGetBrandingColours",
+          "fileId": "packages/lib/getBrandColours.tsx__useGetBrandingColours",
+          "unitKind": "function",
+          "name": "useGetBrandingColours",
+          "qualifiedName": "useGetBrandingColours",
+          "parentUnitId": null,
+          "startLine": 180,
+          "endLine": 217,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "Branding colour inputs and fallback values are provided in the shapes expected by the function and its colour-processing helpers."
+          ],
+          "postconditions": [
+            "Returns an object with top-level light and dark theme objects.",
+            "Each theme contains cal-brand, cal-brand-emphasis, cal-brand-subtle, cal-brand-text, and cal-brand-accent tokens.",
+            "Light and dark colour inputs are normalized before colour maps are generated.",
+            "Text and accent tokens are selected using the WCAG contrast colour for the corresponding primary brand colour."
+          ],
+          "invariants": [
+            "The returned light and dark theme objects have the same five semantic token keys.",
+            "The light cal-brand token is derived from the light colour map's 500 value.",
+            "The dark cal-brand token is derived from the dark colour map's 500 value.",
+            "The light text and accent tokens use the same contrast colour.",
+            "The dark text and accent tokens use the same contrast colour."
+          ],
+          "edgeCases": [
+            "When embedBrandingColors.brandColor is truthy, it overrides the light colour value before normalization.",
+            "Three-digit hexadecimal inputs are normalized to their six-digit equivalents before colour-map generation.",
+            "Invalid or unusable colour values are passed through getValidHEX with the corresponding branding-colour fallback identifier."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "normalizeHexCode", "source": "packages/lib/getBrandColours.tsx", "kind": "internal" },
+            { "name": "getValidHEX", "source": "packages/lib/getBrandColours.tsx", "kind": "internal" },
+            { "name": "createColorMap", "source": "packages/lib/getBrandColours.tsx", "kind": "internal" },
+            { "name": "getWCAGContrastColor", "source": "packages/lib/getBrandColours.tsx", "kind": "internal" }
+          ],
+          "symbolReferences": ["embedBrandingColors.brandColor", "BRAND_COLOR", "DARK_BRAND_COLOR"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Returns { light: { \"cal-brand\": string, \"cal-brand-emphasis\": string, \"cal-brand-subtle\": string, \"cal-brand-text\": string, \"cal-brand-accent\": string }, dark: { \"cal-brand\": string, \"cal-brand-emphasis\": string, \"cal-brand-subtle\": string, \"cal-brand-text\": string, \"cal-brand-accent\": string } }.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Builds light and dark branding colour themes from the supplied branding colours and normalized fallback values. The returned theme exposes semantic brand, emphasis, subtle, text, and accent colour tokens.",
+          "specLiterals": [
+            { "kind": "enum-value", "value": "light", "role": "Top-level key for the light branding theme." },
+            { "kind": "enum-value", "value": "dark", "role": "Top-level key for the dark branding theme." },
+            { "kind": "enum-value", "value": "cal-brand", "role": "Semantic primary brand colour token." },
+            { "kind": "enum-value", "value": "cal-brand-emphasis", "role": "Semantic emphasized brand colour token." },
+            { "kind": "enum-value", "value": "cal-brand-subtle", "role": "Semantic subtle brand colour token." },
+            { "kind": "enum-value", "value": "cal-brand-text", "role": "Semantic brand text contrast token." },
+            { "kind": "enum-value", "value": "cal-brand-accent", "role": "Semantic brand accent contrast token." }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "useGetBrandingColours is called.",
+              "then": "The returned object contains light and dark themes with exactly the five semantic colour tokens for each mode; light primary, emphasis, and subtle tokens come from map entries 500, 400, and 200, while dark primary, emphasis, and subtle tokens come from map entries 500, 600, and 800.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "useGetBrandingColours is called.",
+              "then": "The light colour is normalized to its six-digit equivalent before the light colour map is created.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "817f507d076a0e266c7bfb3347dc3454ac9ddeadb8793d8ca0f6f53d2650efd6"
+        }
+      }
+    ]
+  },
+  "out": [],
+  "in": ["packages/lib/getBrandColours.test.ts"],
+  "externals": ["@calcom/embed-core/embed-iframe"],
+  "impact": { "seeds": 12, "callers": 8, "impactedFiles": ["packages/lib/getBrandColours.test.ts"] }
+}

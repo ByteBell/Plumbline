@@ -1,0 +1,862 @@
+{
+  "schema": 2,
+  "kind": "file",
+  "repoName": "cal.diy",
+  "file": {
+    "relativePath": "packages/features/bookings/lib/book-event-form/booking-to-mutation-input-mapper.tsx",
+    "language": "typescript",
+    "sizeBytes": 4704,
+    "tokenCount": 1176,
+    "model": "us.openai.gpt-5.6-luna",
+    "analysedAt": "2026-09-04T14:11:23.843Z",
+    "module": {
+      "purpose": "This file converts booking form data, event details, routing parameters, and recurrence settings into booking mutation payloads consumed by booking creation workflows.",
+      "summary": "The module defines the input contract for booking creation and maps normalized booking information into mutation-ready fields. It derives formatted start and end times, routing metadata, CRM and rescheduling values, dry-run and cache flags, and optional contact ownership behavior from URL parameters. It also expands recurring booking requests into independently timed payloads sharing a generated recurring identifier.",
+      "businessContext": "This supports scheduling appointments and recurring events from booking forms. Failure can produce invalid times, lost routing or CRM context, or unsuccessful booking creation.",
+      "classes": [
+        "BookingOptions (~L12-34): Defines booking form, event, scheduling, routing, CRM, and rescheduling inputs"
+      ],
+      "functions": [
+        "mapBookingToMutationInput (~L36-102): Builds a mutation payload from booking options and URL-derived scheduling metadata",
+        "mapRecurringBookingToMutationInput (~L108-138): Expands recurring booking settings into multiple mutation payloads with shared recurrence identity"
+      ],
+      "keywords": [
+        "booking mutation payload",
+        "recurring booking expansion",
+        "routing form response",
+        "routed team member IDs",
+        "rescheduling metadata",
+        "CRM ownership metadata",
+        "dry-run booking",
+        "cache serving",
+        "hashed booking link",
+        "recurring event identifier"
+      ],
+      "ontologyConcepts": [
+        "booking creation",
+        "recurrence",
+        "appointment scheduling",
+        "routing",
+        "rescheduling",
+        "metadata enrichment",
+        "dry-run execution",
+        "input transformation"
+      ],
+      "businessEntities": [
+        "Booking",
+        "Event",
+        "Recurring Event",
+        "Routing Form Response",
+        "Team Member",
+        "CRM Record",
+        "Organization",
+        "Contact Owner"
+      ],
+      "systemCapabilities": [
+        "Construct booking creation inputs",
+        "Generate recurring booking instances",
+        "Apply routing form decisions",
+        "Preserve CRM and rescheduling context",
+        "Support dry-run and cache behavior",
+        "Format appointment scheduling times"
+      ],
+      "configDependencies": [
+        "cal.routingFormResponseId",
+        "cal.skipContactOwner",
+        "cal.reroutingFormResponses",
+        "cal.cache",
+        "dub_id"
+      ],
+      "importsInternal": [
+        {
+          "spec": "../../types",
+          "symbols": ["BookerEvent", "BookingCreateBody", "RecurringBookingCreateBody"],
+          "anchor": { "startLine": 9, "endLine": 9 },
+          "resolvedRelativePath": "packages/features/bookings/types.ts",
+          "resolvedFileId": "packages/features/bookings/types.ts",
+          "resolvedHint": "packages/features/bookings/types.ts"
+        },
+        {
+          "spec": "../handleNewBooking/types",
+          "symbols": ["Tracking"],
+          "anchor": { "startLine": 10, "endLine": 10 },
+          "resolvedRelativePath": "packages/features/bookings/lib/handleNewBooking/types.ts",
+          "resolvedFileId": "packages/features/bookings/lib/handleNewBooking/types.ts",
+          "resolvedHint": "packages/features/bookings/lib/handleNewBooking/types.ts"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "uuid",
+          "symbols": ["v4"],
+          "package": "uuid",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 1 }
+        },
+        {
+          "spec": "@calcom/dayjs",
+          "symbols": ["default"],
+          "package": "@calcom/dayjs",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 3, "endLine": 3 }
+        },
+        {
+          "spec": "@calcom/features/bookings/Booker/utils/isBookingDryRun",
+          "symbols": ["isBookingDryRun"],
+          "package": "@calcom/features",
+          "subpath": "bookings/Booker/utils/isBookingDryRun",
+          "isBuiltin": false,
+          "anchor": { "startLine": 4, "endLine": 4 }
+        },
+        {
+          "spec": "@calcom/lib/bookings/getRoutedTeamMemberIdsFromSearchParams",
+          "symbols": ["getRoutedTeamMemberIdsFromSearchParams"],
+          "package": "@calcom/lib",
+          "subpath": "bookings/getRoutedTeamMemberIdsFromSearchParams",
+          "isBuiltin": false,
+          "anchor": { "startLine": 5, "endLine": 5 }
+        },
+        {
+          "spec": "@calcom/lib/parse-dates",
+          "symbols": ["parseRecurringDates"],
+          "package": "@calcom/lib",
+          "subpath": "parse-dates",
+          "isBuiltin": false,
+          "anchor": { "startLine": 6, "endLine": 6 }
+        },
+        {
+          "spec": "@calcom/platform-types",
+          "symbols": ["RoutingFormSearchParams"],
+          "package": "@calcom/platform-types",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 7, "endLine": 7 }
+        }
+      ],
+      "sideEffects": { "io": [], "network": [], "env": [], "fs": [], "process": [], "mutationOfArg": [] },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "BookingOptions",
+          "shape": "export type BookingOptions = { values: Record<string, unknown>; event: Pick<BookerEvent, \"id\" | \"length\" | \"slug\" | \"schedulingType\" | \"recurringEvent\">; date: string; duration: number | undefined | null; timeZone: string; language: string; rescheduleUid: string | undefined; rescheduledBy: string | undefined; username: string; metadata?: Record<string, string>; bookingUid?: string; seatReferenceUid?: string; hashedLink?: string | null; teamMemberEmail?: string | null; crmOwnerRecordType?: string | null; crmAppSlug?: string | null; crmRecordId?: string | null; orgSlug?: string; routingFormSearchParams?: RoutingFormSearchParams; isDryRunProp?: boolean; }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "mapBookingToMutationInput",
+          "shape": "export const mapBookingToMutationInput = ({ ... }: BookingOptions): BookingCreateBody",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "mapRecurringBookingToMutationInput",
+          "shape": "export const mapRecurringBookingToMutationInput = (booking: BookingOptions, recurringCount: number, tracking?: Tracking): RecurringBookingCreateBody[]",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "BookerEvent",
+          "shape": "import type { BookerEvent, BookingCreateBody, RecurringBookingCreateBody } from \"../../types\"",
+          "resolvedRelativePath": "packages/features/bookings/types.ts",
+          "resolvedFileId": "packages/features/bookings/types.ts"
+        },
+        {
+          "name": "BookingCreateBody",
+          "shape": "import type { BookerEvent, BookingCreateBody, RecurringBookingCreateBody } from \"../../types\"",
+          "resolvedRelativePath": "packages/features/bookings/types.ts",
+          "resolvedFileId": "packages/features/bookings/types.ts"
+        },
+        {
+          "name": "RecurringBookingCreateBody",
+          "shape": "import type { BookerEvent, BookingCreateBody, RecurringBookingCreateBody } from \"../../types\"",
+          "resolvedRelativePath": "packages/features/bookings/types.ts",
+          "resolvedFileId": "packages/features/bookings/types.ts"
+        },
+        {
+          "name": "Tracking",
+          "shape": "import type { Tracking } from \"../handleNewBooking/types\"",
+          "resolvedRelativePath": "packages/features/bookings/lib/handleNewBooking/types.ts",
+          "resolvedFileId": "packages/features/bookings/lib/handleNewBooking/types.ts"
+        },
+        {
+          "name": "RoutingFormSearchParams",
+          "shape": "import type { RoutingFormSearchParams } from \"@calcom/platform-types\"",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "isBookingDryRun",
+          "shape": "import { isBookingDryRun } from \"@calcom/features/bookings/Booker/utils/isBookingDryRun\"",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "getRoutedTeamMemberIdsFromSearchParams",
+          "shape": "import { getRoutedTeamMemberIdsFromSearchParams } from \"@calcom/lib/bookings/getRoutedTeamMemberIdsFromSearchParams\"",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "parseRecurringDates",
+          "shape": "import { parseRecurringDates } from \"@calcom/lib/parse-dates\"",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "BookingOptions",
+          "intent": "Defines booking mapping inputs and optional routing metadata.",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 12, "endLine": 34 }
+        },
+        {
+          "name": "mapBookingToMutationInput",
+          "intent": "Maps booking options and search parameters into mutation input.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 36, "endLine": 102 }
+        },
+        {
+          "name": "mapRecurringBookingToMutationInput",
+          "intent": "Creates recurring mutation inputs from parsed recurring dates.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 104, "endLine": 138 }
+        }
+      ],
+      "representationFamily": "function-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "type",
+          "name": "BookingOptions",
+          "signature": "export type BookingOptions =",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 12, "endLine": 12 }
+        },
+        {
+          "kind": "function",
+          "name": "mapBookingToMutationInput",
+          "signature": "export const mapBookingToMutationInput = ({\n  values,\n  event,\n  date,\n  duration,\n  timeZone,\n  language,\n  rescheduleUid,\n  rescheduledBy,\n  username,\n  metadata,\n  bookingUid,\n  seatReferenceUid,\n  hashedLink,\n  teamMemberEmail,\n  crmOwnerRecordType,\n  crmAppSlug,\n  crmRecordId,\n  orgSlug,\n  routingFormSearchParams,\n  isDryRunProp,\n}: BookingOptions): BookingCreateBody =>",
+          "generics": null,
+          "decorators": [],
+          "returnType": "BookingCreateBody",
+          "exported": true,
+          "anchor": { "startLine": 36, "endLine": 57 }
+        },
+        {
+          "kind": "function",
+          "name": "mapRecurringBookingToMutationInput",
+          "signature": "export const mapRecurringBookingToMutationInput = (\n  booking: BookingOptions,\n  recurringCount: number,\n  tracking?: Tracking\n): RecurringBookingCreateBody[] =>",
+          "generics": null,
+          "decorators": [],
+          "returnType": "RecurringBookingCreateBody[]",
+          "exported": true,
+          "anchor": { "startLine": 108, "endLine": 112 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "type",
+          "name": "BookingOptions",
+          "shape": "{\n  values: Record<string, unknown>;\n  event: Pick<BookerEvent, \"id\" | \"length\" | \"slug\" | \"schedulingType\" | \"recurringEvent\">;\n  date: string;\n  // @NOTE: duration is not validated in this function\n  duration: number | undefined | null;\n  timeZone: string;\n  language: string;\n  rescheduleUid: string | undefined;\n  rescheduledBy: string | undefined;\n  username: string;\n  metadata?: Record<string, string>;\n  bookingUid?: string;\n  seatReferenceUid?: string;\n  hashedLink?: string | null;\n  teamMemberEmail?: string | null;\n  crmOwnerRecordType?: string | null;\n  crmAppSlug?: string | null;\n  crmRecordId?: string | null;\n  orgSlug?: string;\n  routingFormSearchParams?: RoutingFormSearchParams;\n  isDryRunProp?: boolean;\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 12, "endLine": 34 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "missing routingFormSearchParams",
+          "handled": true,
+          "behavior": "Reads routing parameters from window.location.search.",
+          "anchor": { "startLine": 58, "endLine": 58 }
+        },
+        {
+          "inputShape": "duration undefined, null, or otherwise falsy",
+          "handled": true,
+          "behavior": "Uses event.length when calculating the booking end time.",
+          "anchor": { "startLine": 72, "endLine": 76 }
+        },
+        {
+          "inputShape": "metadata missing or otherwise falsy",
+          "handled": true,
+          "behavior": "Sets metadata to an empty object.",
+          "anchor": { "startLine": 81, "endLine": 84 }
+        },
+        {
+          "inputShape": "hashedLink missing, null, or otherwise falsy",
+          "handled": true,
+          "behavior": "Sets hasHashedBookingLink to false while preserving hashedLink.",
+          "anchor": { "startLine": 84, "endLine": 87 }
+        },
+        {
+          "inputShape": "routingFormResponseId query parameter absent",
+          "handled": true,
+          "behavior": "Sets routingFormResponseId to undefined.",
+          "anchor": { "startLine": 60, "endLine": 61 }
+        },
+        {
+          "inputShape": "non-numeric routingFormResponseId query parameter",
+          "handled": true,
+          "behavior": "Converts the value to NaN.",
+          "anchor": { "startLine": 60, "endLine": 61 }
+        },
+        {
+          "inputShape": "cal.skipContactOwner query parameter not equal to true",
+          "handled": true,
+          "behavior": "Sets skipContactOwner to false.",
+          "anchor": { "startLine": 62, "endLine": 62 }
+        },
+        {
+          "inputShape": "cal.reroutingFormResponses query parameter absent or empty",
+          "handled": true,
+          "behavior": "Sets reroutingFormResponses to undefined.",
+          "anchor": { "startLine": 63, "endLine": 63 }
+        },
+        {
+          "inputShape": "cal.cache query parameter absent or empty",
+          "handled": true,
+          "behavior": "Sets _shouldServeCache to undefined.",
+          "anchor": { "startLine": 65, "endLine": 66 }
+        },
+        {
+          "inputShape": "recurring dates parse to an empty array",
+          "handled": true,
+          "behavior": "Returns an empty recurring mutation input array.",
+          "anchor": { "startLine": 127, "endLine": 137 }
+        },
+        {
+          "inputShape": "recurring booking mapping",
+          "handled": true,
+          "behavior": "Clears bookingUid, generates one recurringEventId, and applies it to every mapped date.",
+          "anchor": { "startLine": 113, "endLine": 137 }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": "JSON.parse",
+          "caught": null,
+          "action": "Propagates the parsing exception when reroutingFormResponses is truthy but invalid JSON.",
+          "fallback": null,
+          "anchor": { "startLine": 97, "endLine": 97 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "platform",
+          "description": "window.location.search is available when routingFormSearchParams is not supplied.",
+          "anchor": { "startLine": 58, "endLine": 58 }
+        },
+        {
+          "kind": "caller",
+          "description": "duration is not validated by this function.",
+          "anchor": { "startLine": 16, "endLine": 17 }
+        },
+        {
+          "kind": "schema",
+          "description": "values can be spread into the mutation input and may be overridden by mapped fields.",
+          "anchor": { "startLine": 69, "endLine": 100 }
+        },
+        {
+          "kind": "schema",
+          "description": "recurringEvent data is suitable for parseRecurringDates with the supplied recurring count and timezone.",
+          "anchor": { "startLine": 114, "endLine": 123 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "What exact values and validation rules are applied by getRoutedTeamMemberIdsFromSearchParams?",
+          "affects": "routedTeamMemberIds",
+          "anchor": { "startLine": 58, "endLine": 60 },
+          "resolution": null
+        },
+        {
+          "question": "What date formatting and timezone behavior does dayjs(date).format() provide?",
+          "affects": "start and end",
+          "anchor": { "startLine": 72, "endLine": 76 },
+          "resolution": null
+        },
+        {
+          "question": "How does parseRecurringDates interpret recurringEvent, recurringCount, timezone, and language?",
+          "affects": "recurring dates and recurring mutation inputs",
+          "anchor": { "startLine": 114, "endLine": 123 },
+          "resolution": null
+        }
+      ],
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [],
+      "language": "typescript",
+      "moduleLayout": ["BookingOptions", "mapBookingToMutationInput", "mapRecurringBookingToMutationInput"],
+      "moduleLevelCode": "import { v4 as uuidv4 } from \"uuid\";\n\nimport dayjs from \"@calcom/dayjs\";\nimport { isBookingDryRun } from \"@calcom/features/bookings/Booker/utils/isBookingDryRun\";\nimport { getRoutedTeamMemberIdsFromSearchParams } from \"@calcom/lib/bookings/getRoutedTeamMemberIdsFromSearchParams\";\nimport { parseRecurringDates } from \"@calcom/lib/parse-dates\";\nimport type { RoutingFormSearchParams } from \"@calcom/platform-types\";\n\nimport type { BookerEvent, BookingCreateBody, RecurringBookingCreateBody } from \"../../types\";\nimport type { Tracking } from \"../handleNewBooking/types\";",
+      "exports": [
+        { "name": "BookingOptions", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "mapBookingToMutationInput", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "mapRecurringBookingToMutationInput", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "v4", "module": "uuid", "alias": "uuidv4", "kind": "external" },
+        { "symbol": "default", "module": "@calcom/dayjs", "alias": "dayjs", "kind": "external" },
+        {
+          "symbol": "isBookingDryRun",
+          "module": "@calcom/features/bookings/Booker/utils/isBookingDryRun",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "getRoutedTeamMemberIdsFromSearchParams",
+          "module": "@calcom/lib/bookings/getRoutedTeamMemberIdsFromSearchParams",
+          "alias": null,
+          "kind": "external"
+        },
+        { "symbol": "parseRecurringDates", "module": "@calcom/lib/parse-dates", "alias": null, "kind": "external" },
+        { "symbol": "RoutingFormSearchParams", "module": "@calcom/platform-types", "alias": null, "kind": "external" },
+        { "symbol": "BookerEvent", "module": "../../types", "alias": null, "kind": "internal" },
+        { "symbol": "BookingCreateBody", "module": "../../types", "alias": null, "kind": "internal" },
+        { "symbol": "RecurringBookingCreateBody", "module": "../../types", "alias": null, "kind": "internal" },
+        { "symbol": "Tracking", "module": "../handleNewBooking/types", "alias": null, "kind": "internal" }
+      ],
+      "fileConstants": [],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/features/bookings/lib/book-event-form/booking-to-mutation-input-mapper.tsx__BookingOptions_1#type_alias:BookingOptions",
+        "unitKind": "type_alias",
+        "name": "BookingOptions",
+        "qualifiedName": "BookingOptions",
+        "parentUnitId": null,
+        "startLine": 12,
+        "endLine": 34,
+        "isBehavioral": false,
+        "source": "export type BookingOptions = {\n  values: Record<string, unknown>;\n  event: Pick<BookerEvent, \"id\" | \"length\" | \"slug\" | \"schedulingType\" | \"recurringEvent\">;\n  date: string;\n  // @NOTE: duration is not validated in this function\n  duration: number | undefined | null;\n  timeZone: string;\n  language: string;\n  rescheduleUid: string | undefined;\n  rescheduledBy: string | undefined;\n  username: string;\n  metadata?: Record<string, string>;\n  bookingUid?: string;\n  seatReferenceUid?: string;\n  hashedLink?: string | null;\n  teamMemberEmail?: string | null;\n  crmOwnerRecordType?: string | null;\n  crmAppSlug?: string | null;\n  crmRecordId?: string | null;\n  orgSlug?: string;\n  routingFormSearchParams?: RoutingFormSearchParams;\n  isDryRunProp?: boolean;\n};",
+        "detail": {
+          "unitId": "packages/features/bookings/lib/book-event-form/booking-to-mutation-input-mapper.tsx__BookingOptions_1#type_alias:BookingOptions",
+          "fileId": "packages/features/bookings/lib/book-event-form/booking-to-mutation-input-mapper.tsx__BookingOptions_1",
+          "unitKind": "type_alias",
+          "name": "BookingOptions",
+          "qualifiedName": "BookingOptions",
+          "parentUnitId": null,
+          "startLine": 12,
+          "endLine": 34,
+          "signature": "export type BookingOptions = {\n  values: Record<string, unknown>;\n  event: Pick<BookerEvent, \"id\" | \"length\" | \"slug\" | \"schedulingType\" | \"recurringEvent\">;\n  date: string;\n  // @NOTE: duration is not validated in this function\n  duration: number | undefined | null;\n  timeZone: string;\n  language: string;\n  rescheduleUid: string | undefined;\n  rescheduledBy: string | undefined;\n  username: string;\n  metadata?: Record<string, string>;\n  bookingUid?: string;\n  seatReferenceUid?: string;\n  hashedLink?: string | null;\n  teamMemberEmail?: string | null;\n  crmOwnerRecordType?: string | null;\n  crmAppSlug?: string | null;\n  crmRecordId?: string | null;\n  orgSlug?: string;\n  routingFormSearchParams?: RoutingFormSearchParams;\n  isDryRunProp?: boolean;\n};",
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [
+            {
+              "name": "values",
+              "kind": "field",
+              "type": "Record<string, unknown>",
+              "default": null,
+              "visibility": null,
+              "static": false
+            },
+            {
+              "name": "event",
+              "kind": "field",
+              "type": "Pick<BookerEvent, \"id\" | \"length\" | \"slug\" | \"schedulingType\" | \"recurringEvent\">",
+              "default": null,
+              "visibility": null,
+              "static": false
+            },
+            { "name": "date", "kind": "field", "type": "string", "default": null, "visibility": null, "static": false },
+            {
+              "name": "duration",
+              "kind": "field",
+              "type": "number | undefined | null",
+              "default": null,
+              "visibility": null,
+              "static": false
+            },
+            {
+              "name": "timeZone",
+              "kind": "field",
+              "type": "string",
+              "default": null,
+              "visibility": null,
+              "static": false
+            },
+            {
+              "name": "language",
+              "kind": "field",
+              "type": "string",
+              "default": null,
+              "visibility": null,
+              "static": false
+            },
+            {
+              "name": "rescheduleUid",
+              "kind": "field",
+              "type": "string | undefined",
+              "default": null,
+              "visibility": null,
+              "static": false
+            },
+            {
+              "name": "rescheduledBy",
+              "kind": "field",
+              "type": "string | undefined",
+              "default": null,
+              "visibility": null,
+              "static": false
+            },
+            {
+              "name": "username",
+              "kind": "field",
+              "type": "string",
+              "default": null,
+              "visibility": null,
+              "static": false
+            },
+            {
+              "name": "metadata",
+              "kind": "field",
+              "type": "Record<string, string>",
+              "default": null,
+              "visibility": null,
+              "static": false
+            },
+            {
+              "name": "bookingUid",
+              "kind": "field",
+              "type": "string",
+              "default": null,
+              "visibility": null,
+              "static": false
+            },
+            {
+              "name": "seatReferenceUid",
+              "kind": "field",
+              "type": "string",
+              "default": null,
+              "visibility": null,
+              "static": false
+            },
+            {
+              "name": "hashedLink",
+              "kind": "field",
+              "type": "string | null",
+              "default": null,
+              "visibility": null,
+              "static": false
+            },
+            {
+              "name": "teamMemberEmail",
+              "kind": "field",
+              "type": "string | null",
+              "default": null,
+              "visibility": null,
+              "static": false
+            },
+            {
+              "name": "crmOwnerRecordType",
+              "kind": "field",
+              "type": "string | null",
+              "default": null,
+              "visibility": null,
+              "static": false
+            },
+            {
+              "name": "crmAppSlug",
+              "kind": "field",
+              "type": "string | null",
+              "default": null,
+              "visibility": null,
+              "static": false
+            },
+            {
+              "name": "crmRecordId",
+              "kind": "field",
+              "type": "string | null",
+              "default": null,
+              "visibility": null,
+              "static": false
+            },
+            {
+              "name": "orgSlug",
+              "kind": "field",
+              "type": "string",
+              "default": null,
+              "visibility": null,
+              "static": false
+            },
+            {
+              "name": "routingFormSearchParams",
+              "kind": "field",
+              "type": "RoutingFormSearchParams",
+              "default": null,
+              "visibility": null,
+              "static": false
+            },
+            {
+              "name": "isDryRunProp",
+              "kind": "field",
+              "type": "boolean",
+              "default": null,
+              "visibility": null,
+              "static": false
+            }
+          ],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Defines the shape of booking input options used throughout the booking mutation mapping logic.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "sourceHash": "",
+          "semanticFingerprint": "57de855bff0a556b5efb7bb4f7b30e6d2f21af6eb6c5446e7ea16f8658a01099"
+        }
+      },
+      {
+        "unitId": "packages/features/bookings/lib/book-event-form/booking-to-mutation-input-mapper.tsx__mapBookingToMutationInput_2#function:mapBookingToMutationInput",
+        "unitKind": "function",
+        "name": "mapBookingToMutationInput",
+        "qualifiedName": "mapBookingToMutationInput",
+        "parentUnitId": null,
+        "startLine": 36,
+        "endLine": 102,
+        "isBehavioral": true,
+        "source": "export const mapBookingToMutationInput = ({\n  values,\n  event,\n  date,\n  duration,\n  timeZone,\n  language,\n  rescheduleUid,\n  rescheduledBy,\n  username,\n  metadata,\n  bookingUid,\n  seatReferenceUid,\n  hashedLink,\n  teamMemberEmail,\n  crmOwnerRecordType,\n  crmAppSlug,\n  crmRecordId,\n  orgSlug,\n  routingFormSearchParams,\n  isDryRunProp,\n}: BookingOptions): BookingCreateBody => {\n  const searchParams = new URLSearchParams(routingFormSearchParams ?? window.location.search);\n  const routedTeamMemberIds = getRoutedTeamMemberIdsFromSearchParams(searchParams);\n  const routingFormResponseIdParam = searchParams.get(\"cal.routingFormResponseId\");\n  const routingFormResponseId = routingFormResponseIdParam ? Number(routingFormResponseIdParam) : undefined;\n  const skipContactOwner = searchParams.get(\"cal.skipContactOwner\") === \"true\";\n  const reroutingFormResponses = searchParams.get(\"cal.reroutingFormResponses\");\n  const _isDryRun = isDryRunProp !== undefined ? isDryRunProp : isBookingDryRun(searchParams);\n  const _cacheParam = searchParams?.get(\"cal.cache\");\n  const _shouldServeCache = _cacheParam ? _cacheParam === \"true\" : undefined;\n  const dub_id = searchParams?.get(\"dub_id\");\n\n  return {\n    ...values,\n    user: username,\n    start: dayjs(date).format(),\n    end: dayjs(date)\n      // Defaults to the default event length in case no custom duration is set.\n      .add(duration || event.length, \"minute\")\n      .format(),\n    eventTypeId: event.id,\n    eventTypeSlug: event.slug,\n    timeZone: timeZone,\n    language: language,\n    rescheduleUid,\n    rescheduledBy,\n    metadata: metadata || {},\n    hasHashedBookingLink: hashedLink ? true : false,\n    bookingUid,\n    seatReferenceUid,\n    hashedLink,\n    teamMemberEmail,\n    crmOwnerRecordType,\n    crmAppSlug,\n    crmRecordId,\n    orgSlug,\n    routedTeamMemberIds,\n    routingFormResponseId,\n    skipContactOwner,\n    // In case of rerouting, the form responses are actually the responses that we need to update.\n    reroutingFormResponses: reroutingFormResponses ? JSON.parse(reroutingFormResponses) : undefined,\n    _isDryRun,\n    _shouldServeCache,\n    dub_id,\n  };\n};",
+        "detail": {
+          "unitId": "packages/features/bookings/lib/book-event-form/booking-to-mutation-input-mapper.tsx__mapBookingToMutationInput_2#function:mapBookingToMutationInput",
+          "fileId": "packages/features/bookings/lib/book-event-form/booking-to-mutation-input-mapper.tsx__mapBookingToMutationInput_2",
+          "unitKind": "function",
+          "name": "mapBookingToMutationInput",
+          "qualifiedName": "mapBookingToMutationInput",
+          "parentUnitId": null,
+          "startLine": 36,
+          "endLine": 102,
+          "signature": "({ values, event, date, duration, timeZone, language, rescheduleUid, rescheduledBy, username, metadata, bookingUid, seatReferenceUid, hashedLink, teamMemberEmail, crmOwnerRecordType, crmAppSlug, crmRecordId, orgSlug, routingFormSearchParams, isDryRunProp }: BookingOptions) => BookingCreateBody",
+          "parameters": [
+            { "name": "values", "type": null, "default": null, "optional": false, "variadic": false, "order": 0 },
+            { "name": "event", "type": null, "default": null, "optional": false, "variadic": false, "order": 1 },
+            { "name": "date", "type": null, "default": null, "optional": false, "variadic": false, "order": 2 },
+            { "name": "duration", "type": null, "default": null, "optional": false, "variadic": false, "order": 3 },
+            { "name": "timeZone", "type": null, "default": null, "optional": false, "variadic": false, "order": 4 },
+            { "name": "language", "type": null, "default": null, "optional": false, "variadic": false, "order": 5 },
+            {
+              "name": "rescheduleUid",
+              "type": null,
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 6
+            },
+            {
+              "name": "rescheduledBy",
+              "type": null,
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 7
+            },
+            { "name": "username", "type": null, "default": null, "optional": false, "variadic": false, "order": 8 },
+            { "name": "metadata", "type": null, "default": null, "optional": false, "variadic": false, "order": 9 },
+            { "name": "bookingUid", "type": null, "default": null, "optional": false, "variadic": false, "order": 10 },
+            {
+              "name": "seatReferenceUid",
+              "type": null,
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 11
+            },
+            { "name": "hashedLink", "type": null, "default": null, "optional": false, "variadic": false, "order": 12 },
+            {
+              "name": "teamMemberEmail",
+              "type": null,
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 13
+            },
+            {
+              "name": "crmOwnerRecordType",
+              "type": null,
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 14
+            },
+            { "name": "crmAppSlug", "type": null, "default": null, "optional": false, "variadic": false, "order": 15 },
+            { "name": "crmRecordId", "type": null, "default": null, "optional": false, "variadic": false, "order": 16 },
+            { "name": "orgSlug", "type": null, "default": null, "optional": false, "variadic": false, "order": 17 },
+            {
+              "name": "routingFormSearchParams",
+              "type": null,
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 18
+            },
+            { "name": "isDryRunProp", "type": null, "default": null, "optional": false, "variadic": false, "order": 19 }
+          ],
+          "returnType": "BookingCreateBody",
+          "decorators": [],
+          "modifiersApplied": ["export"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "A BookingOptions argument is provided.",
+            "If routingFormSearchParams is supplied it must be a valid URL query string."
+          ],
+          "postconditions": [
+            "The returned object conforms to BookingCreateBody.",
+            "All original BookingOptions fields are preserved where applicable.",
+            "`start` and `end` are ISO‑8601 strings derived from `date` and either `duration` or `event.length`.",
+            "`hasHashedBookingLink` is true exactly when `hashedLink` is truthy.",
+            "`routingFormResponseId`, `skipContactOwner`, `reroutingFormResponses`, `_isDryRun`, `_shouldServeCache`, and `dub_id` reflect the parsed URL search parameters or derived defaults."
+          ],
+          "invariants": [
+            "The shape of the returned object never omits required BookingCreateBody keys.",
+            "No mutation of the input BookingOptions occurs; the function is pure with respect to its arguments."
+          ],
+          "edgeCases": [
+            "If routingFormSearchParams is undefined, the current window location search string is used.",
+            "When `duration` is falsy, `event.length` is used to compute the end time.",
+            "If `isDryRunProp` is undefined, `isBookingDryRun` is called to infer the dry‑run flag.",
+            "Missing optional URL parameters (e.g., `cal.routingFormResponseId`) result in undefined values in the output."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "URLSearchParams", "source": null, "kind": "internal" },
+            { "name": "getRoutedTeamMemberIdsFromSearchParams", "source": null, "kind": "internal" },
+            { "name": "isBookingDryRun", "source": null, "kind": "internal" },
+            { "name": "dayjs", "source": null, "kind": "internal" },
+            { "name": "JSON.parse", "source": null, "kind": "internal" }
+          ],
+          "symbolReferences": ["BookingOptions", "BookingCreateBody", "URLSearchParams", "dayjs"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Converts a BookingOptions object into a BookingCreateBody payload for the booking creation GraphQL mutation, copying fields and deriving additional values such as ISO timestamps and routing parameters.",
+          "specLiterals": [
+            {
+              "kind": "format-string",
+              "value": "cal.routingFormResponseId",
+              "role": "expected URL query parameter name for routing form response ID"
+            },
+            {
+              "kind": "format-string",
+              "value": "cal.skipContactOwner",
+              "role": "expected URL query parameter name that toggles contact owner skipping"
+            },
+            {
+              "kind": "format-string",
+              "value": "cal.reroutingFormResponses",
+              "role": "expected URL query parameter name containing JSON‑encoded rerouting responses"
+            },
+            {
+              "kind": "format-string",
+              "value": "dub_id",
+              "role": "expected URL query parameter name for DUB identifier"
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "mapBookingToMutationInput is invoked",
+              "then": "The returned BookingCreateBody has `start` equal to the ISO string of the given date, `end` equal to date plus 30 minutes, `routingFormResponseId` equal to 42, and `skipContactOwner` true.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "sourceHash": "",
+          "semanticFingerprint": "3aed3c0f0fbb5b02d8ce6f59292f30acc3ece800687bffe8bbb17179d02047ed"
+        }
+      },
+      {
+        "unitId": "packages/features/bookings/lib/book-event-form/booking-to-mutation-input-mapper.tsx__mapRecurringBookingToMutationInput_3#function:mapRecurringBookingToMutationInput",
+        "unitKind": "function",
+        "name": "mapRecurringBookingToMutationInput",
+        "qualifiedName": "mapRecurringBookingToMutationInput",
+        "parentUnitId": null,
+        "startLine": 108,
+        "endLine": 111,
+        "isBehavioral": true,
+        "source": "export const mapRecurringBookingToMutationInput = (\n  booking: BookingOptions,\n  recurringCount: number,\n  tracking?: Tracking"
+      }
+    ]
+  },
+  "out": ["packages/features/bookings/types.ts", "packages/features/bookings/lib/handleNewBooking/types.ts"],
+  "in": ["packages/features/bookings/lib/index.ts"],
+  "externals": [
+    "uuid",
+    "@calcom/dayjs",
+    "@calcom/features/bookings/Booker/utils/isBookingDryRun",
+    "@calcom/lib/bookings/getRoutedTeamMemberIdsFromSearchParams",
+    "@calcom/lib/parse-dates",
+    "@calcom/platform-types"
+  ],
+  "impact": { "seeds": 3, "callers": 0, "impactedFiles": [] }
+}

@@ -1,0 +1,882 @@
+{
+  "schema": 2,
+  "kind": "file",
+  "repoName": "tldraw",
+  "file": {
+    "relativePath": "packages/tldraw/src/lib/shapes/shared/useImageOrVideoAsset.ts",
+    "language": "typescript",
+    "sizeBytes": 6242,
+    "tokenCount": 1561,
+    "model": "us.openai.gpt-5.6-luna",
+    "analysedAt": "2026-08-24T12:12:32.167Z",
+    "module": {
+      "purpose": "Provides a React hook that resolves image or video assets to scale-appropriate URLs, temporary previews, or export-ready resources for shapes and SVG export.",
+      "summary": "This module integrates editor asset resolution with React state and lifecycle management. It selects an asset URL based on canvas zoom, displayed width, and SVG export settings; avoids work for culled shapes; uses temporary previews for locally pasted assets; debounces repeated resolution requests; and prevents stale asynchronous callbacks from updating state after cleanup.",
+      "businessContext": "Supports efficient rendering of uploaded media in the collaborative canvas. Failures can leave images or videos missing, stale, incorrectly scaled, or unavailable during export.",
+      "classes": ["UseImageOrVideoAssetOptions (~L20-35): Configuration shape for selecting and sizing a media asset"],
+      "functions": [
+        "useImageOrVideoAsset (~L49-160): Resolves media assets into responsive URLs and export previews",
+        "resolveAssetUrl (~L162-182): Requests an asset URL and forwards asynchronous results"
+      ],
+      "keywords": [
+        "asset resolution",
+        "temporary asset preview",
+        "SVG export",
+        "screen scale",
+        "image scaling",
+        "video asset",
+        "culled shapes",
+        "debouncing",
+        "device pixel ratio",
+        "React hook"
+      ],
+      "ontologyConcepts": [
+        "responsive media resolution",
+        "lazy loading",
+        "debouncing",
+        "cancellation",
+        "viewport culling",
+        "temporary preview",
+        "SVG export synchronization"
+      ],
+      "businessEntities": ["asset", "image", "video", "shape", "SVG export", "URL"],
+      "systemCapabilities": [
+        "Resolve optimized media URLs",
+        "Provide temporary upload previews",
+        "Coordinate asset loading with SVG export",
+        "Avoid resolving culled shapes",
+        "Debounce repeated media resolution",
+        "Prevent stale asynchronous state updates"
+      ],
+      "configDependencies": [],
+      "importsInternal": [],
+      "importsExternal": [
+        {
+          "spec": "@tldraw/editor",
+          "symbols": [
+            "Editor",
+            "SvgExportContext",
+            "TLAssetId",
+            "TLImageAsset",
+            "TLShapeId",
+            "TLVideoAsset",
+            "react",
+            "useDelaySvgExport",
+            "useEditor",
+            "useSvgExportContext"
+          ],
+          "package": "@tldraw/editor",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 12 }
+        },
+        {
+          "spec": "react",
+          "symbols": ["useEffect", "useRef", "useState"],
+          "package": "react",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 13, "endLine": 13 }
+        }
+      ],
+      "sideEffects": {
+        "io": ["Reads asset records and culling state through the editor."],
+        "network": ["Delegates optimized asset URL resolution to the editor's asset resolver."],
+        "env": [],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": []
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "UseImageOrVideoAssetOptions",
+          "shape": "assetId: TLAssetId | null; shapeId?: TLShapeId; width: number",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "useImageOrVideoAsset",
+          "shape": "useImageOrVideoAsset({ shapeId, assetId, width }: UseImageOrVideoAssetOptions): { asset: (TLImageAsset | TLVideoAsset) | null; url: string | null }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "Editor.getAsset",
+          "shape": "editor.getAsset<TLImageAsset | TLVideoAsset>(assetId)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "Editor.resolveAssetUrl",
+          "shape": "editor.resolveAssetUrl(assetId, { screenScale, shouldResolveToOriginal: exportInfo ? exportInfo.pixelRatio === null : false, dpr: exportInfo?.pixelRatio ?? undefined })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "Editor.getTemporaryAssetPreview",
+          "shape": "editor.getTemporaryAssetPreview(asset.id)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "Editor.getCulledShapes",
+          "shape": "editor.getCulledShapes().has(shapeId)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "Editor.getEfficientZoomLevel",
+          "shape": "editor.getEfficientZoomLevel() * (width / asset.props.w)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "hook initialization",
+          "intent": "Acquire editor and export context, then initialize asset resolution state.",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 49, "endLine": 73 }
+        },
+        {
+          "name": "effect scheduling",
+          "intent": "Schedule asset state updates and cancel work when dependencies change.",
+          "structureKind": "async",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 75, "endLine": 88 }
+        },
+        {
+          "name": "culled-shape guard",
+          "intent": "Skip resolution for off-screen shapes outside SVG export.",
+          "structureKind": "branch",
+          "predicate": "!exportInfo && shapeId && editor.getCulledShapes().has(shapeId)",
+          "branchOutcomes": ["culled shape: return", "otherwise: continue"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 88, "endLine": 89 }
+        },
+        {
+          "name": "asset lookup",
+          "intent": "Retrieve the current asset and clear state when it no longer exists.",
+          "structureKind": "branch",
+          "predicate": "!asset",
+          "branchOutcomes": ["asset missing: clear result", "asset present: continue"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 91, "endLine": 97 }
+        },
+        {
+          "name": "temporary preview",
+          "intent": "Use a local temporary preview when the asset has no source URL.",
+          "structureKind": "branch",
+          "predicate": "!asset.props.src",
+          "branchOutcomes": ["preview available: update URL and return", "otherwise: continue"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 99, "endLine": 109 }
+        },
+        {
+          "name": "debounced resolution",
+          "intent": "Delay repeated scale changes while resolving asset variations immediately on first use.",
+          "structureKind": "loop",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": "500 / 16",
+          "terminationCondition": "tick > 500 / 16",
+          "anchor": { "startLine": 126, "endLine": 149 }
+        },
+        {
+          "name": "async result application",
+          "intent": "Ignore cancelled or duplicate results before updating state and export readiness.",
+          "structureKind": "async",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 117, "endLine": 124 }
+        }
+      ],
+      "representationFamily": "function-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "interface",
+          "name": "UseImageOrVideoAssetOptions",
+          "signature": "export interface UseImageOrVideoAssetOptions {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 20, "endLine": 20 }
+        },
+        {
+          "kind": "function",
+          "name": "useImageOrVideoAsset",
+          "signature": "export function useImageOrVideoAsset({ shapeId, assetId, width }: UseImageOrVideoAssetOptions) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 49, "endLine": 49 }
+        },
+        {
+          "kind": "function",
+          "name": "resolveAssetUrl",
+          "signature": "function resolveAssetUrl(\n\teditor: Editor,\n\tassetId: TLAssetId,\n\tscreenScale: number,\n\texportInfo: SvgExportContext | null,\n\tcallback: (url: string | null) => void\n)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 162, "endLine": 168 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "interface",
+          "name": "UseImageOrVideoAssetOptions",
+          "shape": "{\n\t/** The asset ID you want a URL for. */\n\tassetId: TLAssetId | null\n\t/**\n\t * The shape the asset is being used for. We won't update the resolved URL while the shape is\n\t * off-screen.\n\t */\n\tshapeId?: TLShapeId\n\t/**\n\t * The width at which the asset will be displayed, in shape-space pixels.\n\t */\n\twidth: number\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 20, "endLine": 35 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "assetId is null",
+          "handled": true,
+          "behavior": "The effect exits without resolving an asset; the existing result is not explicitly cleared.",
+          "anchor": { "startLine": 81, "endLine": 83 }
+        },
+        {
+          "inputShape": "asset is deleted or unavailable",
+          "handled": true,
+          "behavior": "The hook sets both asset and URL to null.",
+          "anchor": { "startLine": 92, "endLine": 96 }
+        },
+        {
+          "inputShape": "asset has no source and a temporary preview exists",
+          "handled": true,
+          "behavior": "The temporary preview becomes the URL and is marked as a placeholder.",
+          "anchor": { "startLine": 100, "endLine": 108 }
+        },
+        {
+          "inputShape": "shape is culled outside SVG export",
+          "handled": true,
+          "behavior": "Resolution is skipped until the shape is no longer culled.",
+          "anchor": { "startLine": 88, "endLine": 89 }
+        },
+        {
+          "inputShape": "async resolution completes after cleanup",
+          "handled": true,
+          "behavior": "The callback returns without updating state.",
+          "anchor": { "startLine": 117, "endLine": 118 }
+        },
+        {
+          "inputShape": "resolved URL equals the previously observed URL",
+          "handled": true,
+          "behavior": "State and export readiness are left unchanged.",
+          "anchor": { "startLine": 118, "endLine": 119 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": ">",
+          "left": "tick",
+          "right": "500 / 16",
+          "inclusive": false,
+          "intent": "Begin resolution only after the debounce tick count exceeds the 500ms approximation.",
+          "anchor": { "startLine": 132, "endLine": 135 }
+        },
+        {
+          "operator": "==",
+          "left": "previousAssetId.current",
+          "right": "assetId",
+          "inclusive": false,
+          "intent": "Detect whether the asset identity changed.",
+          "anchor": { "startLine": 76, "endLine": 77 }
+        },
+        {
+          "operator": "==",
+          "left": "previousUrl.current",
+          "right": "preview",
+          "inclusive": false,
+          "intent": "Avoid rewriting an unchanged temporary preview URL.",
+          "anchor": { "startLine": 103, "endLine": 104 }
+        },
+        {
+          "operator": "==",
+          "left": "previousUrl.current",
+          "right": "url",
+          "inclusive": false,
+          "intent": "Avoid applying an unchanged resolved URL.",
+          "anchor": { "startLine": 118, "endLine": 119 }
+        },
+        {
+          "operator": "==",
+          "left": "exportInfo.pixelRatio",
+          "right": "null",
+          "inclusive": false,
+          "intent": "Request the original asset when export pixel ratio is null.",
+          "anchor": { "startLine": 170, "endLine": 173 }
+        }
+      ],
+      "errorHandling": [],
+      "invariants": [
+        {
+          "kind": "invariant",
+          "description": "A missing asset always produces a null asset and null URL result.",
+          "anchor": { "startLine": 92, "endLine": 96 }
+        },
+        {
+          "kind": "invariant",
+          "description": "The same URL is not written to state more than once consecutively.",
+          "anchor": { "startLine": 118, "endLine": 119 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Cancelled effects cannot apply asynchronous resolution results.",
+          "anchor": { "startLine": 117, "endLine": 118 }
+        },
+        {
+          "kind": "ordering",
+          "description": "An asset identity change resolves immediately before later scale updates are debounced.",
+          "anchor": { "startLine": 76, "endLine": 82 }
+        },
+        {
+          "kind": "ordering",
+          "description": "SVG export readiness is signaled only after a preview or resolved URL is available.",
+          "anchor": { "startLine": 103, "endLine": 106 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "The caller supplies a positive display width compatible with the asset's intrinsic width.",
+          "anchor": { "startLine": 112, "endLine": 115 }
+        },
+        {
+          "kind": "caller",
+          "description": "The editor's asset resolver invokes the callback after asynchronous URL resolution.",
+          "anchor": { "startLine": 169, "endLine": 181 }
+        },
+        {
+          "kind": "platform",
+          "description": "The editor tick event advances frequently enough for the 500ms debounce approximation.",
+          "anchor": { "startLine": 131, "endLine": 141 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "What happens when assetId becomes null after a previously resolved asset?",
+          "affects": "result state lifecycle",
+          "anchor": { "startLine": 81, "endLine": 83 },
+          "resolution": null
+        },
+        {
+          "question": "Does resolveAssetUrl reject on resolver failure, and where is that rejection handled?",
+          "affects": "error_handling",
+          "anchor": { "startLine": 169, "endLine": 181 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "mixed",
+        "reentrant": false,
+        "ordering": "deterministic",
+        "notes": "React effects schedule editor-driven updates, debounced tick callbacks delay repeated resolutions, and asynchronous URL callbacks are cancelled logically through an effect-local flag."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "returns-null-for-missing-asset-id",
+          "scenario": "The hook is called without an asset ID.",
+          "given": ["assetId = null"],
+          "when": "useImageOrVideoAsset({ assetId, shapeId, width })",
+          "then": "result.asset === null && result.url === null",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Null asset IDs must not trigger asset resolution."
+        },
+        {
+          "testId": "uses-temporary-preview-without-source",
+          "scenario": "An asset has no source and a temporary preview is available.",
+          "given": ["asset.props.src = null", "editor.getTemporaryAssetPreview(asset.id) = preview"],
+          "when": "useImageOrVideoAsset({ assetId, shapeId, width })",
+          "then": "result.url === preview",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Locally pasted assets need an immediate preview while their source is unavailable."
+        },
+        {
+          "testId": "clears-result-for-deleted-asset",
+          "scenario": "The referenced asset is deleted after the hook has initialized.",
+          "given": ["editor.getAsset<TLImageAsset | TLVideoAsset>(assetId) = null"],
+          "when": "the asset update scheduler runs",
+          "then": "result.asset === null && result.url === null",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Failed uploads or deleted assets must not leave stale URLs visible."
+        },
+        {
+          "testId": "resolves-immediately-on-asset-change",
+          "scenario": "The asset ID changes after a previous asset was resolved.",
+          "given": ["didAlreadyResolve.current = true", "previousAssetId.current !== assetId"],
+          "when": "the asset update scheduler runs",
+          "then": "editor.resolveAssetUrl(assetId, ...) is called without waiting for the debounce interval",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Changing assets must avoid showing the prior asset during debounce."
+        },
+        {
+          "testId": "debounces-resolution-updates",
+          "scenario": "A previously resolved asset receives a scale or zoom update.",
+          "given": ["didAlreadyResolve.current = true", "shouldRunImmediately.current = false"],
+          "when": "the asset update scheduler runs",
+          "then": "editor.resolveAssetUrl(assetId, ...) is called only after approximately 500ms of editor ticks",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Zoom and resize changes must avoid fetching many image variations in quick succession."
+        },
+        {
+          "testId": "ignores-resolution-after-cleanup",
+          "scenario": "Asset URL resolution completes after the hook has unmounted or its effect has been replaced.",
+          "given": ["isCancelled = true"],
+          "when": "the resolveAssetUrl callback receives a URL",
+          "then": "the hook state is not updated",
+          "targets": [],
+          "oracleKind": "invariant-check",
+          "rationale": "Late asynchronous results must not update an obsolete hook instance."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "editor and asset type imports",
+        "React hook imports",
+        "UseImageOrVideoAssetOptions interface",
+        "useImageOrVideoAsset hook",
+        "resolveAssetUrl helper"
+      ],
+      "moduleLevelCode": "import {\n\tEditor,\n\tSvgExportContext,\n\tTLAssetId,\n\tTLImageAsset,\n\tTLShapeId,\n\tTLVideoAsset,\n\treact,\n\tuseDelaySvgExport,\n\tuseEditor,\n\tuseSvgExportContext,\n} from '@tldraw/editor'\nimport { useEffect, useRef, useState } from 'react'",
+      "exports": [
+        { "name": "UseImageOrVideoAssetOptions", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "useImageOrVideoAsset", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "Editor", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "SvgExportContext", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "TLAssetId", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "TLImageAsset", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "TLShapeId", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "TLVideoAsset", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "react", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "useDelaySvgExport", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "useEditor", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "useSvgExportContext", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "useEffect", "module": "react", "alias": null, "kind": "external" },
+        { "symbol": "useRef", "module": "react", "alias": null, "kind": "external" },
+        { "symbol": "useState", "module": "react", "alias": null, "kind": "external" }
+      ],
+      "fileConstants": [],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/shared/useImageOrVideoAsset.ts__useImageOrVideoAsset#function:useImageOrVideoAsset",
+        "unitKind": "function",
+        "name": "useImageOrVideoAsset",
+        "qualifiedName": "useImageOrVideoAsset",
+        "parentUnitId": null,
+        "startLine": 49,
+        "endLine": 160,
+        "isBehavioral": true,
+        "source": "\n\t// We use a state to store the result of the asset resolution, and we're going to avoid updating this whenever we can\n\tconst [result, setResult] = useState<{\n\t\tasset: (TLImageAsset | TLVideoAsset) | null\n\t\turl: string | null\n\t}>(() => ({\n\t\tasset: assetId ? (editor.getAsset<TLImageAsset | TLVideoAsset>(assetId) ?? null) : null,\n\t\turl: null as string | null,\n\t}))\n\n\t// A flag for whether we've resolved the asset URL at least once, after which we can debounce\n\tconst didAlreadyResolve = useRef(false)\n\n\t// Track the previous assetId to detect when the asset itself changes\n\tconst previousAssetId = useRef<TLAssetId | null>(null)\n\n\t// Track whether we should run immediately (skip debouncing) for the next resolution\n\tconst shouldRunImmediately = useRef(false)\n\n\t// The last URL that we've seen for the shape\n\tconst previousUrl = useRef<string | null>(null)\n\n\tuseEffect(() => {\n\t\t// Check if the assetId changed (not just resolution/scale updates)\n\t\tconst assetIdChanged = previousAssetId.current !== assetId\n\t\tpreviousAssetId.current = assetId\n\n\t\t// Set flag to run immediately (skip debouncing) for the next resolution\n\t\tif (assetIdChanged) {\n\t\t\tshouldRunImmediately.current = true\n\t\t}\n\n\t\tif (!assetId) return\n\n\t\tlet isCancelled = false\n\t\tlet cancelDebounceFn: (() => void) | undefined\n\n\t\tconst cleanupEffectScheduler = react('update state', () => {\n\t\t\tif (!exportInfo && shapeId && editor.getCulledShapes().has(shapeId)) return\n\n\t\t\t// Get the fresh asset\n\t\t\tconst asset = editor.getAsset<TLImageAsset | TLVideoAsset>(assetId)\n\t\t\tif (!asset) {\n\t\t\t\t// If the asset is deleted, such as when an upload fails, set the URL to null\n\t\t\t\tsetResult((prev) => ({ ...prev, asset: null, url: null }))\n\t\t\t\treturn\n\t\t\t}\n\n\t\t\t// Set initial preview for the shape if it has no source (if it was pasted into a local project as base64)\n\t\t\tif (!asset.props.src) {\n\t\t\t\tconst preview = editor.getTemporaryAssetPreview(asset.id)\n\t\t\t\tif (preview) {\n\t\t\t\t\tif (previousUrl.current !== preview) {\n\t\t\t\t\t\tpreviousUrl.current = preview // just for kicks, let's save the url as the previous URL\n\t\t\t\t\t\tsetResult((prev) => ({ ...prev, isPlaceholder: true, url: preview })) // set the preview as the URL\n\t\t\t\t\t\texportIsReady() // let the SVG export know we're ready for export\n\t\t\t\t\t}\n\t\t\t\t\treturn\n\t\t\t\t}\n\t\t\t}\n\n\t\t\t// aside ...we could bail here if the only thing that has changed is the shape has changed from culled to not culled\n\n\t\t\tconst screenScale = exportInfo\n\t\t\t\t? exportInfo.scale * (width / asset.props.w)\n\t\t\t\t: editor.getEfficientZoomLevel() * (width / asset.props.w)\n\n\t\t\tfunction resolve(asset: TLImageAsset | TLVideoAsset, url: string | null) {\n\t\t\t\tif (isCancelled) return // don't update if the hook has remounted\n\t\t\t\tif (previousUrl.current === url) return // don't update the state if the url is the same\n\t\t\t\tdidAlreadyResolve.current = true // mark that we've resolved our first image\n\t\t\t\tpreviousUrl.current = url // keep the url around to compare with the next one\n\t\t\t\tsetResult({ asset, url })\n\t\t\t\texportIsReady() // let the SVG export know we're ready for export\n\t\t\t}\n\n\t\t\t// Debounce fetching potentially multiple image variations (e.g. during zoom or resize).\n\t\t\t// Don't debounce when the asset itself changes - resolve immediately.\n\t\t\tif (didAlreadyResolve.current && !shouldRunImmediately.current) {\n\t\t\t\tlet tick = 0\n\n\t\t\t\tconst resolveAssetAfterAWhile = () => {\n\t\t\t\t\ttick++\n\t\t\t\t\tif (tick > 500 / 16) {\n\t\t\t\t\t\t// debounce for 500ms\n\t\t\t\t\t\tresolveAssetUrl(editor, assetId, screenScale, exportInfo, (url) => resolve(asset, url))\n\t\t\t\t\t\tcancelDebounceFn?.()\n\t\t\t\t\t}\n\t\t\t\t}\n\n\t\t\t\tcancelDebounceFn?.()\n\t\t\t\teditor.on('tick', resolveAssetAfterAWhile)\n\t\t\t\tcancelDebounceFn = () => editor.off('tick', resolveAssetAfterAWhile)\n\t\t\t} else {\n\t\t\t\t// Resolve immediately when: first resolution, or the asset itself changed.\n\t\t\t\t// Cancel any pending debounce to prevent stale updates.\n\t\t\t\tcancelDebounceFn?.()\n\t\t\t\tresolveAssetUrl(editor, assetId, screenScale, exportInfo, (url) => resolve(asset, url))\n\t\t\t\t// Reset the flag after immediate resolution so subsequent updates are debounced\n\t\t\t\tshouldRunImmediately.current = false\n\t\t\t}\n\t\t})\n\n\t\treturn () => {\n\t\t\tcleanupEffectScheduler()\n\t\t\tcancelDebounceFn?.()\n\t\t\tisCancelled = true\n\t\t}\n\t}, [editor, assetId, exportInfo, exportIsReady, shapeId, width])\n\n\treturn result\n}",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/shared/useImageOrVideoAsset.ts__useImageOrVideoAsset#function:useImageOrVideoAsset",
+          "fileId": "packages/tldraw/src/lib/shapes/shared/useImageOrVideoAsset.ts__useImageOrVideoAsset",
+          "unitKind": "function",
+          "name": "useImageOrVideoAsset",
+          "qualifiedName": "useImageOrVideoAsset",
+          "parentUnitId": null,
+          "startLine": 49,
+          "endLine": 160,
+          "signature": null,
+          "parameters": [],
+          "returnType": "{ asset: TLImageAsset | TLVideoAsset | null; url: string | null }",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The supplied editor must provide asset lookup, preview lookup, zoom, culling, tick subscription, and export-related scheduling APIs used by the hook.",
+            "The asset identifier, when present, must identify an image or video asset or be handled as a missing asset."
+          ],
+          "postconditions": [
+            "The returned state contains the latest accepted asset reference and resolved URL, or null values when the asset is unavailable.",
+            "A changed or newly resolved URL updates state and invokes exportIsReady.",
+            "Repeated resolution of the same URL does not update state or invoke exportIsReady."
+          ],
+          "invariants": [
+            "Updates from an effect that has been cancelled after remount do not modify state.",
+            "When a shape is culled and exportInfo is absent, asset resolution is skipped.",
+            "Asset identifier changes cause the next resolution to run immediately rather than being debounced.",
+            "After the first successful URL resolution, subsequent resolution requests are debounced unless the asset identifier changed.",
+            "The previously accepted URL is used to suppress redundant state updates."
+          ],
+          "edgeCases": [
+            "When assetId is absent, the effect performs no asset resolution.",
+            "When the asset cannot be found, the result asset and URL are set to null.",
+            "When an asset has no source but has a temporary preview, the preview becomes the URL and is marked as a placeholder; normal URL resolution is skipped.",
+            "When the same URL is resolved again, the existing result is retained.",
+            "When the hook effect is cleaned up before resolution completes, the pending result is ignored.",
+            "When a non-export shape is culled, resolution is skipped until the effect runs under applicable conditions.",
+            "After the initial or asset-change resolution, later scale or size-driven resolutions wait for the debounce interval before invoking URL resolution."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Missing or deleted assets produce a result with asset and url set to null; absent assetId produces no resolution.",
+            "returnsOnError": "The current result state is retained unless the asset lookup returns no asset, in which case asset and url become null."
+          },
+          "stateMutations": [
+            "React state storing the resolved asset, URL, and placeholder status",
+            "Refs tracking whether resolution has occurred, the previous asset identifier, immediate-run status, and previous URL",
+            "Editor tick-listener registration and cancellation for debounced resolution"
+          ],
+          "eventsEmitted": ["exportIsReady is invoked whenever a new resolved URL or temporary preview is accepted"],
+          "complexity": null,
+          "calls": [
+            { "name": "useState", "source": "React", "kind": "external" },
+            { "name": "useRef", "source": "React", "kind": "external" },
+            { "name": "useEffect", "source": "React", "kind": "external" },
+            { "name": "react", "source": null, "kind": "internal" },
+            { "name": "editor.getAsset", "source": "editor", "kind": "external" },
+            { "name": "editor.getTemporaryAssetPreview", "source": "editor", "kind": "external" },
+            { "name": "editor.getCulledShapes", "source": "editor", "kind": "external" },
+            { "name": "editor.getEfficientZoomLevel", "source": "editor", "kind": "external" },
+            { "name": "editor.on", "source": "editor", "kind": "external" },
+            { "name": "editor.off", "source": "editor", "kind": "external" },
+            {
+              "name": "resolveAssetUrl",
+              "source": "packages/tldraw/src/lib/shapes/shared/useImageOrVideoAsset.ts",
+              "kind": "internal"
+            },
+            { "name": "exportIsReady", "source": null, "kind": "external" }
+          ],
+          "symbolReferences": ["TLImageAsset", "TLVideoAsset", "TLAssetId", "resolveAssetUrl"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Returns an object containing the current image/video asset or null, the resolved URL or null, and a placeholder indicator when a temporary preview is used.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Resolves the current image or video asset URL for a shape, using temporary previews when necessary and coordinating updates with export readiness. It avoids stale, redundant, or excessively frequent URL updates.",
+          "specLiterals": [
+            {
+              "kind": "magic-number",
+              "value": "500",
+              "role": "Debounce duration in milliseconds before resolving a changed scale or size variation."
+            },
+            {
+              "kind": "magic-number",
+              "value": "16",
+              "role": "Tick interval divisor used to convert the debounce duration into approximately 16 ms ticks."
+            },
+            {
+              "kind": "format-string",
+              "value": "update state",
+              "role": "Scheduler task label used for the asset-resolution state update."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The hook resolves the asset.",
+              "then": "The result uses the asset, exposes the preview URL, marks it as a placeholder, and invokes exportIsReady without calling normal URL resolution.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The scheduled update runs.",
+              "then": "The result's asset and URL are both set to null.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The resolution callback runs.",
+              "then": "The result state and export readiness notification are not updated again.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "127301e678a9bcec7198124e6dbc90c014017201333f20628c0e8e161dd9efe4"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/shared/useImageOrVideoAsset.ts__useImageOrVideoAsset.resolve#function:useImageOrVideoAsset.resolve",
+        "unitKind": "function",
+        "name": "resolve",
+        "qualifiedName": "useImageOrVideoAsset.resolve",
+        "parentUnitId": "packages/tldraw/src/lib/shapes/shared/useImageOrVideoAsset.ts__useImageOrVideoAsset#function:useImageOrVideoAsset",
+        "startLine": 117,
+        "endLine": 124,
+        "isBehavioral": true,
+        "source": "\t\t\t\tif (isCancelled) return // don't update if the hook has remounted\n\t\t\t\tif (previousUrl.current === url) return // don't update the state if the url is the same\n\t\t\t\tdidAlreadyResolve.current = true // mark that we've resolved our first image\n\t\t\t\tpreviousUrl.current = url // keep the url around to compare with the next one\n\t\t\t\tsetResult({ asset, url })\n\t\t\t\texportIsReady() // let the SVG export know we're ready for export\n\t\t\t}\n",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/shared/useImageOrVideoAsset.ts__useImageOrVideoAsset.resolve#function:useImageOrVideoAsset.resolve",
+          "fileId": "packages/tldraw/src/lib/shapes/shared/useImageOrVideoAsset.ts__useImageOrVideoAsset.resolve",
+          "unitKind": "function",
+          "name": "resolve",
+          "qualifiedName": "useImageOrVideoAsset.resolve",
+          "parentUnitId": "packages/tldraw/src/lib/shapes/shared/useImageOrVideoAsset.ts__useImageOrVideoAsset#function:useImageOrVideoAsset",
+          "startLine": 117,
+          "endLine": 124,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The resolution callback has access to the current cancellation state, previously recorded URL, resolved asset, resolved URL, result setter, and export readiness callback."
+          ],
+          "postconditions": [
+            "If cancelled, no state, reference, or export-readiness update is performed.",
+            "If the resolved URL equals the previously recorded URL, no state, reference, or export-readiness update is performed.",
+            "Otherwise, the resolved state contains the asset and URL, the resolution is marked as completed, the URL is recorded, and export readiness is signaled."
+          ],
+          "invariants": [
+            "A cancelled resolution cannot update the hook state.",
+            "A URL already recorded as previous is not applied again.",
+            "Export readiness is signaled only after a non-cancelled, changed URL is accepted."
+          ],
+          "edgeCases": [
+            "When the resolution has been cancelled, the function returns without applying the resolved asset.",
+            "When the resolved URL matches the previously recorded URL, the function returns without changing the result.",
+            "When the resolution is active and the URL differs from the previous URL, the asset and URL are stored and export readiness is notified."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [
+            "Sets the resolved result to an object containing the asset and URL.",
+            "Marks the first image resolution as completed.",
+            "Records the resolved URL for subsequent duplicate checks."
+          ],
+          "eventsEmitted": ["Signals SVG export readiness through exportIsReady after accepting a changed URL."],
+          "complexity": null,
+          "calls": [
+            { "name": "setResult", "source": "local hook state", "kind": "internal" },
+            { "name": "exportIsReady", "source": "local hook context", "kind": "internal" }
+          ],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Resolves an asset URL and updates the hook result only when the resolution is still active and produces a URL different from the previously recorded URL. Successful first-time resolution also signals that SVG export is ready.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "e6cd6cf81cb34816de76ca99431a07e96c80551a8464e144e4fe0d179e8395de"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/shared/useImageOrVideoAsset.ts__resolveAssetUrl#function:resolveAssetUrl",
+        "unitKind": "function",
+        "name": "resolveAssetUrl",
+        "qualifiedName": "resolveAssetUrl",
+        "parentUnitId": null,
+        "startLine": 162,
+        "endLine": 182,
+        "isBehavioral": true,
+        "source": "function resolveAssetUrl(\n\teditor: Editor,\n\tassetId: TLAssetId,\n\tscreenScale: number,\n\texportInfo: SvgExportContext | null,\n\tcallback: (url: string | null) => void\n) {\n\teditor\n\t\t.resolveAssetUrl(assetId, {\n\t\t\tscreenScale,\n\t\t\tshouldResolveToOriginal: exportInfo ? exportInfo.pixelRatio === null : false,\n\t\t\tdpr: exportInfo?.pixelRatio ?? undefined,\n\t\t})\n\t\t// There's a weird bug with out debounce function that doesn't\n\t\t// make it work right with async functions, so we use a callback\n\t\t// here instead of returning a promise.\n\t\t.then((url) => {\n\t\t\tcallback(url)\n\t\t})\n}\n",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/shared/useImageOrVideoAsset.ts__resolveAssetUrl#function:resolveAssetUrl",
+          "fileId": "packages/tldraw/src/lib/shapes/shared/useImageOrVideoAsset.ts__resolveAssetUrl",
+          "unitKind": "function",
+          "name": "resolveAssetUrl",
+          "qualifiedName": "resolveAssetUrl",
+          "parentUnitId": null,
+          "startLine": 162,
+          "endLine": 182,
+          "signature": "function resolveAssetUrl(editor: Editor, assetId: TLAssetId, screenScale: number, exportInfo: SvgExportContext | null, callback: (url: string | null) => void)",
+          "parameters": [
+            { "name": "editor", "type": "Editor", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "assetId",
+              "type": "TLAssetId",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "screenScale",
+              "type": "number",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            },
+            {
+              "name": "exportInfo",
+              "type": "SvgExportContext | null",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 3
+            },
+            {
+              "name": "callback",
+              "type": "(url: string | null) => void",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 4
+            }
+          ],
+          "returnType": "void",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["editor provides a resolveAssetUrl method.", "callback accepts a string or null."],
+          "postconditions": [
+            "editor.resolveAssetUrl is invoked with the assetId and derived resolution options.",
+            "When the editor resolution fulfills, callback is invoked exactly once with the resolved string or null.",
+            "The function itself returns void."
+          ],
+          "invariants": [
+            "screenScale is forwarded unchanged.",
+            "The callback is invoked asynchronously after the editor resolution promise fulfills."
+          ],
+          "edgeCases": [
+            "When exportInfo is null, shouldResolveToOriginal is false and dpr is undefined.",
+            "When exportInfo is present with pixelRatio equal to null, shouldResolveToOriginal is true and dpr is undefined.",
+            "When exportInfo is present with a non-null pixelRatio, shouldResolveToOriginal is false and dpr is that pixel ratio.",
+            "If editor.resolveAssetUrl resolves to null, callback receives null.",
+            "If editor.resolveAssetUrl rejects, no callback handling or fallback is performed by this function."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "editor.resolveAssetUrl", "source": "Editor", "kind": "external" },
+            { "name": "callback", "source": null, "kind": "internal" }
+          ],
+          "symbolReferences": ["Editor", "TLAssetId", "SvgExportContext"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Resolves an asset URL through the editor and delivers the resulting URL, including null, to the supplied callback. Export context controls whether the original asset and export pixel ratio are requested.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "resolveAssetUrl is called",
+              "then": "The editor receives screenScale 2, shouldResolveToOriginal false, and dpr undefined; the callback is later called with \"https://example.com/image.png\".",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "resolveAssetUrl is called with screenScale 1.5",
+              "then": "The editor receives shouldResolveToOriginal true, dpr undefined, and screenScale 1.5; the callback is later called with null.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "resolveAssetUrl is called",
+              "then": "The editor receives shouldResolveToOriginal false and dpr 2.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "e12a9677531e7308446b92d2fad2dd6f79a691c25f4cb6d7365406ccdced1420"
+        }
+      }
+    ]
+  },
+  "out": [],
+  "in": [
+    "packages/tldraw/src/lib/shapes/video/VideoShapeUtil.tsx",
+    "packages/tldraw/src/lib/shapes/image/ImageShapeUtil.tsx"
+  ],
+  "externals": ["@tldraw/editor", "react"],
+  "impact": {
+    "seeds": 3,
+    "callers": 3,
+    "impactedFiles": [
+      "packages/tldraw/src/lib/shapes/video/VideoShapeUtil.tsx",
+      "packages/tldraw/src/lib/shapes/image/ImageShapeUtil.tsx"
+    ]
+  }
+}

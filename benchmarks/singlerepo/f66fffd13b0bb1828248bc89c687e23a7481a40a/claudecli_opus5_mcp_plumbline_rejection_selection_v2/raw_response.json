@@ -1,0 +1,71 @@
+{
+  "duration_api_ms": 211058,
+  "stop_reason": "end_turn",
+  "session_id": "a128b48a-e7fa-4338-b905-798a2c273c3d",
+  "total_cost_usd": 2.7248589999999995,
+  "usage": {
+    "input_tokens": 38,
+    "cache_creation_input_tokens": 141455,
+    "cache_read_input_tokens": 1774988,
+    "output_tokens": 16905,
+    "output_tokens_details": { "thinking_tokens": 5739 },
+    "server_tool_use": { "web_search_requests": 0, "web_fetch_requests": 0 },
+    "service_tier": "standard",
+    "cache_creation": { "ephemeral_1h_input_tokens": 141455, "ephemeral_5m_input_tokens": 0 },
+    "inference_geo": "not_available",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 5625,
+        "cache_read_input_tokens": 154836,
+        "cache_creation_input_tokens": 9499,
+        "cache_creation": { "ephemeral_5m_input_tokens": 0, "ephemeral_1h_input_tokens": 9499 },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-opus-5": {
+      "inputTokens": 38,
+      "outputTokens": 16905,
+      "cacheReadInputTokens": 1774988,
+      "cacheCreationInputTokens": 141455,
+      "webSearchRequests": 0,
+      "costUSD": 2.7248589999999995,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "canonicalModel": "claude-opus-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": { "background": 0, "foreground": 0, "unset": 0 },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": { "parent": 0, "user": 0, "system": 0 },
+    "refused": { "depth_limit": 0, "concurrency_limit": 0, "budget": 0 },
+    "by_type": {}
+  },
+  "is_error": false,
+  "num_turns": 26,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## LEDGER\n\n**RETAINED[]** (areas kept at 0.3, with relevance → depth)\n\n| area | verdict that kept it | rel | depth |\n|---|---|---|---|\n| packages/features/ee/workflows | owns automation/reminder sending — the path the symptom describes | 0.95 | 3 |\n| packages/features/bookings | booking handlers schedule workflows and supply the branding flag | 0.7 | 3 |\n| packages/features/profile | blueprint/search placed the branding resolver here | 0.7 | 3 |\n| packages/lib | shared constants/helpers on the messaging path | 0.5 | 2 |\n| apps/web | booking page — the surface the attendee message must agree with | 0.5 | 2 |\n| packages/emails | renders the message that carries (or omits) branding | 0.45 | 2 |\n| packages/trpc | mutations that persist the setting + confirm/reject handlers | 0.45 | 2 |\n| packages/prisma | schema/selects define where hideBranding is persisted and fetched | 0.4 | 2 |\n| packages/app-store | payment-success path also triggers workflows | 0.3 | 1 |\n| apps/api (v1/v2) | separate adapter surfaces reading the same setting | 0.3 | 1 |\n| packages/features (non-ee root, tasker, users, teams) | no-show / tasker / repositories touch the same flag | 0.35 | 1 |\n| packages/ui | could render the branding footer component | 0.15 | 1 |\n| packages/platform | atoms adapter of the same booking surface | 0.15 | 1 |\n\n**DROPPED[]** — packages/embeds (embed wrappers; blueprint places them as client bootstrap, no messaging), packages/tsconfig / packages/config / tooling (build config only), packages/kysely (SQL helper layer, no branding policy), apps/docs, apps/ai (unrelated entry points per rap_sheet).\n\n**Obligations**\n\n- OB-1 \"vendor name/logo still in automation messages\" — CLOSED — closers: `packages/features/ee/workflows/lib/service/EmailWorkflowService.ts`, `packages/features/bookings/lib/service/RegularBookingService.ts`, `packages/features/bookings/lib/handleConfirmation.ts`, `packages/features/bookings/lib/handleCancelBooking.ts`, `packages/features/handleMarkNoShow.ts`, `packages/features/bookings/lib/handleBookingRequested.ts`, `packages/trpc/server/routers/viewer/bookings/confirm.handler.ts`, `packages/app-store/_utils/payments/handlePaymentSuccess.ts`, `packages/features/ee/round-robin/roundRobinManualReassignment.ts`, `packages/features/ee/managed-event-types/reassignment/services/ManagedEventManualReassignmentService.ts`\n- OB-2 \"setting read from the wrong place when an automation runs\" — CLOSED — closers: `packages/features/ee/workflows/lib/service/EmailWorkflowService.ts:90-93`, `packages/features/ee/workflows/lib/service/WorkflowService.ts:133-148`\n- OB-3 \"what the same customer sees on the page they book from\" — CLOSED — closers: `apps/web/app/(booking-page-wrapper)/team/[slug]/[type]/pageWithCachedData.tsx:36`, `packages/features/ee/payments/pages/payment.tsx:58`, `apps/web/modules/bookings/views/bookings-single-view.getServerSideProps.tsx`, `apps/web/lib/team/[slug]/[type]/getServerSideProps.tsx`\n- OB-4 \"where the setting is owned/persisted (user vs team vs org)\" — CLOSED — closers: `packages/features/profile/lib/hideBranding.ts`, `packages/features/users/repositories/UserRepository.ts:1327-1333`, `packages/features/ee/teams/repositories/TeamRepository.ts:466-470`, `packages/prisma/schema.prisma`\n\nCounts: |SEEN| ≈ 190, |CONFIRMED| = 8 read-and-judged, |RULED_OUT| = 0, |CANDIDATES| = remainder (list capped below at 48).\n\n{\"contract\":\"Whether the vendor's own branding is shown must be resolved from the entity that owns the event being messaged about — the event type's team (with its parent organization overriding) or the event owner's user+organization profile — via the single canonical resolver in packages/features/profile/lib/hideBranding.ts, and every surface that renders or sends on behalf of that event (booking page, confirmation page, emails, SMS/WhatsApp, workflow automations) must derive the flag from that same resolution, never from a raw per-user column or from the automation's own owner.\",\"defect_location\":{\"repo\":\"calcom/cal.com\",\"summary\":\"Two independent wrong reads. (1) The scheduled-automation path resolves branding from the WORKFLOW's owner rather than the booked event: packages/features/ee/workflows/lib/service/EmailWorkflowService.ts:90-93 calls getHideBranding({userId: workflow.userId, teamId: workflow.teamId}), and packages/features/ee/workflows/lib/service/WorkflowService.ts:133-136 does the same from form.userId/form.teamId, so a personal workflow attached to a team/org event resolves against the user row. (2) Every booking-side caller that feeds scheduleWorkflowReminders passes the raw per-user column instead of the resolver: packages/features/bookings/lib/service/RegularBookingService.ts:2618,2793,2808 (`!!eventType.owner?.hideBranding`), packages/features/bookings/lib/handleConfirmation.ts:459,472 (selects only owner.hideBranding at :311 and :361), packages/features/bookings/lib/handleCancelBooking.ts:471, packages/features/bookings/lib/handleBookingRequested.ts:31,112, packages/features/handleMarkNoShow.ts:377, packages/trpc/server/routers/viewer/bookings/confirm.handler.ts:561, packages/app-store/_utils/payments/handlePaymentSuccess.ts:230, packages/features/ee/round-robin/roundRobinManualReassignment.ts:671 (and a hardcoded hideBranding: true at :604), packages/features/ee/managed-event-types/reassignment/services/ManagedEventManualReassignmentService.ts:188. For a team event eventType.owner is null, so the flag collapses to false and the vendor footer is emitted. The booking-facing surfaces do it correctly — apps/web/app/(booking-page-wrapper)/team/[slug]/[type]/pageWithCachedData.tsx:36 and packages/features/ee/payments/pages/payment.tsx:58 call shouldHideBrandingForTeamEvent/shouldHideBrandingForEvent from packages/features/profile/lib/hideBranding.ts:85-181, which honours team.hideBranding and team.parent/organization overrides (resolveHideBranding at :35-45) — which is exactly the disagreement the report describes. Fixing it means routing every scheduling call site through the resolver and widening the Prisma selects that currently fetch only owner.hideBranding (packages/features/bookings/lib/handleNewBooking/getEventTypesFromDB.ts:111, packages/features/bookings/lib/getBookingToDelete.ts:57, packages/features/bookings/lib/payment/getBooking.ts:40, packages/features/bookings/repositories/BookingRepository.ts:452, packages/prisma/selects/payment.ts:55-65, packages/prisma/selects/event-types.ts:122, packages/features/ee/workflows/lib/getWorkflowReminders.ts:170,201) so team/parent branding is available, plus the flag's pass-through types in packages/features/ee/workflows/lib/reminders/reminderScheduler.ts:56,97,213,262 and packages/features/ee/workflows/lib/reminders/emailReminderManager.ts:38,115,147.\",\"repo_note\":\"\"},\"answer\":[\"packages/features/ee/workflows/lib/service/EmailWorkflowService.ts\",\"packages/features/bookings/lib/service/RegularBookingService.ts\",\"packages/features/profile/lib/hideBranding.ts\",\"packages/trpc/server/routers/viewer/bookings/confirm.handler.ts\",\"packages/app-store/_utils/payments/handlePaymentSuccess.ts\",\"packages/features/handleMarkNoShow.ts\",\"packages/features/ee/workflows/lib/service/WorkflowService.ts\",\"packages/features/bookings/lib/handleConfirmation.ts\",\"packages/features/ee/round-robin/roundRobinManualReassignment.ts\",\"packages/features/ee/managed-event-types/reassignment/services/ManagedEventManualReassignmentService.ts\",\"packages/features/bookings/lib/handleCancelBooking.ts\",\"packages/features/bookings/lib/handleBookingRequested.ts\",\"packages/features/ee/workflows/lib/reminders/reminderScheduler.ts\",\"packages/features/ee/workflows/lib/reminders/emailReminderManager.ts\",\"packages/features/ee/workflows/lib/reminders/scheduleMandatoryReminder.ts\",\"packages/features/tasker/tasks/triggerFormSubmittedNoEvent/triggerFormSubmittedNoEventWorkflow.ts\",\"packages/features/bookings/lib/handleSeats/handleSeats.ts\",\"packages/features/ee/workflows/lib/getWorkflowReminders.ts\",\"packages/features/bookings/lib/handleNewBooking/getEventTypesFromDB.ts\",\"packages/features/bookings/lib/getBookingToDelete.ts\",\"packages/features/bookings/lib/payment/getBooking.ts\",\"packages/features/bookings/repositories/BookingRepository.ts\",\"packages/prisma/selects/payment.ts\",\"packages/prisma/selects/event-types.ts\",\"packages/prisma/selects/user.ts\",\"packages/features/users/repositories/UserRepository.ts\",\"packages/features/ee/teams/repositories/TeamRepository.ts\",\"packages/features/profile/repositories/ProfileRepository.ts\",\"packages/features/ee/payments/pages/payment.tsx\",\"apps/web/app/(booking-page-wrapper)/team/[slug]/[type]/pageWithCachedData.tsx\",\"apps/web/modules/bookings/views/bookings-single-view.getServerSideProps.tsx\",\"apps/web/lib/team/[slug]/[type]/getServerSideProps.tsx\",\"apps/web/lib/org/[orgSlug]/instant-meeting/team/[slug]/[type]/getServerSideProps.ts\",\"apps/web/server/lib/[user]/[type]/getServerSideProps.ts\",\"apps/web/lib/d/[link]/[slug]/getServerSideProps.tsx\",\"apps/web/lib/booking.ts\",\"apps/web/lib/isBrandingHidden.tsx\",\"packages/features/ee/workflows/lib/types.ts\",\"packages/features/ee/workflows/lib/reminders/templates/customTemplate.ts\",\"packages/features/ee/workflows/lib/reminders/templates/emailReminderTemplate.ts\",\"packages/features/ee/workflows/lib/reminders/templates/emailRatingTemplate.ts\",\"packages/emails/templates/workflow-email.ts\",\"packages/emails/workflow-email-service.ts\",\"packages/features/tasker/tasks/sendWorkflowEmails.ts\",\"apps/api/v2/src/modules/atoms/services/event-types-atom.service.ts\",\"packages/features/ee/teams/lib/getTeamData.ts\",\"packages/features/hashedLink/lib/repository/HashedLinkRepository.ts\",\"packages/prisma/schema.prisma\"]}",
+  "ttft_ms": 1558,
+  "type": "result",
+  "duration_ms": 624966,
+  "uuid": "2661b11d-8144-4f44-8750-0ae57500c130",
+  "ttft_stream_ms": 1104,
+  "time_to_request_ms": 16,
+  "queued_turn_count": 0
+}

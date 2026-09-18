@@ -1,0 +1,616 @@
+{
+  "schema": 2,
+  "kind": "file",
+  "repoName": "tldraw",
+  "file": {
+    "relativePath": "packages/editor/src/lib/exports/fetchCache.ts",
+    "language": "typescript",
+    "sizeBytes": 750,
+    "tokenCount": 188,
+    "model": "us.openai.gpt-5.6-luna",
+    "analysedAt": "2026-08-24T12:19:42.836Z",
+    "module": {
+      "purpose": "Provides a promise-aware URL fetch cache and a data-URL resource helper for editor exports.",
+      "summary": "This module creates a bounded least-recently-used cache around asynchronous URL fetches. It stores in-flight promises so concurrent requests for the same URL share work, applies the same request initialization to every fetch, delegates response conversion to a caller-provided callback, and converts fetch, assertion, or callback failures into logged null results. The exported resource helper specializes the mechanism for blob-to-data-URL conversion.",
+      "businessContext": "Supports editor export workflows that retrieve remote resources and convert them into embeddable data URLs. Failures become unavailable resources rather than propagating errors, so export may continue with missing content.",
+      "classes": [],
+      "functions": [
+        "fetchCache (~L3-21): Creates a bounded asynchronous URL cache with callback-based response conversion.",
+        "fetchCached (~L6-21): Reuses or produces a promise for one URL fetch operation."
+      ],
+      "keywords": [
+        "LRU cache",
+        "in-flight request deduplication",
+        "resource export",
+        "data URL",
+        "blob conversion",
+        "RequestInit",
+        "response validation",
+        "promise caching"
+      ],
+      "ontologyConcepts": [
+        "memoization",
+        "asynchronous coordination",
+        "resource conversion",
+        "failure isolation",
+        "bounded caching"
+      ],
+      "businessEntities": ["URL", "resource", "response", "blob", "data URL"],
+      "systemCapabilities": [
+        "Cache asynchronous resource fetches",
+        "Deduplicate concurrent URL requests",
+        "Convert fetched blobs into data URLs",
+        "Suppress and log resource-fetch failures"
+      ],
+      "configDependencies": [],
+      "importsInternal": [],
+      "importsExternal": [
+        {
+          "spec": "@tldraw/utils",
+          "symbols": ["FileHelpers", "LruCache", "assert", "fetch"],
+          "package": "@tldraw/utils",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 1 }
+        }
+      ],
+      "sideEffects": {
+        "io": ["Logs caught fetch, assertion, and callback errors with console.error."],
+        "network": [
+          "Fetches each cache-missing URL using the imported fetch implementation and supplied request initialization."
+        ],
+        "env": [],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": []
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "fetchCache",
+          "shape": "export function fetchCache<T>(cb: (response: Response) => Promise<T>, init?: RequestInit)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "resourceToDataUrl",
+          "shape": "export const resourceToDataUrl = fetchCache(async (response) => {\n\treturn await FileHelpers.blobToDataUrl(await response.blob())\n})",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "FileHelpers.blobToDataUrl",
+          "shape": "FileHelpers.blobToDataUrl(await response.blob())",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "LruCache",
+          "shape": "new LruCache<string, Promise<T | null>>(100)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        { "name": "assert", "shape": "assert(response.ok)", "resolvedRelativePath": null, "resolvedFileId": null },
+        { "name": "fetch", "shape": "fetch(url, init)", "resolvedRelativePath": null, "resolvedFileId": null }
+      ],
+      "sectionMap": [
+        {
+          "name": "cache-initialization",
+          "intent": "Creates a bounded cache for promises associated with requested URLs.",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 4, "endLine": 4 }
+        },
+        {
+          "name": "cached-request-lookup",
+          "intent": "Returns an existing in-flight or completed promise when available.",
+          "structureKind": "branch",
+          "predicate": "if (existing)",
+          "branchOutcomes": ["existing promise returned", "cache miss continues to fetch"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 7, "endLine": 8 }
+        },
+        {
+          "name": "request-execution",
+          "intent": "Fetches the URL, validates the response, and converts it through the callback.",
+          "structureKind": "try",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 10, "endLine": 14 }
+        },
+        {
+          "name": "failure-recovery",
+          "intent": "Logs request-processing failures and resolves the operation with null.",
+          "structureKind": "try",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 15, "endLine": 17 }
+        },
+        {
+          "name": "promise-publication",
+          "intent": "Publishes the pending promise before returning it to callers.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 18, "endLine": 20 }
+        },
+        {
+          "name": "blob-data-url-conversion",
+          "intent": "Converts the fetched response blob into a data URL.",
+          "structureKind": "async",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 23, "endLine": 25 }
+        }
+      ],
+      "representationFamily": "function-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "function",
+          "name": "fetchCache",
+          "signature": "export function fetchCache<T>(cb: (response: Response) => Promise<T>, init?: RequestInit)",
+          "generics": "<T>",
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 3, "endLine": 3 }
+        },
+        {
+          "kind": "const",
+          "name": "resourceToDataUrl",
+          "signature": "export const resourceToDataUrl = fetchCache(async (response) => {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 23, "endLine": 23 }
+        }
+      ],
+      "typeShapes": [],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "URL already present in the cache",
+          "handled": true,
+          "behavior": "Returns the existing promise without starting another fetch.",
+          "anchor": { "startLine": 7, "endLine": 8 }
+        },
+        {
+          "inputShape": "Fetch rejects, response is not ok, or callback rejects",
+          "handled": true,
+          "behavior": "Logs the error and resolves the cached promise with null.",
+          "anchor": { "startLine": 11, "endLine": 17 }
+        },
+        {
+          "inputShape": "Concurrent calls for the same uncached URL",
+          "handled": true,
+          "behavior": "The first call publishes its pending promise and later calls reuse it.",
+          "anchor": { "startLine": 10, "endLine": 20 }
+        },
+        {
+          "inputShape": "Cache reaches capacity",
+          "handled": true,
+          "behavior": "The LruCache applies its bounded eviction behavior at capacity 100.",
+          "anchor": { "startLine": 4, "endLine": 4 }
+        }
+      ],
+      "boundaryConditions": [],
+      "errorHandling": [
+        {
+          "thrown": null,
+          "caught": "err",
+          "action": "Logs the caught error using console.error.",
+          "fallback": "null",
+          "anchor": { "startLine": 15, "endLine": 17 }
+        },
+        {
+          "thrown": "assert(response.ok)",
+          "caught": "err",
+          "action": "Treats a non-ok response as an error, logs it, and completes the promise with null.",
+          "fallback": "null",
+          "anchor": { "startLine": 13, "endLine": 17 }
+        }
+      ],
+      "invariants": [
+        {
+          "kind": "invariant",
+          "description": "The cache stores at most the configured LRU capacity of 100 URL promise entries.",
+          "anchor": { "startLine": 4, "endLine": 4 }
+        },
+        {
+          "kind": "ordering",
+          "description": "A newly created promise is inserted into the cache before it is returned.",
+          "anchor": { "startLine": 18, "endLine": 20 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "Each returned fetch promise resolves to converted data or null rather than rejecting from the handled operation.",
+          "anchor": { "startLine": 10, "endLine": 17 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "Callers provide a response callback that returns a promise compatible with the generic result type.",
+          "anchor": { "startLine": 3, "endLine": 3 }
+        },
+        {
+          "kind": "caller",
+          "description": "Callers accept null as the result of any failed fetch, validation, or conversion.",
+          "anchor": { "startLine": 15, "endLine": 17 }
+        }
+      ],
+      "ambiguities": [],
+      "concurrencyModel": {
+        "kind": "async",
+        "reentrant": true,
+        "ordering": "deterministic",
+        "notes": "Calls share cached promises per URL; distinct URLs may fetch concurrently, while each promise preserves fetch-before-conversion ordering."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "returns-callback-result",
+          "scenario": "A successful fetch response is passed to the callback and its resolved value is returned.",
+          "given": ["response.ok === true", "cb(response) resolves to value"],
+          "when": "await fetchCached(url)",
+          "then": "the result equals value",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "caches-successful-request",
+          "scenario": "The same URL is requested repeatedly after a successful request.",
+          "given": ["fetch(url, init) resolves to a successful response"],
+          "when": "await fetchCached(url); await fetchCached(url)",
+          "then": "fetch(url, init) is called once and both calls return the same resolved value",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins URL-based result caching."
+        },
+        {
+          "testId": "caches-inflight-request",
+          "scenario": "The same URL is requested again before the first request settles.",
+          "given": ["fetch(url, init) returns a pending promise"],
+          "when": "const first = fetchCached(url); const second = fetchCached(url)",
+          "then": "first === second and only one fetch operation is started",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins deduplication of concurrent requests."
+        },
+        {
+          "testId": "returns-null-on-http-error",
+          "scenario": "The fetched response is not successful.",
+          "given": ["response.ok === false"],
+          "when": "await fetchCached(url)",
+          "then": "the result is null",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins rejection of non-OK responses."
+        },
+        {
+          "testId": "returns-null-on-fetch-or-callback-error",
+          "scenario": "The fetch operation or response callback throws or rejects.",
+          "given": ["fetch(url, init) rejects or cb(response) rejects"],
+          "when": "await fetchCached(url)",
+          "then": "the result is null",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins error normalization to a nullable result."
+        },
+        {
+          "testId": "converts-resource-to-data-url",
+          "scenario": "A successful resource response contains a blob that can be converted to a data URL.",
+          "given": [
+            "response.ok === true",
+            "response.blob() resolves to blob",
+            "FileHelpers.blobToDataUrl(blob) resolves to dataUrl"
+          ],
+          "when": "await resourceToDataUrl(url)",
+          "then": "the result equals dataUrl",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Pins the exported resource-to-data-URL adapter."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": ["import declaration", "exported fetchCache function", "exported resourceToDataUrl constant"],
+      "moduleLevelCode": "import { FileHelpers, LruCache, assert, fetch } from '@tldraw/utils'",
+      "exports": [
+        { "name": "fetchCache", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "resourceToDataUrl", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "FileHelpers", "module": "@tldraw/utils", "alias": null, "kind": "external" },
+        { "symbol": "LruCache", "module": "@tldraw/utils", "alias": null, "kind": "external" },
+        { "symbol": "assert", "module": "@tldraw/utils", "alias": null, "kind": "external" },
+        { "symbol": "fetch", "module": "@tldraw/utils", "alias": null, "kind": "external" }
+      ],
+      "fileConstants": [],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/editor/src/lib/exports/fetchCache.ts__fetchCache#function:fetchCache",
+        "unitKind": "function",
+        "name": "fetchCache",
+        "qualifiedName": "fetchCache",
+        "parentUnitId": null,
+        "startLine": 3,
+        "endLine": 21,
+        "isBehavioral": true,
+        "source": "export function fetchCache<T>(cb: (response: Response) => Promise<T>, init?: RequestInit) {\n\tconst cache = new LruCache<string, Promise<T | null>>(100)\n\n\treturn async function fetchCached(url: string): Promise<T | null> {\n\t\tconst existing = cache.get(url)\n\t\tif (existing) return existing\n\n\t\tconst promise = (async () => {\n\t\t\ttry {\n\t\t\t\tconst response = await fetch(url, init)\n\t\t\t\tassert(response.ok)\n\t\t\t\treturn await cb(response)\n\t\t\t} catch (err) {\n\t\t\t\tconsole.error(err)\n\t\t\t\treturn null\n\t\t\t}\n\t\t})()\n\t\tcache.set(url, promise)\n\t\treturn promise",
+        "detail": {
+          "unitId": "packages/editor/src/lib/exports/fetchCache.ts__fetchCache#function:fetchCache",
+          "fileId": "packages/editor/src/lib/exports/fetchCache.ts__fetchCache",
+          "unitKind": "function",
+          "name": "fetchCache",
+          "qualifiedName": "fetchCache",
+          "parentUnitId": null,
+          "startLine": 3,
+          "endLine": 21,
+          "signature": "export function fetchCache<T>(cb: (response: Response) => Promise<T>, init?: RequestInit)",
+          "parameters": [
+            {
+              "name": "cb",
+              "type": "(response: Response) => Promise<T>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            { "name": "init", "type": "RequestInit", "default": null, "optional": true, "variadic": false, "order": 1 }
+          ],
+          "returnType": "(url: string) => Promise<T | null>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": ["T"],
+          "logicOutline": [],
+          "preconditions": [
+            "cb must be callable and return a Promise<T> when given a Response.",
+            "Each invocation of the returned function must receive a string URL."
+          ],
+          "postconditions": [
+            "The returned function resolves to the callback result for a successful cached or uncached request.",
+            "The returned function resolves to null when fetching, response validation, or callback processing fails.",
+            "Requests for the same URL reuse the cached Promise while its result remains in the LRU cache."
+          ],
+          "invariants": [
+            "The cache is private to the fetcher returned by each fetchCache invocation.",
+            "At most 100 URL entries are retained by the cache.",
+            "The supplied init object is reused for fetches performed by the returned function.",
+            "A URL's Promise is inserted into the cache before the asynchronous fetch operation settles."
+          ],
+          "edgeCases": [
+            "A repeated URL returns the existing cached Promise without invoking fetch or cb again while the entry is retained.",
+            "Concurrent calls for the same URL share one Promise and one underlying fetch operation.",
+            "A fetch rejection, assertion failure from a non-ok response, or callback rejection is caught, logged with console.error, and resolves as null.",
+            "A successful callback result of null is cached and returned as null.",
+            "When more than 100 distinct URLs are cached, older entries may be evicted according to LRU behavior and a later request may fetch again."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Fetch, non-ok response assertion, and callback errors are caught; the returned Promise resolves to null.",
+            "returnsOnError": "null"
+          },
+          "stateMutations": [
+            "Creates and mutates a private LruCache<string, Promise<T | null>> for URL-to-Promise entries."
+          ],
+          "eventsEmitted": ["Writes caught errors to console.error."],
+          "complexity": null,
+          "calls": [
+            { "name": "LruCache", "source": null, "kind": "internal" },
+            { "name": "cache.get", "source": null, "kind": "internal" },
+            { "name": "cache.set", "source": null, "kind": "internal" },
+            { "name": "fetch", "source": "global fetch API", "kind": "external" },
+            { "name": "assert", "source": null, "kind": "internal" },
+            { "name": "cb", "source": "caller-provided callback", "kind": "external" },
+            { "name": "console.error", "source": "global console API", "kind": "external" }
+          ],
+          "symbolReferences": ["Response", "RequestInit", "LruCache"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "The returned function accepts a string URL and performs fetch(url, init). It passes the Response to cb and resolves to Promise<T | null>; unsuccessful fetch or callback processing resolves to null.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Creates a URL-keyed asynchronous fetcher that caches in-flight and completed results with an LRU capacity of 100. Fetch or callback failures are logged and represented as null results.",
+          "specLiterals": [
+            { "kind": "magic-number", "value": "100", "role": "Sets the private LRU cache capacity." },
+            { "kind": "format-string", "value": "url", "role": "The URL string is the cache key and fetch target." }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The returned function is called twice with the same URL.",
+              "then": "Both calls resolve to the callback value, and fetch and the callback are each invoked only once.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The returned function is called for that URL.",
+              "then": "The returned Promise resolves to null and console.error is called.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The returned function receives a successfully fetched Response.",
+              "then": "The returned Promise resolves to null and the callback error is logged with console.error.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "8b86fe8f988d1e809a0f41a46a5ddcb85a7c3fc45003bddb413000d44d0f3ad2"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/exports/fetchCache.ts__fetchCache.fetchCached#function:fetchCache.fetchCached",
+        "unitKind": "function",
+        "name": "fetchCached",
+        "qualifiedName": "fetchCache.fetchCached",
+        "parentUnitId": "packages/editor/src/lib/exports/fetchCache.ts__fetchCache#function:fetchCache",
+        "startLine": 6,
+        "endLine": 21,
+        "isBehavioral": true,
+        "source": "\treturn async function fetchCached(url: string): Promise<T | null> {\n\t\tconst existing = cache.get(url)\n\t\tif (existing) return existing\n\n\t\tconst promise = (async () => {\n\t\t\ttry {\n\t\t\t\tconst response = await fetch(url, init)\n\t\t\t\tassert(response.ok)\n\t\t\t\treturn await cb(response)\n\t\t\t} catch (err) {\n\t\t\t\tconsole.error(err)\n\t\t\t\treturn null\n\t\t\t}\n\t\t})()\n\t\tcache.set(url, promise)\n\t\treturn promise",
+        "detail": {
+          "unitId": "packages/editor/src/lib/exports/fetchCache.ts__fetchCache.fetchCached#function:fetchCache.fetchCached",
+          "fileId": "packages/editor/src/lib/exports/fetchCache.ts__fetchCache.fetchCached",
+          "unitKind": "function",
+          "name": "fetchCached",
+          "qualifiedName": "fetchCache.fetchCached",
+          "parentUnitId": "packages/editor/src/lib/exports/fetchCache.ts__fetchCache#function:fetchCache",
+          "startLine": 6,
+          "endLine": 21,
+          "signature": "async function fetchCached(url: string): Promise<T | null>",
+          "parameters": [
+            { "name": "url", "type": "string", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "Promise<T | null>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The captured cache, fetch initialization value, and response callback are available.",
+            "url is a string."
+          ],
+          "postconditions": [
+            "If a cached entry exists for url, that entry is returned unchanged.",
+            "If no cached entry exists, a promise is stored for url before the fetch completes and that promise is returned.",
+            "A successful response is passed to the captured callback and its result is returned.",
+            "Fetch, assertion, or callback failures result in null rather than propagating the error."
+          ],
+          "invariants": [
+            "At most one new fetch promise is created for a URL while its cached entry remains present.",
+            "The cached value for a newly requested URL is the promise representing the complete fetch-and-transform operation.",
+            "Errors in the asynchronous operation are logged before null is returned."
+          ],
+          "edgeCases": [
+            "When url already has a cached entry, fetch is not called and the cached entry is returned.",
+            "When fetch rejects, the returned promise resolves to null and the error is logged.",
+            "When the response has ok false, assertion failure is caught, logged, and the returned promise resolves to null.",
+            "When the callback rejects or throws, the error is caught, logged, and the returned promise resolves to null."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Any error from fetch, response assertion, or the response callback is caught; the error is logged with console.error and null is returned.",
+            "returnsOnError": "null"
+          },
+          "stateMutations": ["The captured cache is updated with the promise for url when no cached entry exists."],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "cache.get(url)", "source": "captured cache", "kind": "internal" },
+            { "name": "fetch(url, init)", "source": "global fetch", "kind": "external" },
+            { "name": "assert(response.ok)", "source": "assert dependency", "kind": "external" },
+            { "name": "cb(response)", "source": "captured response callback", "kind": "internal" },
+            { "name": "cache.set(url, promise)", "source": "captured cache", "kind": "internal" },
+            { "name": "console.error(err)", "source": "console", "kind": "external" }
+          ],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Fetches and transforms the response for a URL, caching the resulting promise so repeated or concurrent requests reuse it. Fetch, response assertion, and callback failures are contained and produce null.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "fetchCached is called with that URL.",
+              "then": "The returned promise resolves to the callback value, and the resulting promise is cached for that URL.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "fetchCached is called again with the same URL before the first request settles.",
+              "then": "The second call returns the existing cached promise and does not initiate another fetch.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "fetchCached is called with that URL.",
+              "then": "The returned promise resolves to null and the failure is passed to console.error.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "18efc309b9fe3e135136719d5596a7505906f1816fdcd2325f1f7e65db6314d8"
+        }
+      }
+    ]
+  },
+  "out": [],
+  "in": [
+    "packages/editor/src/lib/exports/StyleEmbedder.ts",
+    "packages/editor/src/lib/exports/embedMedia.ts",
+    "packages/editor/src/lib/exports/FontEmbedder.ts"
+  ],
+  "externals": ["@tldraw/utils"],
+  "impact": { "seeds": 2, "callers": 1, "impactedFiles": ["packages/editor/src/lib/exports/FontEmbedder.ts"] }
+}

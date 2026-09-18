@@ -1,0 +1,71 @@
+{
+  "duration_api_ms": 222975,
+  "stop_reason": "end_turn",
+  "session_id": "07fddd00-5588-42e3-951f-3ad2eebf2e70",
+  "total_cost_usd": 2.3446195,
+  "usage": {
+    "input_tokens": 34,
+    "cache_creation_input_tokens": 118904,
+    "cache_read_input_tokens": 1418919,
+    "output_tokens": 17838,
+    "output_tokens_details": { "thinking_tokens": 6682 },
+    "server_tool_use": { "web_search_requests": 0, "web_fetch_requests": 0 },
+    "service_tier": "standard",
+    "cache_creation": { "ephemeral_1h_input_tokens": 118904, "ephemeral_5m_input_tokens": 0 },
+    "inference_geo": "not_available",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 5669,
+        "cache_read_input_tokens": 140770,
+        "cache_creation_input_tokens": 1014,
+        "cache_creation": { "ephemeral_5m_input_tokens": 0, "ephemeral_1h_input_tokens": 1014 },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-opus-5": {
+      "inputTokens": 34,
+      "outputTokens": 17838,
+      "cacheReadInputTokens": 1418919,
+      "cacheCreationInputTokens": 118904,
+      "webSearchRequests": 0,
+      "costUSD": 2.3446195,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "canonicalModel": "claude-opus-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": { "background": 0, "foreground": 0, "unset": 0 },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": { "parent": 0, "user": 0, "system": 0 },
+    "refused": { "depth_limit": 0, "concurrency_limit": 0, "budget": 0 },
+    "by_type": {}
+  },
+  "is_error": false,
+  "num_turns": 28,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "**LEDGER**\n\nRETAINED[] / DROPPED[] — as written at 0.3 (table above); no 4.2a correction was forced (no sibling set straddled the table).\n\nObligations:\n- **OB-1** \"personal link page ignores organisation colours / light-dark preference\" — **CLOSED** — closers: `apps/web/server/lib/[user]/getServerSideProps.ts`, `packages/features/eventtypes/lib/getPublicEvent.ts`, `apps/web/server/lib/[user]/[type]/getServerSideProps.ts`, `apps/web/modules/users/views/users-public-view.tsx`\n- **OB-2** \"team event pages pick them up correctly\" — **CLOSED** — closers: `packages/features/eventtypes/lib/getPublicEvent.ts` (styleProfile `team || event.parent?.team`), `apps/web/lib/team/[slug]/getServerSideProps.tsx`, `apps/web/lib/team/[slug]/[type]/getServerSideProps.tsx`\n- **OB-3** \"colours and light/dark preference chosen for the organisation\" (owner/persistence) — **CLOSED** — closers: `packages/features/ee/organizations/lib/getBrand.ts`, `packages/features/users/repositories/UserRepository.ts`, `packages/trpc/server/routers/viewer/organizations/update.handler.ts`\n- **OB-4** \"same visitor gets two different looks\" (render-time application) — **CLOSED** — closers: `packages/features/bookings/Booker/utils/use-brand-colors.tsx`, `packages/ui/styles/useCalcomTheme.tsx`, `packages/lib/getBrandColours.tsx`\n\nCounts: |SEEN| 118 · |CONFIRMED| 9 · |RULED_OUT| 0 · |CANDIDATES| ~46 emitted.\n\n{\"contract\":\"A public booking surface must render with the branding of the entity that owns the booking context: when the profile being booked belongs to an organisation, the organisation's brandColor, darkBrandColor and theme (light/dark/system) must be resolved and applied, with the individual user's own values acting only as a fallback where no organisation exists. This must hold identically on every route that renders a public booking surface — the personal profile page, the personal event-type page, and the team/organisation event pages — so that the payload each route builds (server props and the public-event profile object), the repository selects that feed it, and the client hooks that apply it all carry the same organisation-aware values.\",\"defect_location\":{\"repo\":\"calcom/cal.com\",\"summary\":\"Two resolution points build the branding payload from the user alone and never consult the user's organisation. (1) packages/features/eventtypes/lib/getPublicEvent.ts:585-614 — getProfileFromEvent computes `const styleProfile = team || event.parent?.team || nonTeamProfile` (line 591) and returns `brandColor: styleProfile.brandColor`, `darkBrandColor: styleProfile.darkBrandColor`, `theme: styleProfile.theme` (lines 606-608). For a team event the team (or its parent org team) supplies the values, which is why team links look right; for a personal event there is no `team` and no `parent.team`, so it falls to `nonTeamProfile` — the user — and the owning organisation is ignored. The select that feeds it compounds this: userSelect at packages/features/eventtypes/lib/getPublicEvent.ts:31-48 pulls `brandColor`, `darkBrandColor`, `theme` for the user but selects only `id, name, slug, bannerUrl` from `organization`, so organisation branding is not even fetched, while the team select at lines 91-101 and the parent select at lines 155-165 do fetch `theme/brandColor/darkBrandColor`. (2) apps/web/server/lib/[user]/getServerSideProps.ts:133-145 builds the personal profile-page props as `theme: user.theme`, `brandColor: user.brandColor ?? DEFAULT_LIGHT_BRAND_COLOR`, `darkBrandColor: user.darkBrandColor ?? DEFAULT_DARK_BRAND_COLOR`, falling back to global constants rather than to `user.profile.organization`, even though the org is in scope on line 144; its declared prop type at lines 25-39 likewise has no organisation branding field. The wrong value is then applied verbatim: apps/web/modules/users/views/users-public-view.tsx:29 calls `useTheme(profile.theme)`, and packages/features/bookings/Booker/utils/use-brand-colors.tsx:5-21 forwards `brandColor`/`darkBrandColor` into useGetBrandingColours and `theme` into useTheme without re-deriving anything. The theme basis passed down differs by route as well — apps/web/server/lib/[user]/[type]/getServerSideProps.ts:278 sets `themeBasis: username` while the team routes set the team slug (apps/web/lib/team/[slug]/getServerSideProps.tsx:228) or null (apps/web/lib/team/[slug]/[type]/getServerSideProps.tsx:171). The organisation values a fix must read are persisted on the org team row (packages/trpc/server/routers/viewer/organizations/update.handler.ts writes brandColor/darkBrandColor/theme) yet packages/features/ee/organizations/lib/getBrand.ts returns no colour or theme fields at all, and packages/features/users/repositories/UserRepository.ts:102-112,978-985 selects only per-user brandColor/darkBrandColor.\",\"}, \"answer\":[\"packages/features/eventtypes/lib/getPublicEvent.ts\",\"apps/web/server/lib/[user]/getServerSideProps.ts\",\"packages/features/bookings/Booker/utils/use-brand-colors.tsx\",\"apps/web/modules/users/views/users-public-view.tsx\",\"packages/features/users/repositories/UserRepository.ts\",\"apps/web/server/lib/[user]/[type]/getServerSideProps.ts\",\"packages/features/ee/organizations/lib/getBrand.ts\",\"apps/web/lib/team/[slug]/getServerSideProps.tsx\",\"apps/web/lib/team/[slug]/[type]/getServerSideProps.tsx\",\"apps/web/modules/users/views/users-type-public-view.tsx\",\"packages/lib/getBrandColours.tsx\",\"packages/ui/styles/useCalcomTheme.tsx\",\"packages/platform/atoms/booker/BookerWebWrapper.tsx\",\"packages/embeds/embed-core/src/embed-iframe.ts\",\"packages/trpc/server/routers/viewer/organizations/update.handler.ts\",\"packages/prisma/zod-utils.ts\",\"apps/api/v2/src/modules/atoms/services/event-types-atom.service.ts\",\"packages/features/eventtypes/repositories/EventRepository.ts\",\"apps/web/app/(booking-page-wrapper)/team/[slug]/[type]/queries.ts\",\"packages/lib/hooks/useTheme.ts\",\"packages/ui/styles/index.ts\",\"packages/platform/libraries/event-types.ts\",\"packages/features/ee/organizations/context/provider.ts\",\"apps/web/modules/team/type-view.tsx\",\"packages/lib/constants.ts\",\"packages/features/eventtypes/lib/getTeamEventType.ts\",\"packages/platform/atoms/hooks/event-types/public/useAtomGetPublicEvent.tsx\",\"apps/web/app/(booking-page-wrapper)/[user]/page.tsx\",\"packages/features/shell/useAppTheme.ts\",\"packages/features/ee/organizations/pages/settings/appearance.tsx\",\"apps/web/app/(booking-page-wrapper)/org/[orgSlug]/[user]/page.tsx\",\"packages/features/ee/teams/pages/team-appearance-view.tsx\",\"apps/web/app/(booking-page-wrapper)/org/[orgSlug]/[user]/embed/page.tsx\",\"packages/features/ee/components/BrandColorsForm.tsx\",\"apps/web/modules/settings/my-account/appearance-view.tsx\",\"packages/features/embed/lib/buildCssVarsPerTheme.ts\",\"apps/web/lib/hooks/useIsThemeSupported.ts\",\"packages/features/embed/Embed.tsx\",\"apps/web/app/(booking-page-wrapper)/[user]/[type]/embed/page.tsx\",\"packages/features/eventtypes/lib/getEventTypesPublic.ts\",\"apps/web/pages/_document.tsx\",\"packages/features/ee/organizations/lib/orgDomains.ts\",\"apps/web/lib/app-providers-app-dir.tsx\",\"packages/features/eventtypes/lib/defaultEvents.ts\",\"apps/web/modules/bookings/views/bookings-single-view.tsx\",\"packages/trpc/server/routers/viewer/me/updateProfile.schema.ts\",\"packages/ui/components/avatar/UserAvatar.tsx\",\"apps/api/v2/src/modules/atoms/controllers/atoms.event-types.controller.ts\",\"packages/features/ee/teams/repositories/TeamRepository.ts\",\"apps/web/app/(use-page-wrapper)/apps/routing-forms/[...pages]/RoutingLink.tsx\",\"packages/trpc/server/routers/viewer/teams/update.schema.ts\",\"packages/embeds/embed-core/src/ui-utils.ts\",\"apps/web/styles/globals.css\",\"packages/features/eventtypes/lib/types.ts\",\"packages/platform/libraries/index.ts\",\"apps/api/v2/src/modules/users/validators/themeValidator.ts\",\"packages/features/eventtypes/lib/getEventTypeById.ts\",\"packages/platform/atoms/globals.css\"]}",
+  "ttft_ms": 1710,
+  "type": "result",
+  "duration_ms": 660033,
+  "uuid": "2ea8bd78-daa5-47cd-9bfa-aeb0c7a764e7",
+  "ttft_stream_ms": 1198,
+  "time_to_request_ms": 15,
+  "queued_turn_count": 0
+}

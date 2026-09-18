@@ -1,0 +1,1734 @@
+{
+  "schema": 2,
+  "kind": "file",
+  "repoName": "tldraw",
+  "file": {
+    "relativePath": "packages/tldraw/src/lib/shapes/bookmark/bookmarks.ts",
+    "language": "typescript",
+    "sizeBytes": 7653,
+    "tokenCount": 1912,
+    "model": "us.openai.gpt-5.6-luna",
+    "analysedAt": "2026-08-24T12:11:55.277Z",
+    "module": {
+      "purpose": "Provides bookmark shape sizing, URL normalization, deterministic asset resolution, asynchronous metadata hydration, and bookmark creation for the tldraw editor.",
+      "summary": "This module coordinates bookmark shapes with externally fetched bookmark assets. It derives stable asset identifiers from URLs, computes rendering heights from available metadata, creates visible placeholder shapes immediately, reuses cached assets when possible, and asynchronously hydrates missing metadata. Debounced URL-change handling limits repeated asset requests, while disposal, deletion, URL changes, and replaced assets are checked before applying asynchronous results.",
+      "businessContext": "Supports users pasting or editing web links as visual bookmark cards. Failure leaves a usable URL-only bookmark, while incorrect synchronization can produce stale metadata, wrong geometry, or broken editor state.",
+      "classes": [],
+      "functions": [
+        "getBookmarkHeight (~L19-30): Computes bookmark height from asset image and title availability",
+        "setBookmarkHeight (~L32-34): Returns a bookmark shape with recalculated height",
+        "getHumanReadableAddress (~L37-45): Converts URLs into displayable hostnames without www prefix",
+        "updateBookmarkAssetOnUrlChange (~L47-71): Reuses or asynchronously creates an asset after URL changes",
+        "getResolvedBookmarkAssetId (~L80-89): Resolves stored or deterministic existing bookmark asset identifiers",
+        "getBookmarkShapeHeight (~L99-104): Computes effective height using resolved bookmark asset metadata",
+        "_createBookmarkAssetOnUrlChange (~L106-130): Fetches and attaches an externally created bookmark asset",
+        "createBookmarkAssetOnUrlChange (~L137-145): Debounces bookmark asset creation requests per editor",
+        "createBookmarkFromUrl (~L155-208): Creates a placeholder bookmark and starts metadata hydration",
+        "hydrateBookmarkShape (~L210-247): Applies fetched metadata after validating current shape state"
+      ],
+      "keywords": [
+        "bookmark asset hydration",
+        "deterministic asset identifiers",
+        "URL metadata",
+        "debounced asset creation",
+        "placeholder shape",
+        "external content manager",
+        "tldraw editor",
+        "bookmark geometry"
+      ],
+      "ontologyConcepts": [
+        "asset resolution",
+        "asynchronous hydration",
+        "placeholder creation",
+        "deterministic identity",
+        "debouncing",
+        "state validation",
+        "geometry derivation"
+      ],
+      "businessEntities": ["Bookmark", "URL", "Asset", "Shape", "Editor", "Metadata", "Viewport"],
+      "systemCapabilities": [
+        "Create bookmark shapes from URLs",
+        "Fetch external bookmark metadata",
+        "Reuse cached URL assets",
+        "Synchronize bookmark geometry",
+        "Debounce asset requests",
+        "Reject stale asynchronous updates"
+      ],
+      "configDependencies": [],
+      "importsInternal": [],
+      "importsExternal": [
+        {
+          "spec": "@tldraw/editor",
+          "symbols": [
+            "AssetRecordType",
+            "Editor",
+            "Result",
+            "TLAssetId",
+            "TLBookmarkAsset",
+            "TLBookmarkShape",
+            "TLShapeId",
+            "TLShapePartial",
+            "createShapeId",
+            "debounce",
+            "getHashForString"
+          ],
+          "package": "@tldraw/editor",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 13 }
+        }
+      ],
+      "sideEffects": {
+        "io": ["Logs failed bookmark metadata fetches with console.error."],
+        "network": ["Requests bookmark assets through editor.getAssetForExternalContent for URL content."],
+        "env": [],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": ["Mutates editor state by creating assets and creating or updating bookmark shapes."]
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "BOOKMARK_WIDTH",
+          "shape": "export const BOOKMARK_WIDTH = 300",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "BOOKMARK_HEIGHT",
+          "shape": "export const BOOKMARK_HEIGHT = 320",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "BOOKMARK_JUST_URL_HEIGHT",
+          "shape": "export const BOOKMARK_JUST_URL_HEIGHT = 46",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "getBookmarkHeight",
+          "shape": "export function getBookmarkHeight(editor: Editor, assetId?: TLAssetId | null)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "setBookmarkHeight",
+          "shape": "export function setBookmarkHeight(editor: Editor, shape: TLBookmarkShape)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "getHumanReadableAddress",
+          "shape": "export function getHumanReadableAddress(url: string)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "updateBookmarkAssetOnUrlChange",
+          "shape": "export function updateBookmarkAssetOnUrlChange(editor: Editor, shape: TLBookmarkShape)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "getResolvedBookmarkAssetId",
+          "shape": "export function getResolvedBookmarkAssetId(editor: Editor, assetId: TLAssetId | null, url: string): TLAssetId | null",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "getBookmarkShapeHeight",
+          "shape": "export function getBookmarkShapeHeight(editor: Editor, shape: TLBookmarkShape): number",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "createBookmarkFromUrl",
+          "shape": "export async function createBookmarkFromUrl(editor: Editor, { url, center = editor.getViewportPageBounds().center }: { url: string; center?: { x: number; y: number } }): Promise<Result<TLBookmarkShape, string>>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "Editor.getAsset",
+          "shape": "editor.getAsset(assetId)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "Editor.getAssetForExternalContent",
+          "shape": "editor.getAssetForExternalContent({ type: 'url', url })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "Editor.createAssets",
+          "shape": "editor.createAssets([asset])",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "Editor.updateShapes",
+          "shape": "editor.updateShapes([{ id, type, props }])",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "Editor.createShapes",
+          "shape": "editor.createShapes([shapePartial])",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        { "name": "TLBookmarkShape", "shape": "TLBookmarkShape", "resolvedRelativePath": null, "resolvedFileId": null },
+        { "name": "TLBookmarkAsset", "shape": "TLBookmarkAsset", "resolvedRelativePath": null, "resolvedFileId": null }
+      ],
+      "sectionMap": [
+        {
+          "name": "bookmark-height-selection",
+          "intent": "Selects compact or full bookmark geometry from asset metadata.",
+          "structureKind": "branch",
+          "predicate": "!asset.props.image",
+          "branchOutcomes": ["asset lacks image", "asset has image"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 22, "endLine": 29 }
+        },
+        {
+          "name": "url-asset-reuse-or-creation",
+          "intent": "Synchronizes a changed bookmark URL with an existing or newly fetched asset.",
+          "structureKind": "branch",
+          "predicate": "editor.getAsset(assetId)",
+          "branchOutcomes": ["asset exists", "asset does not exist"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 53, "endLine": 71 }
+        },
+        {
+          "name": "resolved-asset-fallback",
+          "intent": "Falls back to a deterministic stored asset matching the bookmark URL.",
+          "structureKind": "branch",
+          "predicate": "assetId",
+          "branchOutcomes": ["stored asset identifier exists", "stored asset identifier is absent"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 84, "endLine": 88 }
+        },
+        {
+          "name": "debounced-asset-fetch",
+          "intent": "Queues one debounced external asset request for each editor.",
+          "structureKind": "async",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 137, "endLine": 145 }
+        },
+        {
+          "name": "placeholder-bookmark-creation",
+          "intent": "Creates an immediately visible bookmark before metadata resolution completes.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 165, "endLine": 204 }
+        },
+        {
+          "name": "bookmark-hydration-validation",
+          "intent": "Prevents stale asynchronous metadata from modifying invalid current shapes.",
+          "structureKind": "branch",
+          "predicate": "shape.props.url !== url",
+          "branchOutcomes": ["shape URL changed", "shape URL unchanged"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 219, "endLine": 231 }
+        },
+        {
+          "name": "asset-hydration-update",
+          "intent": "Creates the fetched asset and attaches it while ignoring history.",
+          "structureKind": "io",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 233, "endLine": 246 }
+        }
+      ],
+      "representationFamily": "module",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "function",
+          "name": "getBookmarkHeight",
+          "signature": "export function getBookmarkHeight(editor: Editor, assetId?: TLAssetId | null) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 19, "endLine": 19 }
+        },
+        {
+          "kind": "function",
+          "name": "setBookmarkHeight",
+          "signature": "export function setBookmarkHeight(editor: Editor, shape: TLBookmarkShape) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 32, "endLine": 32 }
+        },
+        {
+          "kind": "function",
+          "name": "getHumanReadableAddress",
+          "signature": "export function getHumanReadableAddress(url: string) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 37, "endLine": 37 }
+        },
+        {
+          "kind": "function",
+          "name": "updateBookmarkAssetOnUrlChange",
+          "signature": "export function updateBookmarkAssetOnUrlChange(editor: Editor, shape: TLBookmarkShape) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 47, "endLine": 47 }
+        },
+        {
+          "kind": "function",
+          "name": "getResolvedBookmarkAssetId",
+          "signature": "export function getResolvedBookmarkAssetId(\n\teditor: Editor,\n\tassetId: TLAssetId | null,\n\turl: string\n): TLAssetId | null {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "TLAssetId | null",
+          "exported": true,
+          "anchor": { "startLine": 80, "endLine": 83 }
+        },
+        {
+          "kind": "function",
+          "name": "getBookmarkShapeHeight",
+          "signature": "export function getBookmarkShapeHeight(editor: Editor, shape: TLBookmarkShape): number {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "number",
+          "exported": true,
+          "anchor": { "startLine": 99, "endLine": 99 }
+        },
+        {
+          "kind": "function",
+          "name": "_createBookmarkAssetOnUrlChange",
+          "signature": "async function _createBookmarkAssetOnUrlChange(editor: Editor, shape: TLBookmarkShape) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 106, "endLine": 106 }
+        },
+        {
+          "kind": "function",
+          "name": "createBookmarkAssetOnUrlChange",
+          "signature": "function createBookmarkAssetOnUrlChange(editor: Editor, shape: TLBookmarkShape) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 137, "endLine": 137 }
+        },
+        {
+          "kind": "function",
+          "name": "createBookmarkFromUrl",
+          "signature": "export async function createBookmarkFromUrl(\n\teditor: Editor,\n\t{\n\t\turl,\n\t\tcenter = editor.getViewportPageBounds().center,\n\t}: {\n\t\turl: string\n\t\tcenter?: { x: number; y: number }\n\t}\n): Promise<Result<TLBookmarkShape, string>> {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Promise<Result<TLBookmarkShape, string>>",
+          "exported": true,
+          "anchor": { "startLine": 155, "endLine": 164 }
+        },
+        {
+          "kind": "function",
+          "name": "hydrateBookmarkShape",
+          "signature": "async function hydrateBookmarkShape(editor: Editor, shapeId: TLShapeId, url: string) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 210, "endLine": 210 }
+        }
+      ],
+      "typeShapes": [],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "Asset with no image and no title",
+          "handled": true,
+          "behavior": "Returns the URL-only height.",
+          "anchor": { "startLine": 23, "endLine": 25 }
+        },
+        {
+          "inputShape": "Malformed URL string",
+          "handled": true,
+          "behavior": "Returns the original string when URL parsing fails.",
+          "anchor": { "startLine": 38, "endLine": 44 }
+        },
+        {
+          "inputShape": "Bookmark URL with no existing asset",
+          "handled": true,
+          "behavior": "Clears the asset reference and starts debounced asynchronous creation.",
+          "anchor": { "startLine": 60, "endLine": 71 }
+        },
+        {
+          "inputShape": "Empty URL during asset resolution",
+          "handled": true,
+          "behavior": "Returns null without deriving or looking up an asset identifier.",
+          "anchor": { "startLine": 84, "endLine": 85 }
+        },
+        {
+          "inputShape": "Disposed editor during asynchronous asset creation",
+          "handled": true,
+          "behavior": "Returns without creating or updating editor state.",
+          "anchor": { "startLine": 107, "endLine": 107 }
+        },
+        {
+          "inputShape": "External content manager returns no asset",
+          "handled": true,
+          "behavior": "Leaves the bookmark asset identifier null.",
+          "anchor": { "startLine": 114, "endLine": 117 }
+        },
+        {
+          "inputShape": "Shape deleted or changed before hydration resolves",
+          "handled": true,
+          "behavior": "Skips the stale metadata update.",
+          "anchor": { "startLine": 225, "endLine": 231 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": "!=",
+          "left": "shape.props.assetId",
+          "right": "assetId",
+          "inclusive": false,
+          "intent": "Updates the shape only when its current asset differs from the URL-derived asset.",
+          "anchor": { "startLine": 55, "endLine": 55 }
+        },
+        {
+          "operator": "==",
+          "left": "resolvedAssetId",
+          "right": "shape.props.assetId",
+          "inclusive": true,
+          "intent": "Preserves stored height when the resolved asset identifier is unchanged.",
+          "anchor": { "startLine": 101, "endLine": 101 }
+        },
+        {
+          "operator": "!=",
+          "left": "shape.props.url",
+          "right": "url",
+          "inclusive": false,
+          "intent": "Rejects hydration when the shape URL no longer matches the fetched URL.",
+          "anchor": { "startLine": 228, "endLine": 228 }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": null,
+          "caught": "catch",
+          "action": "Returns the original URL string.",
+          "fallback": "url",
+          "anchor": { "startLine": 42, "endLine": 44 }
+        },
+        {
+          "thrown": null,
+          "caught": "catch (error)",
+          "action": "Converts the exception into a failed Result.",
+          "fallback": "Result.err(error instanceof Error ? error.message : 'Failed to create bookmark')",
+          "anchor": { "startLine": 205, "endLine": 206 }
+        },
+        {
+          "thrown": null,
+          "caught": "catch (error)",
+          "action": "Logs the fetch error and aborts hydration.",
+          "fallback": null,
+          "anchor": { "startLine": 214, "endLine": 216 }
+        }
+      ],
+      "invariants": [
+        {
+          "kind": "invariant",
+          "description": "Asset identifiers are deterministically derived from the bookmark URL hash.",
+          "anchor": { "startLine": 51, "endLine": 51 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "A successfully created bookmark shape is inserted before asynchronous hydration begins.",
+          "anchor": { "startLine": 189, "endLine": 199 }
+        },
+        {
+          "kind": "non-null",
+          "description": "Successful creation returns the shape retrieved using the newly generated shape identifier.",
+          "anchor": { "startLine": 193, "endLine": 199 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Hydration only attaches metadata when the shape still exists and has no asset.",
+          "anchor": { "startLine": 225, "endLine": 231 }
+        },
+        {
+          "kind": "ordering",
+          "description": "New assets are created before their identifiers are assigned to bookmark shapes.",
+          "anchor": { "startLine": 235, "endLine": 243 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "Callers provide a functioning Editor instance with shape and asset operations.",
+          "anchor": { "startLine": 155, "endLine": 164 }
+        },
+        {
+          "kind": "caller",
+          "description": "External content handling is expected to return bookmark-compatible assets or no asset.",
+          "anchor": { "startLine": 112, "endLine": 116 }
+        },
+        {
+          "kind": "schema",
+          "description": "Bookmark shapes expose URL, assetId, width, and height properties compatible with TLBookmarkShape.",
+          "anchor": { "startLine": 174, "endLine": 186 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "Does the external content manager guarantee that returned asset identifiers are deterministic for the requested URL?",
+          "affects": "asset resolution and duplicate asset reuse",
+          "anchor": { "startLine": 112, "endLine": 112 },
+          "resolution": null
+        },
+        {
+          "question": "What ordering guarantees does the shared debounce implementation provide when multiple URLs are submitted rapidly?",
+          "affects": "concurrency_model and URL-change hydration ordering",
+          "anchor": { "startLine": 141, "endLine": 144 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "mixed",
+        "reentrant": false,
+        "ordering": "unknown",
+        "notes": "Shape creation is synchronous within editor transactions, while metadata fetching is asynchronous and URL-change creation is debounced per editor."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "returns-url-only-height-without-image-and-title",
+          "scenario": "A bookmark asset has neither an image nor a title.",
+          "given": ["editor.getAsset(assetId) returns { props: { image: null, title: '' } }"],
+          "when": "getBookmarkHeight(editor, assetId)",
+          "then": "returns BOOKMARK_JUST_URL_HEIGHT",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins the compact URL-only bookmark layout."
+        },
+        {
+          "testId": "returns-short-height-with-title-only",
+          "scenario": "A bookmark asset has a title but no image.",
+          "given": ["editor.getAsset(assetId) returns { props: { image: null, title: 'Example' } }"],
+          "when": "getBookmarkHeight(editor, assetId)",
+          "then": "returns SHORT_BOOKMARK_HEIGHT",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins the intermediate bookmark layout."
+        },
+        {
+          "testId": "returns-full-height-for-image-or-missing-asset",
+          "scenario": "A bookmark has an image or its asset cannot be found.",
+          "given": ["editor.getAsset(assetId) returns { props: { image: 'image-url', title: 'Example' } } or null"],
+          "when": "getBookmarkHeight(editor, assetId)",
+          "then": "returns BOOKMARK_HEIGHT",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins the default height fallback."
+        },
+        {
+          "testId": "removes-leading-www-from-readable-address",
+          "scenario": "A valid URL uses a www-prefixed hostname.",
+          "given": ["url = 'https://www.example.com/path'"],
+          "when": "getHumanReadableAddress(url)",
+          "then": "returns 'example.com'",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins hostname normalization."
+        },
+        {
+          "testId": "preserves-invalid-url-address",
+          "scenario": "The supplied string is not a valid URL.",
+          "given": ["url = 'not a url'"],
+          "when": "getHumanReadableAddress(url)",
+          "then": "returns url",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins graceful fallback for malformed input."
+        },
+        {
+          "testId": "resolves-existing-asset-from-url",
+          "scenario": "A shape has no asset reference but an asset derived from its URL exists.",
+          "given": ["assetId = null", "editor.getAsset(derivedId) returns an asset"],
+          "when": "getResolvedBookmarkAssetId(editor, assetId, url)",
+          "then": "returns derivedId",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins deterministic recovery of hydrated assets."
+        },
+        {
+          "testId": "returns-null-for-empty-url",
+          "scenario": "A bookmark has no URL and no asset reference.",
+          "given": ["assetId = null", "url = ''"],
+          "when": "getResolvedBookmarkAssetId(editor, assetId, url)",
+          "then": "returns null",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins empty-input handling."
+        },
+        {
+          "testId": "creates-placeholder-bookmark",
+          "scenario": "A URL has no existing bookmark asset.",
+          "given": [
+            "editor.getAsset(expectedAssetId) returns null",
+            "editor.getViewportPageBounds().center returns { x: 100, y: 100 }",
+            "editor.createShapes([shapePartial]) creates the shape"
+          ],
+          "when": "await createBookmarkFromUrl(editor, { url: 'https://example.com' })",
+          "then": "returns Result.ok(createdShape) with type 'bookmark', null assetId, width BOOKMARK_WIDTH, and height BOOKMARK_HEIGHT",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Pins immediate visible placeholder creation."
+        },
+        {
+          "testId": "reuses-existing-bookmark-asset",
+          "scenario": "A bookmark asset already exists for the requested URL.",
+          "given": ["editor.getAsset(expectedAssetId) returns existingAsset"],
+          "when": "await createBookmarkFromUrl(editor, { url })",
+          "then": "returns Result.ok(createdShape) with assetId existingAsset.id without fetching external metadata",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Pins deterministic asset reuse and avoids duplicate fetches."
+        },
+        {
+          "testId": "returns-error-when-created-shape-is-missing",
+          "scenario": "Shape creation completes but the created shape cannot be retrieved.",
+          "given": ["editor.getShape(shapeId) returns null"],
+          "when": "await createBookmarkFromUrl(editor, { url })",
+          "then": "returns Result.err('Failed to create bookmark shape')",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins the observable failure contract after creation."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "editor and bookmark type imports",
+        "exported bookmark dimension constants",
+        "private compact bookmark height constant",
+        "bookmark height calculation",
+        "bookmark shape height update",
+        "human-readable URL address conversion",
+        "bookmark asset synchronization after URL changes",
+        "resolved bookmark asset lookup",
+        "effective bookmark shape height calculation",
+        "private asynchronous bookmark asset creation",
+        "per-editor debouncer storage",
+        "debounced bookmark asset creation wrapper",
+        "bookmark creation from URL",
+        "private bookmark shape hydration"
+      ],
+      "moduleLevelCode": "import {\n\tAssetRecordType,\n\tEditor,\n\tResult,\n\tTLAssetId,\n\tTLBookmarkAsset,\n\tTLBookmarkShape,\n\tTLShapeId,\n\tTLShapePartial,\n\tcreateShapeId,\n\tdebounce,\n\tgetHashForString,\n} from '@tldraw/editor'",
+      "exports": [
+        { "name": "BOOKMARK_WIDTH", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "BOOKMARK_HEIGHT", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "BOOKMARK_JUST_URL_HEIGHT", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "getBookmarkHeight", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "setBookmarkHeight", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "getHumanReadableAddress", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "updateBookmarkAssetOnUrlChange", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "getResolvedBookmarkAssetId", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "getBookmarkShapeHeight", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "createBookmarkFromUrl", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "AssetRecordType", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "Editor", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "Result", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "TLAssetId", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "TLBookmarkAsset", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "TLBookmarkShape", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "TLShapeId", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "TLShapePartial", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "createShapeId", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "debounce", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "getHashForString", "module": "@tldraw/editor", "alias": null, "kind": "external" }
+      ],
+      "fileConstants": [
+        { "name": "BOOKMARK_WIDTH", "value": "300", "kind": "number" },
+        { "name": "BOOKMARK_HEIGHT", "value": "320", "kind": "number" },
+        { "name": "BOOKMARK_JUST_URL_HEIGHT", "value": "46", "kind": "number" },
+        { "name": "SHORT_BOOKMARK_HEIGHT", "value": "101", "kind": "number" }
+      ],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/bookmark/bookmarks.ts__getBookmarkHeight#function:getBookmarkHeight",
+        "unitKind": "function",
+        "name": "getBookmarkHeight",
+        "qualifiedName": "getBookmarkHeight",
+        "parentUnitId": null,
+        "startLine": 19,
+        "endLine": 30,
+        "isBehavioral": true,
+        "source": "\nexport function getBookmarkHeight(editor: Editor, assetId?: TLAssetId | null) {\n\tconst asset = (assetId ? editor.getAsset(assetId) : null) as TLBookmarkAsset | null\n\n\tif (asset) {\n\t\tif (!asset.props.image) {\n\t\t\tif (!asset.props.title) {\n\t\t\t\treturn BOOKMARK_JUST_URL_HEIGHT\n\t\t\t} else {\n\t\t\t\treturn SHORT_BOOKMARK_HEIGHT\n\t\t\t}\n\t\t}",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/bookmark/bookmarks.ts__getBookmarkHeight#function:getBookmarkHeight",
+          "fileId": "packages/tldraw/src/lib/shapes/bookmark/bookmarks.ts__getBookmarkHeight",
+          "unitKind": "function",
+          "name": "getBookmarkHeight",
+          "qualifiedName": "getBookmarkHeight",
+          "parentUnitId": null,
+          "startLine": 19,
+          "endLine": 30,
+          "signature": "export function getBookmarkHeight(editor: Editor, assetId?: TLAssetId | null)",
+          "parameters": [
+            { "name": "editor", "type": "Editor", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "assetId",
+              "type": "TLAssetId | null",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "number",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["editor provides getAsset(assetId) when a non-null assetId is supplied"],
+          "postconditions": [
+            "Returns a numeric bookmark height.",
+            "An asset with neither image nor title returns BOOKMARK_JUST_URL_HEIGHT.",
+            "An asset with a title but no image returns SHORT_BOOKMARK_HEIGHT."
+          ],
+          "invariants": [
+            "The editor and asset lookup are not mutated.",
+            "The result depends only on the resolved asset's image and title properties and the default bookmark-height policy."
+          ],
+          "edgeCases": [
+            "assetId is omitted or null: no asset is resolved and the standard bookmark height is returned.",
+            "The resolved asset is absent: the standard bookmark height is returned.",
+            "The resolved asset has no image and no title: BOOKMARK_JUST_URL_HEIGHT is returned.",
+            "The resolved asset has no image but has a title: SHORT_BOOKMARK_HEIGHT is returned."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "editor.getAsset", "source": "editor", "kind": "external" }],
+          "symbolReferences": [
+            "Editor",
+            "TLAssetId",
+            "TLBookmarkAsset",
+            "BOOKMARK_JUST_URL_HEIGHT",
+            "SHORT_BOOKMARK_HEIGHT"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Determines the rendered height for a bookmark based on the associated bookmark asset. Bookmarks without an asset or with an image use the standard bookmark height, while text-only assets use shorter height variants.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "getBookmarkHeight(editor, assetId) is called.",
+              "then": "The result is BOOKMARK_JUST_URL_HEIGHT.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "getBookmarkHeight(editor, assetId) is called.",
+              "then": "The result is SHORT_BOOKMARK_HEIGHT.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "getBookmarkHeight(editor, assetId) is called.",
+              "then": "The standard bookmark height is returned.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "0647e197bedb9a0dd55dff0776e9ae8232490913c6efc503967053c5433fb647"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/bookmark/bookmarks.ts__setBookmarkHeight#function:setBookmarkHeight",
+        "unitKind": "function",
+        "name": "setBookmarkHeight",
+        "qualifiedName": "setBookmarkHeight",
+        "parentUnitId": null,
+        "startLine": 32,
+        "endLine": 34,
+        "isBehavioral": true,
+        "source": "\n\treturn BOOKMARK_HEIGHT\n}",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/bookmark/bookmarks.ts__setBookmarkHeight#function:setBookmarkHeight",
+          "fileId": "packages/tldraw/src/lib/shapes/bookmark/bookmarks.ts__setBookmarkHeight",
+          "unitKind": "function",
+          "name": "setBookmarkHeight",
+          "qualifiedName": "setBookmarkHeight",
+          "parentUnitId": null,
+          "startLine": 32,
+          "endLine": 34,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": ["Returns BOOKMARK_HEIGHT."],
+          "invariants": ["The returned height is the configured BOOKMARK_HEIGHT value."],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["BOOKMARK_HEIGHT"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Returns the configured bookmark height constant. The result is independent of any unobserved input state.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Invoke setBookmarkHeight.",
+              "then": "The function returns the BOOKMARK_HEIGHT constant without mutating state.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "a4c069c1b1b991e735330b3a5f0cd6120ff6173a8e11c6b436d203d047c1b1d0"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/bookmark/bookmarks.ts__getHumanReadableAddress#function:getHumanReadableAddress",
+        "unitKind": "function",
+        "name": "getHumanReadableAddress",
+        "qualifiedName": "getHumanReadableAddress",
+        "parentUnitId": null,
+        "startLine": 37,
+        "endLine": 45,
+        "isBehavioral": true,
+        "source": "\treturn {\n\t\t...shape,\n\t\tprops: { ...shape.props, h: getBookmarkHeight(editor, shape.props.assetId) },\n\t}\n}\n\n/** @internal */\nexport function getHumanReadableAddress(url: string) {\n\ttry {",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/bookmark/bookmarks.ts__getHumanReadableAddress#function:getHumanReadableAddress",
+          "fileId": "packages/tldraw/src/lib/shapes/bookmark/bookmarks.ts__getHumanReadableAddress",
+          "unitKind": "function",
+          "name": "getHumanReadableAddress",
+          "qualifiedName": "getHumanReadableAddress",
+          "parentUnitId": null,
+          "startLine": 37,
+          "endLine": 45,
+          "signature": "export function getHumanReadableAddress(url: string)",
+          "parameters": [
+            { "name": "url", "type": "string", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "string",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["url is a string."],
+          "postconditions": [
+            "Returns a string representation of the address.",
+            "An invalid URL does not cause the function to throw."
+          ],
+          "invariants": ["The original input is preserved as the fallback for invalid URLs."],
+          "edgeCases": [
+            "A valid URL is reduced to its human-readable host and path representation.",
+            "An invalid or malformed URL is returned unchanged."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Return the original URL string.",
+            "returnsOnError": "The input url."
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "URL", "source": "global URL constructor", "kind": "external" }],
+          "symbolReferences": ["URL"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Converts a URL string into a human-readable address, falling back to the original input when it cannot be parsed as a URL.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Call getHumanReadableAddress(url).",
+              "then": "Return a human-readable address derived from the URL rather than throwing.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Call getHumanReadableAddress(url).",
+              "then": "Return the malformed input string unchanged.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "360b58cd286a449a9623d6017dda6a50e4f1e44cb41cf5ab25aadfd4418fba18"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/bookmark/bookmarks.ts__updateBookmarkAssetOnUrlChange#function:updateBookmarkAssetOnUrlChange",
+        "unitKind": "function",
+        "name": "updateBookmarkAssetOnUrlChange",
+        "qualifiedName": "updateBookmarkAssetOnUrlChange",
+        "parentUnitId": null,
+        "startLine": 47,
+        "endLine": 71,
+        "isBehavioral": true,
+        "source": "\t\t// we want the hostname without any www\n\t\treturn objUrl.hostname.replace(/^www\\./, '')\n\t} catch {\n\t\treturn url\n\t}\n}\n\nexport function updateBookmarkAssetOnUrlChange(editor: Editor, shape: TLBookmarkShape) {\n\tconst { url } = shape.props\n\n\t// Derive the asset id from the URL\n\tconst assetId: TLAssetId = AssetRecordType.createId(getHashForString(url))\n\n\tif (editor.getAsset(assetId)) {\n\t\t// Existing asset for this URL?\n\t\tif (shape.props.assetId !== assetId) {\n\t\t\teditor.updateShapes([\n\t\t\t\t{\n\t\t\t\t\tid: shape.id,\n\t\t\t\t\ttype: shape.type,\n\t\t\t\t\tprops: { assetId },\n\t\t\t\t},\n\t\t\t])\n\t\t}\n\t} else {",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/bookmark/bookmarks.ts__updateBookmarkAssetOnUrlChange#function:updateBookmarkAssetOnUrlChange",
+          "fileId": "packages/tldraw/src/lib/shapes/bookmark/bookmarks.ts__updateBookmarkAssetOnUrlChange",
+          "unitKind": "function",
+          "name": "updateBookmarkAssetOnUrlChange",
+          "qualifiedName": "updateBookmarkAssetOnUrlChange",
+          "parentUnitId": null,
+          "startLine": 47,
+          "endLine": 71,
+          "signature": "export function updateBookmarkAssetOnUrlChange(editor: Editor, shape: TLBookmarkShape)",
+          "parameters": [
+            { "name": "editor", "type": "Editor", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "shape",
+              "type": "TLBookmarkShape",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["editor is a valid Editor instance.", "shape contains a URL in shape.props.url."],
+          "postconditions": [
+            "The asset identifier is derived from the current URL.",
+            "If an asset for that URL already exists and differs from shape.props.assetId, the shape is updated to reference that asset."
+          ],
+          "invariants": [
+            "The asset identifier is created from getHashForString(shape.props.url) through AssetRecordType.createId.",
+            "An existing matching asset does not cause an unnecessary shape update."
+          ],
+          "edgeCases": [
+            "When the URL's derived asset already exists and shape.props.assetId already matches it, no shape update is performed.",
+            "When the URL's derived asset already exists but shape.props.assetId differs, the shape is updated with the derived assetId.",
+            "When no asset exists for the derived identifier, the function follows the asset-creation branch."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [
+            "May update the bookmark shape's assetId through editor.updateShapes.",
+            "May create or register the bookmark asset for the current URL through the no-existing-asset branch."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "getHashForString", "source": null, "kind": "external" },
+            { "name": "AssetRecordType.createId", "source": null, "kind": "external" },
+            { "name": "editor.getAsset", "source": "Editor", "kind": "external" },
+            { "name": "editor.updateShapes", "source": "Editor", "kind": "external" }
+          ],
+          "symbolReferences": ["Editor", "TLBookmarkShape", "TLAssetId", "AssetRecordType", "getHashForString"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Ensures a bookmark shape uses the asset identified by the hash of its current URL, updating or creating the corresponding asset association as needed.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "updateBookmarkAssetOnUrlChange(editor, shape) is called.",
+              "then": "The editor updates that shape with props.assetId equal to the URL-derived asset ID.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "updateBookmarkAssetOnUrlChange(editor, shape) is called.",
+              "then": "The function does not issue a shape update for the asset ID.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "c946264316c655f59ddf178eb1a18309fc851f70c9a303ead6958b54e52ab23d"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/bookmark/bookmarks.ts__getResolvedBookmarkAssetId#function:getResolvedBookmarkAssetId",
+        "unitKind": "function",
+        "name": "getResolvedBookmarkAssetId",
+        "qualifiedName": "getResolvedBookmarkAssetId",
+        "parentUnitId": null,
+        "startLine": 80,
+        "endLine": 89,
+        "isBehavioral": true,
+        "source": "\t\t\t},\n\t\t])\n\n\t\t// Then try to asyncronously create a new one\n\t\tcreateBookmarkAssetOnUrlChange(editor, shape)\n\t}\n}\n\n/**\n * Resolve the asset id to render for a bookmark. Bookmark assets are keyed",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/bookmark/bookmarks.ts__getResolvedBookmarkAssetId#function:getResolvedBookmarkAssetId",
+          "fileId": "packages/tldraw/src/lib/shapes/bookmark/bookmarks.ts__getResolvedBookmarkAssetId",
+          "unitKind": "function",
+          "name": "getResolvedBookmarkAssetId",
+          "qualifiedName": "getResolvedBookmarkAssetId",
+          "parentUnitId": null,
+          "startLine": 80,
+          "endLine": 89,
+          "signature": "function getResolvedBookmarkAssetId(editor: Editor, shape: TLBookmarkShape): TLAssetId | null",
+          "parameters": [
+            { "name": "editor", "type": "Editor", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "shape",
+              "type": "TLBookmarkShape",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "TLAssetId | null",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "editor is a valid editor instance.",
+            "shape is a bookmark shape with bookmark properties."
+          ],
+          "postconditions": [
+            "Returns the resolved bookmark asset identifier when a usable asset is associated with the shape.",
+            "Returns null when no usable asset identifier can be resolved.",
+            "Does not mutate the editor or shape."
+          ],
+          "invariants": ["The returned identifier, when non-null, identifies an asset available through the editor."],
+          "edgeCases": [
+            "A bookmark with no asset identifier resolves to null.",
+            "A bookmark whose asset identifier does not resolve to an available asset resolves to null.",
+            "A valid bookmark asset identifier is returned unchanged."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": "null when the bookmark asset cannot be resolved"
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "getAsset", "source": "Editor", "kind": "external" }],
+          "symbolReferences": ["Editor", "TLBookmarkShape", "TLAssetId"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Resolves the asset identifier associated with a bookmark shape for rendering. Returns no identifier when the shape does not reference a usable bookmark asset.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "e7cdebdf26b0c6cbddc8e40244a3ac61b938f0d0f7f90680bfb87df89a048983"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/bookmark/bookmarks.ts__getBookmarkShapeHeight#function:getBookmarkShapeHeight",
+        "unitKind": "function",
+        "name": "getBookmarkShapeHeight",
+        "qualifiedName": "getBookmarkShapeHeight",
+        "parentUnitId": null,
+        "startLine": 99,
+        "endLine": 104,
+        "isBehavioral": true,
+        "source": "\teditor: Editor,\n\tassetId: TLAssetId | null,\n\turl: string\n): TLAssetId | null {\n\tif (assetId) return assetId\n\tif (!url) return null",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/bookmark/bookmarks.ts__getBookmarkShapeHeight#function:getBookmarkShapeHeight",
+          "fileId": "packages/tldraw/src/lib/shapes/bookmark/bookmarks.ts__getBookmarkShapeHeight",
+          "unitKind": "function",
+          "name": "getBookmarkShapeHeight",
+          "qualifiedName": "getBookmarkShapeHeight",
+          "parentUnitId": null,
+          "startLine": 99,
+          "endLine": 104,
+          "signature": "function getBookmarkShapeHeight(editor: Editor, assetId: TLAssetId | null, url: string): TLAssetId | null",
+          "parameters": [
+            { "name": "editor", "type": "Editor", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "assetId",
+              "type": "TLAssetId | null",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            { "name": "url", "type": "string", "default": null, "optional": false, "variadic": false, "order": 2 }
+          ],
+          "returnType": "TLAssetId | null",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "editor is an Editor instance.",
+            "assetId is either a TLAssetId or null.",
+            "url is a string."
+          ],
+          "postconditions": [
+            "If assetId is truthy, the returned value is exactly assetId.",
+            "If assetId is falsy and url is an empty string, the returned value is null."
+          ],
+          "invariants": [
+            "The supplied assetId is never replaced when it is truthy.",
+            "The function does not mutate its arguments."
+          ],
+          "edgeCases": [
+            "A truthy assetId returns immediately without requiring a URL.",
+            "A null or otherwise falsy assetId combined with an empty URL returns null."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["Editor", "TLAssetId"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Resolves a bookmark-related asset identifier from the supplied asset ID and URL inputs. An existing asset ID is preserved, while the absence of both an asset ID and URL produces null.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "the function is called",
+              "then": "it returns the exact supplied assetId.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "the function is called",
+              "then": "it returns null.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "c2485807674507894baa6360da19a9140b5fa4892db5f351ed6ce06630f8ebde"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/bookmark/bookmarks.ts___createBookmarkAssetOnUrlChange#function:_createBookmarkAssetOnUrlChange",
+        "unitKind": "function",
+        "name": "_createBookmarkAssetOnUrlChange",
+        "qualifiedName": "_createBookmarkAssetOnUrlChange",
+        "parentUnitId": null,
+        "startLine": 106,
+        "endLine": 130,
+        "isBehavioral": true,
+        "source": "\tconst derivedId: TLAssetId = AssetRecordType.createId(getHashForString(url))\n\treturn editor.getAsset(derivedId) ? derivedId : null\n}\n\n/**\n * The effective height to render and measure a bookmark at.\n *\n * Normally this is the stored `props.h`. But when the shape's `assetId` resolves\n * to a different asset than it stores — e.g. a placeholder restored on redo with\n * a null `assetId` whose asset already exists in the store — `props.h` is stale\n * (it still holds the placeholder height). In that case recompute the height\n * from the resolved asset so rendering, the indicator, and the geometry/selection\n * bounds all stay in sync.\n */\nexport function getBookmarkShapeHeight(editor: Editor, shape: TLBookmarkShape): number {\n\tconst resolvedAssetId = getResolvedBookmarkAssetId(editor, shape.props.assetId, shape.props.url)\n\tif (resolvedAssetId === shape.props.assetId) return shape.props.h\n\treturn getBookmarkHeight(editor, resolvedAssetId)\n}\n\nasync function _createBookmarkAssetOnUrlChange(editor: Editor, shape: TLBookmarkShape) {\n\tif (editor.isDisposed) return\n\n\tconst { url } = shape.props\n",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/bookmark/bookmarks.ts___createBookmarkAssetOnUrlChange#function:_createBookmarkAssetOnUrlChange",
+          "fileId": "packages/tldraw/src/lib/shapes/bookmark/bookmarks.ts___createBookmarkAssetOnUrlChange",
+          "unitKind": "function",
+          "name": "_createBookmarkAssetOnUrlChange",
+          "qualifiedName": "_createBookmarkAssetOnUrlChange",
+          "parentUnitId": null,
+          "startLine": 106,
+          "endLine": 130,
+          "signature": "async function _createBookmarkAssetOnUrlChange(editor: Editor, shape: TLBookmarkShape)",
+          "parameters": [
+            { "name": "editor", "type": "Editor", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "shape",
+              "type": "TLBookmarkShape",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "Promise<void>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "editor is an Editor instance",
+            "shape is a TLBookmarkShape instance",
+            "shape.props.url is available"
+          ],
+          "postconditions": [
+            "When the editor is disposed on entry, no asset operation is performed.",
+            "When the editor is not disposed, bookmark processing is initiated using the URL from shape.props.url."
+          ],
+          "invariants": ["The function does not perform work after detecting editor.isDisposed."],
+          "edgeCases": [
+            "Disposed editor: returns without performing the URL-change operation.",
+            "Non-disposed editor: reads the URL from shape.props before continuing with bookmark asset processing."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["Editor", "TLBookmarkShape"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Creates or updates the bookmark asset associated with a shape when its URL changes. If the editor has already been disposed, the operation performs no work.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "_createBookmarkAssetOnUrlChange(editor, shape) is awaited.",
+              "then": "The promise resolves without performing bookmark asset processing.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "40d85d1987fc83a61a8cf95f814df91d64dab2f38629d631496ff80348172446"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/bookmark/bookmarks.ts__createBookmarkAssetOnUrlChange#function:createBookmarkAssetOnUrlChange",
+        "unitKind": "function",
+        "name": "createBookmarkAssetOnUrlChange",
+        "qualifiedName": "createBookmarkAssetOnUrlChange",
+        "parentUnitId": null,
+        "startLine": 137,
+        "endLine": 145,
+        "isBehavioral": true,
+        "source": "\t\treturn\n\t}\n\n\teditor.run(() => {\n\t\t// Create the new asset\n\t\teditor.createAssets([asset])\n\n\t\t// And update the shape\n\t\teditor.updateShapes([",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/bookmark/bookmarks.ts__createBookmarkAssetOnUrlChange#function:createBookmarkAssetOnUrlChange",
+          "fileId": "packages/tldraw/src/lib/shapes/bookmark/bookmarks.ts__createBookmarkAssetOnUrlChange",
+          "unitKind": "function",
+          "name": "createBookmarkAssetOnUrlChange",
+          "qualifiedName": "createBookmarkAssetOnUrlChange",
+          "parentUnitId": null,
+          "startLine": 137,
+          "endLine": 145,
+          "signature": "export async function createBookmarkAssetOnUrlChange(editor: Editor, shape: TLBookmarkShape, url: string): Promise<void>",
+          "parameters": [
+            { "name": "editor", "type": "Editor", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "shape",
+              "type": "TLBookmarkShape",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            { "name": "url", "type": "string", "default": null, "optional": false, "variadic": false, "order": 2 }
+          ],
+          "returnType": "Promise<void>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "editor is a valid editor instance.",
+            "shape identifies the bookmark shape being updated.",
+            "url is the URL whose bookmark asset should be created."
+          ],
+          "postconditions": [
+            "If bookmark asset creation succeeds, the new asset is created in the editor and the bookmark shape is updated within an editor transaction.",
+            "The function resolves after the asynchronous asset creation and any applicable editor updates complete."
+          ],
+          "invariants": [
+            "Asset creation and the corresponding shape update are performed together inside the editor's run operation."
+          ],
+          "edgeCases": ["If asset creation produces no asset, no asset or shape update is applied."],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [
+            "Creates a bookmark asset in the editor when asset creation succeeds.",
+            "Updates the bookmark shape in the editor when asset creation succeeds."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            {
+              "name": "_createBookmarkAssetOnUrlChange",
+              "source": "packages/tldraw/src/lib/shapes/bookmark/bookmarks.ts",
+              "kind": "internal"
+            },
+            { "name": "editor.run", "source": "Editor", "kind": "external" },
+            { "name": "editor.createAssets", "source": "Editor", "kind": "external" },
+            { "name": "editor.updateShapes", "source": "Editor", "kind": "external" }
+          ],
+          "symbolReferences": ["Editor", "TLBookmarkShape"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Asynchronously creates the bookmark asset associated with a changed URL and applies the resulting asset and shape update through the editor.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "4a9e2c9c7c7068ec9fc5fb15effad5110c1e3e0588c1e6b1f707dea7dd2d02b5"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/bookmark/bookmarks.ts__createBookmarkFromUrl#function:createBookmarkFromUrl",
+        "unitKind": "function",
+        "name": "createBookmarkFromUrl",
+        "qualifiedName": "createBookmarkFromUrl",
+        "parentUnitId": null,
+        "startLine": 155,
+        "endLine": 208,
+        "isBehavioral": true,
+        "source": "const bookmarkDebouncers = new WeakMap<\n\tEditor,\n\tReturnType<typeof debounce<[Editor, TLBookmarkShape], void>>\n>()\n\nfunction createBookmarkAssetOnUrlChange(editor: Editor, shape: TLBookmarkShape) {\n\tlet fn = bookmarkDebouncers.get(editor)\n\tif (!fn) {\n\t\tfn = debounce(_createBookmarkAssetOnUrlChange, 500)\n\t\tbookmarkDebouncers.set(editor, fn)\n\t}\n\tfn(editor, shape)\n}\n\n/**\n * Creates a bookmark shape from a URL.\n *\n * The shape is created immediately as a placeholder so the user gets visible\n * feedback at the paste location, and the bookmark metadata (title, description,\n * image, favicon) is fetched in the background. Once metadata resolves, the\n * shape is patched with the resulting asset. If the fetch fails, the shape is\n * left as a URL-only bookmark.\n *\n * @returns A Result containing the created bookmark shape or an error\n * @public\n */\nexport async function createBookmarkFromUrl(\n\teditor: Editor,\n\t{\n\t\turl,\n\t\tcenter = editor.getViewportPageBounds().center,\n\t}: {\n\t\turl: string\n\t\tcenter?: { x: number; y: number }\n\t}\n): Promise<Result<TLBookmarkShape, string>> {\n\ttry {\n\t\t// If we already have a bookmark asset for this URL (e.g. another bookmark\n\t\t// shape was created from the same URL earlier), use it immediately rather\n\t\t// than re-fetching.\n\t\tconst expectedAssetId: TLAssetId = AssetRecordType.createId(getHashForString(url))\n\t\tconst existingAsset = editor.getAsset(expectedAssetId) as TLBookmarkAsset | null\n\n\t\tconst shapeId = createShapeId()\n\t\tconst shapePartial: TLShapePartial<TLBookmarkShape> = {\n\t\t\tid: shapeId,\n\t\t\ttype: 'bookmark',\n\t\t\tx: center.x - BOOKMARK_WIDTH / 2,\n\t\t\ty: center.y - BOOKMARK_HEIGHT / 2,\n\t\t\trotation: 0,\n\t\t\topacity: 1,\n\t\t\tprops: {\n\t\t\t\turl,\n\t\t\t\tassetId: existingAsset?.id ?? null,",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/bookmark/bookmarks.ts__createBookmarkFromUrl#function:createBookmarkFromUrl",
+          "fileId": "packages/tldraw/src/lib/shapes/bookmark/bookmarks.ts__createBookmarkFromUrl",
+          "unitKind": "function",
+          "name": "createBookmarkFromUrl",
+          "qualifiedName": "createBookmarkFromUrl",
+          "parentUnitId": null,
+          "startLine": 155,
+          "endLine": 208,
+          "signature": "export async function createBookmarkFromUrl(\n\teditor: Editor,\n\t{\n\t\turl,\n\t\tcenter = editor.getViewportPageBounds().center,\n\t}: {\n\t\turl: string\n\t\tcenter?: { x: number; y: number }\n\t}\n): Promise<Result<TLBookmarkShape, string>>",
+          "parameters": [
+            { "name": "editor", "type": "Editor", "default": null, "optional": false, "variadic": false, "order": 0 },
+            { "name": "url", "type": "string", "default": null, "optional": false, "variadic": false, "order": 1 },
+            {
+              "name": "center",
+              "type": "{ x: number; y: number }",
+              "default": "editor.getViewportPageBounds().center",
+              "optional": true,
+              "variadic": false,
+              "order": 2
+            }
+          ],
+          "returnType": "Promise<Result<TLBookmarkShape, string>>",
+          "decorators": [],
+          "modifiersApplied": ["export"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "editor is a valid Editor instance.",
+            "url is supplied as a string.",
+            "If center is omitted, the editor must provide viewport page bounds with a center point."
+          ],
+          "postconditions": [
+            "On success, a bookmark shape is created with the supplied URL.",
+            "The shape is positioned so its center is at the supplied center, or at the current viewport center when center is omitted.",
+            "The shape is created with bookmark type, zero rotation, full opacity, and either the existing asset for the URL or a null asset ID.",
+            "Bookmark metadata fetching is initiated asynchronously; if metadata resolution fails, the shape remains usable as a URL-only bookmark.",
+            "The returned Result contains the created TLBookmarkShape on successful creation."
+          ],
+          "invariants": [
+            "The asset lookup ID is deterministically derived from the URL hash.",
+            "The bookmark shape is created immediately rather than waiting for metadata resolution.",
+            "The shape remains associated with the supplied URL.",
+            "The shape is horizontally and vertically centered on the requested point."
+          ],
+          "edgeCases": [
+            "When center is omitted, the viewport page bounds center is used.",
+            "When an asset already exists for the URL-derived asset ID, that asset is assigned immediately and no equivalent metadata fetch is required for initial creation.",
+            "When no matching asset exists, the shape is created with assetId set to null and metadata resolution proceeds asynchronously.",
+            "If background metadata fetching fails, the bookmark remains as a URL-only shape rather than failing solely because metadata was unavailable.",
+            "If synchronous creation or setup throws, the function returns an error Result containing a string."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Creation failures are captured and represented as an error Result; background metadata-fetch failures do not remove the created shape and leave it URL-only.",
+            "returnsOnError": "Result<TLBookmarkShape, string> containing the failure message."
+          },
+          "stateMutations": [
+            "Creates a bookmark shape in the supplied editor.",
+            "May associate or update bookmark asset data in the supplied editor as background metadata resolves."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "editor.getViewportPageBounds", "source": "Editor", "kind": "external" },
+            { "name": "AssetRecordType.createId", "source": "AssetRecordType", "kind": "internal" },
+            { "name": "getHashForString", "source": null, "kind": "internal" },
+            { "name": "editor.getAsset", "source": "Editor", "kind": "external" },
+            { "name": "createShapeId", "source": null, "kind": "internal" },
+            { "name": "createBookmarkAssetOnUrlChange", "source": null, "kind": "internal" },
+            { "name": "editor.createShapes", "source": "Editor", "kind": "external" }
+          ],
+          "symbolReferences": [
+            "Editor",
+            "Result",
+            "TLBookmarkShape",
+            "TLBookmarkAsset",
+            "TLAssetId",
+            "TLShapePartial",
+            "AssetRecordType",
+            "BOOKMARK_WIDTH",
+            "BOOKMARK_HEIGHT"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Creates a bookmark shape centered at the requested page location, initially using the URL and any already-cached bookmark asset. Metadata is resolved in the background and the created shape is updated when available; failures leave a URL-only bookmark or return an error result for creation failures.",
+          "specLiterals": [
+            {
+              "kind": "enum-value",
+              "value": "bookmark",
+              "role": "The shape type discriminator for the created bookmark shape."
+            },
+            { "kind": "magic-number", "value": "0", "role": "The created bookmark shape has zero rotation." },
+            { "kind": "magic-number", "value": "1", "role": "The created bookmark shape has full opacity." },
+            {
+              "kind": "error-message",
+              "value": "string",
+              "role": "Errors are exposed through the Result error branch as strings."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "createBookmarkFromUrl(editor, {url: \"https://example.com\"}) is awaited.",
+              "then": "The call succeeds with a bookmark shape whose URL is the supplied URL, assetId is null, rotation is 0, opacity is 1, and whose position centers the shape at {x: 100, y: 200}; metadata resolution is initiated asynchronously.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "createBookmarkFromUrl(editor, {url: \"https://example.com\", center: {x: 50, y: 75}}) is awaited.",
+              "then": "The created bookmark shape immediately uses the existing asset ID and is centered at {x: 50, y: 75}.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The bookmark creation is completed and the background operation fails.",
+              "then": "The created bookmark remains a URL-only bookmark rather than causing the creation Result to fail solely because metadata could not be fetched.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "671eb92c2ca9e833073797fcee7c85ffef2fdc2f7f71773537e72ba6f823ea86"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/bookmark/bookmarks.ts__hydrateBookmarkShape#function:hydrateBookmarkShape",
+        "unitKind": "function",
+        "name": "hydrateBookmarkShape",
+        "qualifiedName": "hydrateBookmarkShape",
+        "parentUnitId": null,
+        "startLine": 210,
+        "endLine": 247,
+        "isBehavioral": true,
+        "source": "\t\t\t\th: getBookmarkHeight(editor, existingAsset?.id),\n\t\t\t},\n\t\t}\n\n\t\teditor.run(() => {\n\t\t\teditor.createShapes([shapePartial])\n\t\t})\n\n\t\tconst createdShape = editor.getShape<TLBookmarkShape>(shapeId)\n\t\tif (!createdShape) {\n\t\t\treturn Result.err('Failed to create bookmark shape')\n\t\t}\n\n\t\t// If we already had the asset, we're done — no metadata fetch needed.\n\t\tif (existingAsset) {\n\t\t\treturn Result.ok(createdShape)\n\t\t}\n\n\t\t// Otherwise kick off the metadata fetch in the background. The shape is\n\t\t// already visible as a placeholder; once the asset resolves we'll patch\n\t\t// the shape with its assetId.\n\t\tvoid hydrateBookmarkShape(editor, shapeId, url)\n\n\t\treturn Result.ok(createdShape)\n\t} catch (error) {\n\t\treturn Result.err(error instanceof Error ? error.message : 'Failed to create bookmark')\n\t}\n}\n\nasync function hydrateBookmarkShape(editor: Editor, shapeId: TLShapeId, url: string) {\n\tlet asset\n\ttry {\n\t\tasset = await editor.getAssetForExternalContent({ type: 'url', url })\n\t} catch (error) {\n\t\tconsole.error(error)\n\t\treturn\n\t}\n",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/bookmark/bookmarks.ts__hydrateBookmarkShape#function:hydrateBookmarkShape",
+          "fileId": "packages/tldraw/src/lib/shapes/bookmark/bookmarks.ts__hydrateBookmarkShape",
+          "unitKind": "function",
+          "name": "hydrateBookmarkShape",
+          "qualifiedName": "hydrateBookmarkShape",
+          "parentUnitId": null,
+          "startLine": 210,
+          "endLine": 247,
+          "signature": "async function hydrateBookmarkShape(editor: Editor, shapeId: TLShapeId, url: string)",
+          "parameters": [
+            { "name": "editor", "type": "Editor", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "shapeId",
+              "type": "TLShapeId",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            { "name": "url", "type": "string", "default": null, "optional": false, "variadic": false, "order": 2 }
+          ],
+          "returnType": "Promise<void>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "editor is an initialized Editor instance",
+            "shapeId identifies the bookmark shape to hydrate or a shape lookup may safely return no shape",
+            "url is the external URL used for asset resolution"
+          ],
+          "postconditions": [
+            "On successful asset resolution and an existing target shape, the shape is updated to reference the resolved asset",
+            "If asset resolution fails, the function completes without throwing",
+            "If the target shape is unavailable, no shape update is performed"
+          ],
+          "invariants": [
+            "The asset lookup uses the supplied URL as external URL content",
+            "The function does not synchronously block the caller while awaiting asset resolution"
+          ],
+          "edgeCases": [
+            "Asset resolution rejects: the error is logged and the function returns without updating the shape",
+            "The target shape no longer exists when resolution completes: no update is performed",
+            "Asset resolution succeeds: the resolved asset is associated with the target bookmark shape"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Resolution errors are caught, logged with console.error, and swallowed; missing target shapes result in no update.",
+            "returnsOnError": "Promise<void> resolving normally without a shape update"
+          },
+          "stateMutations": [
+            "The target bookmark shape's asset reference is updated through the editor when resolution succeeds"
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "editor.getAssetForExternalContent", "source": "Editor", "kind": "external" },
+            { "name": "editor.getShape", "source": "Editor", "kind": "external" },
+            { "name": "editor.updateShapes", "source": "Editor", "kind": "external" },
+            { "name": "console.error", "source": "global console", "kind": "external" }
+          ],
+          "symbolReferences": ["Editor", "TLShapeId"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Requests external content with an object of the form { type: 'url', url } and applies the resolved asset identifier to the bookmark shape.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Asynchronously resolves external bookmark metadata for a shape and applies the resulting asset to that shape. Resolution failures are handled without propagating an exception.",
+          "specLiterals": [
+            { "kind": "enum-value", "value": "url", "role": "Identifies the external-content request as URL-based." }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "hydrateBookmarkShape is awaited.",
+              "then": "The bookmark shape is updated to reference the resolved asset and the promise fulfills without error.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "hydrateBookmarkShape is awaited.",
+              "then": "The rejection is logged and the promise fulfills without updating the shape.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "hydrateBookmarkShape is awaited.",
+              "then": "No shape is updated and the promise fulfills without error.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "b157062be271a0f8f235c838e00c098d893a9e45f2b74213b98ebbcf5ab3a963"
+        }
+      }
+    ]
+  },
+  "out": [],
+  "in": [
+    "packages/tldraw/src/test/bookmark-shapes.test.ts",
+    "packages/tldraw/src/lib/ui/context/actions.tsx",
+    "packages/tldraw/src/lib/shapes/bookmark/BookmarkShapeUtil.tsx",
+    "packages/tldraw/src/lib/defaultExternalContentHandlers.ts"
+  ],
+  "externals": ["@tldraw/editor"],
+  "impact": {
+    "seeds": 10,
+    "callers": 7,
+    "impactedFiles": ["packages/tldraw/src/lib/shapes/bookmark/BookmarkShapeUtil.tsx"]
+  }
+}

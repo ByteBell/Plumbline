@@ -1,0 +1,718 @@
+{
+  "arm": "claudecli_opus5_mcp_plumbline_rejection_selection_v7",
+  "contract": "Any awaitable that is consumed during render - passed to use(), thrown to suspend, or stored as a component-visible value that the renderer may unwrap - must itself carry the settled-thenable protocol stamped on the object: a `status` field of 'pending' | 'fulfilled' | 'rejected', with `value` present when fulfilled and `reason` present when rejected. A bare Promise, or an object whose settlement state is tracked in a side channel (a store entry, a match record, a deferred wrapper, an observer field) rather than on the awaitable itself, is no longer a legal pending value; every file that mints, shims, re-wraps or throws such a value must stamp the protocol on it, and every file that reads one must read those three fields rather than inferring settlement.",
+  "defect_location": {
+    "repo": "react",
+    "summary": "The contract is owned and tightened in react. react/packages/shared/ReactTypes.js:134-151 declares the union - `FulfilledThenable { status:'fulfilled'; value:T }`, `RejectedThenable { status:'rejected'; reason:mixed }`, and `Thenable = UntrackedThenable | PendingThenable | WeakPendingThenable | FulfilledThenable | RejectedThenable` - and is the file every other React package binds to (the `types` lens from it returns the whole adapter family). Enforcement sits in react/packages/react-reconciler/src/ReactFiberThenable.js:125-129 (`trackUsedThenable`, which returns the fulfilled value, throws the rejected `reason`, or throws SuspenseException while instrumenting pending thenables with status expandos) and is duplicated for the two server renderers at react/packages/react-server/src/ReactFizzThenable.js:44-152 and react/packages/react-server/src/ReactFlightThenable.js:47-121; react/packages/react-server/src/ReactFizzHooks.js carries the invariant verbatim - 'If thenable is pending (status pending), throws the thenable to suspend'. The stamping sites that must follow are the five sibling bundler adapters, which share no import edge with each other: react/packages/react-server-dom-esm/src/client/ReactFlightClientConfigBundlerESM.js:83-111 (`preloadModule` caches the import thenable and augments it with status/value/reason) and its Webpack, Turbopack, unbundled-Node and FB twins. Outside react, four repositories independently mint or shim such values and must be brought in line. query/packages/query-core/src/thenable.ts:12-19,53 re-declares React's shape (`Fulfilled { status:'fulfilled'; value:T }`, `Rejected { status:'rejected'; reason:unknown }`) and `pendingThenable()` writes `thenable.status = 'pending'`; that thenable is minted and handed out by query/packages/query-core/src/queryObserver.ts ('this.#currentThenable is a pending thenable after construction') and query/packages/query-core/src/retryer.ts, and reaches render through query/packages/react-query/src/useBaseQuery.ts and its sibling query/packages/preact-query/src/useBaseQuery.ts. jotai/src/react/useAtomValue.ts:11-53,196-204 both stamps and shims: `attachPromiseStatus` writes status/value/reason onto the atom promise, and the local `use` fallback throws the promise when `status === 'pending'`; the promise it stamps is built by jotai/src/vanilla/internals.ts, which stores a pending PromiseLike as the atom value. router/packages/router-core/src/defer.ts declares `DeferredPromiseState` with status 'pending' | 'success' | 'error' and `data`/`error` - a different spelling of the same protocol - and router/packages/react-router/src/awaited.tsx, packages/solid-router/src/awaited.tsx and packages/vue-router/src/awaited.tsx each throw that deferred promise to suspend; router/packages/react-router/src/utils.ts exports the `reactUse` shim that awaited.tsx and lazyRouteComponent.tsx route through, router/packages/react-router/src/Match.tsx throws a transaction promise-like to suspend, and router/packages/react-start-rsc/src/createServerComponentFromStream.ts and SlotContext.tsx pass a stream promise straight to React's `use`. db/packages/react-db/src/useLiveSuspenseQuery.ts suspends on a readiness promise produced by db/packages/db/src/deferred.ts and the collection subscribers, none of which carry the protocol on the promise object."
+  },
+  "case_id": "xrepo-v5-7-pending-value-protocol-medium",
+  "case_question": "React tightens what a pending value that suspends rendering must look like: any awaitable consumed during render must carry a resolved status/value/reason protocol stamped on the object itself. Which async feeders across the folder produce, shim, or throw such pending values into the renderer, and which files must be updated?",
+  "retrieved": 72,
+  "gold_counts": {
+    "min_repos": 4,
+    "min_files": 9
+  },
+  "gold_size": 9,
+  "gold_repo_count": 4,
+  "metrics": {
+    "recall@10": 0.3333,
+    "recall@25": 0.6667,
+    "recall@50": 0.8889,
+    "recall@100": 0.8889,
+    "precision@5": 0.6,
+    "precision@10": 0.3,
+    "MRR": 0.5,
+    "first_hit_rank": 2,
+    "hits_at_25": "6/9",
+    "repo_recall": 1.0,
+    "repos_found": "4/4",
+    "repos_named": 16,
+    "invalid_path_rate": 0.0139,
+    "cap_at_run_time": 100
+  },
+  "prf": {
+    "full_list": {
+      "precision": 0.1111,
+      "recall": 0.8889,
+      "f1": 0.1975,
+      "hits": 8,
+      "retrieved": 72,
+      "gold_size": 9
+    },
+    "@10": {
+      "precision": 0.3,
+      "recall": 0.3333,
+      "f1": 0.3158,
+      "hits": 3,
+      "retrieved": 10,
+      "gold_size": 9
+    },
+    "@25": {
+      "precision": 0.24,
+      "recall": 0.6667,
+      "f1": 0.3529,
+      "hits": 6,
+      "retrieved": 25,
+      "gold_size": 9
+    },
+    "@50": {
+      "precision": 0.16,
+      "recall": 0.8889,
+      "f1": 0.2712,
+      "hits": 8,
+      "retrieved": 50,
+      "gold_size": 9
+    },
+    "@100": {
+      "precision": 0.1111,
+      "recall": 0.8889,
+      "f1": 0.1975,
+      "hits": 8,
+      "retrieved": 72,
+      "gold_size": 9
+    }
+  },
+  "hits": [
+    "query::packages/query-core/src/thenable.ts",
+    "jotai::src/react/useAtomValue.ts",
+    "db::packages/react-db/src/useLiveSuspenseQuery.ts",
+    "react::packages/react-reconciler/src/ReactFiberThenable.js",
+    "query::packages/query-core/src/queryObserver.ts",
+    "query::packages/react-query/src/useBaseQuery.ts",
+    "jotai::src/vanilla/utils/atomWithObservable.ts",
+    "react::packages/react/src/ReactHooks.js"
+  ],
+  "ranked_detail": [
+    {
+      "rank": 1,
+      "repo": "react",
+      "path": "packages/shared/ReactTypes.js",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 2,
+      "repo": "query",
+      "path": "packages/query-core/src/thenable.ts",
+      "gold": true,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 3,
+      "repo": "jotai",
+      "path": "src/react/useAtomValue.ts",
+      "gold": true,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 4,
+      "repo": "router",
+      "path": "packages/router-core/src/defer.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 5,
+      "repo": "db",
+      "path": "packages/react-db/src/useLiveSuspenseQuery.ts",
+      "gold": true,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 6,
+      "repo": "zustand",
+      "path": "src/middleware/persist.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 7,
+      "repo": "redux-toolkit",
+      "path": "packages/toolkit/src/query/core/buildInitiate.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 8,
+      "repo": "primitives",
+      "path": "packages/react/slot/src/slot.tsx",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 9,
+      "repo": "tldraw",
+      "path": "packages/editor/src/lib/exports/ExportDelay.tsx",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 10,
+      "repo": "redux-devtools",
+      "path": "packages/redux-devtools-instrument/src/instrument.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 11,
+      "repo": "react-redux",
+      "path": "src/index-rsc.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 12,
+      "repo": "table",
+      "path": "packages/react-table/src/FlexRender.tsx",
+      "gold": false,
+      "exists_at_pin": false
+    },
+    {
+      "rank": 13,
+      "repo": "reselect",
+      "path": "src/weakMapMemoize.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 14,
+      "repo": "xyflow",
+      "path": "packages/react/src/components/ReactFlowProvider/index.tsx",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 15,
+      "repo": "zod",
+      "path": "packages/zod/src/v4/classic/parse.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 16,
+      "repo": "redux",
+      "path": "src/types/actions.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 17,
+      "repo": "react",
+      "path": "packages/react-reconciler/src/ReactFiberThenable.js",
+      "gold": true,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 18,
+      "repo": "query",
+      "path": "packages/query-core/src/queryObserver.ts",
+      "gold": true,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 19,
+      "repo": "jotai",
+      "path": "src/vanilla/internals.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 20,
+      "repo": "router",
+      "path": "packages/react-router/src/awaited.tsx",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 21,
+      "repo": "db",
+      "path": "packages/db/src/deferred.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 22,
+      "repo": "redux-toolkit",
+      "path": "packages/toolkit/src/query/core/apiState.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 23,
+      "repo": "tldraw",
+      "path": "packages/state-react/src/lib/useValue.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 24,
+      "repo": "react",
+      "path": "packages/react-server/src/ReactFizzThenable.js",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 25,
+      "repo": "query",
+      "path": "packages/react-query/src/useBaseQuery.ts",
+      "gold": true,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 26,
+      "repo": "jotai",
+      "path": "src/vanilla/utils/unwrap.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 27,
+      "repo": "router",
+      "path": "packages/react-router/src/utils.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 28,
+      "repo": "db",
+      "path": "packages/db/src/collection/subscription.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 29,
+      "repo": "react",
+      "path": "packages/react-server/src/ReactFlightThenable.js",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 30,
+      "repo": "query",
+      "path": "packages/preact-query/src/useBaseQuery.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 31,
+      "repo": "jotai",
+      "path": "src/vanilla/utils/atomWithObservable.ts",
+      "gold": true,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 32,
+      "repo": "router",
+      "path": "packages/solid-router/src/awaited.tsx",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 33,
+      "repo": "db",
+      "path": "packages/db/src/query/live/collection-subscriber.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 34,
+      "repo": "react",
+      "path": "packages/react/src/ReactLazy.js",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 35,
+      "repo": "query",
+      "path": "packages/query-core/src/retryer.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 36,
+      "repo": "jotai",
+      "path": "src/vanilla/utils/loadable.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 37,
+      "repo": "router",
+      "path": "packages/vue-router/src/awaited.tsx",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 38,
+      "repo": "db",
+      "path": "packages/db/src/collection/index.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 39,
+      "repo": "react",
+      "path": "packages/react/src/ReactHooks.js",
+      "gold": true,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 40,
+      "repo": "query",
+      "path": "packages/react-query/src/suspense.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 41,
+      "repo": "router",
+      "path": "packages/react-router/src/lazyRouteComponent.tsx",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 42,
+      "repo": "db",
+      "path": "packages/powersync-db-collection/src/PendingOperationStore.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 43,
+      "repo": "react",
+      "path": "packages/react-client/src/ReactFlightClient.js",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 44,
+      "repo": "query",
+      "path": "packages/query-core/src/hydration.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 45,
+      "repo": "router",
+      "path": "packages/react-router/src/Match.tsx",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 46,
+      "repo": "db",
+      "path": "packages/react-db/src/useLiveQuery.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 47,
+      "repo": "react",
+      "path": "packages/react-client/src/ReactFlightReplyClient.js",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 48,
+      "repo": "query",
+      "path": "packages/react-query/src/useSuspenseQuery.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 49,
+      "repo": "router",
+      "path": "packages/router-core/src/utils.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 50,
+      "repo": "db",
+      "path": "packages/solid-db/src/useLiveQuery.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 51,
+      "repo": "react",
+      "path": "packages/react/src/ReactChildren.js",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 52,
+      "repo": "router",
+      "path": "packages/react-start-rsc/src/createServerComponentFromStream.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 53,
+      "repo": "react",
+      "path": "packages/react-server-dom-esm/src/client/ReactFlightClientConfigBundlerESM.js",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 54,
+      "repo": "router",
+      "path": "packages/react-start-rsc/src/SlotContext.tsx",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 55,
+      "repo": "react",
+      "path": "packages/react-server-dom-webpack/src/client/ReactFlightClientConfigBundlerWebpack.js",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 56,
+      "repo": "router",
+      "path": "packages/router-core/src/load-client.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 57,
+      "repo": "react",
+      "path": "packages/react-server-dom-turbopack/src/client/ReactFlightClientConfigBundlerTurbopack.js",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 58,
+      "repo": "router",
+      "path": "packages/react-router/src/ssr/RouterClient.tsx",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 59,
+      "repo": "react",
+      "path": "packages/react-server-dom-unbundled/src/client/ReactFlightClientConfigBundlerNode.js",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 60,
+      "repo": "router",
+      "path": "packages/solid-router/src/lazyRouteComponent.tsx",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 61,
+      "repo": "react",
+      "path": "packages/react-flight-server-fb/src/client/ReactFlightClientConfigBundlerFB.js",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 62,
+      "repo": "react",
+      "path": "packages/react-reconciler/src/ReactFiberAsyncAction.js",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 63,
+      "repo": "react",
+      "path": "packages/react-server/src/ReactFizzHooks.js",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 64,
+      "repo": "react",
+      "path": "packages/react-server/src/ReactFlightHooks.js",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 65,
+      "repo": "react",
+      "path": "packages/react-reconciler/src/ReactFiberHooks.js",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 66,
+      "repo": "react",
+      "path": "packages/react-server/src/ReactFlightServer.js",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 67,
+      "repo": "react",
+      "path": "packages/react-devtools-shared/src/hookNamesCache.js",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 68,
+      "repo": "react",
+      "path": "packages/react-devtools-shared/src/inspectedElementCache.js",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 69,
+      "repo": "react",
+      "path": "packages/react-devtools-shared/src/dynamicImportCache.js",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 70,
+      "repo": "react",
+      "path": "packages/react-devtools-timeline/src/timelineCache.js",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 71,
+      "repo": "react",
+      "path": "packages/react-devtools-shared/src/devtools/views/ErrorBoundary/cache.js",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 72,
+      "repo": "react",
+      "path": "packages/react-cache/src/ReactCacheOld.js",
+      "gold": false,
+      "exists_at_pin": true
+    }
+  ],
+  "rank_policy": "block-interleave",
+  "invalid_paths": ["table::packages/react-table/src/FlexRender.tsx"],
+  "missed_gold": ["query::packages/react-query/src/useQueries.ts"],
+  "retriever": {
+    "surface": "plumbline MCP alone: the ByteBell IR knowledge graph. No filesystem, shell or grep.",
+    "repo_pins": {
+      "redux": "3aa561f9fc13f3287e6d83764f85fe0e82437c5f",
+      "xyflow": "360f5b13e2bc6899ea06b4be1a49b068d86926cf",
+      "redux-toolkit": "b1c5130154c454ca8387f55da6122fcb507c560c",
+      "query": "46d7f02f1c7b9fcd3255082cc7103e8bfa3dab76",
+      "react-redux": "ad5d1e0816d0cb1464b25cf2853f2a7d73433f5b",
+      "table": "d08af367e11c539bb7e18c2472aa761149ef6db6",
+      "reselect": "950112a328f71d97d18fd543159d6fdefa432b38",
+      "tldraw": "5590d14d8edd4faab7dc1177b6e1adb28876fd23",
+      "react": "3a717e42438afac81020cdec297dadb5613a4304",
+      "redux-devtools": "f4b4668c30ae08920c59a76cc4629c35c16ef0fa",
+      "jotai": "5c4ca26b0db5571114be58393e17854a771f7790",
+      "router": "3dee5b2e9453d01a3172c73426959007b290b3fc",
+      "zustand": "beca84e600e4e250f6b244d22878e72948f331c7",
+      "primitives": "58164e06ca67dff9a68dd375d858180cfdc8ec27",
+      "db": "7f0fa36ff6d48b0494ed5f6a1223fd18c317e41f",
+      "zod": "912f0f51b0ced654d0069741e7160834dca742ee"
+    },
+    "checkout_verified": "run.sh gates on git rev-parse HEAD == pinned commit for all 15 repositories before launch",
+    "isolation": "kernel-enforced by sandbox-exec: gold, the answer vault and every sibling arm are unreadable; no session transcript is readable; fresh cwd",
+    "surface_pure": true
+  },
+  "cost": {
+    "session_id": "0f810e7c-d73d-474c-b0e7-a9b18d19e17f",
+    "arm": "claudecli_opus5_mcp_plumbline_rejection_selection_v7",
+    "case": "xrepo-v5-7-pending-value-protocol-medium",
+    "model": "claude-opus-5",
+    "launch": "fresh isolated `claude -p` under sandbox-exec, --strict-mcp-config",
+    "price_per_mtok_usd": {
+      "input": 5.0,
+      "output": 25.0,
+      "cache_write": 10.0,
+      "cache_read": 0.5
+    },
+    "usd_per_query_cli": 6.1027395,
+    "usd_per_query_list_price": 6.094601,
+    "duration_ms": 1605385,
+    "wall_seconds": 1610,
+    "num_turns": 56,
+    "tokens": {
+      "input": 34,
+      "output": 52716,
+      "cache_creation": 332601,
+      "cache_read": 2901041
+    },
+    "tokens_retrieved": 162915,
+    "cache_clean": false,
+    "cache_mode": "warm",
+    "cache_note": "fresh session, no --resume/--continue: every cache_read is cache THIS session created and read back, which the run conditions permit",
+    "tool_calls": {
+      "ToolSearch": 2,
+      "mcp__plumbline__roll_call": 1,
+      "mcp__plumbline__rap_sheet": 2,
+      "mcp__plumbline__stakeout": 30,
+      "mcp__plumbline__manhunt": 2,
+      "mcp__plumbline__collateral_damage": 7,
+      "Bash": 1,
+      "mcp__plumbline__shakedown": 3,
+      "mcp__plumbline__dragnet": 1,
+      "mcp__plumbline__cross_repo_lookup": 1,
+      "mcp__plumbline__the_receipts": 5
+    },
+    "disallowed_tool_calls": {},
+    "non_retrieval_tool_calls": {
+      "ToolSearch": 2
+    },
+    "misfired_tool_calls": {},
+    "mcp_tool_calls": {
+      "mcp__plumbline__roll_call": 1,
+      "mcp__plumbline__rap_sheet": 2,
+      "mcp__plumbline__stakeout": 30,
+      "mcp__plumbline__manhunt": 2,
+      "mcp__plumbline__collateral_damage": 7,
+      "mcp__plumbline__shakedown": 3,
+      "mcp__plumbline__dragnet": 1,
+      "mcp__plumbline__cross_repo_lookup": 1,
+      "mcp__plumbline__the_receipts": 5
+    },
+    "permission_denials": 0,
+    "surface_pure": true,
+    "surface_pure_note": "Any Bash/Read/Grep/Glob call is a surface violation: the knowledge graph is the whole search surface.",
+    "allowed_tools_source": "run.sh --allowedTools",
+    "allowed_tools": [
+      "Bash",
+      "ScheduleWakeup",
+      "TodoWrite",
+      "ToolSearch",
+      "mcp__plumbline__blueprint",
+      "mcp__plumbline__case_file",
+      "mcp__plumbline__case_notes",
+      "mcp__plumbline__cold_case",
+      "mcp__plumbline__collateral_damage",
+      "mcp__plumbline__cross_repo_lookup",
+      "mcp__plumbline__dragnet",
+      "mcp__plumbline__evidence_locker",
+      "mcp__plumbline__file_a_complaint",
+      "mcp__plumbline__interrogation",
+      "mcp__plumbline__kingpin",
+      "mcp__plumbline__manhunt",
+      "mcp__plumbline__mugshot",
+      "mcp__plumbline__paper_trail",
+      "mcp__plumbline__pull_the_evidence",
+      "mcp__plumbline__rap_sheet",
+      "mcp__plumbline__read_the_fine_print",
+      "mcp__plumbline__roll_call",
+      "mcp__plumbline__shakedown",
+      "mcp__plumbline__stakeout",
+      "mcp__plumbline__the_receipts"
+    ],
+    "sandbox": {
+      "mechanism": "sandbox-exec (macOS seatbelt), profile pinned at sandbox.sb",
+      "gold_readable": false,
+      "other_arms_readable": false,
+      "transcripts_readable": false,
+      "out_of_arena_paths_attempted": {},
+      "reads_refused_by_kernel": 0,
+      "contamination_possible": false,
+      "gate4_verified": "run.sh proved golden.json unreadable under this profile before launch"
+    },
+    "transcript": "/Users/sauravverma/.claude/projects/-private-tmp-xrepo-runs-medium-pending-value-protocol-claudecli-opus5-mcp-plumbline-rejection-selection-v7-20260917T215552Z-81392/0f810e7c-d73d-474c-b0e7-a9b18d19e17f.jsonl"
+  },
+  "comparable": true
+}

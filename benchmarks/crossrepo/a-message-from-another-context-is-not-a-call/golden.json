@@ -1,0 +1,63 @@
+{
+  "id": "xrepo-v6-10-a-message-from-another-context-is-not-a-call-medium",
+  "question": "Some of these libraries talk to a copy of themselves running somewhere else - another tab, another frame, a browser extension's page half, a server producing a stream for a client to replay. The code that receives one of those messages treats it as though it were an ordinary call made from inside the same program: it applies the payload directly, it lets whatever the application's handlers throw escape into the transport, and it hands the reply back to the platform without ever looking at the promise the platform gave it. So a handler that fails while applying an incoming message leaves the receiving side wedged part-way through the change it was making, and a delivery that the platform rejects disappears entirely - nothing is retried, nothing is logged, and the two sides quietly stop agreeing. The contract is that the far side is not trusted, not synchronous and not guaranteed: every message has to be validated as data, every application of it has to be contained so a failure cannot corrupt the receiver's own state, and every send has to have its outcome observed. Elsewhere in the folder the same channel is handled as a real boundary: one library checks the sender and the shape of every inbound event before it looks at the contents, another routes failures that would otherwise vanish into an explicit channel of their own, another splits an oversized payload into pieces small enough that the transport cannot refuse them and reassembles them on arrival, and another turns a failure on the producing side into a value the consuming side can see rather than an exception thrown into a socket. Which file applies a foreign message as though it were a local call, and which own the boundary contract it has to be brought in line with?",
+  "anchor": {
+    "repo": "query",
+    "pinned_commit": "46d7f02f1c7b9fcd3255082cc7103e8bfa3dab76",
+    "fix_pr": "https://github.com/TanStack/query/pull/10771",
+    "pr_number": 10771,
+    "pr_title": "fix(broadcast-client): handle unhandled postMessage rejections",
+    "fix_merged": "2026-08-20",
+    "fix_merge_commit": "3c79861ab1bf",
+    "parent_is_buggy": true
+  },
+  "counts": {
+    "min_repos": 4,
+    "min_files": 5
+  },
+  "repo_commits": {
+    "query": "46d7f02f1c7b9fcd3255082cc7103e8bfa3dab76",
+    "redux-devtools": "f4b4668c30ae08920c59a76cc4629c35c16ef0fa",
+    "tldraw": "5590d14d8edd4faab7dc1177b6e1adb28876fd23",
+    "react": "3a717e42438afac81020cdec297dadb5613a4304"
+  },
+  "expected": [
+    {
+      "repo": "query",
+      "knowledgeId": "0c574639-1088-4233-a793-3a4397e6c431",
+      "files": ["packages/query-broadcast-client-experimental/src/index.ts"]
+    },
+    {
+      "repo": "redux-devtools",
+      "knowledgeId": "2d9528990f33c5f5e3ee7442fbfe04a4",
+      "files": ["extension/src/contentScript/index.ts", "extension/src/pageScript/api/notifyErrors.ts"]
+    },
+    {
+      "repo": "tldraw",
+      "knowledgeId": "91b23c56-1aee-5c86-a34b-c66f8970d025",
+      "files": ["packages/sync-core/src/lib/chunk.ts"]
+    },
+    {
+      "repo": "react",
+      "knowledgeId": "2a9d1614-943b-44ad-b7cf-edda2f37ddf9",
+      "files": ["packages/react-server/src/ReactFlightServer.js"]
+    }
+  ],
+  "grader_notes": {
+    "why_cross_repo": "ANCHOR (real bug, TanStack/query PR #10771 'handle unhandled postMessage rejections', merged 2026-08-20 as 3c79861ab1bf, AFTER the pinned commit 46d7f02f1c). The same file is fixed a second time post-pin by #11229 'recover from errors thrown while applying an incoming cross-tab message' (6796c512752a), so at the pin the broadcast client both drops rejected sends and lets a throwing handler leave the receiving client's transaction stuck. Citations: redux-devtools' contentScript checks event.source and the shape of the payload before it reads it (line 322) and its pageScript notifyErrors.ts is a dedicated channel for failures that would otherwise vanish; tldraw's chunk.ts splits a message that exceeds the transport's size limit into pieces and reassembles them, bounding what one send may be; react's ReactFlightServer turns a producer-side failure into a value the consumer can observe rather than an exception thrown into the stream.",
+    "verification_method": "(1) Both query anchors mined from `pin..origin/main`, pin-is-ancestor True; removed-line liveness 5/5 (#10771) and 1/1 (#11229), 100% at the pin. (2) tldraw chunk.ts is additionally live-buggy on a neighbouring axis (#10119 'never split a surrogate pair across message chunks', d64d005dcf06, 1/1 live) - it is cited as the size-bounding reference, and that residual defect is deliberately NOT what the question asks for. (3) All citation paths confirmed at their pins and read (contentScript/index.ts:322 source+shape check; chunk.ts MAX_SAFE_MESSAGE_SIZE). (4) Overlap check: 0 shared (repo,file) pairs. (5) Contract check: no v5 or v6 case covers a cross-context transport.",
+    "difficulty_design": "Pulls in redux-devtools, a repository with no gold in any existing case and no import edge to the others, and the anchor lives in an experimental package most searches never rank. 5 files / 4 repos.",
+    "rejected_candidates": ""
+  },
+  "calibration": {
+    "probe": "claudecli_opus5_bare (Opus 5, Bash/Read/Grep/Glob over the pinned checkouts, sandbox-exec gold-blind, one fresh headless session)",
+    "date": "2026-09-10",
+    "recall": 0.8,
+    "precision": 0.095,
+    "returned": 42,
+    "gold": 5,
+    "cost_usd": 2.69,
+    "rule": "hard requires recall < 0.6; medium requires recall <= 0.8; above that the case is easy",
+    "label_from_probe": "medium"
+  }
+}

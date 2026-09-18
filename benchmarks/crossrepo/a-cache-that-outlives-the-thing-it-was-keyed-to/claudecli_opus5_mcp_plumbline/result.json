@@ -1,0 +1,735 @@
+{
+  "arm": "claudecli_opus5_mcp_plumbline_rejection_selection_v7",
+  "contract": "Remembered work stored against a key that stands in for a subject's identity must have its lifetime bound to that subject: the entry is released when the subject it describes is removed or replaced, and a key may address at most one subject, so a repeated or colliding key must never be silently treated as the same subject or allowed to overwrite a different one.",
+  "defect_location": {
+    "repo": "tldraw",
+    "summary": "The owning rule sits in tldraw/packages/store/src/lib/Store.ts:1104-1123, where createCache builds `new WeakCache<Atom<any>, Signal<Result>>()` (:1113) and createComputedCache (:1131-1141) layers a per-id `computed(`${name}:${id}:isEqual`, ...)` on top; the standalone createComputedCache at :1436-1455 keeps `new WeakCache<Context, ComputedCache<...>>()` and is read as `get(context, id)` (:1447), so entry lifetime is bound to the atom/context, never to the record id the caller looks up by. tldraw/packages/utils/src/lib/cache.ts holds that WeakCache, and tldraw/packages/store/src/lib/AtomMap.ts is the id-to-atom map that decides whether a re-created record with the same id gets a fresh atom or the predecessor's. Nine consumers read remembered per-shape work through it: tldraw/packages/editor/src/lib/editor/Editor.ts:982,5320,5336,5391,5445,5475,5512,5579,6687, plus tldraw/packages/editor/src/lib/editor/managers/SnapManager/HandleSnaps.ts:62, .../SnapManager/BoundsSnaps.ts:207, .../FontManager/FontManager.ts:37 and tldraw/packages/editor/src/lib/editor/overlays/strokeShapeIndicators.ts:1,5 \u2014 geometry, handles, page transforms, masks, clip paths and indicator paths that survive a torn-down-and-rebuilt shape of the same id. The mirror-image failure is in table: table/packages/table-core/src/utils/getCoreRowModel.ts:53 writes `rowModel.rowsById[row.id] = row`, so two rows the user considers distinct that yield the same getRowId (table/packages/table-core/src/core/table.ts:63-193, CoreOptions.getRowId) are handed one entry and the second silently overwrites the first; the same write appears at table/packages/table-core/src/utils/filterRowsUtils.ts:49,56,64,118 and table/packages/table-core/src/utils/getGroupedRowModel.ts:46,131,152, and the contract that assumes key equality means subject identity is table/packages/table-core/src/types.ts:224-228 (`rowsById: Record<string, Row<TData>>`). The stale-state half in table is table/packages/table-core/src/features/RowSelection.ts:595-628 and table/packages/table-core/src/features/RowExpanding.ts:264,299, where selection and expansion stay keyed to row ids with no prune when the row leaves the model, and table/packages/table-core/src/core/table.ts:394-403 resolves getRow(id) straight off that index."
+  },
+  "case_id": "xrepo-v7-6-cache-that-outlives-the-thing-it-was-keyed-to-hard",
+  "case_question": "Something is torn down and built again with what the user regards as the same identity - the same row, the same document, the same field - and it comes back wearing state from its predecessor: a selection that was cleared, a validation complaint that was resolved, a derived figure computed from data that has since been replaced. In a different library in this folder the same arrangement fails the other way: two things the user considers distinct are handed one shared entry and quietly overwrite each other. The common thread is a store of remembered work kept against a key standing in for an identity, where nothing ties the lifetime of the remembered work to the lifetime of the thing it describes, and where equal keys are assumed to mean the same subject. Which files keep remembered work against such a key, and which own the rule about when that memory must be let go?",
+  "retrieved": 75,
+  "gold_counts": {
+    "min_repos": 4,
+    "min_files": 5
+  },
+  "gold_size": 6,
+  "gold_repo_count": 5,
+  "metrics": {
+    "recall@10": 0.3333,
+    "recall@25": 0.5,
+    "recall@50": 0.6667,
+    "recall@100": 0.6667,
+    "precision@5": 0.0,
+    "precision@10": 0.2,
+    "MRR": 0.1429,
+    "first_hit_rank": 7,
+    "hits_at_25": "3/6",
+    "repo_recall": 1.0,
+    "repos_found": "5/5",
+    "repos_named": 16,
+    "invalid_path_rate": 0.0,
+    "cap_at_run_time": 100
+  },
+  "prf": {
+    "full_list": {
+      "precision": 0.0533,
+      "recall": 0.6667,
+      "f1": 0.0988,
+      "hits": 4,
+      "retrieved": 75,
+      "gold_size": 6
+    },
+    "@10": {
+      "precision": 0.2,
+      "recall": 0.3333,
+      "f1": 0.25,
+      "hits": 2,
+      "retrieved": 10,
+      "gold_size": 6
+    },
+    "@25": {
+      "precision": 0.12,
+      "recall": 0.5,
+      "f1": 0.1935,
+      "hits": 3,
+      "retrieved": 25,
+      "gold_size": 6
+    },
+    "@50": {
+      "precision": 0.08,
+      "recall": 0.6667,
+      "f1": 0.1429,
+      "hits": 4,
+      "retrieved": 50,
+      "gold_size": 6
+    },
+    "@100": {
+      "precision": 0.0533,
+      "recall": 0.6667,
+      "f1": 0.0988,
+      "hits": 4,
+      "retrieved": 75,
+      "gold_size": 6
+    }
+  },
+  "hits": [
+    "reselect::src/weakMapMemoize.ts",
+    "jotai::src/vanilla/utils/atomFamily.ts",
+    "zod::packages/zod/src/v4/core/registries.ts",
+    "primitives::packages/react/collection/src/ordered-dictionary.ts"
+  ],
+  "ranked_detail": [
+    {
+      "rank": 1,
+      "repo": "tldraw",
+      "path": "packages/store/src/lib/Store.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 2,
+      "repo": "table",
+      "path": "packages/table-core/src/utils/getCoreRowModel.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 3,
+      "repo": "redux-toolkit",
+      "path": "packages/toolkit/src/query/defaultSerializeQueryArgs.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 4,
+      "repo": "xyflow",
+      "path": "packages/system/src/utils/store.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 5,
+      "repo": "query",
+      "path": "packages/query-core/src/queryCache.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 6,
+      "repo": "db",
+      "path": "packages/db/src/collection/state.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 7,
+      "repo": "reselect",
+      "path": "src/weakMapMemoize.ts",
+      "gold": true,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 8,
+      "repo": "router",
+      "path": "packages/router-core/src/router.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 9,
+      "repo": "jotai",
+      "path": "src/vanilla/utils/atomFamily.ts",
+      "gold": true,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 10,
+      "repo": "primitives",
+      "path": "packages/react/collection/src/collection.tsx",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 11,
+      "repo": "react",
+      "path": "packages/react/src/ReactCacheImpl.js",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 12,
+      "repo": "react-redux",
+      "path": "src/hooks/useSelector.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 13,
+      "repo": "zod",
+      "path": "packages/zod/src/v4/core/registries.ts",
+      "gold": true,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 14,
+      "repo": "redux-devtools",
+      "path": "packages/redux-devtools-instrument/src/instrument.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 15,
+      "repo": "zustand",
+      "path": "src/react/shallow.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 16,
+      "repo": "redux",
+      "path": "src/createStore.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 17,
+      "repo": "tldraw",
+      "path": "packages/editor/src/lib/editor/Editor.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 18,
+      "repo": "table",
+      "path": "packages/table-core/src/features/RowSelection.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 19,
+      "repo": "redux-toolkit",
+      "path": "packages/toolkit/src/query/core/buildMiddleware/cacheCollection.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 20,
+      "repo": "xyflow",
+      "path": "packages/react/src/utils/changes.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 21,
+      "repo": "query",
+      "path": "packages/query-core/src/utils.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 22,
+      "repo": "db",
+      "path": "packages/db/src/collection/index.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 23,
+      "repo": "reselect",
+      "path": "src/lruMemoize.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 24,
+      "repo": "router",
+      "path": "packages/router-core/src/load-client.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 25,
+      "repo": "jotai",
+      "path": "src/vanilla/utils/selectAtom.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 26,
+      "repo": "primitives",
+      "path": "packages/react/collection/src/ordered-dictionary.ts",
+      "gold": true,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 27,
+      "repo": "react",
+      "path": "packages/react-reconciler/src/ReactFiberCacheComponent.js",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 28,
+      "repo": "react-redux",
+      "path": "src/connect/selectorFactory.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 29,
+      "repo": "zod",
+      "path": "packages/zod/src/v4/core/util.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 30,
+      "repo": "redux-devtools",
+      "path": "extension/src/background/store/apiMiddleware.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 31,
+      "repo": "zustand",
+      "path": "src/vanilla/shallow.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 32,
+      "repo": "tldraw",
+      "path": "packages/utils/src/lib/cache.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 33,
+      "repo": "table",
+      "path": "packages/table-core/src/core/row.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 34,
+      "repo": "redux-toolkit",
+      "path": "packages/toolkit/src/entities/unsorted_state_adapter.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 35,
+      "repo": "xyflow",
+      "path": "packages/system/src/types/nodes.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 36,
+      "repo": "query",
+      "path": "packages/query-core/src/query.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 37,
+      "repo": "db",
+      "path": "packages/db/src/indexes/index-registry.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 38,
+      "repo": "reselect",
+      "path": "src/createSelectorCreator.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 39,
+      "repo": "router",
+      "path": "packages/router-core/src/Matches.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 40,
+      "repo": "jotai",
+      "path": "src/vanilla/utils.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 41,
+      "repo": "primitives",
+      "path": "packages/react/collection/src/collection-legacy.tsx",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 42,
+      "repo": "react",
+      "path": "packages/react-cache/src/ReactCacheOld.js",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 43,
+      "repo": "react-redux",
+      "path": "src/components/connect.tsx",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 44,
+      "repo": "tldraw",
+      "path": "packages/store/src/lib/AtomMap.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 45,
+      "repo": "table",
+      "path": "packages/table-core/src/core/table.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 46,
+      "repo": "redux-toolkit",
+      "path": "packages/toolkit/src/entities/models.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 47,
+      "repo": "xyflow",
+      "path": "packages/react/src/store/index.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 48,
+      "repo": "query",
+      "path": "packages/query-core/src/queryClient.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 49,
+      "repo": "db",
+      "path": "packages/db/src/types.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 50,
+      "repo": "reselect",
+      "path": "src/types.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 51,
+      "repo": "router",
+      "path": "packages/router-core/src/stores.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 52,
+      "repo": "tldraw",
+      "path": "packages/editor/src/lib/editor/overlays/strokeShapeIndicators.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 53,
+      "repo": "table",
+      "path": "packages/table-core/src/utils.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 54,
+      "repo": "redux-toolkit",
+      "path": "packages/toolkit/src/entities/create_adapter.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 55,
+      "repo": "xyflow",
+      "path": "packages/react/src/hooks/useInternalNode.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 56,
+      "repo": "query",
+      "path": "packages/query-core/src/mutationCache.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 57,
+      "repo": "db",
+      "path": "packages/db/src/query/live/collection-registry.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 58,
+      "repo": "reselect",
+      "path": "src/devModeChecks/cacheSizeCheck.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 59,
+      "repo": "tldraw",
+      "path": "packages/editor/src/lib/editor/managers/SnapManager/BoundsSnaps.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 60,
+      "repo": "table",
+      "path": "packages/table-core/src/utils/filterRowsUtils.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 61,
+      "repo": "redux-toolkit",
+      "path": "packages/toolkit/src/query/core/buildSlice.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 62,
+      "repo": "xyflow",
+      "path": "packages/svelte/src/lib/store/initial-store.svelte.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 63,
+      "repo": "query",
+      "path": "packages/query-core/src/types.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 64,
+      "repo": "db",
+      "path": "packages/db/src/collection/cleanup-queue.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 65,
+      "repo": "tldraw",
+      "path": "packages/editor/src/lib/editor/managers/SnapManager/HandleSnaps.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 66,
+      "repo": "table",
+      "path": "packages/table-core/src/utils/getGroupedRowModel.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 67,
+      "repo": "redux-toolkit",
+      "path": "packages/toolkit/src/entities/state_selectors.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 68,
+      "repo": "tldraw",
+      "path": "packages/editor/src/lib/editor/managers/FontManager/FontManager.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 69,
+      "repo": "table",
+      "path": "packages/table-core/src/features/RowExpanding.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 70,
+      "repo": "redux-toolkit",
+      "path": "packages/toolkit/src/entities/sorted_state_adapter.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 71,
+      "repo": "tldraw",
+      "path": "packages/store/src/index.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 72,
+      "repo": "table",
+      "path": "packages/table-core/src/types.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 73,
+      "repo": "tldraw",
+      "path": "packages/store/src/lib/StoreQueries.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 74,
+      "repo": "table",
+      "path": "packages/table-core/src/features/ColumnSizing.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 75,
+      "repo": "tldraw",
+      "path": "packages/store/src/lib/StoreSideEffects.ts",
+      "gold": false,
+      "exists_at_pin": true
+    }
+  ],
+  "rank_policy": "block-interleave",
+  "invalid_paths": [],
+  "missed_gold": ["reselect::src/index.ts", "redux-toolkit::packages/toolkit/src/combineSlices.ts"],
+  "retriever": {
+    "surface": "plumbline MCP alone: the ByteBell IR knowledge graph. No filesystem, shell or grep.",
+    "repo_pins": {
+      "redux": "3aa561f9fc13f3287e6d83764f85fe0e82437c5f",
+      "xyflow": "360f5b13e2bc6899ea06b4be1a49b068d86926cf",
+      "redux-toolkit": "b1c5130154c454ca8387f55da6122fcb507c560c",
+      "query": "46d7f02f1c7b9fcd3255082cc7103e8bfa3dab76",
+      "react-redux": "ad5d1e0816d0cb1464b25cf2853f2a7d73433f5b",
+      "table": "d08af367e11c539bb7e18c2472aa761149ef6db6",
+      "reselect": "950112a328f71d97d18fd543159d6fdefa432b38",
+      "tldraw": "5590d14d8edd4faab7dc1177b6e1adb28876fd23",
+      "react": "3a717e42438afac81020cdec297dadb5613a4304",
+      "redux-devtools": "f4b4668c30ae08920c59a76cc4629c35c16ef0fa",
+      "jotai": "5c4ca26b0db5571114be58393e17854a771f7790",
+      "router": "3dee5b2e9453d01a3172c73426959007b290b3fc",
+      "zustand": "beca84e600e4e250f6b244d22878e72948f331c7",
+      "primitives": "58164e06ca67dff9a68dd375d858180cfdc8ec27",
+      "db": "7f0fa36ff6d48b0494ed5f6a1223fd18c317e41f",
+      "zod": "912f0f51b0ced654d0069741e7160834dca742ee"
+    },
+    "checkout_verified": "run.sh gates on git rev-parse HEAD == pinned commit for all 15 repositories before launch",
+    "isolation": "kernel-enforced by sandbox-exec: gold, the answer vault and every sibling arm are unreadable; no session transcript is readable; fresh cwd",
+    "surface_pure": true
+  },
+  "cost": {
+    "session_id": "4636eae9-63a7-41fb-aa39-7a9cfc34a46c",
+    "arm": "claudecli_opus5_mcp_plumbline_rejection_selection_v7",
+    "case": "xrepo-v7-6-cache-that-outlives-the-thing-it-was-keyed-to-hard",
+    "model": "claude-opus-5",
+    "launch": "fresh isolated `claude -p` under sandbox-exec, --strict-mcp-config",
+    "price_per_mtok_usd": {
+      "input": 5.0,
+      "output": 25.0,
+      "cache_write": 10.0,
+      "cache_read": 0.5
+    },
+    "usd_per_query_cli": 5.983973499999999,
+    "usd_per_query_list_price": 5.975722,
+    "duration_ms": 1459806,
+    "wall_seconds": 1464,
+    "num_turns": 49,
+    "tokens": {
+      "input": 36,
+      "output": 52214,
+      "cache_creation": 312305,
+      "cache_read": 3094285
+    },
+    "tokens_retrieved": 153478,
+    "cache_clean": false,
+    "cache_mode": "warm",
+    "cache_note": "fresh session, no --resume/--continue: every cache_read is cache THIS session created and read back, which the run conditions permit",
+    "tool_calls": {
+      "ToolSearch": 2,
+      "mcp__plumbline__roll_call": 1,
+      "mcp__plumbline__rap_sheet": 1,
+      "mcp__plumbline__stakeout": 26,
+      "Bash": 2,
+      "mcp__plumbline__manhunt": 1,
+      "mcp__plumbline__collateral_damage": 5,
+      "mcp__plumbline__blueprint": 3,
+      "mcp__plumbline__shakedown": 3,
+      "mcp__plumbline__the_receipts": 2,
+      "mcp__plumbline__dragnet": 2
+    },
+    "disallowed_tool_calls": {},
+    "non_retrieval_tool_calls": {
+      "ToolSearch": 2
+    },
+    "misfired_tool_calls": {},
+    "mcp_tool_calls": {
+      "mcp__plumbline__roll_call": 1,
+      "mcp__plumbline__rap_sheet": 1,
+      "mcp__plumbline__stakeout": 26,
+      "mcp__plumbline__manhunt": 1,
+      "mcp__plumbline__collateral_damage": 5,
+      "mcp__plumbline__blueprint": 3,
+      "mcp__plumbline__shakedown": 3,
+      "mcp__plumbline__the_receipts": 2,
+      "mcp__plumbline__dragnet": 2
+    },
+    "permission_denials": 0,
+    "surface_pure": true,
+    "surface_pure_note": "Any Bash/Read/Grep/Glob call is a surface violation: the knowledge graph is the whole search surface.",
+    "allowed_tools_source": "run.sh --allowedTools",
+    "allowed_tools": [
+      "Bash",
+      "ScheduleWakeup",
+      "TodoWrite",
+      "ToolSearch",
+      "mcp__plumbline__blueprint",
+      "mcp__plumbline__case_file",
+      "mcp__plumbline__case_notes",
+      "mcp__plumbline__cold_case",
+      "mcp__plumbline__collateral_damage",
+      "mcp__plumbline__cross_repo_lookup",
+      "mcp__plumbline__dragnet",
+      "mcp__plumbline__evidence_locker",
+      "mcp__plumbline__file_a_complaint",
+      "mcp__plumbline__interrogation",
+      "mcp__plumbline__kingpin",
+      "mcp__plumbline__manhunt",
+      "mcp__plumbline__mugshot",
+      "mcp__plumbline__paper_trail",
+      "mcp__plumbline__pull_the_evidence",
+      "mcp__plumbline__rap_sheet",
+      "mcp__plumbline__read_the_fine_print",
+      "mcp__plumbline__roll_call",
+      "mcp__plumbline__shakedown",
+      "mcp__plumbline__stakeout",
+      "mcp__plumbline__the_receipts"
+    ],
+    "sandbox": {
+      "mechanism": "sandbox-exec (macOS seatbelt), profile pinned at sandbox.sb",
+      "gold_readable": false,
+      "other_arms_readable": false,
+      "transcripts_readable": false,
+      "out_of_arena_paths_attempted": {},
+      "reads_refused_by_kernel": 0,
+      "contamination_possible": false,
+      "gate4_verified": "run.sh proved golden.json unreadable under this profile before launch"
+    },
+    "transcript": "/Users/sauravverma/.claude/projects/-private-tmp-xrepo-runs-hard-a-cache-that-outlives-the-thing-it-was-keyed-to-claudecli-opus5-mcp-plumbline-rejection-selection-v7-20260917T215817Z-84103/4636eae9-63a7-41fb-aa39-7a9cfc34a46c.jsonl"
+  },
+  "comparable": true
+}

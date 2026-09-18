@@ -1,0 +1,512 @@
+{
+  "schema": 2,
+  "kind": "file",
+  "repoName": "tldraw",
+  "file": {
+    "relativePath": "packages/utils/src/lib/retry.ts",
+    "language": "typescript",
+    "sizeBytes": 2405,
+    "tokenCount": 602,
+    "model": "us.openai.gpt-5.6-luna",
+    "analysedAt": "2026-08-24T12:13:58.484Z",
+    "module": {
+      "purpose": "Provides a reusable asynchronous retry helper that repeats a failing operation according to configurable attempt, delay, cancellation, and error-matching rules.",
+      "summary": "This module coordinates repeated asynchronous execution with per-attempt metadata, configurable delays, abort-signal cancellation, and selective error propagation. It returns immediately on success, retries matching failures after sleeping, rethrows excluded errors immediately, and throws the final captured failure when attempts are exhausted.",
+      "businessContext": "Supports resilient API and asynchronous service operations where transient failures may succeed after delay. If it fails, callers lose controlled retry, cancellation, and final-error propagation.",
+      "classes": [],
+      "functions": [
+        "retry (~L52-79): Repeatedly executes asynchronous operations until success or attempts exhaustion"
+      ],
+      "keywords": [
+        "async retry",
+        "abort signal",
+        "error matching",
+        "retry attempts",
+        "wait duration",
+        "transient failure",
+        "Promise",
+        "cancellation"
+      ],
+      "ontologyConcepts": [
+        "retry policy",
+        "asynchronous execution",
+        "failure filtering",
+        "cancellation",
+        "backoff delay",
+        "attempt tracking"
+      ],
+      "businessEntities": ["async operation", "error", "abort signal", "attempt"],
+      "systemCapabilities": [
+        "Retry asynchronous operations",
+        "Delay between failed attempts",
+        "Cancel pending retry execution",
+        "Filter retryable errors",
+        "Propagate terminal failures"
+      ],
+      "configDependencies": [],
+      "importsInternal": [
+        {
+          "spec": "./control",
+          "symbols": ["sleep"],
+          "anchor": { "startLine": 1, "endLine": 1 },
+          "resolvedRelativePath": "packages/utils/src/lib/control.ts",
+          "resolvedFileId": "packages/utils/src/lib/control.ts",
+          "resolvedHint": "packages/utils/src/lib/control.ts"
+        }
+      ],
+      "importsExternal": [],
+      "sideEffects": {
+        "io": ["Waits between failed attempts through the imported sleep helper."],
+        "network": [],
+        "env": [],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": []
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "retry",
+          "shape": "export async function retry<T>(fn: (args: { attempt: number; remaining: number; total: number }) => Promise<T>, { attempts = 3, waitDuration = 1000, abortSignal, matchError }: { attempts?: number; waitDuration?: number; abortSignal?: AbortSignal; matchError?(error: unknown): boolean } = {}): Promise<T>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "sleep",
+          "shape": "sleep(waitDuration)",
+          "resolvedRelativePath": "packages/utils/src/lib/control.ts",
+          "resolvedFileId": "packages/utils/src/lib/control.ts"
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "attempt loop",
+          "intent": "Runs the operation while the configured attempt index remains within the limit.",
+          "structureKind": "loop",
+          "predicate": "i < attempts",
+          "branchOutcomes": [],
+          "bounds": "i < attempts",
+          "terminationCondition": null,
+          "anchor": { "startLine": 67, "endLine": 76 }
+        },
+        {
+          "name": "abort guard",
+          "intent": "Stops execution before an attempt when cancellation has already been requested.",
+          "structureKind": "branch",
+          "predicate": "abortSignal?.aborted",
+          "branchOutcomes": ["aborted: throw cancellation error", "not aborted: continue"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 68, "endLine": 68 }
+        },
+        {
+          "name": "operation execution",
+          "intent": "Awaits the supplied operation and returns its value when successful.",
+          "structureKind": "async",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 69, "endLine": 70 }
+        },
+        {
+          "name": "failure filtering",
+          "intent": "Rethrows failures that the optional matcher excludes from retrying.",
+          "structureKind": "branch",
+          "predicate": "matchError && !matchError(e)",
+          "branchOutcomes": ["matcher excludes error: rethrow", "matcher absent or accepts error: retry"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 72, "endLine": 72 }
+        },
+        {
+          "name": "retry delay",
+          "intent": "Stores the latest failure and waits before the next attempt.",
+          "structureKind": "try",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 71, "endLine": 75 }
+        },
+        {
+          "name": "terminal failure",
+          "intent": "Throws the last captured error after the attempt loop completes.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 77, "endLine": 79 }
+        }
+      ],
+      "representationFamily": "function-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "function",
+          "name": "retry",
+          "signature": "export async function retry<T>(\n\tfn: (args: { attempt: number; remaining: number; total: number }) => Promise<T>,\n\t{\n\t\tattempts = 3,\n\t\twaitDuration = 1000,\n\t\tabortSignal,\n\t\tmatchError,\n\t}: {\n\t\tattempts?: number\n\t\twaitDuration?: number\n\t\tabortSignal?: AbortSignal\n\t\tmatchError?(error: unknown): boolean\n\t} = {}\n): Promise<T> {",
+          "generics": "<T>",
+          "decorators": [],
+          "returnType": "Promise<T>",
+          "exported": true,
+          "anchor": { "startLine": 52, "endLine": 65 }
+        }
+      ],
+      "typeShapes": [],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "abortSignal is already aborted before an attempt",
+          "handled": true,
+          "behavior": "Throws a new Error with message 'aborted' before invoking the operation.",
+          "anchor": { "startLine": 68, "endLine": 68 }
+        },
+        {
+          "inputShape": "operation rejects and matchError is absent",
+          "handled": true,
+          "behavior": "Treats the rejection as retryable, stores it, waits, and continues.",
+          "anchor": { "startLine": 71, "endLine": 74 }
+        },
+        {
+          "inputShape": "operation rejects and matchError returns false",
+          "handled": true,
+          "behavior": "Immediately rethrows the rejected error without waiting or retrying.",
+          "anchor": { "startLine": 72, "endLine": 72 }
+        },
+        {
+          "inputShape": "attempts equals zero or is negative",
+          "handled": true,
+          "behavior": "Skips the loop and throws the initial null error value.",
+          "anchor": { "startLine": 66, "endLine": 79 }
+        },
+        {
+          "inputShape": "all configured attempts reject with retryable errors",
+          "handled": true,
+          "behavior": "Throws the error captured from the final attempted operation.",
+          "anchor": { "startLine": 73, "endLine": 79 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": "<",
+          "left": "i",
+          "right": "attempts",
+          "inclusive": false,
+          "intent": "Allows attempts only while the zero-based index is below the configured total.",
+          "anchor": { "startLine": 67, "endLine": 67 }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": "new Error('aborted')",
+          "caught": null,
+          "action": "Stops retry processing when the abort signal is already aborted.",
+          "fallback": null,
+          "anchor": { "startLine": 68, "endLine": 68 }
+        },
+        {
+          "thrown": null,
+          "caught": "e",
+          "action": "Rethrows the operation error when the matcher exists and returns false.",
+          "fallback": null,
+          "anchor": { "startLine": 71, "endLine": 72 }
+        },
+        {
+          "thrown": "error",
+          "caught": null,
+          "action": "Throws the most recently captured retryable error after exhausting the loop.",
+          "fallback": null,
+          "anchor": { "startLine": 77, "endLine": 79 }
+        }
+      ],
+      "invariants": [
+        {
+          "kind": "postcondition",
+          "description": "A successful operation result is returned without performing later attempts.",
+          "anchor": { "startLine": 69, "endLine": 70 }
+        },
+        {
+          "kind": "invariant",
+          "description": "The captured error is replaced with each retryable failure before the next delay.",
+          "anchor": { "startLine": 73, "endLine": 74 }
+        },
+        {
+          "kind": "ordering",
+          "description": "Each retryable failure is followed by a wait before the next operation invocation.",
+          "anchor": { "startLine": 73, "endLine": 74 }
+        },
+        {
+          "kind": "non-null",
+          "description": "When at least one retryable failure occurs, the terminal throw contains the latest failure.",
+          "anchor": { "startLine": 73, "endLine": 79 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "The supplied callback returns a Promise compatible with the generic result type.",
+          "anchor": { "startLine": 53, "endLine": 53 }
+        },
+        {
+          "kind": "caller",
+          "description": "The imported sleep helper resolves after the requested wait duration.",
+          "anchor": { "startLine": 1, "endLine": 1 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "Should attempts represent total operation calls or retries after the initial call?",
+          "affects": "retry attempt-count semantics",
+          "anchor": { "startLine": 67, "endLine": 67 },
+          "resolution": null
+        },
+        {
+          "question": "What happens if the abort signal becomes aborted while sleep or the operation is pending?",
+          "affects": "cancellation behavior",
+          "anchor": { "startLine": 68, "endLine": 68 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "async",
+        "reentrant": true,
+        "ordering": "deterministic",
+        "notes": "Each invocation maintains independent local attempt and error state; operation calls within one invocation are sequential and await the delay."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "returns-first-success",
+          "scenario": "The operation succeeds on its first invocation.",
+          "given": ["fn = async () => 'ok'"],
+          "when": "await retry(fn)",
+          "then": "the result is 'ok' and fn is called once",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Guards the fast path and ensures successful operations are not retried."
+        },
+        {
+          "testId": "retries-failed-operation",
+          "scenario": "The operation fails before succeeding within the configured attempt count.",
+          "given": ["attempts = 3", "fn throws on the first two calls and returns 'ok' on the third call"],
+          "when": "await retry(fn, { attempts: 3, waitDuration: 0 })",
+          "then": "the result is 'ok' and fn is called three times",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Verifies retry count and eventual success behavior."
+        },
+        {
+          "testId": "passes-attempt-metadata",
+          "scenario": "The operation is invoked across multiple attempts.",
+          "given": ["attempts = 3", "fn records each received args object and throws on the first two calls"],
+          "when": "await retry(fn, { attempts: 3, waitDuration: 0 })",
+          "then": "the recorded args are [{ attempt: 0, remaining: 3, total: 3 }, { attempt: 1, remaining: 2, total: 3 }, { attempt: 2, remaining: 1, total: 3 }]",
+          "targets": [],
+          "oracleKind": "fingerprint",
+          "rationale": "Pins the metadata contract supplied to each operation attempt."
+        },
+        {
+          "testId": "stops-on-unmatched-error",
+          "scenario": "The operation fails with an error rejected by the error matcher.",
+          "given": ["matchError = () => false", "fn throws error"],
+          "when": "await retry(fn, { attempts: 3, matchError, waitDuration: 0 })",
+          "then": "the same error is thrown and fn is called once",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Ensures non-retryable errors propagate immediately."
+        },
+        {
+          "testId": "retries-matched-error",
+          "scenario": "The operation fails with errors accepted by the error matcher.",
+          "given": ["matchError = () => true", "fn throws once and then returns 'ok'"],
+          "when": "await retry(fn, { attempts: 2, matchError, waitDuration: 0 })",
+          "then": "the result is 'ok' and fn is called twice",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Ensures matched failures proceed through the retry path."
+        },
+        {
+          "testId": "throws-last-error-after-exhaustion",
+          "scenario": "The operation fails on every configured attempt.",
+          "given": ["attempts = 2", "fn throws error1 on the first call and error2 on the second call"],
+          "when": "await retry(fn, { attempts: 2, waitDuration: 0 })",
+          "then": "error2 is thrown and fn is called twice",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins exhaustion behavior and propagation of the final failure."
+        },
+        {
+          "testId": "rejects-aborted-retry",
+          "scenario": "The abort signal is already aborted before retry begins.",
+          "given": ["abortSignal.aborted === true"],
+          "when": "await retry(fn, { abortSignal })",
+          "then": "an Error with message 'aborted' is thrown and fn is not called",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Guards cancellation before any operation is started."
+        },
+        {
+          "testId": "returns-null-error-for-zero-attempts",
+          "scenario": "The configured attempt count is zero.",
+          "given": ["attempts = 0"],
+          "when": "await retry(fn, { attempts: 0 })",
+          "then": "null is thrown and fn is not called",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Captures the observable zero-attempt behavior."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": ["import { sleep } from './control'", "export async function retry<T>(...)"],
+      "moduleLevelCode": "import { sleep } from './control'",
+      "exports": [{ "name": "retry", "kind": "own", "fromSpec": null, "exportedAs": null }],
+      "importSymbolMap": [{ "symbol": "sleep", "module": "./control", "alias": null, "kind": "internal" }],
+      "fileConstants": [],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/utils/src/lib/retry.ts__retry#function:retry",
+        "unitKind": "function",
+        "name": "retry",
+        "qualifiedName": "retry",
+        "parentUnitId": null,
+        "startLine": 52,
+        "endLine": 79,
+        "isBehavioral": true,
+        "source": "\t{\n\t\tattempts = 3,\n\t\twaitDuration = 1000,\n\t\tabortSignal,\n\t\tmatchError,\n\t}: {\n\t\tattempts?: number\n\t\twaitDuration?: number\n\t\tabortSignal?: AbortSignal\n\t\tmatchError?(error: unknown): boolean\n\t} = {}\n): Promise<T> {\n\tlet error: unknown = null\n\tfor (let i = 0; i < attempts; i++) {\n\t\tif (abortSignal?.aborted) throw new Error('aborted')\n\t\ttry {\n\t\t\treturn await fn({ attempt: i, remaining: attempts - i, total: attempts })\n\t\t} catch (e) {\n\t\t\tif (matchError && !matchError(e)) throw e\n\t\t\terror = e\n\t\t\tawait sleep(waitDuration)\n\t\t}\n\t}\n\t// eslint-disable-next-line no-throw-literal\n\tthrow error\n}\n",
+        "detail": {
+          "unitId": "packages/utils/src/lib/retry.ts__retry#function:retry",
+          "fileId": "packages/utils/src/lib/retry.ts__retry",
+          "unitKind": "function",
+          "name": "retry",
+          "qualifiedName": "retry",
+          "parentUnitId": null,
+          "startLine": 52,
+          "endLine": 79,
+          "signature": null,
+          "parameters": [],
+          "returnType": "Promise<T>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": ["T"],
+          "logicOutline": [],
+          "preconditions": [
+            "The callback `fn` is callable and returns a promise-like result.",
+            "The retry options, when provided, contain numeric `attempts` and `waitDuration` values, an optional AbortSignal, and an optional error-matching predicate."
+          ],
+          "postconditions": [
+            "On the first successful callback result, resolves with that result without further attempts.",
+            "On retry exhaustion, throws the most recently caught callback error.",
+            "A wait is requested after every caught error that is eligible for retry, including the final failed attempt."
+          ],
+          "invariants": [
+            "The callback receives `attempt`, `remaining`, and `total` metadata for each attempt.",
+            "Attempts use zero-based indices from `0` while `i < attempts`.",
+            "The abort signal is checked before each callback invocation, not during callback execution or waiting.",
+            "An error rejected by `matchError` is propagated immediately without waiting or retrying."
+          ],
+          "edgeCases": [
+            "With omitted options, defaults are `attempts = 3` and `waitDuration = 1000`.",
+            "With `attempts` equal to `0` or a negative number, the callback is not invoked and the function throws `null`.",
+            "With a fractional positive `attempts` value, attempts continue while the integer loop index is less than that value.",
+            "When the abort signal is already aborted before an attempt, the function throws `Error('aborted')` and does not invoke the callback.",
+            "When `matchError` returns `false` for a caught error, that error is propagated immediately.",
+            "When all eligible attempts fail, the final caught error is thrown after the final wait."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [
+              "Error with message `aborted` when the signal is aborted before an attempt",
+              "The callback's original error when `matchError` is absent or returns `true` and attempts are exhausted",
+              "The callback's original error immediately when `matchError` returns `false`",
+              "`null` when no attempt is made, such as when `attempts <= 0`"
+            ],
+            "reverts": [],
+            "onInvalidInput": "No explicit validation is performed; runtime errors from invalid callback or option values follow normal JavaScript behavior.",
+            "returnsOnError": null
+          },
+          "stateMutations": ["Local retry error state is updated to the most recently caught callback error."],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "fn", "source": "caller-provided asynchronous callback", "kind": "external" },
+            { "name": "matchError", "source": "caller-provided error predicate", "kind": "external" },
+            { "name": "sleep", "source": "imported utility", "kind": "external" }
+          ],
+          "symbolReferences": ["Promise", "AbortSignal"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Executes an asynchronous operation repeatedly until it succeeds or the configured attempts are exhausted. It supports delay between attempts, pre-attempt abort checks, and selective retrying based on the thrown error.",
+          "specLiterals": [
+            { "kind": "magic-number", "value": "3", "role": "Default number of callback attempts." },
+            { "kind": "magic-number", "value": "1000", "role": "Default delay between attempts." },
+            {
+              "kind": "error-message",
+              "value": "aborted",
+              "role": "Error message used when the abort signal is set before an attempt."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Calling `retry` with the callback.",
+              "then": "The returned promise resolves to `42`, and the callback is invoked once with `attempt: 0`, `remaining: 3`, and `total: 3`.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Calling `retry` and awaiting its result.",
+              "then": "The callback is invoked twice, waits after each rejection, and the promise throws the error from the second invocation.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Calling `retry` with that signal.",
+              "then": "The promise throws an `Error` whose message is `aborted`, and the callback is never invoked.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "7ebcbd89cacf904f1aba50685ce1074a87869a90467ec526a785d095160b1f51"
+        }
+      }
+    ]
+  },
+  "out": ["packages/utils/src/lib/control.ts"],
+  "in": ["packages/utils/src/lib/retry.test.ts", "packages/utils/src/index.ts"],
+  "externals": [],
+  "impact": { "seeds": 1, "callers": 0, "impactedFiles": [] }
+}

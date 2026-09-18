@@ -1,0 +1,653 @@
+{
+  "relativePath": "packages/features/bookings/lib/bookingCreateBodySchema.ts",
+  "language": "typescript",
+  "sha256": "fa5dd6452847bce5f430b15d1f99e4a324cb4342c5ed8442fd3e8471e819543c",
+  "sizeBytes": 3682,
+  "tokenCount": 921,
+  "lineCount": 105,
+  "analysedAt": "2026-09-04T19:27:57.280Z",
+  "analysis": {
+    "module": {
+      "purpose": "Defines the Zod validation schemas for booking creation request bodies in Cal.com. It provides the core schema used by the internal booking flow, an extended schema for recurring bookings and app statuses, a schema exposing legacy API props now covered by dynamic `responses`, and the final merged schema used by the public booking API. The `responses` field is merged in later at handleNewBooking time because it is dynamic per eventType.",
+      "summary": "This file is the validation layer for creating bookings in the Cal.com scheduling platform. It defines `bookingCreateBodySchema` covering essential booking fields: event type identification (id/slug), start/end times, timezone, language, user(s), metadata, hashed booking links, seat references, org/team slugs, CRM ownership fields, routing form data, dry-run and cache flags, UTM tracking, dub id, and creation source. `extendedBookingCreateBody` merges in recurring-booking fields (recurringCount, allRecurringDates, currentRecurringIndex), app status reporting, luckyUsers, and legacy customInputs. `bookingCreateSchemaLegacyPropsForApi` captures legacy fields (email, name, guests, notes, location, smsReminderNumber, rescheduleReason, customInputs) that the public API may still send but which now live in dynamic `responses`. `bookingCreateBodySchemaForApi` merges everything into the schema consumed by the booking API endpoint. Downstream, `handleNewBooking` merges the eventType-specific `responses` schema into these schemas before validation.",
+      "businessContext": "Cal.com booking scheduling: every new or rescheduled booking request passes through these schemas. Invalid validation blocks all booking creation, rescheduling, routing-form rerouting, and CRM-attributed bookings.",
+      "classes": ["BookingCreateBody (~L57): Input type of bookingCreateBodySchema for creating bookings"],
+      "functions": [
+        "bookingCreateBodySchema (~L8-55): Validates core booking creation request body fields",
+        "extendedBookingCreateBody (~L59-87): Extends schema with recurring, appsStatus, luckyUsers fields",
+        "bookingCreateSchemaLegacyPropsForApi (~L90-99): Validates legacy API booking props superseded by responses",
+        "bookingCreateBodySchemaForApi (~L102-104): Final merged API schema including legacy partial props"
+      ],
+      "keywords": [
+        "zod schema",
+        "booking creation",
+        "eventType",
+        "recurringEventId",
+        "rescheduleUid",
+        "hashedLink",
+        "routingFormResponse",
+        "utm tracking",
+        "legacy API props",
+        "seatReferenceUid"
+      ],
+      "ontologyConcepts": [
+        "schema validation",
+        "request body contract",
+        "schema composition via merge",
+        "backward compatibility",
+        "dry run",
+        "cache override",
+        "dynamic field merging"
+      ],
+      "businessEntities": [
+        "Booking",
+        "EventType",
+        "User",
+        "RoutingFormResponse",
+        "CRM owner record",
+        "Seat",
+        "Team member",
+        "Tracking"
+      ],
+      "systemCapabilities": [
+        "Validate booking creation payloads",
+        "Support legacy API field compatibility",
+        "Validate recurring booking requests",
+        "Validate rerouting form responses",
+        "Capture marketing attribution data"
+      ],
+      "configDependencies": [],
+      "importsInternal": [
+        {
+          "spec": "@calcom/app-store/routing-forms/zod",
+          "symbols": ["routingFormResponseInDbSchema"],
+          "anchor": {
+            "startLine": 4,
+            "endLine": 4
+          },
+          "resolvedRelativePath": "packages/app-store/routing-forms/zod.ts",
+          "resolvedFileId": "packages/app-store/routing-forms/zod.ts",
+          "resolvedHint": "packages/app-store/routing-forms/zod.ts"
+        },
+        {
+          "spec": "@calcom/lib/dayjs/timeZone.schema",
+          "symbols": ["timeZoneSchema"],
+          "anchor": {
+            "startLine": 5,
+            "endLine": 5
+          },
+          "resolvedRelativePath": "packages/lib/dayjs/timeZone.schema.ts",
+          "resolvedFileId": "packages/lib/dayjs/timeZone.schema.ts",
+          "resolvedHint": "packages/lib/dayjs/timeZone.schema.ts"
+        },
+        {
+          "spec": "@calcom/prisma/enums",
+          "symbols": ["CreationSource"],
+          "anchor": {
+            "startLine": 6,
+            "endLine": 6
+          },
+          "resolvedRelativePath": null,
+          "resolvedFileId": null,
+          "resolvedHint": "packages/prisma/enums.ts"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "zod",
+          "symbols": ["z"],
+          "package": "zod",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 2,
+            "endLine": 2
+          }
+        }
+      ],
+      "sideEffects": {
+        "io": [],
+        "network": [],
+        "env": [],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": []
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "bookingCreateBodySchema",
+          "shape": "z.object({ end?, eventTypeId, eventTypeSlug?, rescheduleUid?, recurringEventId?, rescheduledBy?, start, timeZone, user?, language, bookingUid?, metadata, hasHashedBookingLink?, hashedLink?, seatReferenceUid?, orgSlug?, teamMemberEmail?, crmOwnerRecordType?, crmRecordId?, routedTeamMemberIds?, routingFormResponseId?, skipContactOwner?, crmAppSlug?, cfToken?, reroutingFormResponses?, _isDryRun?, _shouldServeCache?, tracking?, dub_id?, creationSource? })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "BookingCreateBody",
+          "shape": "z.input<typeof bookingCreateBodySchema>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "extendedBookingCreateBody",
+          "shape": "bookingCreateBodySchema.merge(z.object({ noEmail?, recurringCount?, allRecurringDates?, currentRecurringIndex?, appsStatus?, luckyUsers?, customInputs? }))",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "bookingCreateSchemaLegacyPropsForApi",
+          "shape": "z.object({ email, name, guests?, notes?, location, smsReminderNumber?, rescheduleReason?, customInputs })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "bookingCreateBodySchemaForApi",
+          "shape": "extendedBookingCreateBody.merge(bookingCreateSchemaLegacyPropsForApi.partial())",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "routingFormResponseInDbSchema",
+          "shape": "zod schema from @calcom/app-store/routing-forms/zod",
+          "resolvedRelativePath": "packages/app-store/routing-forms/zod.ts",
+          "resolvedFileId": "packages/app-store/routing-forms/zod.ts"
+        },
+        {
+          "name": "timeZoneSchema",
+          "shape": "zod schema from @calcom/lib/dayjs/timeZone.schema",
+          "resolvedRelativePath": "packages/lib/dayjs/timeZone.schema.ts",
+          "resolvedFileId": "packages/lib/dayjs/timeZone.schema.ts"
+        },
+        {
+          "name": "CreationSource",
+          "shape": "enum from @calcom/prisma/enums",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "bookingCreateBodySchema",
+          "intent": "Define base zod schema for booking creation body",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 8,
+            "endLine": 55
+          }
+        },
+        {
+          "name": "BookingCreateBody type",
+          "intent": "Export z.input inferred type of base schema",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 57,
+            "endLine": 57
+          }
+        },
+        {
+          "name": "extendedBookingCreateBody",
+          "intent": "Extend base schema with recurring/apps/internal fields",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 59,
+            "endLine": 87
+          }
+        },
+        {
+          "name": "bookingCreateSchemaLegacyPropsForApi",
+          "intent": "Define legacy props schema for API compat",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 90,
+            "endLine": 99
+          }
+        },
+        {
+          "name": "bookingCreateBodySchemaForApi",
+          "intent": "Merge extended schema with partial legacy props for API",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 102,
+            "endLine": 104
+          }
+        }
+      ],
+      "representationFamily": "schema",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "const",
+          "name": "bookingCreateBodySchema",
+          "signature": "export const bookingCreateBodySchema = z.object({",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": {
+            "startLine": 8,
+            "endLine": 55
+          }
+        },
+        {
+          "kind": "type",
+          "name": "BookingCreateBody",
+          "signature": "export type BookingCreateBody = z.input<typeof bookingCreateBodySchema>;",
+          "generics": null,
+          "decorators": [],
+          "returnType": "z.input<typeof bookingCreateBodySchema>",
+          "exported": true,
+          "anchor": {
+            "startLine": 57,
+            "endLine": 57
+          }
+        },
+        {
+          "kind": "const",
+          "name": "extendedBookingCreateBody",
+          "signature": "export const extendedBookingCreateBody = bookingCreateBodySchema.merge(",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": {
+            "startLine": 59,
+            "endLine": 87
+          }
+        },
+        {
+          "kind": "const",
+          "name": "bookingCreateSchemaLegacyPropsForApi",
+          "signature": "export const bookingCreateSchemaLegacyPropsForApi = z.object({",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": {
+            "startLine": 90,
+            "endLine": 99
+          }
+        },
+        {
+          "kind": "const",
+          "name": "bookingCreateBodySchemaForApi",
+          "signature": "export const bookingCreateBodySchemaForApi = extendedBookingCreateBody.merge(",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": {
+            "startLine": 102,
+            "endLine": 104
+          }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "alias",
+          "name": "BookingCreateBody",
+          "shape": "z.input<typeof bookingCreateBodySchema>",
+          "discriminant": null,
+          "anchor": {
+            "startLine": 57,
+            "endLine": 57
+          }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": {
+        "paragraph": "",
+        "tokenEstimate": 0
+      },
+      "edgeCases": [],
+      "errorHandling": [],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "responses schema is merged later during handleNewBooking since it is dynamic per eventType",
+          "anchor": {
+            "startLine": 1,
+            "endLine": 1
+          }
+        },
+        {
+          "kind": "schema",
+          "description": "bookingCreateBodySchemaForApi makes legacy props optional via .partial() but requires email, name, location, customInputs",
+          "anchor": {
+            "startLine": 102,
+            "endLine": 104
+          }
+        },
+        {
+          "kind": "schema",
+          "description": "extendedBookingCreateBody requires appsStatus items to have success/failures as numbers and errors array",
+          "anchor": {
+            "startLine": 72,
+            "endLine": 83
+          }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "What shape does routingFormResponseInDbSchema enforce (external dependency)?",
+          "affects": "reroutingFormResponses validation",
+          "anchor": {
+            "startLine": 37,
+            "endLine": 37
+          },
+          "resolution": null
+        },
+        {
+          "question": "What format/constraints does timeZoneSchema impose (external dependency)?",
+          "affects": "timeZone validation",
+          "anchor": {
+            "startLine": 16,
+            "endLine": 16
+          },
+          "resolution": null
+        },
+        {
+          "question": "What values does CreationSource enum include (external dependency)?",
+          "affects": "creationSource validation",
+          "anchor": {
+            "startLine": 54,
+            "endLine": 54
+          },
+          "resolution": null
+        }
+      ],
+      "stateModel": null,
+      "fileFingerprint": {
+        "lineCount": 0,
+        "declarationCount": 0,
+        "maxNestingDepth": 0,
+        "roughCyclomatic": 0
+      },
+      "reconstructionHints": {
+        "namingStyle": "unknown",
+        "returnStyle": "n/a",
+        "commentStyle": "none",
+        "dialect": ""
+      },
+      "moduleContractTests": [
+        {
+          "testId": "requires-required-core-fields",
+          "scenario": "A booking body missing start, eventTypeId, language, or metadata fails validation.",
+          "given": [],
+          "when": "bookingCreateBodySchema.safeParse({ eventTypeId: 1, timeZone: 'Europe/Berlin' })",
+          "then": "parse fails with errors naming the missing required fields start, language, metadata",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins which fields are mandatory for creating a booking."
+        },
+        {
+          "testId": "rescheduled-by-must-be-email",
+          "scenario": "rescheduledBy, when provided, must be a valid email address.",
+          "given": ["const body = minimalValidBody"],
+          "when": "bookingCreateBodySchema.safeParse({ ...body, rescheduledBy: 'not-an-email' })",
+          "then": "parse fails with 'Invalid email' for rescheduledBy",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Guards the email format invariant on rescheduledBy."
+        },
+        {
+          "testId": "user-accepts-string-or-array",
+          "scenario": "The user field accepts either a single username string or an array of usernames.",
+          "given": ["const body = minimalValidBody"],
+          "when": "bookingCreateBodySchema.safeParse({ ...body, user: ['a', 'b'] }) and safeParse({ ...body, user: 'a' })",
+          "then": "both parses succeed",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "dry-run-flag-optional-boolean",
+          "scenario": "_isDryRun is an optional boolean flag used to mark dry-run bookings.",
+          "given": ["const body = minimalValidBody"],
+          "when": "bookingCreateBodySchema.safeParse({ ...body, _isDryRun: true })",
+          "then": "parse succeeds and parsed._isDryRun === true",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "extended-adds-recurring-and-apps-status",
+          "scenario": "extendedBookingCreateBody accepts the extended recurring/appsStatus fields on top of the base schema.",
+          "given": ["const body = minimalValidBody"],
+          "when": "extendedBookingCreateBody.safeParse({ ...body, noEmail: true, recurringCount: 3, currentRecurringIndex: 0, appsStatus: [{ appName: 'x', success: 1, failures: 0, type: 't', errors: [] }], luckyUsers: [1] })",
+          "then": "parse succeeds",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins the extended booking payload contract used by the booking handler."
+        },
+        {
+          "testId": "extended-rejects-custom-inputs",
+          "scenario": "customInputs is explicitly undefined in extendedBookingCreateBody and cannot carry values.",
+          "given": ["const body = minimalValidBody"],
+          "when": "extendedBookingCreateBody.safeParse({ ...body, customInputs: [{ label: 'l', value: 'v' }] })",
+          "then": "parse fails for customInputs",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "customInputs moved into responses; legacy values must not pass the extended schema."
+        },
+        {
+          "testId": "legacy-api-schema-allows-legacy-props",
+          "scenario": "bookingCreateBodySchemaForApi still accepts legacy API props (email, name, guests, notes, location, customInputs).",
+          "given": ["const body = minimalValidBody"],
+          "when": "bookingCreateBodySchemaForApi.safeParse({ ...body, email: 'a@b.com', name: 'A', location: 'integrations:daily', customInputs: [{ label: 'l', value: true }] })",
+          "then": "parse succeeds",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Backwards compatibility with the legacy booking API payload must be preserved."
+        },
+        {
+          "testId": "legacy-api-schema-legacy-props-optional",
+          "scenario": "All legacy props are optional (partial) in bookingCreateBodySchemaForApi.",
+          "given": ["const body = minimalValidBody"],
+          "when": "bookingCreateBodySchemaForApi.safeParse(body)",
+          "then": "parse succeeds without any legacy props",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "routing-form-responses-optional",
+          "scenario": "reroutingFormResponses, when present, must match the routing-form response DB schema.",
+          "given": ["const body = minimalValidBody", "const badResponses = { invalid: true }"],
+          "when": "bookingCreateBodySchema.safeParse({ ...body, reroutingFormResponses: badResponses })",
+          "then": "parse fails because reroutingFormResponses does not conform to routingFormResponseInDbSchema",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Delegates validation to the routing-forms schema contract."
+        },
+        {
+          "testId": "creation-source-restricted-to-enum",
+          "scenario": "creationSource accepts only values from the CreationSource enum.",
+          "given": ["const body = minimalValidBody"],
+          "when": "bookingCreateBodySchema.safeParse({ ...body, creationSource: 'UNKNOWN_VALUE' })",
+          "then": "parse fails for creationSource",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins nativeEnum binding to Prisma CreationSource."
+        },
+        {
+          "testId": "tracking-fields-all-optional",
+          "scenario": "The tracking object holds optional UTM fields and the whole object is optional.",
+          "given": ["const body = minimalValidBody"],
+          "when": "bookingCreateBodySchema.safeParse({ ...body, tracking: { utm_source: 'x', utm_campaign: 'y' } })",
+          "then": "parse succeeds and parsed.tracking.utm_source === 'x'",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "hashed-link-nullable",
+          "scenario": "hashedLink may be null or a string, but not a number.",
+          "given": ["const body = minimalValidBody"],
+          "when": "bookingCreateBodySchema.safeParse({ ...body, hashedLink: null }) and safeParse({ ...body, hashedLink: 5 })",
+          "then": "first parse succeeds, second parse fails",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "bookingCreateBodySchema",
+        "BookingCreateBody",
+        "extendedBookingCreateBody",
+        "bookingCreateSchemaLegacyPropsForApi",
+        "bookingCreateBodySchemaForApi"
+      ],
+      "moduleLevelCode": "import z from \"zod\";\n\nimport { routingFormResponseInDbSchema } from \"@calcom/app-store/routing-forms/zod\";\nimport { timeZoneSchema } from \"@calcom/lib/dayjs/timeZone.schema\";\nimport { CreationSource } from \"@calcom/prisma/enums\";",
+      "exports": [
+        {
+          "name": "bookingCreateBodySchema",
+          "kind": "own",
+          "fromSpec": null,
+          "exportedAs": null
+        },
+        {
+          "name": "BookingCreateBody",
+          "kind": "own",
+          "fromSpec": null,
+          "exportedAs": null
+        },
+        {
+          "name": "extendedBookingCreateBody",
+          "kind": "own",
+          "fromSpec": null,
+          "exportedAs": null
+        },
+        {
+          "name": "bookingCreateSchemaLegacyPropsForApi",
+          "kind": "own",
+          "fromSpec": null,
+          "exportedAs": null
+        },
+        {
+          "name": "bookingCreateBodySchemaForApi",
+          "kind": "own",
+          "fromSpec": null,
+          "exportedAs": null
+        }
+      ],
+      "importSymbolMap": [
+        {
+          "symbol": "z",
+          "module": "zod",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "routingFormResponseInDbSchema",
+          "module": "@calcom/app-store/routing-forms/zod",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "timeZoneSchema",
+          "module": "@calcom/lib/dayjs/timeZone.schema",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "CreationSource",
+          "module": "@calcom/prisma/enums",
+          "alias": null,
+          "kind": "internal"
+        }
+      ],
+      "fileConstants": [],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/features/bookings/lib/bookingCreateBodySchema.ts__bookingCreateBodySchema_1#const:bookingCreateBodySchema",
+        "unitKind": "const",
+        "name": "bookingCreateBodySchema",
+        "qualifiedName": "bookingCreateBodySchema",
+        "parentUnitId": null,
+        "startLine": 8,
+        "endLine": 55,
+        "isBehavioral": false,
+        "source": "export const bookingCreateBodySchema = z.object({\n  end: z.string().optional(),\n  eventTypeId: z.number(),\n  eventTypeSlug: z.string().optional(),\n  rescheduleUid: z.string().optional(),\n  recurringEventId: z.string().optional(),\n  rescheduledBy: z.string().email({ message: \"Invalid email\" }).optional(),\n  start: z.string(),\n  timeZone: timeZoneSchema,\n  user: z.union([z.string(), z.array(z.string())]).optional(),\n  language: z.string(),\n  bookingUid: z.string().optional(),\n  metadata: z.record(z.string()),\n  hasHashedBookingLink: z.boolean().optional(),\n  hashedLink: z.string().nullish(),\n  seatReferenceUid: z.string().optional(),\n  orgSlug: z.string().optional(),\n  teamMemberEmail: z.string().nullish(),\n  crmOwnerRecordType: z.string().nullish(),\n  crmRecordId: z.string().nullish(),\n  routedTeamMemberIds: z.array(z.number()).nullish(),\n  routingFormResponseId: z.number().optional(),\n  skipContactOwner: z.boolean().optional(),\n  crmAppSlug: z.string().nullish().optional(),\n  cfToken: z.string().nullish().optional(),\n\n  /**\n   * Holds the corrected responses of the Form for a booking, provided during rerouting\n   */\n  reroutingFormResponses: routingFormResponseInDbSchema.optional(),\n  /**\n   * Used to identify if the booking is a dry run.\n   */\n  _isDryRun: z.boolean().optional(),\n  /** Whether to override the cache */\n  _shouldServeCache: z.boolean().optional(),\n  tracking: z\n    .object({\n      utm_source: z.string().optional(),\n      utm_medium: z.string().optional(),\n      utm_campaign: z.string().optional(),\n      utm_term: z.string().optional(),\n      utm_content: z.string().optional(),\n    })\n    .optional(),\n  dub_id: z.string().nullish(),\n  creationSource: z.nativeEnum(CreationSource).optional(),\n});"
+      },
+      {
+        "unitId": "packages/features/bookings/lib/bookingCreateBodySchema.ts__BookingCreateBody_2#type_alias:BookingCreateBody",
+        "unitKind": "type_alias",
+        "name": "BookingCreateBody",
+        "qualifiedName": "BookingCreateBody",
+        "parentUnitId": null,
+        "startLine": 57,
+        "endLine": 57,
+        "isBehavioral": false,
+        "source": "export type BookingCreateBody = z.input<typeof bookingCreateBodySchema>;"
+      },
+      {
+        "unitId": "packages/features/bookings/lib/bookingCreateBodySchema.ts__extendedBookingCreateBody_3#const:extendedBookingCreateBody",
+        "unitKind": "const",
+        "name": "extendedBookingCreateBody",
+        "qualifiedName": "extendedBookingCreateBody",
+        "parentUnitId": null,
+        "startLine": 59,
+        "endLine": 86,
+        "isBehavioral": false,
+        "source": "export const extendedBookingCreateBody = bookingCreateBodySchema.merge(\n  z.object({\n    noEmail: z.boolean().optional(),\n    recurringCount: z.number().optional(),\n    allRecurringDates: z\n      .array(\n        z.object({\n          start: z.string(),\n          end: z.string(),\n        })\n      )\n      .optional(),\n    currentRecurringIndex: z.number().optional(),\n    appsStatus: z\n      .array(\n        z.object({\n          appName: z.string(),\n          success: z.number(),\n          failures: z.number(),\n          type: z.string(),\n          errors: z.string().array(),\n          warnings: z.string().array().optional(),\n        })\n      )\n      .optional(),\n    luckyUsers: z.array(z.number()).optional(),\n    customInputs: z.undefined().optional(),\n  })"
+      },
+      {
+        "unitId": "packages/features/bookings/lib/bookingCreateBodySchema.ts__bookingCreateSchemaLegacyPropsForApi_4#const:bookingCreateSchemaLegacyPropsForApi",
+        "unitKind": "const",
+        "name": "bookingCreateSchemaLegacyPropsForApi",
+        "qualifiedName": "bookingCreateSchemaLegacyPropsForApi",
+        "parentUnitId": null,
+        "startLine": 90,
+        "endLine": 99,
+        "isBehavioral": false,
+        "source": "export const bookingCreateSchemaLegacyPropsForApi = z.object({\n  email: z.string(),\n  name: z.string(),\n  guests: z.array(z.string()).optional(),\n  notes: z.string().optional(),\n  location: z.string(),\n  smsReminderNumber: z.string().optional().nullable(),\n  rescheduleReason: z.string().optional(),\n  customInputs: z.array(z.object({ label: z.string(), value: z.union([z.string(), z.boolean()]) })),\n});"
+      },
+      {
+        "unitId": "packages/features/bookings/lib/bookingCreateBodySchema.ts__bookingCreateBodySchemaForApi_5#const:bookingCreateBodySchemaForApi",
+        "unitKind": "const",
+        "name": "bookingCreateBodySchemaForApi",
+        "qualifiedName": "bookingCreateBodySchemaForApi",
+        "parentUnitId": null,
+        "startLine": 102,
+        "endLine": 104,
+        "isBehavioral": false,
+        "source": "export const bookingCreateBodySchemaForApi = extendedBookingCreateBody.merge(\n  bookingCreateSchemaLegacyPropsForApi.partial()\n);"
+      }
+    ],
+    "extractedUnitCount": 5,
+    "unreconciledUnitNames": []
+  },
+  "tokenUsage": {
+    "inputTokens": 11413,
+    "outputTokens": 5131,
+    "costUsd": 0.003587095
+  },
+  "model": "z-ai/glm-5.3-flash"
+}

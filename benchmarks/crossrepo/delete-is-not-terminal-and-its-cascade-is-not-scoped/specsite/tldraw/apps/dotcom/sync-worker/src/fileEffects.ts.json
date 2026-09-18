@@ -1,0 +1,832 @@
+{
+  "schema": 2,
+  "kind": "file",
+  "repoName": "tldraw",
+  "file": {
+    "relativePath": "apps/dotcom/sync-worker/src/fileEffects.ts",
+    "language": "typescript",
+    "sizeBytes": 2487,
+    "tokenCount": 622,
+    "model": "us.openai.gpt-5.6-luna",
+    "analysedAt": "2026-08-24T12:28:13.504Z",
+    "module": {
+      "purpose": "Provides file-specific effect processing for the sync worker, translating outbox rows into current file notifications and publication lifecycle actions.",
+      "summary": "This module defines the typed shape of file effect rows and their injected dependencies, identifies publish and unpublish transitions from update records, and processes insert, update, and delete effects. Update processing re-reads current file state to avoid acting on stale outbox payloads, then conditionally notifies the room layer and publishes or unpublishes files.",
+      "businessContext": "Supports synchronization of hosted files with room state and publication visibility. Failures can leave room records or public file publication state inconsistent.",
+      "classes": [
+        "FileEffectRow (~L4-7): Represents a file-specific effect outbox row with typed payload history.",
+        "FileEffectDeps (~L27-34): Defines injected file lookup, notification, and publication operations."
+      ],
+      "functions": [
+        "getPublishTransition (~L11-25): Detects publication and unpublication transitions in file updates.",
+        "processFileEffect (~L36-63): Processes file outbox effects against current file state."
+      ],
+      "keywords": [
+        "effect outbox",
+        "publish transition",
+        "unpublish transition",
+        "staleness guard",
+        "file synchronization",
+        "room durable object",
+        "lastPublished",
+        "soft deletion"
+      ],
+      "ontologyConcepts": [
+        "event processing",
+        "state transition detection",
+        "stale event suppression",
+        "dependency injection",
+        "eventual consistency",
+        "publication lifecycle"
+      ],
+      "businessEntities": ["File", "Effect outbox row", "Publication", "Room"],
+      "systemCapabilities": [
+        "Process file effect rows",
+        "Notify room file lifecycle changes",
+        "Publish eligible files",
+        "Unpublish files",
+        "Suppress stale file effects"
+      ],
+      "configDependencies": [],
+      "importsInternal": [],
+      "importsExternal": [
+        {
+          "spec": "@tldraw/dotcom-shared",
+          "symbols": ["TlaEffectOutbox", "TlaFile"],
+          "package": "@tldraw/dotcom-shared",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 1 }
+        }
+      ],
+      "sideEffects": {
+        "io": [
+          "Reads the current file through the injected getCurrentFile dependency.",
+          "Sends injected insert, update, and delete notifications for file lifecycle effects.",
+          "Invokes injected publish and unpublish operations for eligible publication transitions."
+        ],
+        "network": [],
+        "env": [],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": []
+      },
+      "integrationSurface": [
+        {
+          "kind": "other",
+          "role": "consumes",
+          "address": "room DO appFileRecordCreated",
+          "payloadRef": "TlaFile",
+          "rawKind": "other"
+        },
+        {
+          "kind": "other",
+          "role": "consumes",
+          "address": "room DO appFileRecordDidUpdate",
+          "payloadRef": "TlaFile",
+          "rawKind": "other"
+        },
+        {
+          "kind": "other",
+          "role": "consumes",
+          "address": "room DO appFileRecordDidDelete",
+          "payloadRef": "TlaFile",
+          "rawKind": "other"
+        }
+      ],
+      "contractsProvided": [
+        {
+          "name": "FileEffectRow",
+          "shape": "export interface FileEffectRow extends TlaEffectOutbox {\n\tpayload: TlaFile\n\tprevPayload: TlaFile | null\n}",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "getPublishTransition",
+          "shape": "export function getPublishTransition(\n\trow: Pick<FileEffectRow, 'command' | 'payload' | 'prevPayload'>\n): 'publish' | 'unpublish' | null",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "FileEffectDeps",
+          "shape": "export interface FileEffectDeps {\n\tgetCurrentFile(fileId: string): Promise<TlaFile | undefined>\n\tnotifyInsert(file: TlaFile): Promise<void>\n\tnotifyUpdate(file: TlaFile): Promise<void>\n\tnotifyDelete(fileRow: TlaFile): Promise<void>\n\tpublish(file: TlaFile): Promise<void>\n\tunpublish(file: TlaFile): Promise<void>\n}",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "processFileEffect",
+          "shape": "export async function processFileEffect(deps: FileEffectDeps, genericRow: TlaEffectOutbox)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        { "name": "TlaEffectOutbox", "shape": "TlaEffectOutbox", "resolvedRelativePath": null, "resolvedFileId": null },
+        { "name": "TlaFile", "shape": "TlaFile", "resolvedRelativePath": null, "resolvedFileId": null }
+      ],
+      "sectionMap": [
+        {
+          "name": "publication transition classification",
+          "intent": "Reject non-updates and classify publication state changes.",
+          "structureKind": "branch",
+          "predicate": "row.command !== 'update' || !row.prevPayload",
+          "branchOutcomes": ["return null", "continue transition evaluation"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 15, "endLine": 24 }
+        },
+        {
+          "name": "delete effect handling",
+          "intent": "Notify deletion immediately using the outbox payload.",
+          "structureKind": "branch",
+          "predicate": "row.command === 'delete'",
+          "branchOutcomes": ["notify delete and return", "continue current-state processing"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 39, "endLine": 43 }
+        },
+        {
+          "name": "current file lookup",
+          "intent": "Use present file state as the authoritative processing input.",
+          "structureKind": "io",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 44, "endLine": 48 }
+        },
+        {
+          "name": "missing current file guard",
+          "intent": "Skip effects when the file was hard-deleted.",
+          "structureKind": "branch",
+          "predicate": "!current",
+          "branchOutcomes": ["return", "continue effect processing"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 46, "endLine": 48 }
+        },
+        {
+          "name": "insert notification",
+          "intent": "Notify consumers using the freshly retrieved file.",
+          "structureKind": "branch",
+          "predicate": "row.command === 'insert'",
+          "branchOutcomes": ["notify insert and return", "continue update processing"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 46, "endLine": 49 }
+        },
+        {
+          "name": "update notification",
+          "intent": "Notify consumers before evaluating publication actions.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 50, "endLine": 50 }
+        },
+        {
+          "name": "publication action gating",
+          "intent": "Publish or unpublish only when transition and current-state checks agree.",
+          "structureKind": "branch",
+          "predicate": "transition === 'publish' && !current.isDeleted && current.published && current.lastPublished === row.payload.lastPublished",
+          "branchOutcomes": [
+            "publish current file",
+            "unpublish when transition is unpublish and current file is unpublished",
+            "perform no publication action"
+          ],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 51, "endLine": 62 }
+        }
+      ],
+      "representationFamily": "module",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "interface",
+          "name": "FileEffectRow",
+          "signature": "export interface FileEffectRow extends TlaEffectOutbox",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 4, "endLine": 4 }
+        },
+        {
+          "kind": "function",
+          "name": "getPublishTransition",
+          "signature": "export function getPublishTransition(\n\trow: Pick<FileEffectRow, 'command' | 'payload' | 'prevPayload'>\n): 'publish' | 'unpublish' | null",
+          "generics": null,
+          "decorators": [],
+          "returnType": "'publish' | 'unpublish' | null",
+          "exported": true,
+          "anchor": { "startLine": 11, "endLine": 13 }
+        },
+        {
+          "kind": "interface",
+          "name": "FileEffectDeps",
+          "signature": "export interface FileEffectDeps",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 27, "endLine": 27 }
+        },
+        {
+          "kind": "function",
+          "name": "processFileEffect",
+          "signature": "export async function processFileEffect(deps: FileEffectDeps, genericRow: TlaEffectOutbox)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 36, "endLine": 36 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "interface",
+          "name": "FileEffectRow",
+          "shape": "{\n\tpayload: TlaFile\n\tprevPayload: TlaFile | null\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 4, "endLine": 7 }
+        },
+        {
+          "kind": "interface",
+          "name": "FileEffectDeps",
+          "shape": "{\n\tgetCurrentFile(fileId: string): Promise<TlaFile | undefined>\n\tnotifyInsert(file: TlaFile): Promise<void> // room DO appFileRecordCreated\n\tnotifyUpdate(file: TlaFile): Promise<void> // room DO appFileRecordDidUpdate (fresh row)\n\tnotifyDelete(fileRow: TlaFile): Promise<void> // room DO appFileRecordDidDelete (outbox payload)\n\tpublish(file: TlaFile): Promise<void>\n\tunpublish(file: TlaFile): Promise<void>\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 27, "endLine": 34 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "Non-update row or update without previous payload",
+          "handled": true,
+          "behavior": "Returns null without classifying a publication transition.",
+          "anchor": { "startLine": 15, "endLine": 15 }
+        },
+        {
+          "inputShape": "Delete effect row",
+          "handled": true,
+          "behavior": "Notifies deletion from the payload and returns without reading current state.",
+          "anchor": { "startLine": 39, "endLine": 43 }
+        },
+        {
+          "inputShape": "File missing from current storage",
+          "handled": true,
+          "behavior": "Returns without notification or publication action.",
+          "anchor": { "startLine": 45, "endLine": 48 }
+        },
+        {
+          "inputShape": "Insert effect row",
+          "handled": true,
+          "behavior": "Notifies insertion using the current file and returns.",
+          "anchor": { "startLine": 46, "endLine": 49 }
+        },
+        {
+          "inputShape": "Publish transition for a deleted or timestamp-mismatched file",
+          "handled": true,
+          "behavior": "Skips publishing.",
+          "anchor": { "startLine": 52, "endLine": 58 }
+        },
+        {
+          "inputShape": "Unpublish transition while current file remains published",
+          "handled": true,
+          "behavior": "Skips unpublishing because current state must be unpublished.",
+          "anchor": { "startLine": 60, "endLine": 62 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": "!=",
+          "left": "row.command",
+          "right": "'update'",
+          "inclusive": false,
+          "intent": "Only update commands can produce publication transitions.",
+          "anchor": { "startLine": 15, "endLine": 15 }
+        },
+        {
+          "operator": "!=",
+          "left": "file.lastPublished",
+          "right": "previous.lastPublished",
+          "inclusive": false,
+          "intent": "A changed publication timestamp represents a republish.",
+          "anchor": { "startLine": 18, "endLine": 18 }
+        },
+        {
+          "operator": "==",
+          "left": "row.command",
+          "right": "'delete'",
+          "inclusive": true,
+          "intent": "Delete commands take the terminal deletion path.",
+          "anchor": { "startLine": 39, "endLine": 39 }
+        },
+        {
+          "operator": "==",
+          "left": "row.command",
+          "right": "'insert'",
+          "inclusive": true,
+          "intent": "Insert commands notify creation rather than update processing.",
+          "anchor": { "startLine": 46, "endLine": 46 }
+        },
+        {
+          "operator": "==",
+          "left": "transition",
+          "right": "'publish'",
+          "inclusive": true,
+          "intent": "Only publish transitions can enter the publish gate.",
+          "anchor": { "startLine": 52, "endLine": 52 }
+        },
+        {
+          "operator": "==",
+          "left": "current.lastPublished",
+          "right": "row.payload.lastPublished",
+          "inclusive": true,
+          "intent": "The current publication timestamp must match the triggering row.",
+          "anchor": { "startLine": 57, "endLine": 57 }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": null,
+          "caught": null,
+          "action": "Propagates rejected promises from injected lookup, notification, publish, or unpublish dependencies.",
+          "fallback": null,
+          "anchor": { "startLine": 41, "endLine": 61 }
+        }
+      ],
+      "invariants": [
+        {
+          "kind": "precondition",
+          "description": "The caller routes only rows whose tableName is file.",
+          "anchor": { "startLine": 37, "endLine": 38 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Update effects use the current stored file as authoritative state rather than the outbox payload.",
+          "anchor": { "startLine": 44, "endLine": 45 }
+        },
+        {
+          "kind": "ordering",
+          "description": "Update notification occurs before publication or unpublication side effects.",
+          "anchor": { "startLine": 50, "endLine": 53 }
+        },
+        {
+          "kind": "invariant",
+          "description": "A publish action requires the current file not to be deleted, published, and timestamp-matched.",
+          "anchor": { "startLine": 52, "endLine": 58 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "The caller must route only file-table outbox rows to this processor.",
+          "anchor": { "startLine": 37, "endLine": 38 }
+        },
+        {
+          "kind": "caller",
+          "description": "The caller supplies dependency implementations whose rejected promises should propagate.",
+          "anchor": { "startLine": 41, "endLine": 61 }
+        },
+        {
+          "kind": "schema",
+          "description": "File payloads provide publication, deletion, entity identity, and last-publication timestamp fields.",
+          "anchor": { "startLine": 16, "endLine": 18 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "What guarantees do the injected notification and publication dependencies provide when multiple effects are processed concurrently?",
+          "affects": "concurrency_model and orchestration ordering",
+          "anchor": { "startLine": 41, "endLine": 61 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "async",
+        "reentrant": true,
+        "ordering": "deterministic",
+        "notes": "Each invocation awaits its injected operations sequentially, but the module maintains no shared state and does not coordinate ordering across concurrent invocations."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "ignores-non-update-transition",
+          "scenario": "A row is not an update or has no previous payload.",
+          "given": ["row.command !== 'update' || !row.prevPayload"],
+          "when": "getPublishTransition(row)",
+          "then": "result === null",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Only update rows with a previous payload can represent publication transitions."
+        },
+        {
+          "testId": "detects-publish-transition",
+          "scenario": "An update changes an unpublished file to published.",
+          "given": [
+            "row.command === 'update'",
+            "row.prevPayload = { published: false }",
+            "row.payload = { published: true, lastPublished: 'new' }"
+          ],
+          "when": "getPublishTransition(row)",
+          "then": "result === 'publish'",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Publication is emitted when published changes from false to true."
+        },
+        {
+          "testId": "detects-republish-transition",
+          "scenario": "An already published file receives a new publication timestamp.",
+          "given": [
+            "row.command === 'update'",
+            "row.prevPayload = { published: true, lastPublished: 'old' }",
+            "row.payload = { published: true, lastPublished: 'new' }"
+          ],
+          "when": "getPublishTransition(row)",
+          "then": "result === 'publish'",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Republishing is detected through a changed lastPublished value."
+        },
+        {
+          "testId": "detects-unpublish-transition",
+          "scenario": "An update changes a published file to unpublished.",
+          "given": [
+            "row.command === 'update'",
+            "row.prevPayload = { published: true }",
+            "row.payload = { published: false }"
+          ],
+          "when": "getPublishTransition(row)",
+          "then": "result === 'unpublish'",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Unpublication is emitted only when published changes from true to false."
+        },
+        {
+          "testId": "deletes-without-current-file-lookup",
+          "scenario": "A delete effect row is processed.",
+          "given": ["genericRow.command === 'delete'"],
+          "when": "processFileEffect(deps, genericRow)",
+          "then": "await deps.notifyDelete(genericRow.payload) and deps.getCurrentFile is not called",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Delete rows are terminal and use the outbox payload directly."
+        },
+        {
+          "testId": "ignores-missing-current-file",
+          "scenario": "A non-delete effect row refers to a file that no longer exists.",
+          "given": ["deps.getCurrentFile(row.entityId) resolves to undefined"],
+          "when": "processFileEffect(deps, row)",
+          "then": "no notification or publish operation is called",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "The current-file lookup is a staleness guard for non-delete rows."
+        },
+        {
+          "testId": "notifies-insert-with-current-file",
+          "scenario": "An insert row has a current file.",
+          "given": ["row.command === 'insert'", "deps.getCurrentFile(row.entityId) resolves to current"],
+          "when": "processFileEffect(deps, row)",
+          "then": "await deps.notifyInsert(current) and deps.notifyUpdate is not called",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Insert effects notify using present truth and stop without publication evaluation."
+        },
+        {
+          "testId": "updates-before-publication-action",
+          "scenario": "An update row has a current file and a publication transition.",
+          "given": ["row.command === 'update'", "deps.getCurrentFile(row.entityId) resolves to current"],
+          "when": "processFileEffect(deps, row)",
+          "then": "deps.notifyUpdate(current) completes before deps.publish or deps.unpublish",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Fresh room state is notified before any publication side effect."
+        },
+        {
+          "testId": "skips-publish-for-trashed-file",
+          "scenario": "A publish transition targets a currently deleted file.",
+          "given": [
+            "transition === 'publish'",
+            "current.isDeleted === true",
+            "current.published === true",
+            "current.lastPublished === row.payload.lastPublished"
+          ],
+          "when": "processFileEffect(deps, row)",
+          "then": "deps.publish is not called",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Trashed files must never be published from a race-artifact row."
+        },
+        {
+          "testId": "publishes-only-current-matching-transition",
+          "scenario": "A publish transition matches the current file's publication state and timestamp.",
+          "given": [
+            "transition === 'publish'",
+            "!current.isDeleted",
+            "current.published",
+            "current.lastPublished === row.payload.lastPublished"
+          ],
+          "when": "processFileEffect(deps, row)",
+          "then": "await deps.publish(current)",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Publishing requires all current-truth and timestamp guards to hold."
+        },
+        {
+          "testId": "unpublishes-only-current-unpublished-file",
+          "scenario": "An unpublish transition targets a file that is currently unpublished.",
+          "given": ["transition === 'unpublish'", "!current.published"],
+          "when": "processFileEffect(deps, row)",
+          "then": "await deps.unpublish(current)",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Unpublication is guarded against stale rows whose current file is still published."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "import declaration",
+        "FileEffectRow interface",
+        "getPublishTransition function",
+        "FileEffectDeps interface",
+        "processFileEffect function"
+      ],
+      "moduleLevelCode": "import { TlaEffectOutbox, TlaFile } from '@tldraw/dotcom-shared'",
+      "exports": [
+        { "name": "FileEffectRow", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "getPublishTransition", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "FileEffectDeps", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "processFileEffect", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "TlaEffectOutbox", "module": "@tldraw/dotcom-shared", "alias": null, "kind": "external" },
+        { "symbol": "TlaFile", "module": "@tldraw/dotcom-shared", "alias": null, "kind": "external" }
+      ],
+      "fileConstants": [],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "apps/dotcom/sync-worker/src/fileEffects.ts__getPublishTransition#function:getPublishTransition",
+        "unitKind": "function",
+        "name": "getPublishTransition",
+        "qualifiedName": "getPublishTransition",
+        "parentUnitId": null,
+        "startLine": 11,
+        "endLine": 25,
+        "isBehavioral": true,
+        "source": "export function getPublishTransition(\n\trow: Pick<FileEffectRow, 'command' | 'payload' | 'prevPayload'>\n): 'publish' | 'unpublish' | null {\n\tif (row.command !== 'update' || !row.prevPayload) return null\n\tconst file = row.payload\n\tconst previous = row.prevPayload\n\tif (file.published && (!previous.published || file.lastPublished !== previous.lastPublished)) {\n\t\treturn 'publish'\n\t}\n\tif (!file.published && previous.published) {\n\t\treturn 'unpublish'\n\t}\n\treturn null\n}\n",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/fileEffects.ts__getPublishTransition#function:getPublishTransition",
+          "fileId": "apps/dotcom/sync-worker/src/fileEffects.ts__getPublishTransition",
+          "unitKind": "function",
+          "name": "getPublishTransition",
+          "qualifiedName": "getPublishTransition",
+          "parentUnitId": null,
+          "startLine": 11,
+          "endLine": 25,
+          "signature": "export function getPublishTransition(row: Pick<FileEffectRow, 'command' | 'payload' | 'prevPayload'>): 'publish' | 'unpublish' | null",
+          "parameters": [
+            {
+              "name": "row",
+              "type": "Pick<FileEffectRow, 'command' | 'payload' | 'prevPayload'>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "'publish' | 'unpublish' | null",
+          "decorators": [],
+          "modifiersApplied": ["export"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["row has command, payload, and prevPayload fields compatible with FileEffectRow."],
+          "postconditions": [
+            "Returns 'publish' when an update changes the file into a published state or changes its lastPublished value while remaining published.",
+            "Returns 'unpublish' when an update changes the file from published to unpublished.",
+            "Returns null when the command is not 'update', prevPayload is absent, or no publish-state transition is detected."
+          ],
+          "invariants": [
+            "The input row and its payloads are not mutated.",
+            "The function returns only 'publish', 'unpublish', or null."
+          ],
+          "edgeCases": [
+            "A command other than 'update' returns null without evaluating a transition.",
+            "A missing or falsy prevPayload returns null.",
+            "A published current file with an unpublished previous file returns 'publish'.",
+            "A published current file whose lastPublished differs from the previous value returns 'publish'.",
+            "An unpublished current file with a published previous file returns 'unpublish'.",
+            "When both states are published with the same lastPublished value, or both are unpublished, the function returns null."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["FileEffectRow"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Determines whether a file update represents a publish transition, an unpublish transition, or no publication-state transition.",
+          "specLiterals": [
+            { "kind": "enum-value", "value": "publish", "role": "Return value identifying a publish transition." },
+            { "kind": "enum-value", "value": "unpublish", "role": "Return value identifying an unpublish transition." },
+            { "kind": "enum-value", "value": "null", "role": "Return value identifying no publish-state transition." },
+            { "kind": "enum-value", "value": "update", "role": "Required command value for transition evaluation." }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "getPublishTransition(row) is called",
+              "then": "It returns 'publish'.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "getPublishTransition(row) is called",
+              "then": "It returns 'unpublish'.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "getPublishTransition(row) is called",
+              "then": "It returns null.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "69064718230bdfb566fa40ef39c32ca31777eda209429c5f6e52f3533662e7be"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/fileEffects.ts__processFileEffect#function:processFileEffect",
+        "unitKind": "function",
+        "name": "processFileEffect",
+        "qualifiedName": "processFileEffect",
+        "parentUnitId": null,
+        "startLine": 36,
+        "endLine": 63,
+        "isBehavioral": true,
+        "source": "\t// Invariant: caller must route only tableName === 'file' rows here.\n\tconst row = genericRow as FileEffectRow\n\tif (row.command === 'delete') {\n\t\t// Terminal: appFileRecordDidDelete is self-guarded, no staleness check needed.\n\t\tawait deps.notifyDelete(row.payload)\n\t\treturn\n\t}\n\t// Staleness guard: act on present truth, treat the row as a wake-up signal.\n\tconst current = await deps.getCurrentFile(row.entityId)\n\tif (!current) return // hard-deleted since; a delete row follows or already ran\n\tif (row.command === 'insert') {\n\t\tawait deps.notifyInsert(current)\n\t\treturn\n\t}\n\tawait deps.notifyUpdate(current)\n\tconst transition = getPublishTransition(row)\n\tif (\n\t\ttransition === 'publish' &&\n\t\t// Publishing a trashed file is a race artifact; never publish it. Skipping is safe:\n\t\t// undeleteFile bumps lastPublished on restore, so a fresh publish runs then.\n\t\t!current.isDeleted &&\n\t\tcurrent.published &&\n\t\tcurrent.lastPublished === row.payload.lastPublished\n\t) {\n\t\tawait deps.publish(current)\n\t} else if (transition === 'unpublish' && !current.published) {\n\t\tawait deps.unpublish(current)\n\t}",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/fileEffects.ts__processFileEffect#function:processFileEffect",
+          "fileId": "apps/dotcom/sync-worker/src/fileEffects.ts__processFileEffect",
+          "unitKind": "function",
+          "name": "processFileEffect",
+          "qualifiedName": "processFileEffect",
+          "parentUnitId": null,
+          "startLine": 36,
+          "endLine": 63,
+          "signature": null,
+          "parameters": [],
+          "returnType": "Promise<void>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The caller routes only rows whose tableName is exactly 'file'.",
+            "The generic row can be treated as a FileEffectRow."
+          ],
+          "postconditions": [
+            "Delete rows invoke the delete notification with the row payload and then complete.",
+            "Non-delete rows with no current file complete without notifying or publishing.",
+            "Insert rows with a current file invoke the insert notification with the current file and then complete.",
+            "Other rows invoke the update notification with the current file before evaluating publication state.",
+            "A qualifying publish transition invokes publish, and a qualifying unpublish transition invokes unpublish."
+          ],
+          "invariants": [
+            "For non-delete rows, the action is based on the current file returned by getCurrentFile rather than solely on the row payload.",
+            "Publication is not performed for a current file marked as deleted.",
+            "A publish action requires the current lastPublished value to equal the row payload lastPublished value.",
+            "At most one of publish and unpublish is invoked for a single call."
+          ],
+          "edgeCases": [
+            "A delete row does not query current file state; it calls notifyDelete with the row payload.",
+            "A non-delete row whose entity no longer has a current file returns without invoking insert, update, publish, or unpublish.",
+            "An insert row with current state invokes notifyInsert and does not evaluate publication transition.",
+            "A publish transition for a trashed file is skipped.",
+            "A publish transition with a mismatched current lastPublished value is skipped.",
+            "An unpublish transition is acted on only when the current file is not published.",
+            "Rows whose command is neither 'delete' nor 'insert' follow the update path."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [
+              "Errors rejected by getCurrentFile, notifyDelete, notifyInsert, notifyUpdate, publish, unpublish, or getPublishTransition propagate to the caller."
+            ],
+            "reverts": [],
+            "onInvalidInput": "No explicit runtime validation is performed; the row is cast to FileEffectRow. Non-delete and non-insert commands follow the update path.",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [
+            "Dependency notifications may emit delete, insert, or update effects through notifyDelete, notifyInsert, and notifyUpdate.",
+            "publish or unpublish may emit the corresponding file publication event through the dependency layer."
+          ],
+          "complexity": null,
+          "calls": [
+            { "name": "getPublishTransition", "source": "same module", "kind": "internal" },
+            { "name": "getCurrentFile", "source": "deps", "kind": "external" },
+            { "name": "notifyDelete", "source": "deps", "kind": "external" },
+            { "name": "notifyInsert", "source": "deps", "kind": "external" },
+            { "name": "notifyUpdate", "source": "deps", "kind": "external" },
+            { "name": "publish", "source": "deps", "kind": "external" },
+            { "name": "unpublish", "source": "deps", "kind": "external" }
+          ],
+          "symbolReferences": ["FileEffectRow", "genericRow", "deps"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Processes a file effect row by notifying deletion, insertion, or update handlers using current file state. It publishes or unpublishes the current file only when the effect transition and current state satisfy the corresponding guards.",
+          "specLiterals": [
+            { "kind": "enum-value", "value": "delete", "role": "Identifies a terminal file deletion effect." },
+            { "kind": "enum-value", "value": "insert", "role": "Identifies a file insertion effect." },
+            { "kind": "enum-value", "value": "publish", "role": "Identifies a publication transition." },
+            { "kind": "enum-value", "value": "unpublish", "role": "Identifies an unpublication transition." },
+            { "kind": "enum-value", "value": "file", "role": "Required table name for rows routed to this processor." }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "processFileEffect is called.",
+              "then": "notifyDelete is awaited with P, getCurrentFile is not called, and no other dependency action is invoked.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "processFileEffect is called and getCurrentFile returns null or undefined.",
+              "then": "The function completes without invoking notifyInsert, notifyUpdate, publish, or unpublish.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "processFileEffect is called.",
+              "then": "notifyUpdate is awaited before publish, and publish is invoked with the current file.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "d4c40df25c67cc786d37c356ad062f46a1446e43dbd7699a722944abaf2b59f4"
+        }
+      }
+    ]
+  },
+  "out": [],
+  "in": ["apps/dotcom/sync-worker/src/TLFileEffectProcessor.ts", "apps/dotcom/sync-worker/src/fileEffects.test.ts"],
+  "externals": ["@tldraw/dotcom-shared"],
+  "impact": { "seeds": 2, "callers": 2, "impactedFiles": ["apps/dotcom/sync-worker/src/TLFileEffectProcessor.ts"] }
+}

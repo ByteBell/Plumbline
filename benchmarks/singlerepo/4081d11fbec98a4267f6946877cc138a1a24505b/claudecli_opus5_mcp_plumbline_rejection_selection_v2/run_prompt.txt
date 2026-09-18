@@ -1,0 +1,463 @@
+You are performing an information-retrieval task against a codebase.
+
+REPOSITORY:  calcom/cal.com
+COMMIT:      4081d11fbec98a4267f6946877cc138a1a24505b
+CHECKOUT:    cal.com.processed/4081d11fbec98a4267f6946877cc138a1a24505b/repo
+             All paths in this prompt are relative to the benchmark root
+             (/Users/sauravverma/programs/benchmarks/react-ecosystem). The checkout is the repository at exactly the
+             commit above - do not use any other revision, and do not use outside
+             knowledge of the project's later history.
+
+--- GATE ROSTER ---
+cal.com 4081d11fbec98a4267f6946877cc138a1a24505b cal.com.processed/4081d11fbec98a4267f6946877cc138a1a24505b/repo
+--- END GATE ROSTER ---
+
+QUERY (a symptom-level bug report):
+We pay for the plan that takes the vendor's own name and logo off what our attendees see. The page people book on respects that, but the mark is still there on confirmation and reminder messages, on the code-verification message sent before a booking is taken, and after a paid booking goes through. It also behaves one way for a team event and another way for an ordinary member's own event.
+
+TASK: Identify which files in this repository, as it stands at the commit above, would have to
+change to fix the issue described. Run the algorithm below, in order.
+
+================================ ALGORITHM ================================
+
+This is a procedure over explicit state, not advice. Run it in order.
+  ASSERT  = a condition that must hold. If it fails, go back and repair the
+            state before continuing. Never proceed past a failing ASSERT.
+  Where a rule and your judgement disagree, the rule wins. The QUERY describes a
+  SYMPTOM and withholds the identifiers, so the instinct that says "this one is
+  obviously it" is operating on vocabulary, not evidence.
+
+
+---- STATE ----------------------------------------------------------------
+Maintain these as you go. STEP 6 is COMPUTED from them; it is not a fresh
+judgement at the end.
+
+  OB[]       obligations.  each = { id, phrase, areas[], status, closers[] }
+             status in { OPEN, CLOSED }; closers[] is a LIST and MAY HOLD MORE
+             THAN ONE FILE.
+  RETAINED   areas kept at 0.3.  each = { area, verdict, relevance, depth }
+             relevance in [0.0, 1.0] — how strongly this area could hold an
+             obligation, YOUR judgement, assigned at 0.3s before any search.
+             depth is DERIVED from relevance by the 0.3s table and is the number
+             of paths you fold from in that area. Every scoped call's
+             pathContains comes from this table and from nowhere else.
+  DROPPED    areas excluded at 0.3, each with the verdict that dropped it.
+  SWEPT      set of (ob_id, area) pairs actually searched. A pair enters SWEPT
+             only after a stakeout carrying THAT ob's phrase INTO that area.
+  SEEN       EVERY path any call returned, all run long. Append, never prune.
+  CONFIRMED  files you READ in STEP 5 and judged.
+             each = { path, role, why },  role in { VIOLATOR, OWNER, EVIDENCE }
+  FOLDED     files you ran collateral_damage FROM. Every CONFIRMED file ends up
+             here; 5.4b is the loop that puts it there.
+  RULED_OUT  files you READ and positively excluded against VERBATIM SOURCE.
+             Not reading a file NEVER puts it here.
+  CANDIDATES = SEEN minus CONFIRMED minus RULED_OUT. These ARE part of the
+             answer (6.3); they rank below CONFIRMED, they are not discarded.
+  NAMES      symbols learned from results, pending their repo-wide sweep.
+
+  INVARIANT-1   Every file in CONFIRMED is emitted in STEP 6. Always. No filter,
+                no "already covered by another file". CONFIRMED IS THE ANSWER.
+  INVARIANT-2   status = CLOSED records a fact. It NEVER removes work from a
+                list and NEVER exits a loop.
+  INVARIANT-3   VERIFICATION SETS ORDER, NEVER LENGTH. Reading a file decides
+                WHERE it ranks, never WHETHER it is named. A file you retrieved
+                and could not get to is ranked low — it is not dropped.
+
+
+---- UNIT — the scope unit this algorithm ranges over ----------------------
+  UNIT = one top-level AREA of this monorepo: apps/*, packages/*, and the
+  feature folders under them. Areas play the part separate repositories play
+  in a multi-repository task: different maintainers, different registers, and
+  code in one routinely does not import code in another.
+  Every rule below that says UNIT means area here. ob.units[] == ob.areas[].
+  RETAINED and DROPPED hold AREAS for the same reason.
+
+---- STEP 0 — GROUND.  These calls are free; make them before anything else. --
+  0.1  roll_call once.
+       ASSERT: this repository appears in the output. Take its knowledgeId from
+       roll_call VERBATIM and use that on every scoped call — the indexed name
+       need not match the name in the header above, and a knowledgeId you typed
+       from memory silently answers about nothing.
+       ON FAIL — the repository is ABSENT — STOP and say so plainly. Answering
+       from memory about a repository that is not indexed is never acceptable.
+
+       A PIN THAT DIFFERS FROM roll_call IS NOT DRIFT. roll_call reports ONLY
+       the NEWEST indexed commit, never the full indexed history. The COMMIT
+       above is an older snapshot that is also indexed. Do NOT stop, and do NOT
+       quietly answer at the newest commit instead.
+  0.2  COMMIT DISCIPLINE. Pass commitHash = 4081d11fbec98a4267f6946877cc138a1a24505b
+       on EVERY call — stakeout, case_file, the_receipts, collateral_damage, all
+       of them. Omitting it answers at the wrong snapshot: a path that exists at
+       the pin and not at the tip comes back as a CLEAN ABSENCE rather than an
+       error, indistinguishable from the file not existing, and silently
+       unrecoverable.
+  0.3  blueprint( knowledgeId, commitHash ) once, to learn how this monorepo is
+       laid out: its areas and the dependency edges between them. STEP 2 is
+       computed from it.
+       After the layout, filter out areas that are clearly not required for any
+       further probe; do not spend scoped-search calls on them. If the layout
+       leaves any doubt about an area's relevance, open that area before
+       deciding. A thin or ambiguous entry is not grounds for exclusion. Keep
+       every area that could plausibly contain an obligation, including
+       unlikely-looking peers, and use the retained set when building ob.areas[].
+       The retained set is RETAINED, not ranked-down: an area you keep is swept
+       in full by STEP 3 exactly like any other.
+       WRITE RETAINED[] OUT NOW, before STEP 1, as a table — one line per area
+       you kept:
+         <area path prefix>   <the verdict that kept it>
+       and DROPPED[] under it, one line each with the verdict that dropped it.
+       From here on, every pathContains you pass comes from this table and from
+       nowhere else. A prefix you copy from a table you wrote once cannot drift
+       call to call, and an area absent from the table cannot be searched at all.
+  0.3s SCORE EVERY RETAINED AREA, before STEP 1, in the same table.
+       Give each a relevance in [0.0, 1.0]: how strongly this area could hold an
+       obligation, given the layout and the QUERY. This is a RANKING OF EFFORT,
+       not a second chance to exclude — an area scored 0.1 is still swept in
+       full by STEP 3. Dropping is 0.3 and needs a verdict; scoring is how the
+       run decides where to go DEEP.
+       DERIVE depth from relevance, mechanically:
+         relevance >= 0.7   depth = 3    read + fold the top 3 paths
+         0.4 <= rel < 0.7   depth = 2    read + fold the top 2 paths
+         relevance <  0.4   depth = 1    fold the top 1 path
+       ASSERT: at least one area scores >= 0.7, and at least two score < 0.4.
+       ON FAIL -> you have flattened the ranking and every area now costs the
+       same. Re-score against the layout, not against your first guess.
+       WRITE relevance AND depth into the RETAINED[] table now. STEP 3.5b and
+       STEP 5 read depth from that table and from nowhere else; recomputing it
+       mid-run is how effort quietly drifts back to whatever you searched last.
+
+  0.3a THE LADDER FOR "ANY DOUBT". Climb it in order, each rung answering what
+       the rung below could not:
+         blueprint(knowledgeId, commitHash)           -> the areas and the
+                                                         dependency edges
+                                                         between them
+         blueprint(knowledgeId, commitHash, module)   -> the files in ONE area
+         rap_sheet(knowledgeId, commitHash)           -> the full 200-800 word
+                                                         account of what this
+                                                         system does at this
+                                                         commit, and the shape
+                                                         of its module graph
+       Climb it for an area that neither clearly holds an obligation nor clearly
+       rules one out — that is exactly where a wrong call costs a whole
+       obligation's sweep. Do NOT climb it for every area: an area the layout
+       already places is placed, and an area you are keeping anyway needs no
+       further argument.
+  0.3b WHY THE LADDER IS WORTH ITS CALLS. STEP 3 scopes a phrase INTO an area.
+       Scoped into the right one it returns the file; scoped into an area
+       nothing ever placed, it returns whatever shares the most vocabulary with
+       your words — plausible, numerous, and wrong, and every one of those rows
+       then has to be read or ruled out. Deciding WHICH areas before the sweep is
+       what makes 3.2 a targeted call rather than a sample of everything. Spend
+       calls here, where one answer sets the scope of every later call, not on a
+       page of near-misses afterwards.
+       DROPPING IS A VERDICT AND NEEDS THE LADDER. An area leaves the retained
+       set only after the layout — or the deeper rung, if there was any doubt —
+       positively says the behaviour is not its business. "I did not look" and
+       "the entry was thin" are not verdicts; they keep it.
+  0.3c A DROPPED AREA STAYS DROPPED. Repo-wide calls — manhunt with
+       pathContains omitted (4.1), dragnet — answer from the WHOLE repository,
+       DROPPED[] included, and a fold can hand back an edge into one. When a
+       result names a path under an area not in RETAINED[]:
+         - do NOT add it to SEEN;
+         - do NOT read it, fold it, or spend a call re-deciding it;
+         - do NOT emit it in STEP 6.
+       Drop it silently and keep going. You already spent the ladder on that
+       decision; re-opening it on the strength of one search hit spends the run
+       twice and hands the head of the list back to the vocabulary you filtered
+       out. The ONE thing that reverses a drop is finding the area in RETAINED[]
+       after all — i.e. you mis-transcribed the table. Fix the table, not the
+       verdict.
+
+
+---- STEP 1 — BUILD OB[].  Before any search. -----------------------------
+  1.1  Split the QUERY into obligations:
+         - ONE for the code that VIOLATES the contract, on the path the symptom
+           describes;
+         - ONE FOR EACH SEPARATE CLAUSE describing code that already gets it
+           right, or that the wrong behaviour has to travel through to reach the
+           symptom. Two surfaces the QUERY says disagree are TWO obligations,
+           not one.
+  1.2  For each, record id, and phrase = the behaviour in the QUERY's OWN WORDS,
+       a handful of content words. Keep it SHORT: padding a phrase into a
+       sentence dilutes the match enough to drop real hits out of range.
+  1.3  Set status = OPEN, closers = [] for all.
+       ASSERT: |OB[]| >= 3.
+
+
+---- STEP 2 — BUILD ob.areas[] FOR EVERY OBLIGATION.  Before any search. ----
+  This is a monorepo. Its top-level areas — apps/*, packages/* and the feature
+  folders under them — play the part separate repositories play elsewhere: they
+  are maintained by different people, in different registers, and code in one
+  routinely does not import code in another.
+  FOR EACH ob IN OB[]:
+  2.1  From RETAINED[], list EVERY area whose subject matter could plausibly
+       hold this obligation. Be generous; breadth is close to free, because the
+       FIRST scoped call into an area this run has not queried yet is never
+       rationed, however much you have already spent. Re-querying an area you
+       HAVE searched is what gets rationed. So the cheap move and the correct
+       move are the same move.
+  2.2  ASSERT: |ob.areas| >= 4, and at least one entry is an area that does NOT
+       obviously fit.
+       ON FAIL -> the list is a guess, not a scope. Widen it now.
+       ON FAIL because RETAINED[] itself holds fewer than 4 areas -> you dropped
+       too hard at 0.3. Go back and re-earn each drop against 0.3b.
+  2.2a ASSERT: every area in RETAINED[] appears in some ob.areas[].
+       ON FAIL -> assign it to the nearest obligation.
+       First touches are unrationed (2.1). Coverage of the retained set is free.
+       An area DROPPED at 0.3 is dropped on a verdict (0.3b), not by omission
+       here. If you cannot say which rung dropped it, it was never dropped — put
+       it back in RETAINED[] and scope it.
+  2.3  THE OBVIOUS-OWNER TRAP — this is where runs are lost. When a behaviour
+       has one famous owner, naming that owner FEELS like completing this step.
+       It is skipping it. The more obviously one area owns a behaviour, the more
+       certainly the OTHER implementations of it are the ones you have not
+       thought of. A list of one entry is not a short list; it is a skipped step.
+  2.4  A behaviour is consumed in more places than it is defined. The area that
+       DEFINES it, the area that PERSISTS it, the area that RENDERS it and the
+       area that ACTS on it are four different areas, and the defect is a
+       disagreement between two of them. Do not pre-guess which two.
+
+
+---- STEP 3 — SWEEP.  This is the whole run. -------------------------------
+  FOR EACH ob IN OB[]:
+    FOR EACH area IN ob.areas:
+      3.1  IF (ob.id, area) IN SWEPT -> skip.
+      3.2  CALL stakeout( query = ob.phrase, knowledgeId = <from 0.1>,
+                          commitHash = <the pin>, searchIn = 'both',
+                          pathContains = <that area, verbatim from RETAINED[]> )
+           pathContains WANTS A VAGUE QUERY. Narrowing the path and the words at
+           once returns nothing: a precise filename as the query scores 0 where a
+           contentless one scores the file. Scope the PATH, loosen the WORDS.
+      3.3  Add (ob.id, area) to SWEPT. Add returned paths to SEEN, and any
+           function / class / exported symbol that matters to NAMES.
+      3.4  DO NOT BREAK. ob.status = CLOSED exits NEITHER loop.
+
+  3.5b FOLD AS YOU SWEEP. Do this INSIDE the area loop, the moment 3.3 adds
+       that area's paths to SEEN. Do NOT wait for STEP 5 and do NOT wait for a
+       file to be CONFIRMED — waiting is what starves the fold, because a run
+       that never reaches STEP 5 never folds at all.
+       FOR the top `depth` paths that area returned (depth from the 0.3s table),
+       each NOT already in FOLDED:
+         collateral_damage( relativePath = <path>, knowledgeId = <from 0.1>,
+                            commitHash = <the pin> )
+       Add each to FOLDED; add everything it returns to SEEN.
+       A fold needs NO verdict about the file it starts from. It is the only
+       call that reaches type declarations, barrel files and call sites — code
+       that shares no vocabulary with your phrase and that stakeout therefore
+       cannot return however many times you run it. An unfolded area has been
+       searched, not explored.
+       ASSERT (FOLD FLOOR, checked on exit of STEP 3):
+         |FOLDED| >= number of stakeout calls you have made.
+       ON FAIL -> you are search-heavy and fold-starved. Go back and fold the
+       unfolded areas until it holds. Measured: runs that searched 3-4x more
+       often than they folded missed gold files that sat in areas they had
+       already reached, because nothing ever walked an edge into them.
+
+  3.5  ASSERT ON EXIT, per obligation:
+         count{ a : (ob.id, a) IN SWEPT } == |ob.areas|,  FOR EVERY ob.
+       ON FAIL -> go back and sweep the missing pairs. An obligation is not
+       swept because SOME area answered it.
+
+  3.a  PHRASE DISCIPLINE. Each ob's phrase goes to every area on ITS OWN list.
+       An area swept with OB-1's words HAS NOT BEEN SWEPT for OB-3.
+  3.b  DO-NOT-BREAK. A behaviour one area implements is routinely implemented by
+       three. The first you find is the one sharing the most vocabulary with your
+       phrase — not necessarily the one the QUERY means.
+  3.c  An area you have not scoped into is NOT evidence of absence. This is why
+       0.3 demands a verdict before a drop: a dropped area is one you are
+       choosing never to gather this evidence about.
+  3.6  ON REFUSAL (a tool declines with a cap): not an error, not a server
+       failure, never a reason to stop, and never a fact about your query. Three
+       ways through, in order: (a) scope into a RETAINED area not yet queried;
+       (b) spend the tools the refusal names — walking a file's edges reaches the
+       type declaration, the barrel and the call site, which no search reaches;
+       (c) return to the refused tool once the total has risen.
+
+
+---- STEP 4 — NAME SWEEP.  FOR EACH name IN NAMES: ------------------------
+  4.1  CALL manhunt( name ), pathContains OMITTED. One call, exact, whole repo.
+       0.3c governs what comes back: hits under a DROPPED area are discarded
+       without a call.
+  4.2  SIBLING PACKAGES ARE THE POINT. A capability shipped as several adapter
+       packages — API versions, framework bindings, task handlers — implements
+       the SAME name in each, and those packages do not import one another, so
+       no fold and no dependency walk will ever cross between them. This sweep
+       is the only thing that reaches them all. Two directories differing only
+       by a date or version segment are siblings of exactly this kind.
+  4.2a A SIBLING SET STRADDLING THE TABLE IS A DROP YOU GOT WRONG. If a name
+       resolves to N siblings and some sit under RETAINED areas and some under
+       DROPPED ones, the drop separated code that ships one behaviour. Put those
+       areas back in RETAINED[] and scope them. This is the one reversal 0.3c
+       allows, and it is a correction to the table, not an exception to it.
+  4.3z ASSERT: name one sibling -> name all N of that filename.
+       ON FAIL -> add the missing siblings.
+       One of N is a coin-flip. All N costs N slots and cannot miss.
+  4.3  When it returns N siblings, EVERY ONE enters SEEN as a candidate. They
+       differ from each other, and THE ONE THAT DIFFERS IS USUALLY THE POINT.
+  4.4  SEED THE SHARED CORE, NOT THE ADAPTER YOU FOUND FIRST. Adapter packages
+       have no edges to each other, so a fold from one reaches none of the rest.
+       The core they all import does. When siblings appear, find the core package
+       that holds the behaviour they adapt, READ IT (5.1) and FOLD IT (5.4b)
+       before ranking any adapter — from the core every adapter is one hop, and
+       the adapter you found first is one arbitrary hop from nothing.
+
+
+---- STEP 5 — READ AND CLASSIFY.  Ruling a file OUT costs what ruling it IN --
+---- costs.  FOR EACH path IN SEEN that could bear on any obligation: -------
+  5.0  ENTRY GATE. STEP 5 is not optional and is not the step you skip when
+       the run feels long. Before STEP 6 you must have called case_file at least
+       once in EVERY area scoring >= 0.7, and
+         ASSERT: |CONFIRMED| >= 5, or |CONFIRMED| == |SEEN| if SEEN is smaller.
+       ON FAIL -> keep reading. A run that emits with CONFIRMED empty has ranked
+       nothing: every path it names is an unread search hit, and BAND 1 — the
+       band INVARIANT-1 calls the answer — is empty.
+       Spend reads in `depth` order: an area scoring >= 0.7 gets its top 3 paths
+       read, 0.4-0.7 its top 2, below 0.4 its top 1. That is what the score is
+       FOR.
+  5.1  CALL case_file(path) -> every code unit with its declared startLine-
+       endLine. THEN the_receipts on THAT DECLARED RANGE. Ranges you pick
+       yourself are guesses, and a guessed window that happens to look innocent
+       is how a violating file gets cleared.
+  5.2  Never judge a file from a purpose, summary, signature, path, or from a
+       search that came back empty. Those prose fields were written by a model at
+       index time. An empty search is a fact about your query, not the file.
+  5.3  CLASSIFY from the verbatim source, and append to CONFIRMED with a role:
+         VIOLATOR  — it implements the behaviour the QUERY calls wrong, or
+                     passes on a value it took from the wrong source.
+         OWNER     — it owns where that behaviour is defined, resolved or
+                     persisted: the contract the violator must be brought in
+                     line with.
+         EVIDENCE  — it grounded a verdict about ANOTHER file: the in-repo proof,
+                     the sibling that does it right, the counterexample that made
+                     a sibling's omission legible.
+       EVIDENCE IS A FULL ROLE, NOT A FOOTNOTE. See 6.4.
+  5.4  IF the file satisfies an obligation: APPEND it to ob.closers and set
+       ob.status = CLOSED. APPEND, never replace. CLOSING IS NOT CHOOSING.
+  5.4a A CONFIRMED VIOLATOR DOES NOT END THE SEARCH FOR VIOLATORS. Its ob stays
+       on every loop; 3.5 still applies to it in full. A peer that does the same
+       job is cleared by 5.5 or stays a CANDIDATE — never by the fact that you
+       already have one. Nothing in the QUERY says only one file violates.
+       ASSERT: you did not narrow that ob's areas[] after its first closer.
+  5.4b FOLD FROM EVERY CONFIRMED FILE — the catch-up loop. 3.5b already folded
+       each area's top `depth` paths; this closes the gap for files that became
+       CONFIRMED afterwards. A loop, not one call.
+       FOR EACH f IN CONFIRMED (VIOLATOR, OWNER and EVIDENCE alike), f NOT IN
+       FOLDED:  collateral_damage( relativePath = f.path, knowledgeId = <from
+       0.1>, commitHash = <the pin> ).  Add f to FOLDED, returns to SEEN.
+       One fold off one seed is a single point of failure: every file it reaches
+       is a neighbour of ONE file. Folding each confirmed file independently is
+       what survives a bad seed. It also reaches declarations, barrels and call
+       sites, which share no vocabulary with your phrase and so are invisible to
+       stakeout however often you run it.
+       ASSERT ON EXIT OF STEP 5: FOLDED == CONFIRMED.
+       ON REFUSAL: 3.6 applies; it is not a verdict about that file.
+  5.5  RULING OUT REQUIRES VERBATIM SOURCE. "I did not get to it", "the summary
+       looked wrong" and "the search came back empty" are NOT rulings — each
+       leaves the file a CANDIDATE. Running out of calls is not a verdict.
+  5.6  You will not read everything you retrieve. That is expected: the unread
+       remainder is CANDIDATES, and 6.2 emits it.
+
+
+---- STEP 6 — EMIT.  COMPUTED FROM STATE.  Do not re-decide here. ----------
+  6.1  First, in plain text before the JSON, print the LEDGER:
+         - RETAINED[] and DROPPED[] as you wrote them at 0.3, each with its
+           verdict, and any correction 4.2a forced;
+         - one line per obligation: id, phrase, status, closers;
+         - the counts |SEEN|, |CONFIRMED|, |RULED_OUT|, |CANDIDATES|.
+       The ledger is prose and is not the answer. The JSON is.
+  6.2  BUILD THE LIST IN TWO BANDS, IN THIS ORDER. LIST_CAP = 75 paths total.
+         BAND 1 — every path in CONFIRMED, whatever its role, ranked
+                  most-likely-first. This is INVARIANT-1 and it is mechanical.
+         BAND 2 — every path in CANDIDATES, ranked by how strongly the search
+                  that returned it bore on an obligation, appended BELOW band 1.
+       Truncate only at LIST_CAP, and only from the bottom.
+  6.2b ROUND-ROBIN BY UNIT. Reorder both bands before emitting:
+       WHILE any UNIT holds an unemitted path:
+         take its highest-ranked unemitted path, one UNIT at a time.
+       Band 1 round-robins first, then band 2. Within-UNIT order is preserved.
+       Confidence order alone gives the head of the list to one UNIT.
+  6.2c ASSERT: no UNIT holds > 25 while a SWEPT UNIT holds 0.
+       ON FAIL -> swap its lowest-ranked paths for the best path from each
+       empty UNIT, one for one.
+       The cheapest path you hold is the Nth from ground already covered.
+  6.3  ASSERT: every path you name ANYWHERE in the 6.1 ledger prose, or cite in
+       "contract" or "defect_location", also appears in "answer". IF IT WAS GOOD
+       ENOUGH TO JUSTIFY A VERDICT, IT IS GOOD ENOUGH TO NAME.
+  6.4  ASSERT: |answer| == min( |CONFIRMED| + |CANDIDATES| , 75 ).
+       ON FAIL -> you silently dropped paths this run RETRIEVED. Put them back.
+       A SHORT LIST IS NOT A CAREFUL LIST. You are scored on how much of the true
+       change set you name. A wrong path ranked 20th costs you almost nothing; a
+       right one you declined to name is lost outright. When unsure, NAME IT
+       LOWER — never omit it.
+       6.2b reorders and 6.2c swaps one-for-one. Neither reduces |answer|.
+       If a swap finds nothing to promote, refill from the dropped paths.
+  6.5  Repo-relative paths only — no leading slash, no repo-name prefix.
+  6.6  Source files only: no tests, docs, examples, fixtures, benchmarks, build
+       output, dependency directories or generated API reports.
+  6.7  ASSERT: every path was RETURNED BY A CALL. A path completed from memory or
+       inferred from directory layout is not a result.
+  6.8  TERMINATION GATE. You may NOT end your turn while BOTH of these hold:
+         (a) |answer| < LIST_CAP, and
+         (b) some area in RETAINED[] has been swept but appears in no fold you
+             have made.
+       ON FAIL -> go back to 3.5b and fold that area. Running out of interest is
+       not running out of budget: every arm measured so far stopped voluntarily,
+       under the cap, with gold still sitting unretrieved in areas it had
+       already searched. Stopping early costs recall outright and saves nothing
+       that is scored.
+  6.9  Your FINAL message is the JSON object and NOTHING ELSE. The 6.1 ledger
+       goes in the message BEFORE it.
+
+
+RULES:
+- You may ONLY use the plumbline MCP tools. You have no filesystem, shell, or search access.
+- Do not stop at the first plausible file. The fix likely spans multiple files.
+- Every path you return must be relative to the checkout root (cal.com.processed/4081d11fbec98a4267f6946877cc138a1a24505b/repo), exactly as it appears
+  at this commit: no leading slash, no absolute prefix, no path that does not exist there.
+  Example of the required form: packages/features/bookings/lib/handleNewBooking.ts
+
+RUN CONDITIONS (MANDATORY - this run is invalid if any of these is not met):
+- LAUNCH: one fresh session per run. Prompt caching WITHIN this run is fine -
+  cache this session creates and reads back is expected and costs nothing in
+  comparability. What is forbidden is inheriting cache from an EARLIER session:
+  do not resume or continue a prior session, do not reuse a session across cases
+  or arms, and do not re-attempt a case in a session that already attempted it.
+  A run that starts warm on someone else's context is not a measurement.
+- Confirm your tool surface is actually live for THIS
+  repository at THIS commit. If the index or server does not have it, STOP and
+  say so plainly. Do not answer from parametric memory, from another revision,
+  or from a partially indexed snapshot, and do not return a guessed list. A run
+  against a missing index is a failed run to be relaunched after indexing - it
+  is not an empty answer.
+- COST: cost.json must record cache_read and cache_creation next to the USD
+  figure, and both must be attributable to THIS run alone. If the session was
+  resumed, reused, or had already attempted the case, say so plainly in your final
+  message so the run can be marked not-comparable instead of scored against clean runs.
+
+DELIVERABLES: the harness captures this run for you - it records the full transcript
+(output.log), every tool call (commands.log) and the cost from /session-analysis (cost.json), and it
+writes ranked.json from your final message. You have no write tools; do not attempt to create files.
+result.json is NOT yours to produce and nothing you emit lands in it: after the run the scorer
+writes it from ranked.json against the held-out gold set, carrying recall@10/@20,
+precision@5/@10/@20, F1_full_list/F1@20, MRR and hits alongside ranked_detail, found,
+missed_gold and retriever.
+Your only job is the ranked list, capped at 75 paths.
+
+FINAL MESSAGE: output ONLY a JSON object, no prose and no markdown fence, in exactly
+this shape - the harness saves it verbatim as agent_answer.json:
+
+{
+  "contract": "<one paragraph stating the rule the defect breaks, phrased so it applies
+                to every file you name - not a restatement of the symptom>",
+  "defect_location": {
+    "repo": "calcom/cal.com",
+    "summary": "<where the defect is and why it breaks the contract, citing
+                 <path>:<line-range> for every claim you make>"
+  },
+  "answer": ["packages/foo/bar.ts", "packages/foo/baz.tsx"]
+}
+
+"answer" is the ranked list and is exactly what ranked.json must contain: a flat JSON
+array of checkout-relative paths, most likely first, maximum 75. The harness extracts it
+into ranked.json as a bare array - the scorer reads that file directly. "contract" and "defect_location" are graded
+alongside it, so state them from what your tools actually showed you.

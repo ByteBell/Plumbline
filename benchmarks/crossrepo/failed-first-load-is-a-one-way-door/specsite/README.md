@@ -6,11 +6,15 @@ files is the union of
 - the 15 gold files in `../golden.json`, and
 - the 48 files any arm returned in its `ranked.json`.
 
-`MANIFEST.json` says, for each file, whether it is gold, run-returned or both,
-which arms named it, the commit its page was taken from, and - when no page was
-copied - why. 36 of 48 files have a page; 12 do not.
+Every page is taken at that repo's ROSTER PIN — the same commit the arms searched.
+A repo whose pinned commit has no page for a file gets no page at all; pages are
+never borrowed from another commit.
 
-Pages come from /Users/sauravverma/programs/kube-package/temp/orgs/36af0f7a-fdf4-4497-9795-19d263268800/github (`<knowledgeId>/<owner>/<repo>/<scan>/<commit>/meta/spec-site/files/<sha>.json`).
+`MANIFEST.json` says, for each file, whether it is gold, run-returned or both,
+which arms named it, the pinned commit, where the page came from (`local` tree or
+`s3` mirror), and - when no page was copied - why, including the scan-manifest
+`kind` when that is what explains it. 43 of 48 files have a page
+(8 fetched from the mirror); 5 do not.
 
 Arms in this case:
 

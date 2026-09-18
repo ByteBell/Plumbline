@@ -1,0 +1,71 @@
+{
+  "duration_api_ms": 755171,
+  "stop_reason": "end_turn",
+  "session_id": "e81b2752-50c3-43d4-bff2-db09b1905b7a",
+  "total_cost_usd": 8.161375499999998,
+  "usage": {
+    "input_tokens": 98,
+    "cache_creation_input_tokens": 278041,
+    "cache_read_input_tokens": 7804651,
+    "output_tokens": 59126,
+    "output_tokens_details": { "thinking_tokens": 38182 },
+    "server_tool_use": { "web_search_requests": 0, "web_fetch_requests": 0 },
+    "service_tier": "standard",
+    "cache_creation": { "ephemeral_1h_input_tokens": 278041, "ephemeral_5m_input_tokens": 0 },
+    "inference_geo": "not_available",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 3457,
+        "cache_read_input_tokens": 260037,
+        "cache_creation_input_tokens": 18004,
+        "cache_creation": { "ephemeral_5m_input_tokens": 0, "ephemeral_1h_input_tokens": 18004 },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-opus-5": {
+      "inputTokens": 98,
+      "outputTokens": 59126,
+      "cacheReadInputTokens": 7804651,
+      "cacheCreationInputTokens": 278041,
+      "webSearchRequests": 0,
+      "costUSD": 8.161375499999998,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "canonicalModel": "claude-opus-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": { "background": 0, "foreground": 0, "unset": 0 },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": { "parent": 0, "user": 0, "system": 0 },
+    "refused": { "depth_limit": 0, "concurrency_limit": 0, "budget": 0 },
+    "by_type": {}
+  },
+  "is_error": false,
+  "num_turns": 49,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "{\"contract\": \"Every public booking surface rendered under an organisation — a team event page, an organisation member's personal profile page, and that member's personal event-type page alike — must resolve its brand colours (brandColor, darkBrandColor) and its light/dark theme preference from the organisation that owns the profile being viewed, falling back to the individual's or team's own values only when no owning organisation exists. Any code path that builds the public 'profile' object handed to the booker, or that selects the columns that object is built from, must therefore consult the viewed user's organisation; a path that reads branding straight off the user row, or that omits the organisation's branding columns from its query, silently yields a differently-styled page for the same visitor depending on which link they followed.\", \"defect_location\": {\"repo\": \"calcom/cal.com\", \"summary\": \"The rule that chooses whose branding a booking page wears lives in packages/features/eventtypes/lib/getPublicEvent.ts:585-614. getProfileFromEvent computes `const styleProfile = team || event.parent?.team || nonTeamProfile;` (line 591) and returns brandColor/darkBrandColor/theme from it (lines 606-608). For a personal event type there is no team and no parent team, so styleProfile collapses to nonTeamProfile — the member's own user row — and the organisation is never consulted. The organisation could not win even if it were consulted, because userSelect at packages/features/eventtypes/lib/getPublicEvent.ts:31-50 selects the user's own brandColor/darkBrandColor/theme (37-39) but its nested `organization` select (41-48) fetches only id, name, slug and bannerUrl; the team select at lines 91-112 by contrast does fetch brandColor, darkBrandColor and theme (95-100), which is exactly why team event pages are themed and personal ones are not. The same file's dynamic-group branch repeats the fault at lines 338-342, taking users[0].brandColor/darkBrandColor and hardcoding `theme: null`. The working counterpart confirms the asymmetry rather than contradicting it: apps/web/app/(booking-page-wrapper)/team/[slug]/[type]/queries.ts:88 calls the very same getProfileFromEvent but with a team in hand, and apps/web/lib/team/[slug]/[type]/getServerSideProps.tsx:196-254 pulls the parent organisation into its query (200-213) before rendering through apps/web/modules/team/type-view.tsx. The personal profile page repeats the defect independently: apps/web/server/lib/[user]/getServerSideProps.ts:133-145 builds profile with `theme: user.theme`, `brandColor: user.brandColor ?? DEFAULT_LIGHT_BRAND_COLOR` and `darkBrandColor: user.darkBrandColor ?? DEFAULT_DARK_BRAND_COLOR` even though user.profile.organization is assigned two lines later (line 144), and apps/web/modules/users/views/users-public-view.tsx:29 then applies only `useTheme(profile.theme)` — the member's own preference, with no brand colour applied at all. The wrong values travel to the screen through apps/web/server/lib/[user]/[type]/getServerSideProps.ts:269-282 and apps/web/modules/users/views/users-type-public-view.tsx:33-50 into packages/platform/atoms/booker/BookerWebWrapper.tsx:203-207, which forwards event.data?.profile.brandColor/darkBrandColor/theme into packages/features/bookings/Booker/utils/use-brand-colors.tsx:5-21, where packages/lib/getBrandColours.tsx and packages/lib/hooks/useTheme.ts turn them into CSS variables and the light/dark class. The org-domain route apps/web/lib/org/[orgSlug]/[user]/[type]/getServerSideProps.tsx:18-59 simply delegates to whichever of the two handlers matches, so it inherits the team path's correct behaviour and the personal path's wrong one. The organisation's branding columns that should be read are owned by packages/features/users/repositories/UserRepository.ts (selects at 102-113 and 978-985) and packages/prisma/schema.prisma, and are set from packages/features/ee/organizations/pages/settings/appearance.tsx. A repo-wide manhunt confirms getProfileFromEvent has exactly one implementation, so the fix has a single rule site plus the personal-page props and view that bypass it.\", \"answer\": [\"packages/features/eventtypes/lib/getPublicEvent.ts\", \"apps/web/server/lib/[user]/getServerSideProps.ts\", \"packages/platform/atoms/booker/BookerWebWrapper.tsx\", \"packages/lib/getBrandColours.tsx\", \"packages/features/users/repositories/UserRepository.ts\", \"apps/web/modules/users/views/users-public-view.tsx\", \"packages/lib/hooks/useTheme.ts\", \"packages/features/bookings/Booker/utils/use-brand-colors.tsx\", \"apps/web/server/lib/[user]/[type]/getServerSideProps.ts\", \"apps/web/app/(booking-page-wrapper)/team/[slug]/[type]/queries.ts\", \"apps/web/modules/users/views/users-type-public-view.tsx\", \"apps/web/lib/team/[slug]/[type]/getServerSideProps.tsx\", \"apps/web/lib/org/[orgSlug]/[user]/[type]/getServerSideProps.tsx\", \"apps/web/modules/team/type-view.tsx\", \"packages/features/eventtypes/repositories/EventRepository.ts\", \"apps/web/modules/team/team-view.tsx\", \"packages/lib/constants.ts\", \"packages/ui/styles/useCalcomTheme.tsx\", \"packages/platform/atoms/hooks/event-types/public/useAtomGetPublicEvent.tsx\", \"packages/embeds/embed-core/src/embed-iframe.ts\", \"packages/prisma/schema.prisma\", \"packages/trpc/server/routers/viewer/eventTypes/utils/transformUtils.ts\", \"apps/api/v2/src/modules/atoms/services/event-types-atom.service.ts\", \"packages/app-store/_utils/bulkUpdateTeamEventsToDefaultLocation.ts\", \"packages/emails/src/components/BaseEmailHtml.tsx\", \"packages/features/ee/organizations/pages/settings/appearance.tsx\", \"apps/web/app/(booking-page-wrapper)/[user]/[type]/page.tsx\", \"packages/lib/getAvatarUrl.ts\", \"packages/ui/styles/index.ts\", \"packages/platform/libraries/event-types.ts\", \"packages/embeds/embed-core/src/ui-utils.ts\", \"packages/prisma/zod-utils.ts\", \"packages/trpc/react/trpc.ts\", \"apps/api/v2/src/modules/atoms/controllers/atoms.event-types.controller.ts\", \"packages/features/ee/organizations/context/provider.ts\", \"apps/web/app/(booking-page-wrapper)/[user]/page.tsx\", \"packages/lib/defaultAvatarImage.ts\", \"packages/ui/components/avatar/UserAvatar.tsx\", \"packages/platform/atoms/booker/index.ts\", \"packages/embeds/embed-core/src/types.ts\", \"packages/prisma/index.ts\", \"packages/trpc/server/routers/viewer/eventTypes/usecases/ProfilePermissionProcessor.ts\", \"apps/api/v2/src/ee/event-types/event-types_2024_06_14/services/output-event-types.service.ts\", \"packages/features/eventtypes/lib/defaultEvents.ts\", \"apps/web/app/(booking-page-wrapper)/org/[orgSlug]/[user]/page.tsx\", \"packages/ui/components/avatar/UserAvatarGroup.tsx\", \"packages/platform/atoms/booker/export.ts\", \"packages/embeds/embed-core/embed-iframe.ts\", \"packages/features/ee/organizations/lib/orgDomains.ts\", \"apps/web/lib/d/[link]/[slug]/getServerSideProps.tsx\", \"packages/features/eventtypes/lib/getEventTypesPublic.ts\", \"apps/web/modules/d/[link]/d-type-view.tsx\", \"packages/features/profile/repositories/ProfileRepository.ts\", \"apps/web/modules/team/type-view-cached.tsx\", \"packages/features/shell/useAppTheme.ts\", \"apps/web/app/(booking-page-wrapper)/team/[slug]/[type]/pageWithCachedData.tsx\", \"packages/features/ee/components/BrandColorsForm.tsx\", \"apps/web/lib/pages/document/_applyThemeForDocument.ts\", \"packages/features/ee/teams/pages/team-appearance-view.tsx\", \"apps/web/lib/getThemeProviderProps.ts\", \"packages/features/eventtypes/lib/getTeamEventType.ts\", \"apps/web/components/PageWrapper.tsx\", \"packages/features/profile/lib/hideBranding.ts\", \"apps/web/components/PageWrapperAppDir.tsx\", \"packages/features/eventtypes/lib/getEventTypeById.ts\", \"apps/web/lib/app-providers-app-dir.tsx\", \"packages/features/bookings/Booker/Booker.tsx\", \"apps/web/lib/app-providers.tsx\", \"packages/features/ee/organizations/lib/getBookerBaseUrlSync.ts\", \"apps/web/modules/settings/my-account/appearance-view.tsx\", \"packages/features/bookings/hooks/useBookerUrl.ts\", \"apps/web/modules/bookings/views/bookings-single-view.tsx\", \"packages/features/shell/navigation/Navigation.tsx\", \"apps/web/lib/org/[orgSlug]/instant-meeting/team/[slug]/[type]/getServerSideProps.ts\", \"packages/features/bookings/Booker/utils/getBookerWrapperClasses.ts\"]}",
+  "ttft_ms": 1834,
+  "type": "result",
+  "duration_ms": 1245237,
+  "uuid": "b222c085-4062-4cdb-98eb-d9534b7b97c6",
+  "ttft_stream_ms": 1437,
+  "time_to_request_ms": 16,
+  "queued_turn_count": 0
+}

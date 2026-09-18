@@ -1,0 +1,691 @@
+{
+  "relativePath": "apps/web/pages/api/book/event.ts",
+  "language": "typescript",
+  "sha256": "bc7377d7bd48eb3a644ad327f5a308e7df4ad1efaad8300fed994bfd98a331c3",
+  "sizeBytes": 2103,
+  "tokenCount": 526,
+  "lineCount": 61,
+  "analysedAt": "2026-09-04T15:48:53.040Z",
+  "analysis": {
+    "module": {
+      "purpose": "Provides the web application's booking event API endpoint, applying request validation, abuse prevention, session lookup, and booking creation before returning the resulting booking.",
+      "summary": "This API route receives booking requests from the web application and enriches them with the web-app creation source. It derives the client IP, optionally validates a Cloudflare Turnstile token, enforces core rate limits using a hashed identifier, retrieves the server session, and delegates booking creation to the shared booking workflow. Request metadata includes the authenticated user, host, and optional forced slug.",
+      "businessContext": "Supports scheduling and appointment creation through the web booking experience.\nIf unavailable, users cannot submit bookings, while inadequate protections could enable abuse or automated traffic.",
+      "classes": [],
+      "functions": [
+        "handler (~L12-58): Validates requests, applies protections, authenticates users, and creates web bookings."
+      ],
+      "keywords": [
+        "Next.js API route",
+        "Cloudflare Turnstile",
+        "rate limiting",
+        "server session",
+        "booking creation",
+        "PII hashing",
+        "forced slug",
+        "CreationSource"
+      ],
+      "ontologyConcepts": [
+        "request validation",
+        "authentication",
+        "rate limiting",
+        "bot protection",
+        "booking creation",
+        "request enrichment",
+        "API response handling"
+      ],
+      "businessEntities": ["Booking", "User", "Session", "CreationSource", "Client IP"],
+      "systemCapabilities": [
+        "Accept web booking requests",
+        "Validate anti-bot tokens",
+        "Enforce booking rate limits",
+        "Resolve authenticated users",
+        "Create bookings with request metadata"
+      ],
+      "configDependencies": ["NEXT_PUBLIC_CLOUDFLARE_USE_TURNSTILE_IN_BOOKER"],
+      "importsInternal": [],
+      "importsExternal": [
+        {
+          "spec": "next",
+          "symbols": ["NextApiRequest"],
+          "package": "next",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 1,
+            "endLine": 1
+          }
+        },
+        {
+          "spec": "@calcom/features/auth/lib/getServerSession",
+          "symbols": ["getServerSession"],
+          "package": "@calcom/features",
+          "subpath": "auth/lib/getServerSession",
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 3,
+            "endLine": 3
+          }
+        },
+        {
+          "spec": "@calcom/features/bookings/lib/handleNewBooking",
+          "symbols": ["handleNewBooking"],
+          "package": "@calcom/features",
+          "subpath": "bookings/lib/handleNewBooking",
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 4,
+            "endLine": 4
+          }
+        },
+        {
+          "spec": "@calcom/lib/checkRateLimitAndThrowError",
+          "symbols": ["checkRateLimitAndThrowError"],
+          "package": "@calcom/lib",
+          "subpath": "checkRateLimitAndThrowError",
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 5,
+            "endLine": 5
+          }
+        },
+        {
+          "spec": "@calcom/lib/getIP",
+          "symbols": ["getIP"],
+          "package": "@calcom/lib",
+          "subpath": "getIP",
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 6,
+            "endLine": 6
+          }
+        },
+        {
+          "spec": "@calcom/lib/server/PiiHasher",
+          "symbols": ["piiHasher"],
+          "package": "@calcom/lib",
+          "subpath": "server/PiiHasher",
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 7,
+            "endLine": 7
+          }
+        },
+        {
+          "spec": "@calcom/lib/server/checkCfTurnstileToken",
+          "symbols": ["checkCfTurnstileToken"],
+          "package": "@calcom/lib",
+          "subpath": "server/checkCfTurnstileToken",
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 8,
+            "endLine": 8
+          }
+        },
+        {
+          "spec": "@calcom/lib/server/defaultResponder",
+          "symbols": ["defaultResponder"],
+          "package": "@calcom/lib",
+          "subpath": "server/defaultResponder",
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 9,
+            "endLine": 9
+          }
+        },
+        {
+          "spec": "@calcom/prisma/enums",
+          "symbols": ["CreationSource"],
+          "package": "@calcom/prisma",
+          "subpath": "enums",
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 10,
+            "endLine": 10
+          }
+        }
+      ],
+      "sideEffects": {
+        "io": [],
+        "network": [
+          "Validates the Cloudflare Turnstile token when enabled.",
+          "Performs a core rate-limit check using a hash of the client IP.",
+          "Retrieves the server session for the request.",
+          "Creates a booking through handleNewBooking."
+        ],
+        "env": [],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": ["Replaces req.body with a spread copy containing creationSource: CreationSource.WEBAPP."]
+      },
+      "integrationSurface": [
+        {
+          "kind": "http",
+          "role": "provides",
+          "address": "/api/book/event",
+          "payloadRef": null,
+          "rawKind": null
+        }
+      ],
+      "contractsProvided": [
+        {
+          "name": "API route",
+          "shape": "defaultResponder(handler, \"/api/book/event\")",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "booking creation",
+          "shape": "handleNewBooking({ bookingData: req.body, userId: session?.user?.id || -1, hostname: req.headers.host || \"\", forcedSlug: req.headers[\"x-cal-force-slug\"] as string | undefined })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "NextApiRequest",
+          "shape": "NextApiRequest & { userId?: number }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "getServerSession",
+          "shape": "getServerSession({ req })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "handleNewBooking",
+          "shape": "handleNewBooking({ bookingData: req.body, userId: session?.user?.id || -1, hostname: req.headers.host || \"\", forcedSlug: req.headers[\"x-cal-force-slug\"] as string | undefined })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "checkRateLimitAndThrowError",
+          "shape": "checkRateLimitAndThrowError({ rateLimitingType: \"core\", identifier: piiHasher.hash(userIp) })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "checkCfTurnstileToken",
+          "shape": "checkCfTurnstileToken({ token: req.body[\"cfToken\"] as string, remoteIp: userIp })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "defaultResponder",
+          "shape": "defaultResponder(handler, \"/api/book/event\")",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "CreationSource.WEBAPP",
+          "shape": "creationSource: CreationSource.WEBAPP",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "Request IP extraction",
+          "intent": "Extract the client IP address from the request.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 12,
+            "endLine": 14
+          }
+        },
+        {
+          "name": "Conditional Turnstile validation",
+          "intent": "Validate the request's Turnstile token when the feature flag is enabled.",
+          "structureKind": "branch",
+          "predicate": "process.env.NEXT_PUBLIC_CLOUDFLARE_USE_TURNSTILE_IN_BOOKER === \"1\"",
+          "branchOutcomes": ["enabled", "disabled"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 15,
+            "endLine": 20
+          }
+        },
+        {
+          "name": "Rate-limit enforcement",
+          "intent": "Enforce core rate limiting using the hashed client IP.",
+          "structureKind": "io",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 22,
+            "endLine": 25
+          }
+        },
+        {
+          "name": "Session and booking metadata preparation",
+          "intent": "Load the session and augment the request body with the webapp creation source.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 27,
+            "endLine": 32
+          }
+        },
+        {
+          "name": "Booking creation",
+          "intent": "Create a booking using request data, session identity, host, and forced slug.",
+          "structureKind": "io",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 34,
+            "endLine": 41
+          }
+        },
+        {
+          "name": "API responder export",
+          "intent": "Export the handler wrapped by the default API responder.",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 60,
+            "endLine": 60
+          }
+        }
+      ],
+      "representationFamily": "function-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "function",
+          "name": "handler",
+          "signature": "async function handler(req: NextApiRequest & { userId?: number })",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": {
+            "startLine": 12,
+            "endLine": 58
+          }
+        }
+      ],
+      "typeShapes": [],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": {
+        "paragraph": "",
+        "tokenEstimate": 0
+      },
+      "edgeCases": [
+        {
+          "inputShape": "Turnstile feature flag is not exactly \"1\"",
+          "handled": true,
+          "behavior": "Skips Turnstile token validation and continues to rate limiting.",
+          "anchor": {
+            "startLine": 15,
+            "endLine": 20
+          }
+        },
+        {
+          "inputShape": "Unauthenticated request with no session user",
+          "handled": true,
+          "behavior": "Passes userId: -1 to handleNewBooking.",
+          "anchor": {
+            "startLine": 27,
+            "endLine": 36
+          }
+        },
+        {
+          "inputShape": "Request without a host header",
+          "handled": true,
+          "behavior": "Passes hostname: \"\" to handleNewBooking.",
+          "anchor": {
+            "startLine": 34,
+            "endLine": 38
+          }
+        },
+        {
+          "inputShape": "Request without x-cal-force-slug header",
+          "handled": true,
+          "behavior": "Passes forcedSlug as undefined to handleNewBooking.",
+          "anchor": {
+            "startLine": 34,
+            "endLine": 39
+          }
+        },
+        {
+          "inputShape": "Request body containing existing fields",
+          "handled": true,
+          "behavior": "Preserves existing body fields while setting creationSource to CreationSource.WEBAPP.",
+          "anchor": {
+            "startLine": 28,
+            "endLine": 32
+          }
+        },
+        {
+          "inputShape": "Malformed booking data",
+          "handled": false,
+          "behavior": "Passes the data to handleNewBooking without local validation.",
+          "anchor": {
+            "startLine": 34,
+            "endLine": 39
+          }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": null,
+          "caught": null,
+          "action": "A rejection from checkCfTurnstileToken propagates from the handler.",
+          "fallback": null,
+          "anchor": {
+            "startLine": 16,
+            "endLine": 19
+          }
+        },
+        {
+          "thrown": null,
+          "caught": null,
+          "action": "A rejection from checkRateLimitAndThrowError propagates from the handler.",
+          "fallback": null,
+          "anchor": {
+            "startLine": 22,
+            "endLine": 25
+          }
+        },
+        {
+          "thrown": null,
+          "caught": null,
+          "action": "A rejection from getServerSession propagates from the handler.",
+          "fallback": null,
+          "anchor": {
+            "startLine": 27,
+            "endLine": 27
+          }
+        },
+        {
+          "thrown": null,
+          "caught": null,
+          "action": "A rejection from handleNewBooking propagates from the handler.",
+          "fallback": null,
+          "anchor": {
+            "startLine": 34,
+            "endLine": 39
+          }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "The caller supplies a NextApiRequest with body and headers accessible in the expected shapes.",
+          "anchor": {
+            "startLine": 12,
+            "endLine": 13
+          }
+        },
+        {
+          "kind": "env",
+          "description": "Turnstile validation is controlled by NEXT_PUBLIC_CLOUDFLARE_USE_TURNSTILE_IN_BOOKER being exactly \"1\".",
+          "anchor": {
+            "startLine": 15,
+            "endLine": 15
+          }
+        },
+        {
+          "kind": "schema",
+          "description": "handleNewBooking accepts the augmented request body and booking metadata supplied here.",
+          "anchor": {
+            "startLine": 34,
+            "endLine": 39
+          }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "What errors do the imported validation, rate-limit, session, and booking functions throw or return?",
+          "affects": "error_handling",
+          "anchor": {
+            "startLine": 16,
+            "endLine": 39
+          },
+          "resolution": null
+        },
+        {
+          "question": "How does defaultResponder transform or report handler rejections?",
+          "affects": "error_handling",
+          "anchor": {
+            "startLine": 60,
+            "endLine": 60
+          },
+          "resolution": null
+        }
+      ],
+      "stateModel": null,
+      "fileFingerprint": {
+        "lineCount": 0,
+        "declarationCount": 0,
+        "maxNestingDepth": 0,
+        "roughCyclomatic": 0
+      },
+      "reconstructionHints": {
+        "namingStyle": "unknown",
+        "returnStyle": "n/a",
+        "commentStyle": "none",
+        "dialect": ""
+      },
+      "moduleContractTests": [
+        {
+          "testId": "sets-webapp-creation-source",
+          "scenario": "A booking request is handled with an existing request body.",
+          "given": ["req.body = { ... }"],
+          "when": "handler(req)",
+          "then": "the booking data passed to handleNewBooking includes creationSource: CreationSource.WEBAPP",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Ensures every booking created through this route is identified as originating from the web app."
+        },
+        {
+          "testId": "uses-session-user-id",
+          "scenario": "An authenticated session contains a user id.",
+          "given": ["session?.user?.id = 42"],
+          "when": "handler(req)",
+          "then": "handleNewBooking receives userId: 42",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Preserves authenticated ownership information for booking creation."
+        },
+        {
+          "testId": "uses-anonymous-user-fallback",
+          "scenario": "No authenticated user is present in the session.",
+          "given": ["session = undefined"],
+          "when": "handler(req)",
+          "then": "handleNewBooking receives userId: -1",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Guards the explicit anonymous-user contract."
+        },
+        {
+          "testId": "enforces-rate-limit",
+          "scenario": "A request reaches the booking handler.",
+          "given": ["getIP(req) returns userIp", "piiHasher.hash(userIp) returns hashedIp"],
+          "when": "handler(req)",
+          "then": "checkRateLimitAndThrowError is called with rateLimitingType: \"core\" and identifier: hashedIp",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Ensures all booking attempts are protected by the core rate limiter using a privacy-preserving identifier."
+        },
+        {
+          "testId": "validates-turnstile-when-enabled",
+          "scenario": "Cloudflare Turnstile enforcement is enabled.",
+          "given": [
+            "process.env.NEXT_PUBLIC_CLOUDFLARE_USE_TURNSTILE_IN_BOOKER === \"1\"",
+            "req.body[\"cfToken\"] = token",
+            "getIP(req) returns userIp"
+          ],
+          "when": "handler(req)",
+          "then": "checkCfTurnstileToken is called with token and remoteIp: userIp before booking creation",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Protects the conditional anti-bot boundary and its request ordering."
+        },
+        {
+          "testId": "skips-turnstile-when-disabled",
+          "scenario": "Cloudflare Turnstile enforcement is not enabled.",
+          "given": ["process.env.NEXT_PUBLIC_CLOUDFLARE_USE_TURNSTILE_IN_BOOKER !== \"1\""],
+          "when": "handler(req)",
+          "then": "checkCfTurnstileToken is not called",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Preserves the deployment-controlled optional validation behavior."
+        },
+        {
+          "testId": "forwards-booking-metadata",
+          "scenario": "The request includes host and forced-slug headers.",
+          "given": ["req.headers.host = \"example.com\"", "req.headers[\"x-cal-force-slug\"] = \"team-event\""],
+          "when": "handler(req)",
+          "then": "handleNewBooking receives hostname: \"example.com\" and forcedSlug: \"team-event\"",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Ensures routing and host metadata reach the booking service unchanged."
+        },
+        {
+          "testId": "returns-booking-result",
+          "scenario": "All validation and booking operations succeed.",
+          "given": ["handleNewBooking returns booking"],
+          "when": "handler(req)",
+          "then": "handler(req) returns booking",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins the route's response contract to the booking service result."
+        },
+        {
+          "testId": "binds-api-route",
+          "scenario": "The module is loaded as a Next.js API route.",
+          "given": [],
+          "when": "the default export is invoked by the API framework",
+          "then": "the request is wrapped by defaultResponder with \"/api/book/event\"",
+          "targets": [],
+          "oracleKind": "fingerprint",
+          "rationale": "Ensures framework-level error and response handling remains associated with the correct route."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "import type { NextApiRequest } from \"next\";",
+        "import { getServerSession } from \"@calcom/features/auth/lib/getServerSession\";",
+        "import handleNewBooking from \"@calcom/features/bookings/lib/handleNewBooking\";",
+        "import { checkRateLimitAndThrowError } from \"@calcom/lib/checkRateLimitAndThrowError\";",
+        "import getIP from \"@calcom/lib/getIP\";",
+        "import { piiHasher } from \"@calcom/lib/server/PiiHasher\";",
+        "import { checkCfTurnstileToken } from \"@calcom/lib/server/checkCfTurnstileToken\";",
+        "import { defaultResponder } from \"@calcom/lib/server/defaultResponder\";",
+        "import { CreationSource } from \"@calcom/prisma/enums\";",
+        "handler",
+        "export default defaultResponder(handler, \"/api/book/event\");"
+      ],
+      "moduleLevelCode": "import type { NextApiRequest } from \"next\";\n\nimport { getServerSession } from \"@calcom/features/auth/lib/getServerSession\";\nimport handleNewBooking from \"@calcom/features/bookings/lib/handleNewBooking\";\nimport { checkRateLimitAndThrowError } from \"@calcom/lib/checkRateLimitAndThrowError\";\nimport getIP from \"@calcom/lib/getIP\";\nimport { piiHasher } from \"@calcom/lib/server/PiiHasher\";\nimport { checkCfTurnstileToken } from \"@calcom/lib/server/checkCfTurnstileToken\";\nimport { defaultResponder } from \"@calcom/lib/server/defaultResponder\";\nimport { CreationSource } from \"@calcom/prisma/enums\";",
+      "exports": [
+        {
+          "name": "default",
+          "kind": "own",
+          "fromSpec": null,
+          "exportedAs": null
+        }
+      ],
+      "importSymbolMap": [
+        {
+          "symbol": "NextApiRequest",
+          "module": "next",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "getServerSession",
+          "module": "@calcom/features/auth/lib/getServerSession",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "handleNewBooking",
+          "module": "@calcom/features/bookings/lib/handleNewBooking",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "checkRateLimitAndThrowError",
+          "module": "@calcom/lib/checkRateLimitAndThrowError",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "getIP",
+          "module": "@calcom/lib/getIP",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "piiHasher",
+          "module": "@calcom/lib/server/PiiHasher",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "checkCfTurnstileToken",
+          "module": "@calcom/lib/server/checkCfTurnstileToken",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "defaultResponder",
+          "module": "@calcom/lib/server/defaultResponder",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "CreationSource",
+          "module": "@calcom/prisma/enums",
+          "alias": null,
+          "kind": "external"
+        }
+      ],
+      "fileConstants": [],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "apps/web/pages/api/book/event.ts__handler_1#function:handler",
+        "unitKind": "function",
+        "name": "handler",
+        "qualifiedName": "handler",
+        "parentUnitId": null,
+        "startLine": 12,
+        "endLine": 58,
+        "isBehavioral": true,
+        "source": "async function handler(req: NextApiRequest & { userId?: number }) {\n  const userIp = getIP(req);\n\n  if (process.env.NEXT_PUBLIC_CLOUDFLARE_USE_TURNSTILE_IN_BOOKER === \"1\") {\n    await checkCfTurnstileToken({\n      token: req.body[\"cfToken\"] as string,\n      remoteIp: userIp,\n    });\n  }\n\n  await checkRateLimitAndThrowError({\n    rateLimitingType: \"core\",\n    identifier: piiHasher.hash(userIp),\n  });\n\n  const session = await getServerSession({ req });\n  /* To mimic API behavior and comply with types */\n  req.body = {\n    ...req.body,\n    creationSource: CreationSource.WEBAPP,\n  };\n\n  const booking = await handleNewBooking({\n    bookingData: req.body,\n    userId: session?.user?.id || -1,\n    hostname: req.headers.host || \"\",\n    forcedSlug: req.headers[\"x-cal-force-slug\"] as string | undefined,\n  });\n  // const booking = await createBookingThroughFactory();\n  return booking;\n\n  //  To be added in the follow-up PR\n  // async function createBookingThroughFactory() {\n  //   console.log(\"Creating booking through factory\");\n  //   const regularBookingService = getRegularBookingService();\n\n  //   const booking = await regularBookingService.createBooking({\n  //     bookingData: req.body,\n  //     bookingMeta: {\n  //       userId: session?.user?.id || -1,\n  //       hostname: req.headers.host || \"\",\n  //       forcedSlug: req.headers[\"x-cal-force-slug\"] as string | undefined,\n  //     },\n  //   });\n  //   return booking;\n  // }\n}"
+      }
+    ],
+    "extractedUnitCount": 1,
+    "unreconciledUnitNames": []
+  },
+  "tokenUsage": {
+    "inputTokens": 8855,
+    "outputTokens": 8490,
+    "costUsd": 0
+  },
+  "model": "us.openai.gpt-5.6-luna"
+}

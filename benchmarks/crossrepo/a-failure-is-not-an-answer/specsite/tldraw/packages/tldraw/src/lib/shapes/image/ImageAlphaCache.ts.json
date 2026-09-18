@@ -1,0 +1,1252 @@
+{
+  "schema": 2,
+  "kind": "file",
+  "repoName": "tldraw",
+  "file": {
+    "relativePath": "packages/tldraw/src/lib/shapes/image/ImageAlphaCache.ts",
+    "language": "typescript",
+    "sizeBytes": 5175,
+    "tokenCount": 1293,
+    "model": "us.openai.gpt-5.6-luna",
+    "analysedAt": "2026-08-24T12:12:54.018Z",
+    "module": {
+      "purpose": "Provides shared alpha-channel extraction, caching, coordinate mapping, and transparent-pixel hit testing for image shapes.",
+      "summary": "This module preloads image resources, downsamples their alpha channels into compact row-major buffers, and caches those buffers by source key. It supports cropped and flipped image geometry by mapping shape-space points into normalized image coordinates before testing alpha thresholds. Loading is deduplicated, uses an offscreen canvas, prefers resized image bitmaps, and falls back to direct image drawing when bitmap creation fails.",
+      "businessContext": "Supports accurate hit testing for transparent regions in image shapes. Failure causes transparent pixels to behave as opaque or prevents alpha-aware interaction until data loads.",
+      "classes": [
+        "AlphaData (~L12-17): Represents downsampled image dimensions and row-major alpha values",
+        "ImageAlphaGeometryConfig (~L20-25): Configures geometry-aware alpha hit-testing coordinate transformations"
+      ],
+      "functions": [
+        "mapToImageCoords (~L28-50): Converts shape-space points into normalized cropped and flipped image coordinates",
+        "isImagePointTransparent (~L53-62): Tests a geometry point against cached image alpha data",
+        "getOffscreenCanvas (~L70-77): Creates or resizes the shared offscreen rendering canvas",
+        "extractAlphas (~L79-87): Extracts per-pixel alpha bytes from rendered canvas image data",
+        "preloadAlphaData (~L90-138): Asynchronously loads, downsamples, renders, and caches image alpha data",
+        "getAlphaData (~L141-143): Retrieves cached alpha data for an image source",
+        "isPointTransparent (~L146-155): Tests normalized coordinates against an alpha threshold"
+      ],
+      "keywords": [
+        "alpha hit testing",
+        "OffscreenCanvas",
+        "ImageBitmap",
+        "LruCache",
+        "transparent image",
+        "image downsampling",
+        "crossOrigin",
+        "cropping",
+        "image flipping"
+      ],
+      "ontologyConcepts": [
+        "spatial coordinate mapping",
+        "pixel transparency",
+        "resource caching",
+        "asynchronous preloading",
+        "deduplication",
+        "fallback rendering"
+      ],
+      "businessEntities": ["Image", "AlphaData", "ImageGeometry", "ImageBitmap", "Canvas"],
+      "systemCapabilities": [
+        "Preload image transparency data",
+        "Cache downsampled alpha channels",
+        "Perform transparent-pixel hit testing",
+        "Map cropped and flipped image coordinates",
+        "Fallback when bitmap resizing fails"
+      ],
+      "configDependencies": [],
+      "importsInternal": [],
+      "importsExternal": [
+        {
+          "spec": "@tldraw/editor",
+          "symbols": ["Image", "LruCache", "VecLike"],
+          "package": "@tldraw/editor",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 1 }
+        }
+      ],
+      "sideEffects": {
+        "io": [],
+        "network": ["Assigning img.src initiates loading the image URL."],
+        "env": ["Reads whether OffscreenCanvas is defined."],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": []
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "TRANSPARENT_IMAGE_MIMETYPES",
+          "shape": "readonly string[]",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "AlphaData",
+          "shape": "interface AlphaData { width: number; height: number; alphas: Uint8Array }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "ImageAlphaGeometryConfig",
+          "shape": "interface ImageAlphaGeometryConfig { alphaDataGetter(): AlphaData | null; crop: { topLeft: { x: number; y: number }; bottomRight: { x: number; y: number } } | null; flipX: boolean; flipY: boolean }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "isImagePointTransparent",
+          "shape": "export function isImagePointTransparent(config: ImageAlphaGeometryConfig, point: VecLike, bounds: { minX: number; minY: number; w: number; h: number }): boolean",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "preloadAlphaData",
+          "shape": "export function preloadAlphaData(url: string, cacheKey?: string): void",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "getAlphaData",
+          "shape": "export function getAlphaData(src: string): AlphaData | null",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "isPointTransparent",
+          "shape": "export function isPointTransparent(data: AlphaData, nx: number, ny: number, threshold = 10): boolean",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        { "name": "Image", "shape": "Image()", "resolvedRelativePath": null, "resolvedFileId": null },
+        {
+          "name": "LruCache",
+          "shape": "new LruCache<string, AlphaData>(100)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        { "name": "VecLike", "shape": "VecLike", "resolvedRelativePath": null, "resolvedFileId": null }
+      ],
+      "sectionMap": [
+        {
+          "name": "coordinate-normalization",
+          "intent": "Clamps shape coordinates and transforms them through crop and flip settings.",
+          "structureKind": "branch",
+          "predicate": "config.crop",
+          "branchOutcomes": ["crop applied", "crop absent"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 34, "endLine": 49 }
+        },
+        {
+          "name": "alpha-data-availability",
+          "intent": "Returns an opaque result when alpha data has not loaded.",
+          "structureKind": "branch",
+          "predicate": "!data",
+          "branchOutcomes": ["data unavailable", "data available"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 58, "endLine": 61 }
+        },
+        {
+          "name": "shared-canvas-management",
+          "intent": "Creates the shared canvas once and resizes it for subsequent images.",
+          "structureKind": "branch",
+          "predicate": "!offscreenCanvas",
+          "branchOutcomes": ["canvas created", "canvas resized"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 71, "endLine": 76 }
+        },
+        {
+          "name": "alpha-extraction",
+          "intent": "Copies each rendered pixel alpha channel into a compact byte array.",
+          "structureKind": "loop",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": "i < alphas.length",
+          "terminationCondition": null,
+          "anchor": { "startLine": 80, "endLine": 86 }
+        },
+        {
+          "name": "preload-deduplication",
+          "intent": "Skips unsupported, cached, or already-loading image keys.",
+          "structureKind": "branch",
+          "predicate": "alphaCache.has(key) || pending.has(key)",
+          "branchOutcomes": ["already cached or pending", "begin loading"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 96, "endLine": 99 }
+        },
+        {
+          "name": "image-loading-and-rendering",
+          "intent": "Loads an image, downsamples it, renders it, and stores its alpha data.",
+          "structureKind": "async",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 101, "endLine": 137 }
+        },
+        {
+          "name": "bitmap-fallback",
+          "intent": "Uses direct canvas drawing when image bitmap creation fails.",
+          "structureKind": "try",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 111, "endLine": 118 }
+        },
+        {
+          "name": "normalized-pixel-test",
+          "intent": "Converts normalized coordinates to bounded pixel indices and compares alpha.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 151, "endLine": 153 }
+        }
+      ],
+      "representationFamily": "module",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "const",
+          "name": "TRANSPARENT_IMAGE_MIMETYPES",
+          "signature": "export const TRANSPARENT_IMAGE_MIMETYPES: readonly string[]",
+          "generics": null,
+          "decorators": [],
+          "returnType": "readonly string[]",
+          "exported": true,
+          "anchor": { "startLine": 4, "endLine": 4 }
+        },
+        {
+          "kind": "interface",
+          "name": "AlphaData",
+          "signature": "export interface AlphaData",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 12, "endLine": 12 }
+        },
+        {
+          "kind": "interface",
+          "name": "ImageAlphaGeometryConfig",
+          "signature": "export interface ImageAlphaGeometryConfig",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 20, "endLine": 20 }
+        },
+        {
+          "kind": "function",
+          "name": "mapToImageCoords",
+          "signature": "function mapToImageCoords(\n\tconfig: ImageAlphaGeometryConfig,\n\tpoint: VecLike,\n\tbounds: { minX: number; minY: number; w: number; h: number }\n): { nx: number; ny: number }",
+          "generics": null,
+          "decorators": [],
+          "returnType": "{ nx: number; ny: number }",
+          "exported": false,
+          "anchor": { "startLine": 28, "endLine": 32 }
+        },
+        {
+          "kind": "function",
+          "name": "isImagePointTransparent",
+          "signature": "export function isImagePointTransparent(\n\tconfig: ImageAlphaGeometryConfig,\n\tpoint: VecLike,\n\tbounds: { minX: number; minY: number; w: number; h: number }\n): boolean",
+          "generics": null,
+          "decorators": [],
+          "returnType": "boolean",
+          "exported": true,
+          "anchor": { "startLine": 53, "endLine": 57 }
+        },
+        {
+          "kind": "function",
+          "name": "preloadAlphaData",
+          "signature": "export function preloadAlphaData(url: string, cacheKey?: string): void",
+          "generics": null,
+          "decorators": [],
+          "returnType": "void",
+          "exported": true,
+          "anchor": { "startLine": 90, "endLine": 95 }
+        },
+        {
+          "kind": "function",
+          "name": "getAlphaData",
+          "signature": "export function getAlphaData(src: string): AlphaData | null",
+          "generics": null,
+          "decorators": [],
+          "returnType": "AlphaData | null",
+          "exported": true,
+          "anchor": { "startLine": 141, "endLine": 141 }
+        },
+        {
+          "kind": "function",
+          "name": "isPointTransparent",
+          "signature": "export function isPointTransparent(\n\tdata: AlphaData,\n\tnx: number,\n\tny: number,\n\tthreshold = 10\n): boolean",
+          "generics": null,
+          "decorators": [],
+          "returnType": "boolean",
+          "exported": true,
+          "anchor": { "startLine": 146, "endLine": 150 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "interface",
+          "name": "AlphaData",
+          "shape": "{\n\twidth: number\n\theight: number\n\t/** Row-major alpha values (0–255) */\n\talphas: Uint8Array\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 12, "endLine": 17 }
+        },
+        {
+          "kind": "interface",
+          "name": "ImageAlphaGeometryConfig",
+          "shape": "{\n\talphaDataGetter(): AlphaData | null\n\tcrop: { topLeft: { x: number; y: number }; bottomRight: { x: number; y: number } } | null\n\tflipX: boolean\n\tflipY: boolean\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 20, "endLine": 25 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "OffscreenCanvas unavailable",
+          "handled": true,
+          "behavior": "Preloading returns immediately without changing cache or pending state.",
+          "anchor": { "startLine": 96, "endLine": 96 }
+        },
+        {
+          "inputShape": "Cached or duplicate pending key",
+          "handled": true,
+          "behavior": "Preloading returns without starting another image request.",
+          "anchor": { "startLine": 98, "endLine": 98 }
+        },
+        {
+          "inputShape": "Zero-dimension image",
+          "handled": true,
+          "behavior": "The pending marker is cleared and no alpha data is cached.",
+          "anchor": { "startLine": 104, "endLine": 106 }
+        },
+        {
+          "inputShape": "createImageBitmap failure",
+          "handled": true,
+          "behavior": "The code falls back to drawing the source image directly into the canvas.",
+          "anchor": { "startLine": 112, "endLine": 118 }
+        },
+        {
+          "inputShape": "Unavailable 2D canvas context",
+          "handled": true,
+          "behavior": "The load handler returns without caching alpha data.",
+          "anchor": { "startLine": 121, "endLine": 123 }
+        },
+        {
+          "inputShape": "Point outside shape bounds",
+          "handled": true,
+          "behavior": "Normalized coordinates are clamped to the [0,1] range before mapping.",
+          "anchor": { "startLine": 34, "endLine": 36 }
+        },
+        {
+          "inputShape": "Image load error",
+          "handled": true,
+          "behavior": "The pending marker is cleared and no fallback data is returned.",
+          "anchor": { "startLine": 134, "endLine": 136 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": "<",
+          "left": "data.alphas[iy * data.width + ix]",
+          "right": "threshold",
+          "inclusive": false,
+          "intent": "Classifies a pixel as transparent only when alpha is below the threshold.",
+          "anchor": { "startLine": 153, "endLine": 153 }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": null,
+          "caught": "createImageBitmap(img, { resizeWidth: w, resizeHeight: h, resizeQuality: 'low' }) failure",
+          "action": "Suppresses the bitmap error and continues with direct image drawing.",
+          "fallback": "Draw the source image directly at the target dimensions.",
+          "anchor": { "startLine": 112, "endLine": 118 }
+        },
+        {
+          "thrown": null,
+          "caught": "Image loading error",
+          "action": "Removes the key from the pending set.",
+          "fallback": null,
+          "anchor": { "startLine": 134, "endLine": 136 }
+        }
+      ],
+      "invariants": [
+        {
+          "kind": "non-null",
+          "description": "A missing alpha-data result is treated as not transparent.",
+          "anchor": { "startLine": 58, "endLine": 60 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Cached alpha arrays contain width multiplied by height entries.",
+          "anchor": { "startLine": 82, "endLine": 84 }
+        },
+        {
+          "kind": "ordering",
+          "description": "A cache key is marked pending before image loading starts and cleared on completion or error.",
+          "anchor": { "startLine": 98, "endLine": 104 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Pixel indices are clamped to the final valid column and row.",
+          "anchor": { "startLine": 151, "endLine": 152 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "Successful loading stores downsampled dimensions and extracted alpha values under the cache key.",
+          "anchor": { "startLine": 132, "endLine": 132 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "platform",
+          "description": "The runtime provides Image, OffscreenCanvas, canvas 2D contexts, and optionally createImageBitmap.",
+          "anchor": { "startLine": 96, "endLine": 102 }
+        },
+        {
+          "kind": "caller",
+          "description": "Callers provide cacheKey values consistently with later getAlphaData lookups when preloading resolved image URLs.",
+          "anchor": { "startLine": 90, "endLine": 94 }
+        },
+        {
+          "kind": "schema",
+          "description": "Alpha data dimensions match the length and row-major layout of the alpha byte array.",
+          "anchor": { "startLine": 12, "endLine": 17 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "Should image-load failures be retried or surfaced to callers?",
+          "affects": "error_handling and preloadAlphaData behavior",
+          "anchor": { "startLine": 134, "endLine": 136 },
+          "resolution": null
+        },
+        {
+          "question": "Is the shared offscreen canvas guaranteed to be available in every target runtime that invokes preloading?",
+          "affects": "platform assumptions and preloadAlphaData availability",
+          "anchor": { "startLine": 96, "endLine": 96 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "mixed",
+        "reentrant": true,
+        "ordering": "unordered",
+        "notes": "Image loading and bitmap creation are asynchronous; pending keys deduplicate requests, while shared canvas operations occur synchronously after awaiting bitmap creation."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "transparent-alpha-below-threshold",
+          "scenario": "A sampled alpha value below the threshold is classified as transparent.",
+          "given": ["const data: AlphaData = { width: 1, height: 1, alphas: new Uint8Array([9]) }"],
+          "when": "isPointTransparent(data, 0, 0)",
+          "then": "expect(result).toBe(true)",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "opaque-alpha-at-threshold",
+          "scenario": "A sampled alpha value equal to the threshold is classified as opaque.",
+          "given": ["const data: AlphaData = { width: 1, height: 1, alphas: new Uint8Array([10]) }"],
+          "when": "isPointTransparent(data, 0, 0)",
+          "then": "expect(result).toBe(false)",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "normalized-coordinates-select-pixel",
+          "scenario": "Normalized coordinates select the corresponding row-major pixel.",
+          "given": ["const data: AlphaData = { width: 2, height: 2, alphas: new Uint8Array([255, 255, 255, 0]) }"],
+          "when": "isPointTransparent(data, 0.75, 0.75)",
+          "then": "expect(result).toBe(true)",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "unloaded-alpha-data-is-opaque",
+          "scenario": "A geometry without loaded alpha data does not report transparency.",
+          "given": [
+            "const config: ImageAlphaGeometryConfig = { alphaDataGetter: () => null, crop: null, flipX: false, flipY: false }"
+          ],
+          "when": "isImagePointTransparent(config, { x: 5, y: 5 }, { minX: 0, minY: 0, w: 10, h: 10 })",
+          "then": "expect(result).toBe(false)",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "preload-cache-key-lookup",
+          "scenario": "Preloaded alpha data can be retrieved by the explicit cache key rather than the resolved URL.",
+          "given": ["const url = 'https://cdn.example/image.png'", "const cacheKey = 'asset-src'"],
+          "when": "preloadAlphaData(url, cacheKey)",
+          "then": "expect(getAlphaData(cacheKey)).toEqual(expect.objectContaining({ width: expect.any(Number), height: expect.any(Number), alphas: expect.any(Uint8Array) }))",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Pins the documented separation between the resolved loading URL and the lookup cache key."
+        },
+        {
+          "testId": "transparent-image-mime-types",
+          "scenario": "The supported transparent image MIME type list includes PNG, WebP, GIF, and AVIF.",
+          "given": [],
+          "when": "TRANSPARENT_IMAGE_MIMETYPES",
+          "then": "expect(result).toEqual(['image/png', 'image/webp', 'image/gif', 'image/avif'])",
+          "targets": [],
+          "oracleKind": "fingerprint",
+          "rationale": ""
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "import Image, LruCache, and VecLike",
+        "export transparent image MIME type list",
+        "export AlphaData interface",
+        "export ImageAlphaGeometryConfig interface",
+        "coordinate mapping helper",
+        "export geometry-aware transparency test",
+        "module cache and canvas state",
+        "shared canvas helper",
+        "alpha extraction helper",
+        "export alpha preload function",
+        "export cache lookup function",
+        "export normalized transparency test"
+      ],
+      "moduleLevelCode": "import { Image, LruCache, VecLike } from '@tldraw/editor'\n\nexport const TRANSPARENT_IMAGE_MIMETYPES: readonly string[] = [\n\t'image/png',\n\t'image/webp',\n\t'image/gif',\n\t'image/avif',\n]\n\nconst MAX_SIZE = 256\nconst alphaCache = new LruCache<string, AlphaData>(100)\nconst pending = new Set<string>()\nlet offscreenCanvas: OffscreenCanvas | null = null",
+      "exports": [
+        { "name": "TRANSPARENT_IMAGE_MIMETYPES", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "AlphaData", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "ImageAlphaGeometryConfig", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "isImagePointTransparent", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "preloadAlphaData", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "getAlphaData", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "isPointTransparent", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "Image", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "LruCache", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "VecLike", "module": "@tldraw/editor", "alias": null, "kind": "external" }
+      ],
+      "fileConstants": [
+        {
+          "name": "TRANSPARENT_IMAGE_MIMETYPES",
+          "value": "[\n\t'image/png',\n\t'image/webp',\n\t'image/gif',\n\t'image/avif',\n]",
+          "kind": "readonly string[]"
+        },
+        { "name": "MAX_SIZE", "value": "256", "kind": "number" }
+      ],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/image/ImageAlphaCache.ts__mapToImageCoords#function:mapToImageCoords",
+        "unitKind": "function",
+        "name": "mapToImageCoords",
+        "qualifiedName": "mapToImageCoords",
+        "parentUnitId": null,
+        "startLine": 28,
+        "endLine": 50,
+        "isBehavioral": true,
+        "source": " * Map a point in shape space to normalized [0,1] image coordinates, accounting for crop and flip.\n * @internal\n */\nfunction mapToImageCoords(\n\tconfig: ImageAlphaGeometryConfig,\n\tpoint: VecLike,\n\tbounds: { minX: number; minY: number; w: number; h: number }\n): { nx: number; ny: number } {\n\t// Normalize point to [0,1] within the shape bounds, clamped for edge-margin hits\n\tlet nx = Math.max(0, Math.min(1, (point.x - bounds.minX) / bounds.w))\n\tlet ny = Math.max(0, Math.min(1, (point.y - bounds.minY) / bounds.h))\n\n\t// Map from cropped shape space to full image space\n\tif (config.crop) {\n\t\tconst { topLeft, bottomRight } = config.crop\n\t\tnx = topLeft.x + nx * (bottomRight.x - topLeft.x)\n\t\tny = topLeft.y + ny * (bottomRight.y - topLeft.y)\n\t}\n\n\t// Account for flips\n\tif (config.flipX) nx = 1 - nx\n\tif (config.flipY) ny = 1 - ny\n",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/image/ImageAlphaCache.ts__mapToImageCoords#function:mapToImageCoords",
+          "fileId": "packages/tldraw/src/lib/shapes/image/ImageAlphaCache.ts__mapToImageCoords",
+          "unitKind": "function",
+          "name": "mapToImageCoords",
+          "qualifiedName": "mapToImageCoords",
+          "parentUnitId": null,
+          "startLine": 28,
+          "endLine": 50,
+          "signature": "function mapToImageCoords(\n\tconfig: ImageAlphaGeometryConfig,\n\tpoint: VecLike,\n\tbounds: { minX: number; minY: number; w: number; h: number }\n): { nx: number; ny: number }",
+          "parameters": [
+            {
+              "name": "config",
+              "type": "ImageAlphaGeometryConfig",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            { "name": "point", "type": "VecLike", "default": null, "optional": false, "variadic": false, "order": 1 },
+            {
+              "name": "bounds",
+              "type": "{ minX: number; minY: number; w: number; h: number }",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            }
+          ],
+          "returnType": "{ nx: number; ny: number }",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "point provides numeric x and y coordinates.",
+            "bounds provides numeric minX, minY, w, and h values.",
+            "config.crop, when present, provides topLeft and bottomRight coordinates with numeric x and y values."
+          ],
+          "postconditions": [
+            "The returned object contains numeric nx and ny properties.",
+            "The point is first normalized against bounds and clamped to the inclusive range [0, 1] before crop and flip transformations are applied."
+          ],
+          "invariants": [
+            "Shape-space coordinates outside the bounds are clamped before crop and flip transformations.",
+            "When crop is absent, the normalized coordinates are unchanged except for configured flips.",
+            "When flipX is true, the resulting nx is reflected as 1 - nx.",
+            "When flipY is true, the resulting ny is reflected as 1 - ny."
+          ],
+          "edgeCases": [
+            "A point on or beyond any bounds edge is clamped to 0 or 1 on that axis before further mapping.",
+            "When crop is absent, coordinates map directly from clamped shape-relative coordinates, subject only to flips.",
+            "When crop is present, clamped coordinates are linearly mapped from the crop's top-left to bottom-right corners.",
+            "When bounds.w or bounds.h is zero, JavaScript numeric division semantics apply; no explicit validation or error is performed.",
+            "When flipX and/or flipY is enabled, the corresponding mapped axis is reversed."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "No explicit input validation is performed; invalid numeric values follow JavaScript arithmetic semantics.",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["ImageAlphaGeometryConfig", "VecLike"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Returns a plain object with exactly the coordinate fields { nx: number; ny: number } representing transformed image coordinates.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Maps a point from shape-space coordinates to image-space coordinates, applying crop mapping and horizontal or vertical flips. The returned coordinates are normalized relative to the image coordinate system.",
+          "specLiterals": [
+            { "kind": "magic-number", "value": "0", "role": "Lower clamp boundary and crop/flip coordinate baseline." },
+            { "kind": "magic-number", "value": "1", "role": "Upper clamp boundary and flip reflection baseline." }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "mapToImageCoords is called",
+              "then": "It returns { nx: 0.5, ny: 0.5 }.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "mapToImageCoords is called",
+              "then": "The point is clamped to { nx: 0, ny: 1 } before flipping and the result is { nx: 1, ny: 1 }.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "mapToImageCoords is called",
+              "then": "It returns { nx: 0.5, ny: 0.30000000000000004 } according to JavaScript floating-point arithmetic.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "4643db34e0009b7314a105b5dd75a17761ef775e69162f0e17308da0d02428b0"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/image/ImageAlphaCache.ts__isImagePointTransparent#function:isImagePointTransparent",
+        "unitKind": "function",
+        "name": "isImagePointTransparent",
+        "qualifiedName": "isImagePointTransparent",
+        "parentUnitId": null,
+        "startLine": 53,
+        "endLine": 62,
+        "isBehavioral": true,
+        "source": "\n/** Returns true if the point maps to a transparent pixel. Returns false if alpha data isn't loaded yet. */\nexport function isImagePointTransparent(\n\tconfig: ImageAlphaGeometryConfig,\n\tpoint: VecLike,\n\tbounds: { minX: number; minY: number; w: number; h: number }\n): boolean {\n\tconst data = config.alphaDataGetter()\n\tif (!data) return false\n\tconst { nx, ny } = mapToImageCoords(config, point, bounds)",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/image/ImageAlphaCache.ts__isImagePointTransparent#function:isImagePointTransparent",
+          "fileId": "packages/tldraw/src/lib/shapes/image/ImageAlphaCache.ts__isImagePointTransparent",
+          "unitKind": "function",
+          "name": "isImagePointTransparent",
+          "qualifiedName": "isImagePointTransparent",
+          "parentUnitId": null,
+          "startLine": 53,
+          "endLine": 62,
+          "signature": "export function isImagePointTransparent(\n\tconfig: ImageAlphaGeometryConfig,\n\tpoint: VecLike,\n\tbounds: { minX: number; minY: number; w: number; h: number }\n): boolean",
+          "parameters": [
+            {
+              "name": "config",
+              "type": "ImageAlphaGeometryConfig",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            { "name": "point", "type": "VecLike", "default": null, "optional": false, "variadic": false, "order": 1 },
+            {
+              "name": "bounds",
+              "type": "{ minX: number; minY: number; w: number; h: number }",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            }
+          ],
+          "returnType": "boolean",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "config provides an alphaDataGetter callable.",
+            "point is a VecLike value.",
+            "bounds provides numeric minX, minY, w, and h values."
+          ],
+          "postconditions": [
+            "Returns a boolean.",
+            "If alpha data is unavailable, returns false.",
+            "When alpha data is available, evaluates transparency for the image pixel corresponding to the mapped point."
+          ],
+          "invariants": ["The input objects are not mutated.", "The result is boolean-valued."],
+          "edgeCases": [
+            "When alphaDataGetter returns no alpha data, the function returns false without evaluating pixel transparency.",
+            "When alpha data is available, the point is converted from the supplied bounds into image coordinates before transparency is evaluated."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "config.alphaDataGetter", "source": "config", "kind": "external" },
+            { "name": "mapToImageCoords", "source": "same module", "kind": "internal" },
+            { "name": "isPointTransparent", "source": "same module", "kind": "internal" }
+          ],
+          "symbolReferences": ["ImageAlphaGeometryConfig", "VecLike"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Determines whether a point maps to a transparent pixel in an image. Returns false when the image alpha data is not yet available.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "isImagePointTransparent(config, point, bounds) is called.",
+              "then": "The result is false.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "aaf3520584c24f4ebfe926d9bf7554cda195ef2af9532cb995d38396c0e40cc7"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/image/ImageAlphaCache.ts__getOffscreenCanvas#function:getOffscreenCanvas",
+        "unitKind": "function",
+        "name": "getOffscreenCanvas",
+        "qualifiedName": "getOffscreenCanvas",
+        "parentUnitId": null,
+        "startLine": 70,
+        "endLine": 77,
+        "isBehavioral": true,
+        "source": "let offscreenCanvas: OffscreenCanvas | null = null\n\nfunction getOffscreenCanvas(w: number, h: number): OffscreenCanvas {\n\tif (!offscreenCanvas) {\n\t\toffscreenCanvas = new OffscreenCanvas(w, h)\n\t} else {\n\t\toffscreenCanvas.width = w\n\t\toffscreenCanvas.height = h",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/image/ImageAlphaCache.ts__getOffscreenCanvas#function:getOffscreenCanvas",
+          "fileId": "packages/tldraw/src/lib/shapes/image/ImageAlphaCache.ts__getOffscreenCanvas",
+          "unitKind": "function",
+          "name": "getOffscreenCanvas",
+          "qualifiedName": "getOffscreenCanvas",
+          "parentUnitId": null,
+          "startLine": 70,
+          "endLine": 77,
+          "signature": "function getOffscreenCanvas(w: number, h: number): OffscreenCanvas",
+          "parameters": [
+            { "name": "w", "type": "number", "default": null, "optional": false, "variadic": false, "order": 0 },
+            { "name": "h", "type": "number", "default": null, "optional": false, "variadic": false, "order": 1 }
+          ],
+          "returnType": "OffscreenCanvas",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["w and h are provided as numbers."],
+          "postconditions": [
+            "Returns an OffscreenCanvas whose width is w and height is h.",
+            "After the first call, subsequent calls return the same OffscreenCanvas instance."
+          ],
+          "invariants": ["At most one cached OffscreenCanvas instance is maintained by this function."],
+          "edgeCases": [
+            "On the first call, an OffscreenCanvas is constructed with w and h.",
+            "On later calls, the cached canvas is resized to w and h rather than replaced.",
+            "No input validation is performed by this function; dimension handling follows the OffscreenCanvas platform API."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "No explicit validation or fallback is provided.",
+            "returnsOnError": null
+          },
+          "stateMutations": [
+            "Initializes the module-level offscreenCanvas cache.",
+            "Updates the cached canvas width and height on subsequent calls."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "OffscreenCanvas", "source": "platform API", "kind": "external" }],
+          "symbolReferences": ["OffscreenCanvas", "offscreenCanvas"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Returns a reusable offscreen canvas configured to the requested width and height. The first call creates the canvas; subsequent calls reuse the same canvas instance while updating its dimensions.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "getOffscreenCanvas(100, 50) is called.",
+              "then": "A new OffscreenCanvas is returned with width 100 and height 50.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "getOffscreenCanvas(200, 75) is called.",
+              "then": "The returned object is the same cached canvas instance, with width 200 and height 75.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "6dcd304749d5714a885bef496413542c42c9f26cdc205f8429579121923bd774"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/image/ImageAlphaCache.ts__extractAlphas#function:extractAlphas",
+        "unitKind": "function",
+        "name": "extractAlphas",
+        "qualifiedName": "extractAlphas",
+        "parentUnitId": null,
+        "startLine": 79,
+        "endLine": 87,
+        "isBehavioral": true,
+        "source": "\treturn offscreenCanvas\n}\n\nfunction extractAlphas(ctx: OffscreenCanvasRenderingContext2D, w: number, h: number): Uint8Array {\n\tconst imageData = ctx.getImageData(0, 0, w, h)\n\tconst pixels = new Uint32Array(imageData.data.buffer)\n\tconst alphas = new Uint8Array(w * h)\n\tfor (let i = 0; i < alphas.length; i++) {\n\t\talphas[i] = pixels[i] >>> 24",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/image/ImageAlphaCache.ts__extractAlphas#function:extractAlphas",
+          "fileId": "packages/tldraw/src/lib/shapes/image/ImageAlphaCache.ts__extractAlphas",
+          "unitKind": "function",
+          "name": "extractAlphas",
+          "qualifiedName": "extractAlphas",
+          "parentUnitId": null,
+          "startLine": 79,
+          "endLine": 87,
+          "signature": "function extractAlphas(ctx: OffscreenCanvasRenderingContext2D, w: number, h: number): Uint8Array",
+          "parameters": [
+            {
+              "name": "ctx",
+              "type": "OffscreenCanvasRenderingContext2D",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            { "name": "w", "type": "number", "default": null, "optional": false, "variadic": false, "order": 1 },
+            { "name": "h", "type": "number", "default": null, "optional": false, "variadic": false, "order": 2 }
+          ],
+          "returnType": "Uint8Array",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "ctx provides a functional getImageData(0, 0, w, h) operation.",
+            "w and h are valid numeric dimensions for image-data retrieval and Uint8Array allocation."
+          ],
+          "postconditions": [
+            "Returns a Uint8Array with w * h entries.",
+            "Each output entry contains the corresponding pixel's alpha channel value from the retrieved image data."
+          ],
+          "invariants": [
+            "Output ordering matches the ordering of pixels in the retrieved ImageData.",
+            "Each alpha value is represented as an unsigned 8-bit integer."
+          ],
+          "edgeCases": [
+            "A zero-sized or otherwise invalid dimension is rejected by the underlying image-data retrieval or typed-array allocation operation.",
+            "If getImageData fails, its exception is propagated and no alpha array is returned.",
+            "The returned array length is determined by w * h."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["Exceptions thrown by ctx.getImageData", "Exceptions thrown while allocating the Uint8Array"],
+            "reverts": [],
+            "onInvalidInput": "Propagates the underlying platform or allocation exception.",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "ctx.getImageData", "source": "OffscreenCanvasRenderingContext2D", "kind": "external" }],
+          "symbolReferences": ["OffscreenCanvasRenderingContext2D", "ImageData", "Uint32Array", "Uint8Array"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Reads image pixels from the supplied rendering context and returns one alpha-byte value per pixel in row-major image order.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "extractAlphas(ctx, 2, 1) is called.",
+              "then": "It returns a Uint8Array of length 2 containing [7, 255] in pixel order.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "e98080b707f705121b4be785d6798ec5a09bb43aecce79906558e951c866c01e"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/image/ImageAlphaCache.ts__preloadAlphaData#function:preloadAlphaData",
+        "unitKind": "function",
+        "name": "preloadAlphaData",
+        "qualifiedName": "preloadAlphaData",
+        "parentUnitId": null,
+        "startLine": 90,
+        "endLine": 138,
+        "isBehavioral": true,
+        "source": "}\n\n/**\n * Start loading alpha data for a given image URL. No-op if already loaded or loading.\n *\n * @param url - The URL to fetch the image from (may be a resolved/optimized CDN URL).\n * @param cacheKey - The key to store/lookup the alpha data under. Defaults to `url`.\n *   Pass `asset.props.src` here so that `getAlphaData(asset.props.src)` in getGeometry\n *   finds data that was preloaded from a resolved URL.\n */\nexport function preloadAlphaData(url: string, cacheKey?: string): void {\n\tif (typeof OffscreenCanvas === 'undefined') return\n\tconst key = cacheKey ?? url\n\tif (alphaCache.has(key) || pending.has(key)) return\n\tpending.add(key)\n\n\tconst img = Image()\n\timg.crossOrigin = 'anonymous'\n\timg.onload = async () => {\n\t\tpending.delete(key)\n\t\tconst { width: origW, height: origH } = img\n\t\tif (origW === 0 || origH === 0) return\n\n\t\tconst scale = Math.min(1, MAX_SIZE / Math.max(origW, origH))\n\t\tconst w = Math.max(1, Math.round(origW * scale))\n\t\tconst h = Math.max(1, Math.round(origH * scale))\n\n\t\tlet bitmap: ImageBitmap | null = null\n\t\ttry {\n\t\t\t// Resize off the main thread via createImageBitmap\n\t\t\tbitmap = await createImageBitmap(img, {\n\t\t\t\tresizeWidth: w,\n\t\t\t\tresizeHeight: h,\n\t\t\t\tresizeQuality: 'low',\n\t\t\t})\n\t\t} catch {\n\t\t\t// Fallback handled below\n\t\t}\n\n\t\t// Canvas operations are synchronous from here — no interleaving from\n\t\t// concurrent preloads that could resize the shared OffscreenCanvas.\n\t\tconst canvas = getOffscreenCanvas(w, h)\n\t\tconst ctx = canvas.getContext('2d')\n\t\tif (!ctx) return\n\n\t\tif (bitmap) {\n\t\t\tctx.drawImage(bitmap, 0, 0)\n\t\t\tbitmap.close()\n\t\t} else {",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/image/ImageAlphaCache.ts__preloadAlphaData#function:preloadAlphaData",
+          "fileId": "packages/tldraw/src/lib/shapes/image/ImageAlphaCache.ts__preloadAlphaData",
+          "unitKind": "function",
+          "name": "preloadAlphaData",
+          "qualifiedName": "preloadAlphaData",
+          "parentUnitId": null,
+          "startLine": 90,
+          "endLine": 138,
+          "signature": "export function preloadAlphaData(url: string, cacheKey?: string): void",
+          "parameters": [
+            { "name": "url", "type": "string", "default": null, "optional": false, "variadic": false, "order": 0 },
+            { "name": "cacheKey", "type": "string", "default": null, "optional": true, "variadic": false, "order": 1 }
+          ],
+          "returnType": "void",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "url is a string identifying the image resource.",
+            "If cacheKey is provided, it identifies the cache entry under which the loaded alpha data should be stored."
+          ],
+          "postconditions": [
+            "If OffscreenCanvas is unavailable, no loading is started and no cache or pending state is changed.",
+            "If the selected cache key is already cached or pending, no new image load is started.",
+            "Otherwise, the selected cache key is marked pending and an image load is initiated.",
+            "After a non-zero-dimension image loads, its alpha data is processed at dimensions scaled so neither dimension exceeds MAX_SIZE, with each resulting dimension at least 1."
+          ],
+          "invariants": [
+            "The effective cache key is cacheKey when supplied, otherwise url.",
+            "A cache key is not scheduled for multiple concurrent preload operations.",
+            "Loaded images are requested with anonymous cross-origin handling.",
+            "The resize scale never enlarges an image beyond its original dimensions."
+          ],
+          "edgeCases": [
+            "When OffscreenCanvas is undefined, the function returns immediately without starting a load.",
+            "When the effective cache key is already in the alpha cache, the function is a no-op.",
+            "When the effective cache key is already pending, the function is a no-op.",
+            "When the loaded image has zero width or height, pending state is cleared and no alpha data is produced.",
+            "When createImageBitmap fails, processing falls back to the shared offscreen canvas path without a resized bitmap.",
+            "When the canvas cannot provide a 2D context, processing stops without producing alpha data."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": "Returns void; unsupported OffscreenCanvas, zero-sized images, unavailable 2D context, and createImageBitmap failure are handled without propagating an error."
+          },
+          "stateMutations": [
+            "Adds the effective cache key to the pending-load set before image loading begins.",
+            "Removes the effective cache key from the pending-load set when the image load handler begins processing.",
+            "Stores extracted alpha data in the alpha cache after successful processing."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "Image", "source": "browser image API", "kind": "external" },
+            { "name": "createImageBitmap", "source": "browser image API", "kind": "external" },
+            { "name": "getOffscreenCanvas", "source": "ImageAlphaCache.ts", "kind": "internal" },
+            { "name": "extractAlphas", "source": "ImageAlphaCache.ts", "kind": "internal" }
+          ],
+          "symbolReferences": ["OffscreenCanvas", "ImageBitmap", "MAX_SIZE", "alphaCache", "pending"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Initiates asynchronous alpha-data loading for an image URL and stores the result under the supplied cache key or the URL itself. Duplicate loads are suppressed while data is cached or already pending.",
+          "specLiterals": [
+            {
+              "kind": "format-string",
+              "value": "anonymous",
+              "role": "Cross-origin mode assigned to the loading image."
+            },
+            { "kind": "enum-value", "value": "low", "role": "Resize quality passed to createImageBitmap." }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "preloadAlphaData(\"https://example.com/image.png\") is called",
+              "then": "The function returns without creating an image load or changing the pending/cache state.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "preloadAlphaData is called with that key",
+              "then": "No additional image load is initiated.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The image load handler processes the image",
+              "then": "Processing continues through the canvas fallback rather than propagating the bitmap-creation error.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "cdc9bc989c6d1da2c26206466fbcf5f472214e77488af9b364786d7ca7d70069"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/image/ImageAlphaCache.ts__getAlphaData#function:getAlphaData",
+        "unitKind": "function",
+        "name": "getAlphaData",
+        "qualifiedName": "getAlphaData",
+        "parentUnitId": null,
+        "startLine": 141,
+        "endLine": 143,
+        "isBehavioral": false,
+        "source": "\n\t\talphaCache.set(key, { width: w, height: h, alphas: extractAlphas(ctx, w, h) })\n\t}",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/image/ImageAlphaCache.ts__getAlphaData#function:getAlphaData",
+          "fileId": "packages/tldraw/src/lib/shapes/image/ImageAlphaCache.ts__getAlphaData",
+          "unitKind": "function",
+          "name": "getAlphaData",
+          "qualifiedName": "getAlphaData",
+          "parentUnitId": null,
+          "startLine": 141,
+          "endLine": 143,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [
+            "Returns the alpha data currently associated with the requested cache key, if present.",
+            "Does not create or modify cache entries."
+          ],
+          "invariants": ["The returned cached data is not recomputed by this lookup."],
+          "edgeCases": [
+            "A key with no cached entry yields the function's absent-result value.",
+            "A previously cached entry is returned unchanged."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "alphaCache.get", "source": "module-local alpha cache", "kind": "internal" }],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Retrieves the cached alpha data associated with an image cache key, without generating or modifying cached data.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "9a8e9215a12d2a4176fdb1e66430c283aa049d4f7019aba15f9caff6ca13e6ee"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/image/ImageAlphaCache.ts__isPointTransparent#function:isPointTransparent",
+        "unitKind": "function",
+        "name": "isPointTransparent",
+        "qualifiedName": "isPointTransparent",
+        "parentUnitId": null,
+        "startLine": 146,
+        "endLine": 155,
+        "isBehavioral": true,
+        "source": "\t}\n\timg.src = url\n}\n\n/** Get cached alpha data for a URL, or null if not yet loaded. */\nexport function getAlphaData(src: string): AlphaData | null {\n\treturn alphaCache.get(src) ?? null\n}\n\n/**",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/image/ImageAlphaCache.ts__isPointTransparent#function:isPointTransparent",
+          "fileId": "packages/tldraw/src/lib/shapes/image/ImageAlphaCache.ts__isPointTransparent",
+          "unitKind": "function",
+          "name": "isPointTransparent",
+          "qualifiedName": "isPointTransparent",
+          "parentUnitId": null,
+          "startLine": 146,
+          "endLine": 155,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": ["Returns a boolean transparency result for the supplied point and alpha data."],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Determines whether a point in image alpha data is transparent. The function provides the transparency predicate used for image point hit testing.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "19e957caac20eb722bf20ae4e66d8806b910a1b0db53dd18b2f80260b1e639f5"
+        }
+      }
+    ]
+  },
+  "out": [],
+  "in": [
+    "packages/tldraw/src/test/transparent-image-hit-test.test.ts",
+    "packages/tldraw/src/lib/shapes/image/ImageAlphaGeometry.ts",
+    "packages/tldraw/src/lib/shapes/image/ImageShapeUtil.tsx"
+  ],
+  "externals": ["@tldraw/editor"],
+  "impact": { "seeds": 7, "callers": 4, "impactedFiles": ["packages/tldraw/src/lib/shapes/image/ImageShapeUtil.tsx"] }
+}

@@ -1,0 +1,739 @@
+{
+  "arm": "claudecli_opus5_mcp_plumbline_rejection_selection_v7",
+  "contract": "A container must have exactly one description of what a fresh instance contains, and both construction and re-initialisation must be expressed in terms of that single description \u2014 so re-initialisation derives the whole fresh shape rather than enumerating a hand-written list of fields, and adding a field to the shape cannot silently leave it surviving a reset.",
+  "defect_location": {
+    "repo": "xyflow",
+    "summary": "xyflow/packages/svelte/src/lib/store/initial-store.svelte.ts:465 \u2014 resetStoreValues() re-initialises by enumeration, assigning only this.dragging, this.selectionRect, this.selectionRectMode, this.selectionKeyPressed, this.multiselectionKeyPressed, this.deleteKeyPressed, this.panActivationKeyPressed, this.zoomActivationKeyPressed, this._connection and this.clickConnectStartHandle. The single description of a fresh instance is the SvelteFlowStore class body inside getInitialStore(signals) at xyflow/packages/svelte/src/lib/store/initial-store.svelte.ts:110, which additionally establishes the node/edge type defaults, the host-supplied signals.props callbacks and the derived lookup slots; none of those are named in the reset, so they survive from the previous configuration. xyflow/packages/svelte/src/lib/store/index.ts:390-393 is the re-initialisation entry point (function reset() { store.resetStoreValues(); unselectNodesAndEdges(); }) and xyflow/packages/svelte/src/lib/store/index.ts:417 exports it as part of SvelteFlowStoreActions declared in xyflow/packages/svelte/src/lib/store/types.ts. A text-tier sweep of packages/svelte for 'initialState' returned 0 hits across 144 files, confirming the Svelte package has no derived description to reset from. Its sibling does it correctly: xyflow/packages/react/src/store/index.ts:450 is 'reset: () => set({ ...getInitialState() })' against the single description at xyflow/packages/react/src/store/initialState.ts:21-159, consumed at construction in xyflow/packages/react/src/store/index.ts:84. The owners it must be brought in line with are redux/src/combineReducers.ts (assertReducerShape probes every constituent reducer for its own starting value and refuses to assemble otherwise, using the constants in redux/src/utils/actionTypes.ts), jotai/src/vanilla/utils/atomWithReset.ts with the RESET sentinel in jotai/src/vanilla/utils/constants.ts and jotai/src/react/utils/useResetAtom.ts (an explicit reset-to-initial protocol so callers never enumerate slots), and query/packages/query-core/src/query.ts:187-188 plus query/packages/query-core/src/mutation.ts:110 (getDefaultState is a single description the constructor consumes). table/packages/table-core/src/core/table.ts:356-358 was read and cleared as a violator: 'reset: () => { table.setState(table.initialState) }' derives."
+  },
+  "case_id": "xrepo-v6-15-a-fresh-instance-that-remembers-medium",
+  "case_question": "Handing one of these containers a new configuration is supposed to leave it indistinguishable from one that had been created with that configuration from the start. It is not. The re-initialisation path was written once, against the fields that existed then, and every field added since - the per-item defaults, the callbacks the host passes down, the derived slots that were introduced alongside them - is simply not mentioned in it. So the fields the original author listed are replaced and everything else survives from the previous configuration, invisibly, until something reads one of the survivors and behaves according to a configuration the caller has already replaced. The bug is not in any one field: it is that the reset enumerates rather than derives, so it goes stale every time the shape grows, and nothing fails when it does. The contract is that there is exactly one description of what a fresh instance contains and both creation and re-initialisation must be expressed in terms of it. Elsewhere in the folder that is done deliberately: one library demands that every constituent reducer answer the initialisation probe with its own starting value and refuses to assemble the whole if any of them cannot, one gives its state slots an explicit reset-to-initial protocol so a caller never has to enumerate them, and one keeps its default state in a single description that the constructor consumes. Which files re-initialise by enumeration, and which own the single-description contract they have to be brought in line with?",
+  "retrieved": 75,
+  "gold_counts": {
+    "min_repos": 4,
+    "min_files": 5
+  },
+  "gold_size": 5,
+  "gold_repo_count": 4,
+  "metrics": {
+    "recall@10": 0.4,
+    "recall@25": 0.4,
+    "recall@50": 0.4,
+    "recall@100": 0.6,
+    "precision@5": 0.4,
+    "precision@10": 0.2,
+    "MRR": 0.5,
+    "first_hit_rank": 2,
+    "hits_at_25": "2/5",
+    "repo_recall": 1.0,
+    "repos_found": "4/4",
+    "repos_named": 15,
+    "invalid_path_rate": 0.0,
+    "cap_at_run_time": 100
+  },
+  "prf": {
+    "full_list": {
+      "precision": 0.04,
+      "recall": 0.6,
+      "f1": 0.075,
+      "hits": 3,
+      "retrieved": 75,
+      "gold_size": 5
+    },
+    "@10": {
+      "precision": 0.2,
+      "recall": 0.4,
+      "f1": 0.2667,
+      "hits": 2,
+      "retrieved": 10,
+      "gold_size": 5
+    },
+    "@25": {
+      "precision": 0.08,
+      "recall": 0.4,
+      "f1": 0.1333,
+      "hits": 2,
+      "retrieved": 25,
+      "gold_size": 5
+    },
+    "@50": {
+      "precision": 0.04,
+      "recall": 0.4,
+      "f1": 0.0727,
+      "hits": 2,
+      "retrieved": 50,
+      "gold_size": 5
+    },
+    "@100": {
+      "precision": 0.04,
+      "recall": 0.6,
+      "f1": 0.075,
+      "hits": 3,
+      "retrieved": 75,
+      "gold_size": 5
+    }
+  },
+  "hits": [
+    "redux::src/combineReducers.ts",
+    "jotai::src/vanilla/utils/atomWithReset.ts",
+    "xyflow::packages/react/src/types/store.ts"
+  ],
+  "ranked_detail": [
+    {
+      "rank": 1,
+      "repo": "xyflow",
+      "path": "packages/svelte/src/lib/store/initial-store.svelte.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 2,
+      "repo": "redux",
+      "path": "src/combineReducers.ts",
+      "gold": true,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 3,
+      "repo": "jotai",
+      "path": "src/vanilla/utils/atomWithReset.ts",
+      "gold": true,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 4,
+      "repo": "query",
+      "path": "packages/query-core/src/query.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 5,
+      "repo": "table",
+      "path": "packages/table-core/src/core/table.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 6,
+      "repo": "redux-toolkit",
+      "path": "packages/toolkit/src/createSlice.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 7,
+      "repo": "zustand",
+      "path": "src/vanilla.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 8,
+      "repo": "db",
+      "path": "packages/db/src/collection/index.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 9,
+      "repo": "tldraw",
+      "path": "packages/editor/src/lib/config/createTLStore.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 10,
+      "repo": "redux-devtools",
+      "path": "packages/redux-devtools-instrument/src/instrument.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 11,
+      "repo": "router",
+      "path": "packages/router-core/src/router.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 12,
+      "repo": "react",
+      "path": "packages/react-devtools-shared/src/devtools/views/Components/TreeContext.js",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 13,
+      "repo": "react-redux",
+      "path": "src/components/Context.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 14,
+      "repo": "reselect",
+      "path": "src/types.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 15,
+      "repo": "primitives",
+      "path": "packages/react/use-controllable-state/src/use-controllable-state.tsx",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 16,
+      "repo": "xyflow",
+      "path": "packages/svelte/src/lib/store/index.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 17,
+      "repo": "redux",
+      "path": "src/utils/actionTypes.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 18,
+      "repo": "jotai",
+      "path": "src/vanilla/utils/constants.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 19,
+      "repo": "query",
+      "path": "packages/query-core/src/mutation.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 20,
+      "repo": "table",
+      "path": "packages/table-core/src/types.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 21,
+      "repo": "redux-toolkit",
+      "path": "packages/toolkit/src/createReducer.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 22,
+      "repo": "zustand",
+      "path": "src/middleware/combine.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 23,
+      "repo": "db",
+      "path": "packages/db/src/collection/state.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 24,
+      "repo": "tldraw",
+      "path": "packages/tlschema/src/TLStore.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 25,
+      "repo": "redux-devtools",
+      "path": "packages/redux-devtools/src/persistState.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 26,
+      "repo": "router",
+      "path": "packages/router-core/src/stores.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 27,
+      "repo": "react",
+      "path": "packages/react-devtools-shared/src/devtools/views/SuspenseTab/SuspenseTreeContext.js",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 28,
+      "repo": "react-redux",
+      "path": "src/components/Provider.tsx",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 29,
+      "repo": "reselect",
+      "path": "src/createSelectorCreator.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 30,
+      "repo": "primitives",
+      "path": "packages/react/use-controllable-state/src/use-controllable-state-reducer.tsx",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 31,
+      "repo": "xyflow",
+      "path": "packages/svelte/src/lib/store/types.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 32,
+      "repo": "redux",
+      "path": "src/createStore.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 33,
+      "repo": "jotai",
+      "path": "src/react/utils/useResetAtom.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 34,
+      "repo": "query",
+      "path": "packages/query-core/src/mutationObserver.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 35,
+      "repo": "table",
+      "path": "packages/table-core/src/features/RowPagination.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 36,
+      "repo": "redux-toolkit",
+      "path": "packages/toolkit/src/entities/entity_state.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 37,
+      "repo": "zustand",
+      "path": "src/middleware/redux.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 38,
+      "repo": "db",
+      "path": "packages/db/src/collection/lifecycle.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 39,
+      "repo": "tldraw",
+      "path": "packages/editor/src/lib/hooks/useTLStore.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 40,
+      "repo": "redux-devtools",
+      "path": "packages/redux-devtools-app-core/src/reducers/instances.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 41,
+      "repo": "router",
+      "path": "packages/react-router/src/router.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 42,
+      "repo": "xyflow",
+      "path": "packages/react/src/store/initialState.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 43,
+      "repo": "redux",
+      "path": "src/types/reducers.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 44,
+      "repo": "jotai",
+      "path": "src/vanilla/utils/atomWithDefault.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 45,
+      "repo": "query",
+      "path": "packages/query-core/src/types.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 46,
+      "repo": "table",
+      "path": "packages/table-core/src/features/ColumnPinning.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 47,
+      "repo": "redux-toolkit",
+      "path": "packages/toolkit/src/combineSlices.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 48,
+      "repo": "zustand",
+      "path": "src/middleware/persist.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 49,
+      "repo": "db",
+      "path": "packages/db/src/types.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 50,
+      "repo": "tldraw",
+      "path": "packages/editor/src/lib/config/TLSessionStateSnapshot.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 51,
+      "repo": "xyflow",
+      "path": "packages/react/src/store/index.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 52,
+      "repo": "redux",
+      "path": "src/types/store.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 53,
+      "repo": "jotai",
+      "path": "src/vanilla/utils.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 54,
+      "repo": "query",
+      "path": "packages/query-core/src/queryCache.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 55,
+      "repo": "table",
+      "path": "packages/table-core/src/features/ColumnOrdering.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 56,
+      "repo": "redux-toolkit",
+      "path": "packages/toolkit/src/entities/models.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 57,
+      "repo": "xyflow",
+      "path": "packages/svelte/src/lib/store/visibleElements.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 58,
+      "repo": "jotai",
+      "path": "src/vanilla/internals.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 59,
+      "repo": "query",
+      "path": "packages/query-core/src/mutationCache.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 60,
+      "repo": "table",
+      "path": "packages/table-core/src/features/ColumnSizing.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 61,
+      "repo": "redux-toolkit",
+      "path": "packages/toolkit/src/query/core/buildSlice.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 62,
+      "repo": "xyflow",
+      "path": "packages/svelte/src/lib/store/context.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 63,
+      "repo": "jotai",
+      "path": "src/vanilla/store.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 64,
+      "repo": "query",
+      "path": "packages/query-core/src/queryClient.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 65,
+      "repo": "table",
+      "path": "packages/table-core/src/features/RowSelection.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 66,
+      "repo": "xyflow",
+      "path": "packages/react/src/components/ReactFlowProvider/index.tsx",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 67,
+      "repo": "query",
+      "path": "packages/query-core/src/queryObserver.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 68,
+      "repo": "table",
+      "path": "packages/table-core/src/features/ColumnVisibility.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 69,
+      "repo": "xyflow",
+      "path": "packages/react/src/container/ReactFlow/Wrapper.tsx",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 70,
+      "repo": "table",
+      "path": "packages/table-core/src/features/RowSorting.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 71,
+      "repo": "xyflow",
+      "path": "packages/system/src/utils/store.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 72,
+      "repo": "xyflow",
+      "path": "packages/react/src/types/store.ts",
+      "gold": true,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 73,
+      "repo": "xyflow",
+      "path": "packages/svelte/src/lib/types/general.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 74,
+      "repo": "xyflow",
+      "path": "packages/svelte/src/lib/hooks/useSvelteFlow.svelte.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 75,
+      "repo": "xyflow",
+      "path": "packages/system/src/constants.ts",
+      "gold": false,
+      "exists_at_pin": true
+    }
+  ],
+  "rank_policy": "block-interleave",
+  "invalid_paths": [],
+  "missed_gold": [
+    "xyflow::packages/react/src/container/ReactFlow/init-values.ts",
+    "tldraw::packages/store/src/lib/Store.ts"
+  ],
+  "retriever": {
+    "surface": "plumbline MCP alone: the ByteBell IR knowledge graph. No filesystem, shell or grep.",
+    "repo_pins": {
+      "redux": "3aa561f9fc13f3287e6d83764f85fe0e82437c5f",
+      "xyflow": "360f5b13e2bc6899ea06b4be1a49b068d86926cf",
+      "redux-toolkit": "b1c5130154c454ca8387f55da6122fcb507c560c",
+      "query": "46d7f02f1c7b9fcd3255082cc7103e8bfa3dab76",
+      "react-redux": "ad5d1e0816d0cb1464b25cf2853f2a7d73433f5b",
+      "table": "d08af367e11c539bb7e18c2472aa761149ef6db6",
+      "reselect": "950112a328f71d97d18fd543159d6fdefa432b38",
+      "tldraw": "5590d14d8edd4faab7dc1177b6e1adb28876fd23",
+      "react": "3a717e42438afac81020cdec297dadb5613a4304",
+      "redux-devtools": "f4b4668c30ae08920c59a76cc4629c35c16ef0fa",
+      "jotai": "5c4ca26b0db5571114be58393e17854a771f7790",
+      "router": "3dee5b2e9453d01a3172c73426959007b290b3fc",
+      "zustand": "beca84e600e4e250f6b244d22878e72948f331c7",
+      "primitives": "58164e06ca67dff9a68dd375d858180cfdc8ec27",
+      "db": "7f0fa36ff6d48b0494ed5f6a1223fd18c317e41f",
+      "zod": "912f0f51b0ced654d0069741e7160834dca742ee"
+    },
+    "checkout_verified": "run.sh gates on git rev-parse HEAD == pinned commit for all 15 repositories before launch",
+    "isolation": "kernel-enforced by sandbox-exec: gold, the answer vault and every sibling arm are unreadable; no session transcript is readable; fresh cwd",
+    "surface_pure": true
+  },
+  "cost": {
+    "session_id": "3aec843d-8b97-42d3-a495-de6c1ba17e25",
+    "arm": "claudecli_opus5_mcp_plumbline_rejection_selection_v7",
+    "case": "xrepo-v6-15-a-fresh-instance-that-remembers-medium",
+    "model": "claude-opus-5",
+    "launch": "fresh isolated `claude -p` under sandbox-exec, --strict-mcp-config",
+    "price_per_mtok_usd": {
+      "input": 5.0,
+      "output": 25.0,
+      "cache_write": 10.0,
+      "cache_read": 0.5
+    },
+    "usd_per_query_cli": 6.656154500000001,
+    "usd_per_query_list_price": 6.647812,
+    "duration_ms": 1384231,
+    "wall_seconds": 1389,
+    "num_turns": 44,
+    "tokens": {
+      "input": 38,
+      "output": 60802,
+      "cache_creation": 337536,
+      "cache_read": 3504423
+    },
+    "tokens_retrieved": 157127,
+    "cache_clean": false,
+    "cache_mode": "warm",
+    "cache_note": "fresh session, no --resume/--continue: every cache_read is cache THIS session created and read back, which the run conditions permit",
+    "tool_calls": {
+      "ToolSearch": 2,
+      "mcp__plumbline__roll_call": 1,
+      "mcp__plumbline__rap_sheet": 1,
+      "mcp__plumbline__stakeout": 19,
+      "Bash": 2,
+      "mcp__plumbline__manhunt": 4,
+      "mcp__plumbline__blueprint": 1,
+      "mcp__plumbline__the_receipts": 7,
+      "mcp__plumbline__case_file": 2,
+      "mcp__plumbline__shakedown": 1,
+      "mcp__plumbline__dragnet": 1,
+      "mcp__plumbline__collateral_damage": 2
+    },
+    "disallowed_tool_calls": {},
+    "non_retrieval_tool_calls": {
+      "ToolSearch": 2
+    },
+    "misfired_tool_calls": {},
+    "mcp_tool_calls": {
+      "mcp__plumbline__roll_call": 1,
+      "mcp__plumbline__rap_sheet": 1,
+      "mcp__plumbline__stakeout": 19,
+      "mcp__plumbline__manhunt": 4,
+      "mcp__plumbline__blueprint": 1,
+      "mcp__plumbline__the_receipts": 7,
+      "mcp__plumbline__case_file": 2,
+      "mcp__plumbline__shakedown": 1,
+      "mcp__plumbline__dragnet": 1,
+      "mcp__plumbline__collateral_damage": 2
+    },
+    "permission_denials": 0,
+    "surface_pure": true,
+    "surface_pure_note": "Any Bash/Read/Grep/Glob call is a surface violation: the knowledge graph is the whole search surface.",
+    "allowed_tools_source": "run.sh --allowedTools",
+    "allowed_tools": [
+      "Bash",
+      "ScheduleWakeup",
+      "TodoWrite",
+      "ToolSearch",
+      "mcp__plumbline__blueprint",
+      "mcp__plumbline__case_file",
+      "mcp__plumbline__case_notes",
+      "mcp__plumbline__cold_case",
+      "mcp__plumbline__collateral_damage",
+      "mcp__plumbline__cross_repo_lookup",
+      "mcp__plumbline__dragnet",
+      "mcp__plumbline__evidence_locker",
+      "mcp__plumbline__file_a_complaint",
+      "mcp__plumbline__interrogation",
+      "mcp__plumbline__kingpin",
+      "mcp__plumbline__manhunt",
+      "mcp__plumbline__mugshot",
+      "mcp__plumbline__paper_trail",
+      "mcp__plumbline__pull_the_evidence",
+      "mcp__plumbline__rap_sheet",
+      "mcp__plumbline__read_the_fine_print",
+      "mcp__plumbline__roll_call",
+      "mcp__plumbline__shakedown",
+      "mcp__plumbline__stakeout",
+      "mcp__plumbline__the_receipts"
+    ],
+    "sandbox": {
+      "mechanism": "sandbox-exec (macOS seatbelt), profile pinned at sandbox.sb",
+      "gold_readable": false,
+      "other_arms_readable": false,
+      "transcripts_readable": false,
+      "out_of_arena_paths_attempted": {},
+      "reads_refused_by_kernel": 0,
+      "contamination_possible": false,
+      "gate4_verified": "run.sh proved golden.json unreadable under this profile before launch"
+    },
+    "transcript": "/Users/sauravverma/.claude/projects/-private-tmp-xrepo-runs-medium-a-fresh-instance-that-remembers-claudecli-opus5-mcp-plumbline-rejection-selection-v7-20260917T224419Z-37351/3aec843d-8b97-42d3-a495-de6c1ba17e25.jsonl"
+  },
+  "comparable": true
+}

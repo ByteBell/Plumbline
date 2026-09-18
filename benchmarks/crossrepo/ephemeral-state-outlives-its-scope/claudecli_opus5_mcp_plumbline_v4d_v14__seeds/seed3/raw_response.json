@@ -1,0 +1,84 @@
+{
+  "duration_api_ms": 424542,
+  "stop_reason": "end_turn",
+  "session_id": "97aaa846-5f97-4197-af15-3ef51d609ded",
+  "total_cost_usd": 3.9501949999999995,
+  "usage": {
+    "input_tokens": 30,
+    "cache_creation_input_tokens": 217461,
+    "cache_read_input_tokens": 1833200,
+    "output_tokens": 34081,
+    "output_tokens_details": { "thinking_tokens": 14951 },
+    "server_tool_use": { "web_search_requests": 0, "web_fetch_requests": 0 },
+    "service_tier": "standard",
+    "cache_creation": { "ephemeral_1h_input_tokens": 217461, "ephemeral_5m_input_tokens": 0 },
+    "inference_geo": "not_available",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 10181,
+        "cache_read_input_tokens": 232366,
+        "cache_creation_input_tokens": 14310,
+        "cache_creation": { "ephemeral_5m_input_tokens": 0, "ephemeral_1h_input_tokens": 14310 },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 6655,
+      "outputTokens": 31,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.00681,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "claude-haiku-4-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    },
+    "claude-opus-5": {
+      "inputTokens": 30,
+      "outputTokens": 34081,
+      "cacheReadInputTokens": 1833200,
+      "cacheCreationInputTokens": 217461,
+      "webSearchRequests": 0,
+      "costUSD": 3.9433849999999997,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "canonicalModel": "claude-opus-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": { "background": 0, "foreground": 0, "unset": 0 },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": { "parent": 0, "user": 0, "system": 0 },
+    "refused": { "depth_limit": 0, "concurrency_limit": 0, "budget": 0 },
+    "by_type": {}
+  },
+  "is_error": false,
+  "num_turns": 46,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## LEDGER\n\n**(a) Obligations**\n\n**OB-1 — VIOLATOR: long-lived manager owns in-flight fading trails, never records which page, never torn down on page change.** — **CLOSED**\nclosers:\n- `tldraw packages/editor/src/lib/editor/managers/ScribbleManager/ScribbleManager.ts` — read verbatim. `interface Session {id, items, state, options, idleTimeoutHandle, fadeElapsed, totalPointsAtFadeStart}` (48–56) carries **no page identity**; `private sessions = new Map<string, Session>()` (60) lives on an editor-lifetime manager (`constructor(private editor: Editor)`, 62). `startSession` (74–99) records no page. Nothing resets on page change.\n- `tldraw .../ClickManager/ClickManager.ts` — read verbatim. `_clickState`, `_clickTimeout`, `_clickScreenPoint`, `_previousScreenPoint`, `_isPressingWhilePending` (15–23, 61): an interaction still in progress on an editor-lifetime object. `cancelDoubleClickTimeout()` (167–174) exists but is never wired to a page change.\n- `tldraw .../EdgeScrollManager/EdgeScrollManager.ts` — read verbatim. `_isEdgeScrolling`, `_edgeScrollDuration` (13–14), reset only by proximity, never by scope change.\n- `tldraw .../SnapManager/SnapManager.ts` — read verbatim. `_snapIndicators = atom<SnapIndicator[]|undefined>` (39) with `clearIndicators()` (50–54); `getCurrentPageId()` appears only inside the `getSnappableShapes` computed (100) — the indicator atom itself is not page-scoped and is never cleared on page change.\n\n**OB-2 — transient status of an in-flight fetch reset when its scope changes.** — **CLOSED**\nclosers:\n- `query packages/query-core/src/queryObserver.ts` — read verbatim. `#updateQuery()` (703–719) swaps `#currentQuery`, resets `#currentQueryInitialState = query.state`, and moves the observer off `prevQuery` onto the new one; `setOptions` (138–219) re-derives result, stale timeout and refetch interval whenever `this.#currentQuery !== prevQuery`. This is the contract done right on a long-lived owner.\n- `db packages/db/src/query/subset-dedupe.ts` — `reset()` bumps a generation so in-flight requests resolving afterwards skip `updateTracking`.\n\n**OB-3 — a pending selection reset when the scope changes underneath it.** — **CLOSED**\nclosers: `table packages/table-core/src/features/RowSelection.ts` (`resetRowSelection`, `autoResetRowSelection`), `table .../features/RowPagination.ts` (`autoResetPageIndex` — \"pagination will be reset to the first page when page-altering state changes e.g. `data` is updated\"), `table .../features/RowExpanding.ts` (`autoResetExpanded`).\n\n**OB-4 — an interaction still in progress reset when scope changes.** — **CLOSED**\nclosers: `tldraw .../ClickManager/ClickManager.ts`, `tldraw .../EdgeScrollManager/EdgeScrollManager.ts`, `tldraw .../SnapManager/SnapManager.ts` (as above), and `xyflow packages/react/src/store/index.ts` + `packages/svelte/src/lib/store/index.ts` — the two sibling adapters that each own in-progress connection state and do not import one another, over the shared core `packages/system/src/types/general.ts`.\n\n**Contract owner and in-repo counterexamples (EVIDENCE — all named in `files` per 6.3):**\n- `tldraw .../managers/EditorManager.ts` — **OWNER**. Read verbatim: the base class defining the folder's one teardown contract (\"whatever sets a thing up is what tears it down… it can't be forgotten\"). A scope-change reset hook belongs here. Notably `ScribbleManager`, `ClickManager`, `EdgeScrollManager` and `SnapManager` do **not** extend it.\n- `tldraw .../SpatialIndexManager/SpatialIndexManager.ts` (10 `PageId` references) and `.../CollaboratorsManager/CollaboratorsManager.ts` (4) — the in-folder siblings that **do** record the page their state belongs to. A `the_receipts` bulk_search over all 18 managers is the proof: only these two and `SnapManager` (1, and only in a computed) mention `PageId` at all; `ScribbleManager`, `ClickManager`, `EdgeScrollManager`, `FontManager`, `InputsManager`, `PerformanceManager`, `HistoryManager`, `TextManager` mention it **nowhere**.\n\n**(b) SWEEP MATRIX**\n\n| OB | repos[] | SWEPT | 3.5 |\n|---|---|---|---|\n| OB-1 | tldraw, xyflow, primitives, react, redux-devtools, table | all 6 | ✅ holds |\n| OB-2 | query, db, router, redux-toolkit, jotai | all 5 | ✅ holds |\n| OB-3 | table, xyflow, tldraw, primitives, db, router | **table only** | ❌ **fails — 5 pairs unswept** |\n| OB-4 | xyflow, tldraw, primitives, react, redux-devtools, table | xyflow, tldraw, primitives, react, redux-devtools | ❌ **fails — table unswept for this phrase** |\n\nStating this plainly rather than hiding it: OB-3 and OB-4 did not complete their repo lists — `stakeout` hit its allowance repeatedly and the remaining pairs were traded for folds and verbatim reads. Those repos are covered only obliquely (via dragnet's behaviour lens and the OB-1 sweeps), so their files rank in band 2, not band 1.\n\n**FOLDED vs CONFIRMED:** folds ran from `ScribbleManager.ts`, `EditorManager.ts` and `RowSelection.ts`. The ASSERT `FOLDED == CONFIRMED` does **not** fully hold — `ClickManager`, `EdgeScrollManager`, `SnapManager`, `SpatialIndexManager`, `CollaboratorsManager` and `queryObserver.ts` were confirmed but not individually folded.\n\n[{\"repo\":\"tldraw\",\"files\":[\"packages/editor/src/lib/editor/managers/ScribbleManager/ScribbleManager.ts\",\"packages/editor/src/lib/editor/managers/ClickManager/ClickManager.ts\",\"packages/editor/src/lib/editor/managers/EdgeScrollManager/EdgeScrollManager.ts\",\"packages/editor/src/lib/editor/managers/SnapManager/SnapManager.ts\",\"packages/editor/src/lib/editor/managers/EditorManager.ts\",\"packages/editor/src/lib/editor/managers/SpatialIndexManager/SpatialIndexManager.ts\",\"packages/editor/src/lib/editor/managers/CollaboratorsManager/CollaboratorsManager.ts\",\"packages/editor/src/lib/editor/managers/HistoryManager/HistoryManager.ts\",\"packages/editor/src/lib/editor/managers/FontManager/FontManager.ts\",\"packages/editor/src/lib/editor/managers/InputsManager/InputsManager.ts\",\"packages/editor/src/lib/editor/managers/PerformanceManager/PerformanceManager.ts\",\"packages/editor/src/lib/editor/Editor.ts\",\"packages/editor/src/lib/config/TLSessionStateSnapshot.ts\",\"packages/tldraw/src/lib/tools/LaserTool/LaserTool.ts\",\"packages/tldraw/src/lib/tools/LaserTool/childStates/Lasering.ts\",\"packages/tldraw/src/lib/tools/LaserTool/childStates/Idle.ts\",\"packages/tldraw/src/lib/overlays/ScribbleOverlayUtil.ts\",\"packages/tldraw/src/lib/overlays/CollaboratorScribbleOverlayUtil.ts\",\"packages/tldraw/src/lib/tools/SelectTool/childStates/ScribbleBrushing.ts\",\"packages/tldraw/src/lib/tools/SelectTool/childStates/Brushing.ts\",\"packages/editor/src/lib/editor/managers/SnapManager/BoundsSnaps.ts\",\"packages/editor/src/lib/editor/managers/SnapManager/HandleSnaps.ts\",\"packages/editor/src/lib/editor/managers/TextManager/TextManager.ts\",\"packages/editor/src/lib/editor/managers/TickManager/TickManager.ts\",\"packages/editor/src/lib/editor/managers/FocusManager/FocusManager.ts\",\"packages/editor/src/lib/editor/managers/SpatialIndexManager/RBushIndex.ts\",\"packages/tlschema/src/misc/TLScribble.ts\",\"packages/tlschema/src/records/TLInstance.ts\"],\"pinpoints\":[{\"path\":\"packages/editor/src/lib/editor/managers/ScribbleManager/ScribbleManager.ts\",\"symbol\":\"Session\",\"lines\":\"48-56\",\"change\":\"Add a pageId field so every scribble session records the page it was started on.\"},{\"path\":\"packages/editor/src/lib/editor/managers/ScribbleManager/ScribbleManager.ts\",\"symbol\":\"ScribbleManager.startSession\",\"lines\":\"57-81\",\"change\":\"Stamp the session with editor.getCurrentPageId() when it is created.\"},{\"path\":\"packages/editor/src/lib/editor/managers/ScribbleManager/ScribbleManager.ts\",\"symbol\":\"ScribbleManager.tick\",\"lines\":\"276-304\",\"change\":\"Skip and tear down sessions whose recorded pageId is no longer the active page, instead of animating and drawing them.\"},{\"path\":\"packages/editor/src/lib/editor/managers/ScribbleManager/ScribbleManager.ts\",\"symbol\":\"ScribbleManager.reset\",\"lines\":\"264-270\",\"change\":\"Wire this to an active-page-change reaction so in-flight trails are cleared when the page changes.\"},{\"path\":\"packages/editor/src/lib/editor/managers/ClickManager/ClickManager.ts\",\"symbol\":\"ClickManager.cancelDoubleClickTimeout\",\"lines\":\"167-174\",\"change\":\"Invoke on active-page change so a pending double-click interaction does not survive into another page.\"},{\"path\":\"packages/editor/src/lib/editor/managers/EdgeScrollManager/EdgeScrollManager.ts\",\"symbol\":\"EdgeScrollManager\",\"lines\":\"13-14\",\"change\":\"Reset _isEdgeScrolling and _edgeScrollDuration when the active page changes.\"},{\"path\":\"packages/editor/src/lib/editor/managers/SnapManager/SnapManager.ts\",\"symbol\":\"SnapManager.clearIndicators\",\"lines\":\"50-54\",\"change\":\"Call on active-page change so pending snap indicators from an interrupted interaction are dropped.\"},{\"path\":\"packages/editor/src/lib/editor/managers/EditorManager.ts\",\"symbol\":\"EditorManager\",\"lines\":\"29-60\",\"change\":\"Add a scope-change reset hook alongside dispose(), and make the ephemeral-state managers extend this base.\"},{\"path\":\"packages/editor/src/lib/editor/managers/SpatialIndexManager/SpatialIndexManager.ts\",\"symbol\":\"SpatialIndexManager\",\"lines\":\"1-1\",\"change\":\"No change required; the per-page index is the in-repo counterexample the violators must be brought in line with.\"}]},\n{\"repo\":\"table\",\"files\":[\"packages/table-core/src/features/RowSelection.ts\",\"packages/table-core/src/features/RowPagination.ts\",\"packages/table-core/src/features/RowExpanding.ts\",\"packages/table-core/src/core/table.ts\",\"packages/table-core/src/types.ts\",\"packages/table-core/src/features/RowSorting.ts\",\"packages/table-core/src/utils/getPaginationRowModel.ts\",\"packages/table-core/src/features/row-pagination/rowPaginationFeature.utils.ts\",\"packages/table-core/src/utils/filterRowsUtils.ts\"],\"pinpoints\":[{\"path\":\"packages/table-core/src/features/RowPagination.ts\",\"symbol\":\"PaginationOptions.autoResetPageIndex\",\"lines\":\"29-68\",\"change\":\"The reference implementation of reset-on-scope-change; keep its queued-reset semantics consistent with the selection and expansion features.\"},{\"path\":\"packages/table-core/src/features/RowSelection.ts\",\"symbol\":\"resetRowSelection\",\"lines\":\"1-1\",\"change\":\"Ensure the pending selection is auto-reset when the row scope it refers to changes, not only on explicit call.\"}]},\n{\"repo\":\"xyflow\",\"files\":[\"packages/react/src/store/index.ts\",\"packages/svelte/src/lib/store/index.ts\",\"packages/system/src/types/general.ts\",\"packages/react/src/hooks/useConnection.ts\",\"packages/svelte/src/lib/store/initial-store.svelte.ts\",\"packages/system/src/xyhandle/XYHandle.ts\",\"packages/react/src/types/store.ts\",\"packages/system/src/utils/store.ts\",\"packages/system/src/xydrag/XYDrag.ts\",\"packages/react/src/components/StoreUpdater/index.tsx\",\"packages/react/src/container/ZoomPane/index.tsx\"],\"pinpoints\":[{\"path\":\"packages/system/src/types/general.ts\",\"symbol\":\"ConnectionState\",\"lines\":\"1-1\",\"change\":\"Shared core the two adapters both import; the scope identity for an in-progress connection belongs here so both siblings reset consistently.\"}]},\n{\"repo\":\"query\",\"files\":[\"packages/query-core/src/queryObserver.ts\",\"packages/query-core/src/query.ts\",\"packages/query-core/src/infiniteQueryObserver.ts\",\"packages/query-core/src/queriesObserver.ts\",\"packages/query-core/src/streamedQuery.ts\",\"packages/react-query/src/useBaseQuery.ts\"],\"pinpoints\":[{\"path\":\"packages/query-core/src/queryObserver.ts\",\"symbol\":\"QueryObserver.#updateQuery\",\"lines\":\"703-719\",\"change\":\"The contract done right: on key change the observer swaps #currentQuery, resets #currentQueryInitialState and re-subscribes off prevQuery.\"},{\"path\":\"packages/query-core/src/queryObserver.ts\",\"symbol\":\"QueryObserver.setOptions\",\"lines\":\"138-219\",\"change\":\"Re-derives result, stale timeout and refetch interval whenever #currentQuery !== prevQuery; the reset-on-scope-change template.\"}]},\n{\"repo\":\"db\",\"files\":[\"packages/db/src/query/subset-dedupe.ts\",\"packages/db/src/collection/lifecycle.ts\",\"packages/db/src/paced-mutations.ts\",\"packages/db/src/query/live/collection-subscriber.ts\"],\"pinpoints\":[{\"path\":\"packages/db/src/query/subset-dedupe.ts\",\"symbol\":\"reset\",\"lines\":\"1-1\",\"change\":\"Generation bump so in-flight requests resolving after a scope reset skip updateTracking; the peer implementation of the same contract.\"}]},\n{\"repo\":\"primitives\",\"files\":[\"packages/react/roving-focus/src/roving-focus-group.tsx\",\"packages/react/navigation-menu/src/navigation-menu.tsx\",\"packages/react/dropdown-menu/src/dropdown-menu.tsx\",\"packages/react/tooltip/src/tooltip.tsx\"]},\n{\"repo\":\"router\",\"files\":[\"packages/router-core/src/load-client.ts\",\"packages/router-core/src/router.ts\",\"packages/react-router/src/CatchBoundary.tsx\",\"packages/solid-router/src/CatchBoundary.tsx\"]},\n{\"repo\":\"redux-devtools\",\"files\":[\"packages/redux-devtools-app-core/src/reducers/monitor.ts\",\"packages/redux-devtools-inspector-monitor/src/DevtoolsInspector.tsx\",\"packages/redux-devtools-inspector-monitor/src/redux.ts\"]},\n{\"repo\":\"react\",\"files\":[\"packages/react-native-renderer/src/legacy-events/ResponderEventPlugin.js\",\"packages/react-native-renderer/src/legacy-events/ResponderTouchHistoryStore.js\"]},\n{\"repo\":\"jotai\",\"files\":[\"src/vanilla/internals.ts\",\"src/vanilla/utils/loadable.ts\"]},\n{\"repo\":\"redux-toolkit\",\"files\":[\"packages/toolkit/src/query/core/buildMiddleware/polling.ts\"]}]",
+  "ttft_ms": 1851,
+  "type": "result",
+  "duration_ms": 1148689,
+  "uuid": "c4eec1df-f0bd-4a61-a4a6-932c0be7c846",
+  "ttft_stream_ms": 1400,
+  "time_to_request_ms": 14,
+  "queued_turn_count": 0
+}

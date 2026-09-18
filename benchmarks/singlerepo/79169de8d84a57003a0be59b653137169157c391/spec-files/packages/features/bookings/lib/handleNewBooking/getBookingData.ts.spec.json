@@ -1,0 +1,1040 @@
+{
+  "schema": 2,
+  "kind": "file",
+  "repoName": "cal.diy",
+  "file": {
+    "relativePath": "packages/features/bookings/lib/handleNewBooking/getBookingData.ts",
+    "language": "typescript",
+    "sizeBytes": 3841,
+    "tokenCount": 961,
+    "model": "us.openai.gpt-5.6-luna",
+    "analysedAt": "2026-09-02T20:00:33.923Z",
+    "module": {
+      "purpose": "This file validates and normalizes booking request data, derives missing event end times, handles legacy and structured custom inputs, and prepares booking fields for downstream creation or rescheduling workflows.",
+      "summary": "The module provides a reported booking-data normalization pipeline. It asynchronously validates request bodies against a supplied Zod schema, derives an end timestamp from the event duration when absent, validates custom inputs, translates legacy properties, and converts structured booking responses into normalized attendee, location, guest, reminder, notes, and calendar-response fields. It also exports inferred types for downstream consumers.",
+      "businessContext": "This supports appointment and event booking creation in Cal.com. Failure can reject valid bookings, omit attendee details, miscalculate event timing, or lose custom booking responses.",
+      "classes": [
+        "ReqBodyWithEnd (~L14-14): Extends validated booking request data with a required event end timestamp",
+        "AwaitedBookingData (~L88-88): Infers the normalized booking data returned by the asynchronous processing pipeline",
+        "RescheduleReason (~L89-89): Extracts the normalized rescheduling explanation field type",
+        "NoEmail (~L90-90): Extracts the normalized no-email preference field type",
+        "AdditionalNotes (~L91-91): Extracts the normalized booking notes field type",
+        "ReqAppsStatus (~L92-92): Extracts the normalized application status field type",
+        "SmsReminderNumber (~L93-93): Extracts the normalized SMS reminder number field type",
+        "EventTypeId (~L94-94): Extracts the normalized event type identifier field type",
+        "ReqBodyMetadata (~L95-95): Extracts metadata type from booking requests with derived end timestamps"
+      ],
+      "functions": [
+        "_getBookingData (~L17-84): Validates, enriches, and normalizes incoming booking request data",
+        "parsedBodyWithEnd (~L27-33): Ensures validated booking data contains an event end timestamp",
+        "getBookingData (~L86-86): Exposes reported booking-data normalization for booking workflows"
+      ],
+      "keywords": [
+        "booking data normalization",
+        "Zod asynchronous validation",
+        "custom booking inputs",
+        "legacy API properties",
+        "event end time derivation",
+        "calendar event responses",
+        "booking fields",
+        "SMS reminder number",
+        "reschedule reason",
+        "seats per time slot"
+      ],
+      "ontologyConcepts": [
+        "request validation",
+        "data normalization",
+        "schema adaptation",
+        "temporal derivation",
+        "custom field validation",
+        "response mapping",
+        "type inference",
+        "error handling"
+      ],
+      "businessEntities": [
+        "Booking",
+        "EventType",
+        "Attendee",
+        "Guest",
+        "Location",
+        "CustomInput",
+        "CalendarEventResponse",
+        "RescheduleReason"
+      ],
+      "systemCapabilities": [
+        "Validate booking request payloads",
+        "Derive missing booking end times",
+        "Validate event-specific custom inputs",
+        "Normalize legacy booking properties",
+        "Map booking responses into calendar fields",
+        "Report booking-data processing failures"
+      ],
+      "configDependencies": [],
+      "importsInternal": [
+        {
+          "spec": "../bookingCreateBodySchema",
+          "symbols": ["bookingCreateSchemaLegacyPropsForApi"],
+          "anchor": { "startLine": 9, "endLine": 9 },
+          "resolvedRelativePath": "packages/features/bookings/lib/bookingCreateBodySchema.ts",
+          "resolvedFileId": "packages/features/bookings/lib/bookingCreateBodySchema.ts",
+          "resolvedHint": "packages/features/bookings/lib/bookingCreateBodySchema.ts"
+        },
+        {
+          "spec": "../getBookingDataSchema",
+          "symbols": ["TgetBookingDataSchema"],
+          "anchor": { "startLine": 10, "endLine": 10 },
+          "resolvedRelativePath": "packages/features/bookings/lib/getBookingDataSchema.ts",
+          "resolvedFileId": "packages/features/bookings/lib/getBookingDataSchema.ts",
+          "resolvedHint": "packages/features/bookings/lib/getBookingDataSchema.ts"
+        },
+        {
+          "spec": "./getEventTypesFromDB",
+          "symbols": ["getEventTypeResponse"],
+          "anchor": { "startLine": 11, "endLine": 11 },
+          "resolvedRelativePath": "packages/features/bookings/lib/handleNewBooking/getEventTypesFromDB.ts",
+          "resolvedFileId": "packages/features/bookings/lib/handleNewBooking/getEventTypesFromDB.ts",
+          "resolvedHint": "packages/features/bookings/lib/handleNewBooking/getEventTypesFromDB.ts"
+        },
+        {
+          "spec": "./handleCustomInputs",
+          "symbols": ["handleCustomInputs"],
+          "anchor": { "startLine": 12, "endLine": 12 },
+          "resolvedRelativePath": "packages/features/bookings/lib/handleNewBooking/handleCustomInputs.ts",
+          "resolvedFileId": "packages/features/bookings/lib/handleNewBooking/handleCustomInputs.ts",
+          "resolvedHint": "packages/features/bookings/lib/handleNewBooking/handleCustomInputs.ts"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "zod",
+          "symbols": ["z"],
+          "package": "zod",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 1 }
+        },
+        {
+          "spec": "@calcom/dayjs",
+          "symbols": ["dayjs"],
+          "package": "@calcom/dayjs",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 3, "endLine": 3 }
+        },
+        {
+          "spec": "@calcom/features/bookings/lib/getCalEventResponses",
+          "symbols": ["getCalEventResponses"],
+          "package": "@calcom/features",
+          "subpath": "bookings/lib/getCalEventResponses",
+          "isBuiltin": false,
+          "anchor": { "startLine": 4, "endLine": 4 }
+        },
+        {
+          "spec": "@calcom/lib/errorCodes",
+          "symbols": ["ErrorCode"],
+          "package": "@calcom/lib",
+          "subpath": "errorCodes",
+          "isBuiltin": false,
+          "anchor": { "startLine": 5, "endLine": 5 }
+        },
+        {
+          "spec": "@calcom/lib/sentryWrapper",
+          "symbols": ["withReporting"],
+          "package": "@calcom/lib",
+          "subpath": "sentryWrapper",
+          "isBuiltin": false,
+          "anchor": { "startLine": 6, "endLine": 6 }
+        },
+        {
+          "spec": "@calcom/prisma/client",
+          "symbols": ["EventTypeCustomInput"],
+          "package": "@calcom/prisma",
+          "subpath": "client",
+          "isBuiltin": false,
+          "anchor": { "startLine": 7, "endLine": 7 }
+        }
+      ],
+      "sideEffects": {
+        "io": [],
+        "network": [],
+        "env": [],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": ["Assigns an auto-generated end value to the parsed body when end is absent."]
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "getBookingData",
+          "shape": "export const getBookingData = withReporting(_getBookingData, \"getBookingData\");",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "AwaitedBookingData",
+          "shape": "export type AwaitedBookingData = Awaited<ReturnType<typeof _getBookingData>>;",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "RescheduleReason",
+          "shape": "export type RescheduleReason = AwaitedBookingData[\"rescheduleReason\"];",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "NoEmail",
+          "shape": "export type NoEmail = AwaitedBookingData[\"noEmail\"];",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "AdditionalNotes",
+          "shape": "export type AdditionalNotes = AwaitedBookingData[\"notes\"];",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "ReqAppsStatus",
+          "shape": "export type ReqAppsStatus = AwaitedBookingData[\"appsStatus\"];",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "SmsReminderNumber",
+          "shape": "export type SmsReminderNumber = AwaitedBookingData[\"smsReminderNumber\"];",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "EventTypeId",
+          "shape": "export type EventTypeId = AwaitedBookingData[\"eventTypeId\"];",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "ReqBodyMetadata",
+          "shape": "export type ReqBodyMetadata = ReqBodyWithEnd[\"metadata\"];",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "TgetBookingDataSchema",
+          "shape": "type ReqBodyWithEnd = TgetBookingDataSchema & { end: string };",
+          "resolvedRelativePath": "packages/features/bookings/lib/getBookingDataSchema.ts",
+          "resolvedFileId": "packages/features/bookings/lib/getBookingDataSchema.ts"
+        },
+        {
+          "name": "getEventTypeResponse",
+          "shape": "eventType: getEventTypeResponse",
+          "resolvedRelativePath": "packages/features/bookings/lib/handleNewBooking/getEventTypesFromDB.ts",
+          "resolvedFileId": "packages/features/bookings/lib/handleNewBooking/getEventTypesFromDB.ts"
+        },
+        {
+          "name": "bookingCreateSchemaLegacyPropsForApi",
+          "shape": "const reqBodyWithLegacyProps = bookingCreateSchemaLegacyPropsForApi.parse(parsedBody);",
+          "resolvedRelativePath": "packages/features/bookings/lib/bookingCreateBodySchema.ts",
+          "resolvedFileId": "packages/features/bookings/lib/bookingCreateBodySchema.ts"
+        },
+        {
+          "name": "handleCustomInputs",
+          "shape": "handleCustomInputs(eventType.customInputs as EventTypeCustomInput[], parsedBody.customInputs);",
+          "resolvedRelativePath": "packages/features/bookings/lib/handleNewBooking/handleCustomInputs.ts",
+          "resolvedFileId": "packages/features/bookings/lib/handleNewBooking/handleCustomInputs.ts"
+        },
+        {
+          "name": "getCalEventResponses",
+          "shape": "getCalEventResponses({ bookingFields: eventType.bookingFields, responses, seatsEnabled: !!eventType.seatsPerTimeSlot })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "withReporting",
+          "shape": "withReporting(_getBookingData, \"getBookingData\")",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "_getBookingData",
+          "intent": "Asynchronously parses and normalizes booking request data.",
+          "structureKind": "async",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 17, "endLine": 84 }
+        },
+        {
+          "name": "parse request body",
+          "intent": "Validates the request body with the supplied schema.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 26, "endLine": 26 }
+        },
+        {
+          "name": "auto-set event end",
+          "intent": "Adds an end timestamp based on the event length.",
+          "structureKind": "branch",
+          "predicate": "!Object.prototype.hasOwnProperty.call(body, \"end\")",
+          "branchOutcomes": ["end absent: assign UTC start plus event length", "end present: leave end unchanged"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 27, "endLine": 33 }
+        },
+        {
+          "name": "require parsed end",
+          "intent": "Rejects bodies that fail the end-property type guard.",
+          "structureKind": "branch",
+          "predicate": "!parsedBodyWithEnd(parsedBody)",
+          "branchOutcomes": ["true: throw ErrorCode.RequestBodyWithouEnd", "false: continue with parsedBody"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 34, "endLine": 36 }
+        },
+        {
+          "name": "custom inputs normalization",
+          "intent": "Validates custom inputs and maps legacy booking properties.",
+          "structureKind": "branch",
+          "predicate": "parsedBody.customInputs",
+          "branchOutcomes": [
+            "truthy: validate custom inputs and return legacy-compatible data",
+            "falsy: continue to response processing"
+          ],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 38, "endLine": 57 }
+        },
+        {
+          "name": "require responses",
+          "intent": "Rejects requests without response data.",
+          "structureKind": "branch",
+          "predicate": "!parsedBody.responses",
+          "branchOutcomes": ["true: throw an error", "false: process responses"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 58, "endLine": 61 }
+        },
+        {
+          "name": "response normalization",
+          "intent": "Converts booking responses into normalized booking data.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 63, "endLine": 83 }
+        },
+        {
+          "name": "reported export",
+          "intent": "Exports the booking-data function through reporting instrumentation.",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 86, "endLine": 86 }
+        }
+      ],
+      "representationFamily": "module",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "type",
+          "name": "ReqBodyWithEnd",
+          "signature": "type ReqBodyWithEnd = TgetBookingDataSchema & { end: string };",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 14, "endLine": 14 }
+        },
+        {
+          "kind": "function",
+          "name": "_getBookingData",
+          "signature": "const _getBookingData = async <T extends z.ZodType>({\n  reqBody,\n  eventType,\n  schema,\n}: {\n  reqBody: Record<string, any>;\n  eventType: getEventTypeResponse;\n  schema: T;\n}) => {",
+          "generics": "<T extends z.ZodType>",
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 17, "endLine": 25 }
+        },
+        {
+          "kind": "function",
+          "name": "getBookingData",
+          "signature": "export const getBookingData = withReporting(_getBookingData, \"getBookingData\");",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 86, "endLine": 86 }
+        },
+        {
+          "kind": "type",
+          "name": "AwaitedBookingData",
+          "signature": "export type AwaitedBookingData = Awaited<ReturnType<typeof _getBookingData>>;",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 88, "endLine": 88 }
+        },
+        {
+          "kind": "type",
+          "name": "RescheduleReason",
+          "signature": "export type RescheduleReason = AwaitedBookingData[\"rescheduleReason\"];",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 89, "endLine": 89 }
+        },
+        {
+          "kind": "type",
+          "name": "NoEmail",
+          "signature": "export type NoEmail = AwaitedBookingData[\"noEmail\"];",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 90, "endLine": 90 }
+        },
+        {
+          "kind": "type",
+          "name": "AdditionalNotes",
+          "signature": "export type AdditionalNotes = AwaitedBookingData[\"notes\"];",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 91, "endLine": 91 }
+        },
+        {
+          "kind": "type",
+          "name": "ReqAppsStatus",
+          "signature": "export type ReqAppsStatus = AwaitedBookingData[\"appsStatus\"];",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 92, "endLine": 92 }
+        },
+        {
+          "kind": "type",
+          "name": "SmsReminderNumber",
+          "signature": "export type SmsReminderNumber = AwaitedBookingData[\"smsReminderNumber\"];",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 93, "endLine": 93 }
+        },
+        {
+          "kind": "type",
+          "name": "EventTypeId",
+          "signature": "export type EventTypeId = AwaitedBookingData[\"eventTypeId\"];",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 94, "endLine": 94 }
+        },
+        {
+          "kind": "type",
+          "name": "ReqBodyMetadata",
+          "signature": "export type ReqBodyMetadata = ReqBodyWithEnd[\"metadata\"];",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 95, "endLine": 95 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "alias",
+          "name": "ReqBodyWithEnd",
+          "shape": "TgetBookingDataSchema & { end: string }",
+          "discriminant": null,
+          "anchor": { "startLine": 14, "endLine": 14 }
+        },
+        {
+          "kind": "alias",
+          "name": "AwaitedBookingData",
+          "shape": "Awaited<ReturnType<typeof _getBookingData>>",
+          "discriminant": null,
+          "anchor": { "startLine": 88, "endLine": 88 }
+        },
+        {
+          "kind": "alias",
+          "name": "RescheduleReason",
+          "shape": "AwaitedBookingData[\"rescheduleReason\"]",
+          "discriminant": null,
+          "anchor": { "startLine": 89, "endLine": 89 }
+        },
+        {
+          "kind": "alias",
+          "name": "NoEmail",
+          "shape": "AwaitedBookingData[\"noEmail\"]",
+          "discriminant": null,
+          "anchor": { "startLine": 90, "endLine": 90 }
+        },
+        {
+          "kind": "alias",
+          "name": "AdditionalNotes",
+          "shape": "AwaitedBookingData[\"notes\"]",
+          "discriminant": null,
+          "anchor": { "startLine": 91, "endLine": 91 }
+        },
+        {
+          "kind": "alias",
+          "name": "ReqAppsStatus",
+          "shape": "AwaitedBookingData[\"appsStatus\"]",
+          "discriminant": null,
+          "anchor": { "startLine": 92, "endLine": 92 }
+        },
+        {
+          "kind": "alias",
+          "name": "SmsReminderNumber",
+          "shape": "AwaitedBookingData[\"smsReminderNumber\"]",
+          "discriminant": null,
+          "anchor": { "startLine": 93, "endLine": 93 }
+        },
+        {
+          "kind": "alias",
+          "name": "EventTypeId",
+          "shape": "AwaitedBookingData[\"eventTypeId\"]",
+          "discriminant": null,
+          "anchor": { "startLine": 94, "endLine": 94 }
+        },
+        {
+          "kind": "alias",
+          "name": "ReqBodyMetadata",
+          "shape": "ReqBodyWithEnd[\"metadata\"]",
+          "discriminant": null,
+          "anchor": { "startLine": 95, "endLine": 95 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "request body with no end property",
+          "handled": true,
+          "behavior": "Sets end to the UTC start time plus eventType.length minutes, formatted by dayjs.",
+          "anchor": { "startLine": 29, "endLine": 31 }
+        },
+        {
+          "inputShape": "request body with truthy customInputs",
+          "handled": true,
+          "behavior": "Validates custom inputs, parses legacy properties, returns mapped legacy fields, and sets customInputs-related output fields to undefined.",
+          "anchor": { "startLine": 38, "endLine": 56 }
+        },
+        {
+          "inputShape": "request body with nullish responses and no truthy customInputs",
+          "handled": true,
+          "behavior": "Throws Error with the message `responses` must not be nullish.",
+          "anchor": { "startLine": 58, "endLine": 60 }
+        },
+        {
+          "inputShape": "responses with falsy guests, location values, or notes",
+          "handled": true,
+          "behavior": "Defaults guests to [], location to an empty string, and notes to an empty string.",
+          "anchor": { "startLine": 69, "endLine": 83 }
+        },
+        {
+          "inputShape": "request body rejected by the supplied schema",
+          "handled": true,
+          "behavior": "The asynchronous schema parsing error propagates.",
+          "anchor": { "startLine": 26, "endLine": 26 }
+        },
+        {
+          "inputShape": "malformed custom inputs or legacy properties",
+          "handled": true,
+          "behavior": "Validation or legacy-schema parsing errors propagate.",
+          "anchor": { "startLine": 40, "endLine": 41 }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": "schema.parseAsync(reqBody)",
+          "caught": null,
+          "action": "Propagates the asynchronous schema validation error.",
+          "fallback": null,
+          "anchor": { "startLine": 26, "endLine": 26 }
+        },
+        {
+          "thrown": "new Error(ErrorCode.RequestBodyWithouEnd)",
+          "caught": null,
+          "action": "Throws when the parsed body fails the end-property guard.",
+          "fallback": null,
+          "anchor": { "startLine": 34, "endLine": 36 }
+        },
+        {
+          "thrown": "handleCustomInputs(eventType.customInputs as EventTypeCustomInput[], parsedBody.customInputs)",
+          "caught": null,
+          "action": "Propagates custom-input validation errors.",
+          "fallback": null,
+          "anchor": { "startLine": 40, "endLine": 40 }
+        },
+        {
+          "thrown": "bookingCreateSchemaLegacyPropsForApi.parse(parsedBody)",
+          "caught": null,
+          "action": "Propagates legacy-property schema parsing errors.",
+          "fallback": null,
+          "anchor": { "startLine": 41, "endLine": 41 }
+        },
+        {
+          "thrown": "new Error(\"`responses` must not be nullish\")",
+          "caught": null,
+          "action": "Throws when responses is nullish and customInputs processing was not selected.",
+          "fallback": null,
+          "anchor": { "startLine": 58, "endLine": 60 }
+        },
+        {
+          "thrown": "getCalEventResponses({ bookingFields: eventType.bookingFields, responses, seatsEnabled: !!eventType.seatsPerTimeSlot })",
+          "caught": null,
+          "action": "Propagates response-normalization errors.",
+          "fallback": null,
+          "anchor": { "startLine": 63, "endLine": 68 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "schema",
+          "description": "The supplied schema asynchronously returns a value compatible with TgetBookingDataSchema.",
+          "anchor": { "startLine": 17, "endLine": 26 }
+        },
+        {
+          "kind": "caller",
+          "description": "eventType provides length, customInputs, bookingFields, and seatsPerTimeSlot values.",
+          "anchor": { "startLine": 23, "endLine": 24 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "Does schema.parseAsync return the original request object or a separate parsed object?",
+          "affects": "mutation_of_arg",
+          "anchor": { "startLine": 26, "endLine": 30 },
+          "resolution": null
+        },
+        {
+          "question": "What reporting or error-reporting side effects does withReporting add?",
+          "affects": "side_effects",
+          "anchor": { "startLine": 86, "endLine": 86 },
+          "resolution": null
+        }
+      ],
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "sets-end-from-event-length",
+          "scenario": "A valid request body without an end time receives an end time computed from its start and event length.",
+          "given": ["!Object.prototype.hasOwnProperty.call(body, \"end\")", "body.start", "eventType.length"],
+          "when": "await getBookingData({ reqBody, eventType, schema })",
+          "then": "result.end equals dayjs.utc(body.start).add(eventType.length, \"minutes\").format()",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Booking creation requires a concrete end time derived from the requested start and configured duration."
+        },
+        {
+          "testId": "rejects-missing-responses",
+          "scenario": "A parsed request without custom inputs and without responses is rejected.",
+          "given": ["!parsedBody.customInputs", "!parsedBody.responses"],
+          "when": "await getBookingData({ reqBody, eventType, schema })",
+          "then": "throws new Error(\"`responses` must not be nullish\")",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Legacy response-based bookings cannot be normalized without the responses object."
+        },
+        {
+          "testId": "normalizes-custom-input-booking",
+          "scenario": "A booking using custom inputs validates required inputs and maps legacy API properties into the normalized result.",
+          "given": ["parsedBody.customInputs", "eventType.customInputs as EventTypeCustomInput[]"],
+          "when": "await getBookingData({ reqBody, eventType, schema })",
+          "then": "result.name, result.email, result.guests, result.location, result.smsReminderNumber, result.notes, and result.rescheduleReason equal the corresponding parsed legacy properties, while result.customInputs is undefined",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Custom-input requests must preserve the normalized booking contract while removing transport-only fields."
+        },
+        {
+          "testId": "maps-response-booking-fields",
+          "scenario": "A booking with responses maps attendee, guest, location, notes, and derived event response fields.",
+          "given": ["parsedBody.responses", "eventType.bookingFields"],
+          "when": "await getBookingData({ reqBody, eventType, schema })",
+          "then": "result.name equals responses.name, result.email equals responses.email, result.guests defaults to [], result.location uses optionValue then value then \"\", and result.calEventResponses is populated",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Response-based bookings expose a stable normalized shape regardless of optional response fields."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "ReqBodyWithEnd",
+        "_getBookingData",
+        "getBookingData",
+        "AwaitedBookingData",
+        "RescheduleReason",
+        "NoEmail",
+        "AdditionalNotes",
+        "ReqAppsStatus",
+        "SmsReminderNumber",
+        "EventTypeId",
+        "ReqBodyMetadata"
+      ],
+      "moduleLevelCode": "import type z from \"zod\";\n\nimport dayjs from \"@calcom/dayjs\";\nimport { getCalEventResponses } from \"@calcom/features/bookings/lib/getCalEventResponses\";\nimport { ErrorCode } from \"@calcom/lib/errorCodes\";\nimport { withReporting } from \"@calcom/lib/sentryWrapper\";\nimport type { EventTypeCustomInput } from \"@calcom/prisma/client\";\n\nimport { bookingCreateSchemaLegacyPropsForApi } from \"../bookingCreateBodySchema\";\nimport type { TgetBookingDataSchema } from \"../getBookingDataSchema\";\nimport type { getEventTypeResponse } from \"./getEventTypesFromDB\";\nimport { handleCustomInputs } from \"./handleCustomInputs\";",
+      "exports": [
+        { "name": "getBookingData", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "AwaitedBookingData", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "RescheduleReason", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "NoEmail", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "AdditionalNotes", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "ReqAppsStatus", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "SmsReminderNumber", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "EventTypeId", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "ReqBodyMetadata", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "z", "module": "zod", "alias": null, "kind": "external" },
+        { "symbol": "dayjs", "module": "@calcom/dayjs", "alias": null, "kind": "external" },
+        {
+          "symbol": "getCalEventResponses",
+          "module": "@calcom/features/bookings/lib/getCalEventResponses",
+          "alias": null,
+          "kind": "external"
+        },
+        { "symbol": "ErrorCode", "module": "@calcom/lib/errorCodes", "alias": null, "kind": "external" },
+        { "symbol": "withReporting", "module": "@calcom/lib/sentryWrapper", "alias": null, "kind": "external" },
+        { "symbol": "EventTypeCustomInput", "module": "@calcom/prisma/client", "alias": null, "kind": "external" },
+        {
+          "symbol": "bookingCreateSchemaLegacyPropsForApi",
+          "module": "../bookingCreateBodySchema",
+          "alias": null,
+          "kind": "internal"
+        },
+        { "symbol": "TgetBookingDataSchema", "module": "../getBookingDataSchema", "alias": null, "kind": "internal" },
+        { "symbol": "getEventTypeResponse", "module": "./getEventTypesFromDB", "alias": null, "kind": "internal" },
+        { "symbol": "handleCustomInputs", "module": "./handleCustomInputs", "alias": null, "kind": "internal" }
+      ],
+      "fileConstants": [],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/features/bookings/lib/handleNewBooking/getBookingData.ts__ReqBodyWithEnd_1#type_alias:ReqBodyWithEnd",
+        "unitKind": "type_alias",
+        "name": "ReqBodyWithEnd",
+        "qualifiedName": "ReqBodyWithEnd",
+        "parentUnitId": null,
+        "startLine": 14,
+        "endLine": 14,
+        "isBehavioral": false,
+        "source": "type ReqBodyWithEnd = TgetBookingDataSchema & { end: string };"
+      },
+      {
+        "unitId": "packages/features/bookings/lib/handleNewBooking/getBookingData.ts___getBookingData_2#function:_getBookingData",
+        "unitKind": "function",
+        "name": "_getBookingData",
+        "qualifiedName": "_getBookingData",
+        "parentUnitId": null,
+        "startLine": 17,
+        "endLine": 84,
+        "isBehavioral": true,
+        "source": "const _getBookingData = async <T extends z.ZodType>({\n  reqBody,\n  eventType,\n  schema,\n}: {\n  reqBody: Record<string, any>;\n  eventType: getEventTypeResponse;\n  schema: T;\n}) => {\n  const parsedBody = await schema.parseAsync(reqBody);\n  const parsedBodyWithEnd = (body: TgetBookingDataSchema): body is ReqBodyWithEnd => {\n    // Use the event length to auto-set the event end time.\n    if (!Object.prototype.hasOwnProperty.call(body, \"end\")) {\n      body.end = dayjs.utc(body.start).add(eventType.length, \"minutes\").format();\n    }\n    return true;\n  };\n  if (!parsedBodyWithEnd(parsedBody)) {\n    throw new Error(ErrorCode.RequestBodyWithouEnd);\n  }\n  // parsedBody.end is no longer an optional property.\n  if (parsedBody.customInputs) {\n    // Check if required custom inputs exist\n    handleCustomInputs(eventType.customInputs as EventTypeCustomInput[], parsedBody.customInputs);\n    const reqBodyWithLegacyProps = bookingCreateSchemaLegacyPropsForApi.parse(parsedBody);\n    return {\n      ...parsedBody,\n      name: reqBodyWithLegacyProps.name,\n      email: reqBodyWithLegacyProps.email,\n      guests: reqBodyWithLegacyProps.guests,\n      location: reqBodyWithLegacyProps.location || \"\",\n      smsReminderNumber: reqBodyWithLegacyProps.smsReminderNumber,\n      notes: reqBodyWithLegacyProps.notes,\n      rescheduleReason: reqBodyWithLegacyProps.rescheduleReason,\n      // So TS doesn't complain about unknown properties\n      calEventUserFieldsResponses: undefined,\n      calEventResponses: undefined,\n      customInputs: undefined,\n      attendeePhoneNumber: undefined,\n    };\n  }\n  if (!parsedBody.responses) {\n    throw new Error(\"`responses` must not be nullish\");\n  }\n  const responses = parsedBody.responses;\n\n  const { userFieldsResponses: calEventUserFieldsResponses, responses: calEventResponses } =\n    getCalEventResponses({\n      bookingFields: eventType.bookingFields,\n      responses,\n      seatsEnabled: !!eventType.seatsPerTimeSlot,\n    });\n  return {\n    ...parsedBody,\n    name: responses.name,\n    email: responses.email,\n    attendeePhoneNumber: responses.attendeePhoneNumber,\n    guests: responses.guests ? responses.guests : [],\n    location: responses.location?.optionValue || responses.location?.value || \"\",\n    smsReminderNumber: responses.smsReminderNumber,\n    notes: responses.notes || \"\",\n    calEventUserFieldsResponses,\n    rescheduleReason: responses.rescheduleReason,\n    calEventResponses,\n    // So TS doesn't complain about unknown properties\n    customInputs: undefined,\n  };\n};",
+        "detail": {
+          "unitId": "packages/features/bookings/lib/handleNewBooking/getBookingData.ts___getBookingData_2#function:_getBookingData",
+          "fileId": "packages/features/bookings/lib/handleNewBooking/getBookingData.ts___getBookingData_2",
+          "unitKind": "function",
+          "name": "_getBookingData",
+          "qualifiedName": "_getBookingData",
+          "parentUnitId": null,
+          "startLine": 17,
+          "endLine": 84,
+          "signature": "const _getBookingData = async <T extends z.ZodType>({ reqBody, eventType, schema }: { reqBody: Record<string, any>; eventType: getEventTypeResponse; schema: T }) =>",
+          "parameters": [
+            {
+              "name": "reqBody",
+              "type": "Record<string, any>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "eventType",
+              "type": "getEventTypeResponse",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            { "name": "schema", "type": "T", "default": null, "optional": false, "variadic": false, "order": 2 }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": ["T extends z.ZodType"],
+          "logicOutline": [],
+          "preconditions": [
+            "reqBody must be acceptable to schema.parseAsync.",
+            "eventType must provide length, customInputs, bookingFields, and seatsPerTimeSlot values required by the selected normalization path.",
+            "schema must provide an asynchronous parseAsync operation."
+          ],
+          "postconditions": [
+            "The returned object contains a non-optional end value, adding one from reqBody.start and eventType.length when end is not an own property of the parsed body.",
+            "The returned object contains normalized booking fields including name, email, guests, location, smsReminderNumber, notes, and rescheduleReason.",
+            "For custom-input requests, legacy fields are obtained through bookingCreateSchemaLegacyPropsForApi and customInputs, calEventUserFieldsResponses, calEventResponses, and attendeePhoneNumber are set to undefined in the returned object.",
+            "For response-based requests, response-derived calendar event responses are included and customInputs is set to undefined."
+          ],
+          "invariants": [
+            "The input is parsed by the supplied schema before normalization.",
+            "A missing own end property is replaced with the UTC start time plus eventType.length minutes, formatted through dayjs.",
+            "Custom-input requests and response-based requests use distinct normalization paths."
+          ],
+          "edgeCases": [
+            "When the parsed body lacks an own end property, end is automatically derived from start and eventType.length.",
+            "When customInputs is truthy, required custom inputs are checked and legacy API properties are parsed and mapped.",
+            "When customInputs is absent or falsy and responses is nullish, the function throws an Error with message \"`responses` must not be nullish\".",
+            "When responses exists, missing guests become [], missing location values become \"\", and missing notes become \"\".",
+            "Schema parsing failures and custom-input validation failures propagate as errors."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [
+              "Errors thrown by schema.parseAsync.",
+              "Errors thrown by handleCustomInputs.",
+              "Errors thrown by bookingCreateSchemaLegacyPropsForApi.parse.",
+              "Error when responses is nullish."
+            ],
+            "reverts": [],
+            "onInvalidInput": "Rejects the returned promise with the validation or normalization error; response-based input without responses throws an Error.",
+            "returnsOnError": null
+          },
+          "stateMutations": ["Mutates the parsed body by assigning end when it does not have an own end property."],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "schema.parseAsync", "source": null, "kind": "external" },
+            { "name": "dayjs.utc(...).add(...).format", "source": null, "kind": "external" },
+            { "name": "handleCustomInputs", "source": null, "kind": "internal" },
+            { "name": "bookingCreateSchemaLegacyPropsForApi.parse", "source": null, "kind": "external" },
+            { "name": "getCalEventResponses", "source": null, "kind": "internal" }
+          ],
+          "symbolReferences": [
+            "z.ZodType",
+            "getEventTypeResponse",
+            "ReqBodyWithEnd",
+            "ErrorCode.RequestBodyWithouEnd",
+            "EventTypeCustomInput",
+            "bookingCreateSchemaLegacyPropsForApi"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Asynchronously validates booking request data and normalizes it into the booking data shape. It derives a missing event end time, validates custom inputs or legacy responses, and maps the resulting fields for downstream booking creation.",
+          "specLiterals": [
+            {
+              "kind": "error-message",
+              "value": "`responses` must not be nullish",
+              "role": "Error message raised when the non-custom-input request body has no responses field."
+            },
+            {
+              "kind": "format-string",
+              "value": "",
+              "role": "dayjs format output is used for the automatically derived end timestamp."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The function is called with that body, event type, and schema.",
+              "then": "The returned data has end set to the UTC start timestamp plus 30 minutes, legacy booking fields mapped from the parsed custom-input body, and customInputs set to undefined.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The function is called with that body and an event type.",
+              "then": "The returned data uses the response name and email, guests is [], location is responses.location.value, notes is \"\", and includes calendar event response mappings.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The function is called.",
+              "then": "The returned promise rejects with an Error whose message is \"`responses` must not be nullish\".",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "sourceHash": "",
+          "semanticFingerprint": "b2138a81e5cd01511368e3f52b3221494401a22efba491b7ce5d8fdc6fb12a0b"
+        }
+      },
+      {
+        "unitId": "packages/features/bookings/lib/handleNewBooking/getBookingData.ts___getBookingData.parsedBodyWithEnd_3#function:_getBookingData.parsedBodyWithEnd",
+        "unitKind": "function",
+        "name": "parsedBodyWithEnd",
+        "qualifiedName": "_getBookingData.parsedBodyWithEnd",
+        "parentUnitId": "packages/features/bookings/lib/handleNewBooking/getBookingData.ts___getBookingData_2#function:_getBookingData",
+        "startLine": 27,
+        "endLine": 33,
+        "isBehavioral": true,
+        "source": "  const parsedBodyWithEnd = (body: TgetBookingDataSchema): body is ReqBodyWithEnd => {\n    // Use the event length to auto-set the event end time.\n    if (!Object.prototype.hasOwnProperty.call(body, \"end\")) {\n      body.end = dayjs.utc(body.start).add(eventType.length, \"minutes\").format();\n    }\n    return true;\n  };"
+      },
+      {
+        "unitId": "packages/features/bookings/lib/handleNewBooking/getBookingData.ts__getBookingData_4#const:getBookingData",
+        "unitKind": "const",
+        "name": "getBookingData",
+        "qualifiedName": "getBookingData",
+        "parentUnitId": null,
+        "startLine": 86,
+        "endLine": 86,
+        "isBehavioral": true,
+        "source": "export const getBookingData = withReporting(_getBookingData, \"getBookingData\");"
+      },
+      {
+        "unitId": "packages/features/bookings/lib/handleNewBooking/getBookingData.ts__AwaitedBookingData_5#type_alias:AwaitedBookingData",
+        "unitKind": "type_alias",
+        "name": "AwaitedBookingData",
+        "qualifiedName": "AwaitedBookingData",
+        "parentUnitId": null,
+        "startLine": 88,
+        "endLine": 88,
+        "isBehavioral": false,
+        "source": "export type AwaitedBookingData = Awaited<ReturnType<typeof _getBookingData>>;"
+      },
+      {
+        "unitId": "packages/features/bookings/lib/handleNewBooking/getBookingData.ts__RescheduleReason_6#type_alias:RescheduleReason",
+        "unitKind": "type_alias",
+        "name": "RescheduleReason",
+        "qualifiedName": "RescheduleReason",
+        "parentUnitId": null,
+        "startLine": 89,
+        "endLine": 89,
+        "isBehavioral": false,
+        "source": "export type RescheduleReason = AwaitedBookingData[\"rescheduleReason\"];"
+      },
+      {
+        "unitId": "packages/features/bookings/lib/handleNewBooking/getBookingData.ts__NoEmail_7#type_alias:NoEmail",
+        "unitKind": "type_alias",
+        "name": "NoEmail",
+        "qualifiedName": "NoEmail",
+        "parentUnitId": null,
+        "startLine": 90,
+        "endLine": 90,
+        "isBehavioral": false,
+        "source": "export type NoEmail = AwaitedBookingData[\"noEmail\"];"
+      },
+      {
+        "unitId": "packages/features/bookings/lib/handleNewBooking/getBookingData.ts__AdditionalNotes_8#type_alias:AdditionalNotes",
+        "unitKind": "type_alias",
+        "name": "AdditionalNotes",
+        "qualifiedName": "AdditionalNotes",
+        "parentUnitId": null,
+        "startLine": 91,
+        "endLine": 91,
+        "isBehavioral": false,
+        "source": "export type AdditionalNotes = AwaitedBookingData[\"notes\"];"
+      },
+      {
+        "unitId": "packages/features/bookings/lib/handleNewBooking/getBookingData.ts__ReqAppsStatus_9#type_alias:ReqAppsStatus",
+        "unitKind": "type_alias",
+        "name": "ReqAppsStatus",
+        "qualifiedName": "ReqAppsStatus",
+        "parentUnitId": null,
+        "startLine": 92,
+        "endLine": 92,
+        "isBehavioral": false,
+        "source": "export type ReqAppsStatus = AwaitedBookingData[\"appsStatus\"];"
+      },
+      {
+        "unitId": "packages/features/bookings/lib/handleNewBooking/getBookingData.ts__SmsReminderNumber_10#type_alias:SmsReminderNumber",
+        "unitKind": "type_alias",
+        "name": "SmsReminderNumber",
+        "qualifiedName": "SmsReminderNumber",
+        "parentUnitId": null,
+        "startLine": 93,
+        "endLine": 93,
+        "isBehavioral": false,
+        "source": "export type SmsReminderNumber = AwaitedBookingData[\"smsReminderNumber\"];"
+      },
+      {
+        "unitId": "packages/features/bookings/lib/handleNewBooking/getBookingData.ts__EventTypeId_11#type_alias:EventTypeId",
+        "unitKind": "type_alias",
+        "name": "EventTypeId",
+        "qualifiedName": "EventTypeId",
+        "parentUnitId": null,
+        "startLine": 94,
+        "endLine": 94,
+        "isBehavioral": false,
+        "source": "export type EventTypeId = AwaitedBookingData[\"eventTypeId\"];"
+      },
+      {
+        "unitId": "packages/features/bookings/lib/handleNewBooking/getBookingData.ts__ReqBodyMetadata_12#type_alias:ReqBodyMetadata",
+        "unitKind": "type_alias",
+        "name": "ReqBodyMetadata",
+        "qualifiedName": "ReqBodyMetadata",
+        "parentUnitId": null,
+        "startLine": 95,
+        "endLine": 95,
+        "isBehavioral": false,
+        "source": "export type ReqBodyMetadata = ReqBodyWithEnd[\"metadata\"];"
+      }
+    ]
+  },
+  "out": [
+    "packages/features/bookings/lib/bookingCreateBodySchema.ts",
+    "packages/features/bookings/lib/handleNewBooking/getEventTypesFromDB.ts",
+    "packages/features/bookings/lib/getBookingDataSchema.ts",
+    "packages/features/bookings/lib/handleNewBooking/handleCustomInputs.ts"
+  ],
+  "in": [
+    "packages/features/bookings/lib/handleNewBooking/handleAppsStatus.ts",
+    "packages/features/bookings/lib/handleNewBooking/createBooking.ts",
+    "packages/features/instant-meeting/handleInstantMeeting.ts"
+  ],
+  "externals": [
+    "zod",
+    "@calcom/dayjs",
+    "@calcom/features/bookings/lib/getCalEventResponses",
+    "@calcom/lib/errorCodes",
+    "@calcom/lib/sentryWrapper",
+    "@calcom/prisma/client"
+  ],
+  "impact": {
+    "seeds": 12,
+    "callers": 1,
+    "impactedFiles": ["packages/features/instant-meeting/handleInstantMeeting.ts"]
+  }
+}

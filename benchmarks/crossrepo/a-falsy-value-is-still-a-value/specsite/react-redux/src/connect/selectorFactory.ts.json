@@ -1,0 +1,1496 @@
+{
+  "schema": 1,
+  "kind": "file",
+  "repoName": "react-redux",
+  "commitHash": "ad5d1e0816d0cb1464b25cf2853f2a7d73433f5b",
+  "generatedAt": "2026-08-01T20:59:01.855Z",
+  "file": {
+    "relativePath": "src/connect/selectorFactory.ts",
+    "language": "typescript",
+    "sizeBytes": 7680,
+    "tokenCount": 1843,
+    "model": "tencent/hy3",
+    "analysedAt": "2026-08-01T17:03:32.957Z",
+    "module": {
+      "purpose": "Provides selector factory functions and types for react-redux connect, creating memoized selectors that derive merged props only when state or ownProps change.",
+      "summary": "This module defines TypeScript types for selector factories and implements two factory functions. pureFinalPropsSelectorFactory builds a closure-based memoized selector that tracks prior state and ownProps, using equality functions to decide whether to recompute stateProps, dispatchProps, or mergedProps. finalPropsSelectorFactory is the default export: it initializes the mapStateToProps, mapDispatchToProps, and mergeProps subselectors (via injected init functions), optionally verifies them in non-production environments, and returns the pure selector. The design enables connect's shouldComponentUpdate to bail out of re-renders when final props are unchanged.",
+      "businessContext": "Core part of react-redux binding. Ensures connected components re-render only on relevant changes, preserving UI performance. Failure causes needless re-renders or stale props.",
+      "classes": [],
+      "functions": [
+        "pureFinalPropsSelectorFactory (~L67-158): Builds memoized selector managing prop derivation",
+        "finalPropsSelectorFactory (~L206-242): Default factory initializing subselectors and returning pure selector"
+      ],
+      "keywords": [
+        "react-redux",
+        "selector factory",
+        "memoization",
+        "connect",
+        "mapStateToProps",
+        "mapDispatchToProps",
+        "mergeProps",
+        "equality functions"
+      ],
+      "ontologyConcepts": ["memoization", "selector", "props derivation", "change detection"],
+      "businessEntities": ["State", "OwnProps", "DispatchProps", "MergedProps"],
+      "systemCapabilities": ["create memoized prop selector", "verify subselectors in dev", "optimize re-renders"],
+      "configDependencies": ["process.env.NODE_ENV"],
+      "importsInternal": [
+        {
+          "spec": "./verifySubselectors",
+          "symbols": ["default"],
+          "anchor": { "startLine": 3, "endLine": 3 },
+          "resolvedRelativePath": "src/connect/verifySubselectors.ts",
+          "resolvedFileId": "src/connect/verifySubselectors.ts",
+          "resolvedHint": "src/connect/verifySubselectors.ts"
+        },
+        {
+          "spec": "../types",
+          "symbols": ["$type"],
+          "anchor": { "startLine": 4, "endLine": 4 },
+          "resolvedRelativePath": "src/types.ts",
+          "resolvedFileId": "src/types.ts",
+          "resolvedHint": null
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "redux",
+          "symbols": ["Dispatch", "Action"],
+          "package": "redux",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 1 }
+        },
+        {
+          "spec": "react",
+          "symbols": ["ComponentType"],
+          "package": "react",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 2, "endLine": 2 }
+        }
+      ],
+      "sideEffects": {
+        "io": [],
+        "network": [],
+        "env": ["Reads process.env.NODE_ENV to conditionally invoke verifySubselectors"],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": []
+      },
+      "integrationSurface": [],
+      "contractsProvided": [],
+      "contractsConsumed": [],
+      "sectionMap": [
+        {
+          "name": "closure_state_declaration",
+          "intent": "Declare mutable closed-over variables for memoization",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 84, "endLine": 89 }
+        },
+        {
+          "name": "handleFirstCall",
+          "intent": "Initialize all derived props on first selector invocation",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 91, "endLine": 99 }
+        },
+        {
+          "name": "handleNewPropsAndNewState",
+          "intent": "Recompute all props when both props and state changed",
+          "structureKind": "branch",
+          "predicate": "mapDispatchToProps.dependsOnOwnProps",
+          "branchOutcomes": ["recompute dispatchProps", "skip dispatchProps"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 101, "endLine": 109 }
+        },
+        {
+          "name": "handleNewProps",
+          "intent": "Recompute dependent props when only ownProps changed",
+          "structureKind": "branch",
+          "predicate": "mapStateToProps.dependsOnOwnProps",
+          "branchOutcomes": ["recompute stateProps", "skip stateProps"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 111, "endLine": 120 }
+        },
+        {
+          "name": "handleNewState",
+          "intent": "Recompute merged props only if stateProps changed",
+          "structureKind": "branch",
+          "predicate": "statePropsChanged",
+          "branchOutcomes": ["merge props", "return previous merged"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 122, "endLine": 131 }
+        },
+        {
+          "name": "handleSubsequentCalls",
+          "intent": "Branch to appropriate handler based on change detection",
+          "structureKind": "branch",
+          "predicate": "propsChanged && stateChanged",
+          "branchOutcomes": ["handleNewPropsAndNewState", "handleNewProps", "handleNewState", "return mergedProps"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 133, "endLine": 148 }
+        },
+        {
+          "name": "finalPropsSelectorFactory_init",
+          "intent": "Initialize subselectors and conditionally verify them",
+          "structureKind": "branch",
+          "predicate": "process.env.NODE_ENV !== 'production'",
+          "branchOutcomes": ["verifySubselectors called", "skipped"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 227, "endLine": 233 }
+        }
+      ],
+      "representationFamily": "function-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "type",
+          "name": "SelectorFactory",
+          "signature": "export type SelectorFactory<S, TProps, TOwnProps, TFactoryOptions> = (\n  dispatch: Dispatch<Action<string>>,\n  factoryOptions: TFactoryOptions,\n) => Selector<S, TProps, TOwnProps>",
+          "generics": "<S, TProps, TOwnProps, TFactoryOptions>",
+          "decorators": [],
+          "returnType": "Selector<S, TProps, TOwnProps>",
+          "exported": true,
+          "anchor": { "startLine": 6, "endLine": 9 }
+        },
+        {
+          "kind": "type",
+          "name": "Selector",
+          "signature": "export type Selector<S, TProps, TOwnProps = null> = TOwnProps extends\n  | null\n  | undefined\n  ? (state: S) => TProps\n  : (state: S, ownProps: TOwnProps) => TProps",
+          "generics": "<S, TProps, TOwnProps = null>",
+          "decorators": [],
+          "returnType": "(state: S) => TProps | (state: S, ownProps: TOwnProps) => TProps",
+          "exported": true,
+          "anchor": { "startLine": 11, "endLine": 15 }
+        },
+        {
+          "kind": "type",
+          "name": "MapStateToProps",
+          "signature": "export type MapStateToProps<TStateProps, TOwnProps, State> = (\n  state: State,\n  ownProps: TOwnProps,\n) => TStateProps",
+          "generics": "<TStateProps, TOwnProps, State>",
+          "decorators": [],
+          "returnType": "TStateProps",
+          "exported": true,
+          "anchor": { "startLine": 17, "endLine": 20 }
+        },
+        {
+          "kind": "type",
+          "name": "MapStateToPropsFactory",
+          "signature": "export type MapStateToPropsFactory<TStateProps, TOwnProps, State> = (\n  initialState: State,\n  ownProps: TOwnProps,\n) => MapStateToProps<TStateProps, TOwnProps, State>",
+          "generics": "<TStateProps, TOwnProps, State>",
+          "decorators": [],
+          "returnType": "MapStateToProps<TStateProps, TOwnProps, State>",
+          "exported": true,
+          "anchor": { "startLine": 22, "endLine": 25 }
+        },
+        {
+          "kind": "type",
+          "name": "MapStateToPropsParam",
+          "signature": "export type MapStateToPropsParam<TStateProps, TOwnProps, State> =\n  | MapStateToPropsFactory<TStateProps, TOwnProps, State>\n  | MapStateToProps<TStateProps, TOwnProps, State>\n  | null\n  | undefined",
+          "generics": "<TStateProps, TOwnProps, State>",
+          "decorators": [],
+          "returnType": "MapStateToPropsFactory<...> | MapStateToProps<...> | null | undefined",
+          "exported": true,
+          "anchor": { "startLine": 27, "endLine": 31 }
+        },
+        {
+          "kind": "type",
+          "name": "MapDispatchToPropsFunction",
+          "signature": "export type MapDispatchToPropsFunction<TDispatchProps, TOwnProps> = (\n  dispatch: Dispatch<Action<string>>,\n  ownProps: TOwnProps,\n) => TDispatchProps",
+          "generics": "<TDispatchProps, TOwnProps>",
+          "decorators": [],
+          "returnType": "TDispatchProps",
+          "exported": true,
+          "anchor": { "startLine": 33, "endLine": 36 }
+        },
+        {
+          "kind": "type",
+          "name": "MapDispatchToProps",
+          "signature": "export type MapDispatchToProps<TDispatchProps, TOwnProps> =\n  | MapDispatchToPropsFunction<TDispatchProps, TOwnProps>\n  | TDispatchProps",
+          "generics": "<TDispatchProps, TOwnProps>",
+          "decorators": [],
+          "returnType": "MapDispatchToPropsFunction<...> | TDispatchProps",
+          "exported": true,
+          "anchor": { "startLine": 38, "endLine": 40 }
+        },
+        {
+          "kind": "type",
+          "name": "MapDispatchToPropsFactory",
+          "signature": "export type MapDispatchToPropsFactory<TDispatchProps, TOwnProps> = (\n  dispatch: Dispatch<Action<string>>,\n  ownProps: TOwnProps,\n) => MapDispatchToPropsFunction<TDispatchProps, TOwnProps>",
+          "generics": "<TDispatchProps, TOwnProps>",
+          "decorators": [],
+          "returnType": "MapDispatchToPropsFunction<TDispatchProps, TOwnProps>",
+          "exported": true,
+          "anchor": { "startLine": 42, "endLine": 45 }
+        },
+        {
+          "kind": "type",
+          "name": "MapDispatchToPropsParam",
+          "signature": "export type MapDispatchToPropsParam<TDispatchProps, TOwnProps> =\n  | MapDispatchToPropsFactory<TDispatchProps, TOwnProps>\n  | MapDispatchToProps<TDispatchProps, TOwnProps>",
+          "generics": "<TDispatchProps, TOwnProps>",
+          "decorators": [],
+          "returnType": "MapDispatchToPropsFactory<...> | MapDispatchToProps<...>",
+          "exported": true,
+          "anchor": { "startLine": 47, "endLine": 49 }
+        },
+        {
+          "kind": "type",
+          "name": "MapDispatchToPropsNonObject",
+          "signature": "export type MapDispatchToPropsNonObject<TDispatchProps, TOwnProps> =\n  | MapDispatchToPropsFactory<TDispatchProps, TOwnProps>\n  | MapDispatchToPropsFunction<TDispatchProps, TOwnProps>",
+          "generics": "<TDispatchProps, TOwnProps>",
+          "decorators": [],
+          "returnType": "MapDispatchToPropsFactory<...> | MapDispatchToPropsFunction<...>",
+          "exported": true,
+          "anchor": { "startLine": 51, "endLine": 53 }
+        },
+        {
+          "kind": "type",
+          "name": "MergeProps",
+          "signature": "export type MergeProps<TStateProps, TDispatchProps, TOwnProps, TMergedProps> = (\n  stateProps: TStateProps,\n  dispatchProps: TDispatchProps,\n  ownProps: TOwnProps,\n) => TMergedProps",
+          "generics": "<TStateProps, TDispatchProps, TOwnProps, TMergedProps>",
+          "decorators": [],
+          "returnType": "TMergedProps",
+          "exported": true,
+          "anchor": { "startLine": 55, "endLine": 59 }
+        },
+        {
+          "kind": "interface",
+          "name": "InitOptions",
+          "signature": "export interface InitOptions<TStateProps, TOwnProps, TMergedProps, State>\n  extends PureSelectorFactoryComparisonOptions<TStateProps, TOwnProps, State> {\n  readonly shouldHandleStateChanges: boolean\n  readonly displayName: string\n  readonly wrappedComponentName: string\n  readonly WrappedComponent: ComponentType<TOwnProps>\n  readonly areMergedPropsEqual: EqualityFn<TMergedProps>\n}",
+          "generics": "<TStateProps, TOwnProps, TMergedProps, State>",
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 170, "endLine": 177 }
+        },
+        {
+          "kind": "interface",
+          "name": "SelectorFactoryOptions",
+          "signature": "export interface SelectorFactoryOptions<\n  TStateProps,\n  TOwnProps,\n  TDispatchProps,\n  TMergedProps,\n  State,\n> extends InitOptions<TStateProps, TOwnProps, TMergedProps, State> {\n  readonly initMapStateToProps: (\n    dispatch: Dispatch<Action<string>>,\n    options: InitOptions<TStateProps, TOwnProps, TMergedProps, State>,\n  ) => WrappedMapStateToProps<TStateProps, TOwnProps, State>\n  readonly initMapDispatchToProps: (\n    dispatch: Dispatch<Action<string>>,\n    options: InitOptions<TStateProps, TOwnProps, TMergedProps, State>,\n  ) => WrappedMapDispatchToProps<TDispatchProps, TOwnProps>\n  readonly initMergeProps: (\n    dispatch: Dispatch<Action<string>>,\n    options: InitOptions<TStateProps, TOwnProps, TMergedProps, State>,\n  ) => MergeProps<TStateProps, TDispatchProps, TOwnProps, TMergedProps>\n}",
+          "generics": "<TStateProps, TOwnProps, TDispatchProps, TMergedProps, State>",
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 179, "endLine": 198 }
+        },
+        {
+          "kind": "function",
+          "name": "finalPropsSelectorFactory",
+          "signature": "export default function finalPropsSelectorFactory<\n  TStateProps,\n  TOwnProps,\n  TDispatchToProps,\n  TMergedProps,\n  State,\n>(\n  dispatch: Dispatch<Action<string>>,\n  {\n    initMapStateToProps,\n    initMapDispatchToProps,\n    initMergeProps,\n    ...options\n  }: SelectorFactoryOptions<\n    TStateProps,\n    TOwnProps,\n    TDispatchToProps,\n    TMergedProps,\n    State\n  >,\n)",
+          "generics": "<TStateProps, TOwnProps, TDispatchToProps, TMergedProps, State>",
+          "decorators": [],
+          "returnType": "Selector<...>",
+          "exported": true,
+          "anchor": { "startLine": 206, "endLine": 226 }
+        },
+        {
+          "kind": "function",
+          "name": "pureFinalPropsSelectorFactory",
+          "signature": "function pureFinalPropsSelectorFactory<\n  TStateProps,\n  TOwnProps,\n  TDispatchToProps,\n  TMergedProps,\n  State,\n>(\n  mapStateToProps: WrappedMapStateToProps<TStateProps, TOwnProps, State>,\n  mapDispatchToProps: WrappedMapDispatchToProps<TDispatchProps, TOwnProps>,\n  mergeProps: MergeProps<TStateProps, TDispatchProps, TOwnProps, TMergedProps>,\n  dispatch: Dispatch<Action<string>>,\n  {\n    areStatesEqual,\n    areOwnPropsEqual,\n    areStatePropsEqual,\n  }: PureSelectorFactoryComparisonOptions<TStateProps, TOwnProps, State>,\n)",
+          "generics": "<TStateProps, TOwnProps, TDispatchToProps, TMergedProps, State>",
+          "decorators": [],
+          "returnType": "(nextState: State, nextOwnProps: TOwnProps) => TMergedProps",
+          "exported": false,
+          "anchor": { "startLine": 67, "endLine": 83 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "type",
+          "name": "SelectorFactory",
+          "shape": "export type SelectorFactory<S, TProps, TOwnProps, TFactoryOptions> = (\n  dispatch: Dispatch<Action<string>>,\n  factoryOptions: TFactoryOptions,\n) => Selector<S, TProps, TOwnProps>",
+          "discriminant": null,
+          "anchor": { "startLine": 6, "endLine": 9 }
+        },
+        {
+          "kind": "type",
+          "name": "Selector",
+          "shape": "export type Selector<S, TProps, TOwnProps = null> = TOwnProps extends\n  | null\n  | undefined\n  ? (state: S) => TProps\n  : (state: S, ownProps: TOwnProps) => TProps",
+          "discriminant": null,
+          "anchor": { "startLine": 11, "endLine": 15 }
+        },
+        {
+          "kind": "type",
+          "name": "MapStateToProps",
+          "shape": "export type MapStateToProps<TStateProps, TOwnProps, State> = (\n  state: State,\n  ownProps: TOwnProps,\n) => TStateProps",
+          "discriminant": null,
+          "anchor": { "startLine": 17, "endLine": 20 }
+        },
+        {
+          "kind": "type",
+          "name": "MapStateToPropsFactory",
+          "shape": "export type MapStateToPropsFactory<TStateProps, TOwnProps, State> = (\n  initialState: State,\n  ownProps: TOwnProps,\n) => MapStateToProps<TStateProps, TOwnProps, State>",
+          "discriminant": null,
+          "anchor": { "startLine": 22, "endLine": 25 }
+        },
+        {
+          "kind": "type",
+          "name": "MapStateToPropsParam",
+          "shape": "export type MapStateToPropsParam<TStateProps, TOwnProps, State> =\n  | MapStateToPropsFactory<TStateProps, TOwnProps, State>\n  | MapStateToProps<TStateProps, TOwnProps, State>\n  | null\n  | undefined",
+          "discriminant": null,
+          "anchor": { "startLine": 27, "endLine": 31 }
+        },
+        {
+          "kind": "type",
+          "name": "MapDispatchToPropsFunction",
+          "shape": "export type MapDispatchToPropsFunction<TDispatchProps, TOwnProps> = (\n  dispatch: Dispatch<Action<string>>,\n  ownProps: TOwnProps,\n) => TDispatchProps",
+          "discriminant": null,
+          "anchor": { "startLine": 33, "endLine": 36 }
+        },
+        {
+          "kind": "type",
+          "name": "MapDispatchToProps",
+          "shape": "export type MapDispatchToProps<TDispatchProps, TOwnProps> =\n  | MapDispatchToPropsFunction<TDispatchProps, TOwnProps>\n  | TDispatchProps",
+          "discriminant": null,
+          "anchor": { "startLine": 38, "endLine": 40 }
+        },
+        {
+          "kind": "type",
+          "name": "MapDispatchToPropsFactory",
+          "shape": "export type MapDispatchToPropsFactory<TDispatchProps, TOwnProps> = (\n  dispatch: Dispatch<Action<string>>,\n  ownProps: TOwnProps,\n) => MapDispatchToPropsFunction<TDispatchProps, TOwnProps>",
+          "discriminant": null,
+          "anchor": { "startLine": 42, "endLine": 45 }
+        },
+        {
+          "kind": "type",
+          "name": "MapDispatchToPropsParam",
+          "shape": "export type MapDispatchToPropsParam<TDispatchProps, TOwnProps> =\n  | MapDispatchToPropsFactory<TDispatchProps, TOwnProps>\n  | MapDispatchToProps<TDispatchProps, TOwnProps>",
+          "discriminant": null,
+          "anchor": { "startLine": 47, "endLine": 49 }
+        },
+        {
+          "kind": "type",
+          "name": "MapDispatchToPropsNonObject",
+          "shape": "export type MapDispatchToPropsNonObject<TDispatchProps, TOwnProps> =\n  | MapDispatchToPropsFactory<TDispatchProps, TOwnProps>\n  | MapDispatchToPropsFunction<TDispatchProps, TOwnProps>",
+          "discriminant": null,
+          "anchor": { "startLine": 51, "endLine": 53 }
+        },
+        {
+          "kind": "type",
+          "name": "MergeProps",
+          "shape": "export type MergeProps<TStateProps, TDispatchProps, TOwnProps, TMergedProps> = (\n  stateProps: TStateProps,\n  dispatchProps: TDispatchProps,\n  ownProps: TOwnProps,\n) => TMergedProps",
+          "discriminant": null,
+          "anchor": { "startLine": 55, "endLine": 59 }
+        },
+        {
+          "kind": "interface",
+          "name": "PureSelectorFactoryComparisonOptions",
+          "shape": "interface PureSelectorFactoryComparisonOptions<TStateProps, TOwnProps, State> {\n  readonly areStatesEqual: ExtendedEqualityFn<State, TOwnProps>\n  readonly areStatePropsEqual: EqualityFn<TStateProps>\n  readonly areOwnPropsEqual: EqualityFn<TOwnProps>\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 61, "endLine": 65 }
+        },
+        {
+          "kind": "interface",
+          "name": "WrappedMapStateToProps",
+          "shape": "interface WrappedMapStateToProps<TStateProps, TOwnProps, State> {\n  (state: State, ownProps: TOwnProps): TStateProps\n  readonly dependsOnOwnProps: boolean\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 160, "endLine": 163 }
+        },
+        {
+          "kind": "interface",
+          "name": "WrappedMapDispatchToProps",
+          "shape": "interface WrappedMapDispatchToProps<TDispatchProps, TOwnProps> {\n  (dispatch: Dispatch<Action<string>>, ownProps: TOwnProps): TDispatchProps\n  readonly dependsOnOwnProps: boolean\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 165, "endLine": 168 }
+        },
+        {
+          "kind": "interface",
+          "name": "InitOptions",
+          "shape": "export interface InitOptions<TStateProps, TOwnProps, TMergedProps, State>\n  extends PureSelectorFactoryComparisonOptions<TStateProps, TOwnProps, State> {\n  readonly shouldHandleStateChanges: boolean\n  readonly displayName: string\n  readonly wrappedComponentName: string\n  readonly WrappedComponent: ComponentType<TOwnProps>\n  readonly areMergedPropsEqual: EqualityFn<TMergedProps>\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 170, "endLine": 177 }
+        },
+        {
+          "kind": "interface",
+          "name": "SelectorFactoryOptions",
+          "shape": "export interface SelectorFactoryOptions<\n  TStateProps,\n  TOwnProps,\n  TDispatchProps,\n  TMergedProps,\n  State,\n> extends InitOptions<TStateProps, TOwnProps, TMergedProps, State> {\n  readonly initMapStateToProps: (\n    dispatch: Dispatch<Action<string>>,\n    options: InitOptions<TStateProps, TOwnProps, TMergedProps, State>,\n  ) => WrappedMapStateToProps<TStateProps, TOwnProps, State>\n  readonly initMapDispatchToProps: (\n    dispatch: Dispatch<Action<string>>,\n    options: InitOptions<TStateProps, TOwnProps, TMergedProps, State>,\n  ) => WrappedMapDispatchToProps<TDispatchProps, TOwnProps>\n  readonly initMergeProps: (\n    dispatch: Dispatch<Action<string>>,\n    options: InitOptions<TStateProps, TOwnProps, TMergedProps, State>,\n  ) => MergeProps<TStateProps, TDispatchProps, TOwnProps, TMergedProps>\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 179, "endLine": 198 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "ownProps null or undefined (per Selector type)",
+          "handled": false,
+          "behavior": "Type system allows but runtime code assumes ownProps present in closures",
+          "anchor": { "startLine": 11, "endLine": 15 }
+        },
+        {
+          "inputShape": "production environment (NODE_ENV === 'production')",
+          "handled": true,
+          "behavior": "Skips verifySubselectors call to avoid dev-only overhead",
+          "anchor": { "startLine": 231, "endLine": 233 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": "==",
+          "left": "process.env.NODE_ENV",
+          "right": "'production'",
+          "inclusive": false,
+          "intent": "Conditionally run subselector verification only outside production",
+          "anchor": { "startLine": 231, "endLine": 231 }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": null,
+          "caught": null,
+          "action": "verifySubselectors may throw in dev if subselectors invalid; not caught, surfaces to caller",
+          "fallback": null,
+          "anchor": { "startLine": 232, "endLine": 232 }
+        }
+      ],
+      "invariants": [
+        {
+          "kind": "postcondition",
+          "description": "mergedProps is always defined and returned after first call",
+          "anchor": { "startLine": 97, "endLine": 97 }
+        },
+        {
+          "kind": "ordering",
+          "description": "handleFirstCall must run before any handleSubsequentCalls (guarded by hasRunAtLeastOnce)",
+          "anchor": { "startLine": 154, "endLine": 156 }
+        },
+        {
+          "kind": "invariant",
+          "description": "closed-over state and ownProps reflect last invocation inputs",
+          "anchor": { "startLine": 141, "endLine": 142 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "initMapStateToProps/initMapDispatchToProps/initMergeProps return wrapped functions with dependsOnOwnProps boolean",
+          "anchor": { "startLine": 227, "endLine": 229 }
+        },
+        {
+          "kind": "env",
+          "description": "process.env.NODE_ENV is set by bundler to 'production' or other value",
+          "anchor": { "startLine": 231, "endLine": 231 }
+        },
+        {
+          "kind": "config",
+          "description": "Equality functions provided in options are pure and consistent",
+          "anchor": { "startLine": 78, "endLine": 82 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "What exact shape does verifySubselectors expect and what errors does it throw?",
+          "affects": "error_handling",
+          "anchor": { "startLine": 232, "endLine": 232 },
+          "resolution": null
+        },
+        {
+          "question": "Is the returned selector intended to be called with same reference for state across store updates?",
+          "affects": "concurrency_model",
+          "anchor": { "startLine": 150, "endLine": 157 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "sync",
+        "reentrant": false,
+        "ordering": "deterministic",
+        "notes": "Closure retains mutable state across calls; not safe for concurrent or interleaved calls because shared variables are overwritten."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [],
+      "language": "typescript",
+      "moduleLayout": [
+        "import type Dispatch, Action",
+        "import type ComponentType",
+        "import verifySubselectors",
+        "import type EqualityFn, ExtendedEqualityFn",
+        "export type SelectorFactory",
+        "export type Selector",
+        "export type MapStateToProps",
+        "export type MapStateToPropsFactory",
+        "export type MapStateToPropsParam",
+        "export type MapDispatchToPropsFunction",
+        "export type MapDispatchToProps",
+        "export type MapDispatchToPropsFactory",
+        "export type MapDispatchToPropsParam",
+        "export type MapDispatchToPropsNonObject",
+        "export type MergeProps",
+        "interface PureSelectorFactoryComparisonOptions",
+        "function pureFinalPropsSelectorFactory",
+        "interface WrappedMapStateToProps",
+        "interface WrappedMapDispatchToProps",
+        "export interface InitOptions",
+        "export interface SelectorFactoryOptions",
+        "export default function finalPropsSelectorFactory"
+      ],
+      "moduleLevelCode": "import type { Dispatch, Action } from 'redux'\nimport type { ComponentType } from 'react'\nimport verifySubselectors from './verifySubselectors'\nimport type { EqualityFn, ExtendedEqualityFn } from '../types'\n// TODO: Add more comments\n// The selector returned by selectorFactory will memoize its results,\n// allowing connect's shouldComponentUpdate to return false if final\n// props have not changed.",
+      "exports": [
+        { "name": "SelectorFactory", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "Selector", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "MapStateToProps", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "MapStateToPropsFactory", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "MapStateToPropsParam", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "MapDispatchToPropsFunction", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "MapDispatchToProps", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "MapDispatchToPropsFactory", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "MapDispatchToPropsParam", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "MapDispatchToPropsNonObject", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "MergeProps", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "InitOptions", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "SelectorFactoryOptions", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "default", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "Dispatch", "module": "redux", "alias": null, "kind": "external" },
+        { "symbol": "Action", "module": "redux", "alias": null, "kind": "external" },
+        { "symbol": "ComponentType", "module": "react", "alias": null, "kind": "external" },
+        { "symbol": "default", "module": "./verifySubselectors", "alias": null, "kind": "internal" },
+        { "symbol": "EqualityFn", "module": "../types", "alias": null, "kind": "internal" },
+        { "symbol": "ExtendedEqualityFn", "module": "../types", "alias": null, "kind": "internal" }
+      ],
+      "fileConstants": [],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "src/connect/selectorFactory.ts__pureFinalPropsSelectorFactory#function:pureFinalPropsSelectorFactory",
+        "unitKind": "function",
+        "name": "pureFinalPropsSelectorFactory",
+        "qualifiedName": "pureFinalPropsSelectorFactory",
+        "parentUnitId": null,
+        "startLine": 67,
+        "endLine": 158,
+        "isBehavioral": true,
+        "source": "function pureFinalPropsSelectorFactory<\n  TStateProps,\n  TOwnProps,\n  TDispatchProps,\n  TMergedProps,\n  State,\n>(\n  mapStateToProps: WrappedMapStateToProps<TStateProps, TOwnProps, State>,\n  mapDispatchToProps: WrappedMapDispatchToProps<TDispatchProps, TOwnProps>,\n  mergeProps: MergeProps<TStateProps, TDispatchProps, TOwnProps, TMergedProps>,\n  dispatch: Dispatch<Action<string>>,\n  {\n    areStatesEqual,\n    areOwnPropsEqual,\n    areStatePropsEqual,\n  }: PureSelectorFactoryComparisonOptions<TStateProps, TOwnProps, State>,\n) {\n  let hasRunAtLeastOnce = false\n  let state: State\n  let ownProps: TOwnProps\n  let stateProps: TStateProps\n  let dispatchProps: TDispatchProps\n  let mergedProps: TMergedProps\n\n  function handleFirstCall(firstState: State, firstOwnProps: TOwnProps) {\n    state = firstState\n    ownProps = firstOwnProps\n    stateProps = mapStateToProps(state, ownProps)\n    dispatchProps = mapDispatchToProps(dispatch, ownProps)\n    mergedProps = mergeProps(stateProps, dispatchProps, ownProps)\n    hasRunAtLeastOnce = true\n    return mergedProps\n  }\n\n  function handleNewPropsAndNewState() {\n    stateProps = mapStateToProps(state, ownProps)\n\n    if (mapDispatchToProps.dependsOnOwnProps)\n      dispatchProps = mapDispatchToProps(dispatch, ownProps)\n\n    mergedProps = mergeProps(stateProps, dispatchProps, ownProps)\n    return mergedProps\n  }\n\n  function handleNewProps() {\n    if (mapStateToProps.dependsOnOwnProps)\n      stateProps = mapStateToProps(state, ownProps)\n\n    if (mapDispatchToProps.dependsOnOwnProps)\n      dispatchProps = mapDispatchToProps(dispatch, ownProps)\n\n    mergedProps = mergeProps(stateProps, dispatchProps, ownProps)\n    return mergedProps\n  }\n\n  function handleNewState() {\n    const nextStateProps = mapStateToProps(state, ownProps)\n    const statePropsChanged = !areStatePropsEqual(nextStateProps, stateProps)\n    stateProps = nextStateProps\n\n    if (statePropsChanged)\n      mergedProps = mergeProps(stateProps, dispatchProps, ownProps)\n\n    return mergedProps\n  }\n\n  function handleSubsequentCalls(nextState: State, nextOwnProps: TOwnProps) {\n    const propsChanged = !areOwnPropsEqual(nextOwnProps, ownProps)\n    const stateChanged = !areStatesEqual(\n      nextState,\n      state,\n      nextOwnProps,\n      ownProps,\n    )\n    state = nextState\n    ownProps = nextOwnProps\n\n    if (propsChanged && stateChanged) return handleNewPropsAndNewState()\n    if (propsChanged) return handleNewProps()\n    if (stateChanged) return handleNewState()\n    return mergedProps\n  }\n\n  return function pureFinalPropsSelector(\n    nextState: State,\n    nextOwnProps: TOwnProps,\n  ) {\n    return hasRunAtLeastOnce\n      ? handleSubsequentCalls(nextState, nextOwnProps)\n      : handleFirstCall(nextState, nextOwnProps)\n  }\n}",
+        "detail": {
+          "unitId": "src/connect/selectorFactory.ts__pureFinalPropsSelectorFactory#function:pureFinalPropsSelectorFactory",
+          "fileId": "src/connect/selectorFactory.ts__pureFinalPropsSelectorFactory",
+          "unitKind": "function",
+          "name": "pureFinalPropsSelectorFactory",
+          "qualifiedName": "pureFinalPropsSelectorFactory",
+          "parentUnitId": null,
+          "startLine": 67,
+          "endLine": 158,
+          "signature": "function pureFinalPropsSelectorFactory<TStateProps, TOwnProps, TDispatchProps, TMergedProps, State>(mapStateToProps: WrappedMapStateToProps<TStateProps, TOwnProps, State>, mapDispatchToProps: WrappedMapDispatchToProps<TDispatchProps, TOwnProps>, mergeProps: MergeProps<TStateProps, TDispatchProps, TOwnProps, TMergedProps>, dispatch: Dispatch<Action<string>>, { areStatesEqual, areOwnPropsEqual, areStatePropsEqual }: PureSelectorFactoryComparisonOptions<TStateProps, TOwnProps, State>)",
+          "parameters": [
+            {
+              "name": "mapStateToProps",
+              "type": "WrappedMapStateToProps<TStateProps, TOwnProps, State>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "mapDispatchToProps",
+              "type": "WrappedMapDispatchToProps<TDispatchProps, TOwnProps>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "mergeProps",
+              "type": "MergeProps<TStateProps, TDispatchProps, TOwnProps, TMergedProps>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            },
+            {
+              "name": "dispatch",
+              "type": "Dispatch<Action<string>>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 3
+            },
+            {
+              "name": "comparisonOptions",
+              "type": "{ areStatesEqual, areOwnPropsEqual, areStatePropsEqual }: PureSelectorFactoryComparisonOptions<TStateProps, TOwnProps, State>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 4
+            }
+          ],
+          "returnType": "(nextState: State, nextOwnProps: TOwnProps) => TMergedProps",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "mut",
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": ["TStateProps", "TOwnProps", "TDispatchProps", "TMergedProps", "State"],
+          "logicOutline": [],
+          "preconditions": [
+            "mapStateToProps, mapDispatchToProps, mergeProps, dispatch, and comparison options must be provided",
+            "The returned selector must be called repeatedly with (nextState, nextOwnProps) pairs"
+          ],
+          "postconditions": [
+            "The first call computes stateProps, dispatchProps, and mergedProps and caches them",
+            "Subsequent calls return cached mergedProps if neither state nor own props changed",
+            "When state or own props change, only the necessary recomputation steps are performed"
+          ],
+          "invariants": [
+            "Internal cached state variables (hasRunAtLeastOnce, state, ownProps, stateProps, dispatchProps, mergedProps) persist across calls",
+            "mapStateToProps and mergeProps are always recomputed when relevant inputs change"
+          ],
+          "edgeCases": [
+            "First call: always computes and caches all props",
+            "No change in state or own props: returns cached mergedProps without recomputation",
+            "Only own props changed: uses handleNewProps, skips full state recomputation unless mapStateToProps depends on own props",
+            "Only state changed: uses handleNewState, skips recomputing dispatchProps unless stateProps changed",
+            "Both own props and state changed: uses handleNewPropsAndNewState, computes both state and dispatch props"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [
+            "hasRunAtLeastOnce (set to true on first call)",
+            "state (updated to nextState on subsequent calls)",
+            "ownProps (updated to nextOwnProps on subsequent calls)",
+            "stateProps (recomputed when state or props change)",
+            "dispatchProps (recomputed when own props change and mapDispatchToProps depends on own props)",
+            "mergedProps (recomputed when stateProps, dispatchProps, or ownProps change)"
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "mapStateToProps", "source": "param", "kind": "internal" },
+            { "name": "mapDispatchToProps", "source": "param", "kind": "internal" },
+            { "name": "mergeProps", "source": "param", "kind": "internal" },
+            { "name": "areStatesEqual", "source": "param", "kind": "internal" },
+            { "name": "areOwnPropsEqual", "source": "param", "kind": "internal" },
+            { "name": "areStatePropsEqual", "source": "param", "kind": "internal" }
+          ],
+          "symbolReferences": [
+            "WrappedMapStateToProps",
+            "WrappedMapDispatchToProps",
+            "MergeProps",
+            "Dispatch",
+            "Action",
+            "PureSelectorFactoryComparisonOptions",
+            "TMergedProps",
+            "TStateProps",
+            "TOwnProps",
+            "TDispatchProps",
+            "State"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [
+            "pureFinalPropsSelectorFactory.handleFirstCall",
+            "pureFinalPropsSelectorFactory.handleNewPropsAndNewState",
+            "pureFinalPropsSelectorFactory.handleNewProps",
+            "pureFinalPropsSelectorFactory.handleNewState",
+            "pureFinalPropsSelectorFactory.handleSubsequentCalls",
+            "pureFinalPropsSelectorFactory.pureFinalPropsSelector"
+          ],
+          "constants": [],
+          "ioFormatSpec": "Takes (nextState: State, nextOwnProps: TOwnProps) and returns TMergedProps, using injected mapStateToProps, mapDispatchToProps, mergeProps, and comparison functions to determine what recompute steps to take",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Creates a memoized selector that merges state, dispatch, and own props into merged props, caching results and only recomputing when state or own props actually change.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "pureFinalPropsSelector is invoked with (state, ownProps)",
+              "then": "hasRunAtLeastOnce becomes true, stateProps, dispatchProps, and mergedProps are computed and cached, and mergedProps is returned",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "pureFinalPropsSelector is invoked with equal state and ownProps",
+              "then": "cached mergedProps is returned without recomputing stateProps, dispatchProps, or mergedProps",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "pureFinalPropsSelector is invoked with new state but same ownProps",
+              "then": "mapStateToProps is recomputed with new state, areStatePropsEqual determines if mergedProps needs updating, and updated mergedProps is returned",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "ff1b16a15ea796c07cd78d5d83e46cb876f153528bfb668a792b60143a47407d"
+        }
+      },
+      {
+        "unitId": "src/connect/selectorFactory.ts__pureFinalPropsSelectorFactory.handleFirstCall#function:pureFinalPropsSelectorFactory.handleFirstCall",
+        "unitKind": "function",
+        "name": "handleFirstCall",
+        "qualifiedName": "pureFinalPropsSelectorFactory.handleFirstCall",
+        "parentUnitId": "src/connect/selectorFactory.ts__pureFinalPropsSelectorFactory#function:pureFinalPropsSelectorFactory",
+        "startLine": 91,
+        "endLine": 99,
+        "isBehavioral": true,
+        "source": "  function handleFirstCall(firstState: State, firstOwnProps: TOwnProps) {\n    state = firstState\n    ownProps = firstOwnProps\n    stateProps = mapStateToProps(state, ownProps)\n    dispatchProps = mapDispatchToProps(dispatch, ownProps)\n    mergedProps = mergeProps(stateProps, dispatchProps, ownProps)\n    hasRunAtLeastOnce = true\n    return mergedProps\n  }",
+        "detail": {
+          "unitId": "src/connect/selectorFactory.ts__pureFinalPropsSelectorFactory.handleFirstCall#function:pureFinalPropsSelectorFactory.handleFirstCall",
+          "fileId": "src/connect/selectorFactory.ts__pureFinalPropsSelectorFactory.handleFirstCall",
+          "unitKind": "function",
+          "name": "handleFirstCall",
+          "qualifiedName": "pureFinalPropsSelectorFactory.handleFirstCall",
+          "parentUnitId": "src/connect/selectorFactory.ts__pureFinalPropsSelectorFactory#function:pureFinalPropsSelectorFactory",
+          "startLine": 91,
+          "endLine": 99,
+          "signature": "function handleFirstCall(firstState: State, firstOwnProps: TOwnProps): TStateProps & TDispatchProps",
+          "parameters": [
+            {
+              "name": "firstState",
+              "type": "State",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "firstOwnProps",
+              "type": "TOwnProps",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "TStateProps & TDispatchProps",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "mut",
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": ["State", "TOwnProps", "TStateProps", "TDispatchProps"],
+          "logicOutline": [],
+          "preconditions": [
+            "The selector must not have run yet (this is the first call)",
+            "mapStateToProps, mapDispatchToProps, and mergeProps functions must be defined",
+            "dispatch must be available"
+          ],
+          "postconditions": [
+            "state is set to firstState",
+            "ownProps is set to firstOwnProps",
+            "stateProps is computed from mapStateToProps(state, ownProps)",
+            "dispatchProps is computed from mapDispatchToProps(dispatch, ownProps)",
+            "mergedProps is computed from mergeProps(stateProps, dispatchProps, ownProps)",
+            "hasRunAtLeastOnce is set to true",
+            "mergedProps is returned"
+          ],
+          "invariants": [
+            "hasRunAtLeastOnce transitions from false to true",
+            "mergedProps is computed using the provided mergeProps strategy",
+            "state, ownProps, stateProps, dispatchProps, and mergedProps are all populated before return"
+          ],
+          "edgeCases": [
+            "If mapStateToProps returns undefined or partial data, stateProps will reflect that",
+            "If mapDispatchToProps returns undefined or partial data, dispatchProps will reflect that",
+            "If mergeProps handles undefined inputs, mergedProps will reflect that"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": ["Error"], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": ["state", "ownProps", "stateProps", "dispatchProps", "mergedProps", "hasRunAtLeastOnce"],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "mapStateToProps", "source": "closure", "kind": "internal" },
+            { "name": "mapDispatchToProps", "source": "closure", "kind": "internal" },
+            { "name": "mergeProps", "source": "closure", "kind": "internal" }
+          ],
+          "symbolReferences": ["State", "TOwnProps", "TStateProps", "TDispatchProps"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Initializes the selector by storing the first state and own props, computing derived state, dispatch, and merged props, then returning the merged result.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "handleFirstCall is called with firstState and firstOwnProps",
+              "then": "state is set to firstState, ownProps is set to firstOwnProps, stateProps and dispatchProps are computed, mergedProps is the return value, and hasRunAtLeastOnce is true",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "74d0f58be43ed1124bb08601a7fad4911ed561847c50633b85669f091c5329f1"
+        }
+      },
+      {
+        "unitId": "src/connect/selectorFactory.ts__pureFinalPropsSelectorFactory.handleNewPropsAndNewState#function:pureFinalPropsSelectorFactory.handleNewPropsAndNewState",
+        "unitKind": "function",
+        "name": "handleNewPropsAndNewState",
+        "qualifiedName": "pureFinalPropsSelectorFactory.handleNewPropsAndNewState",
+        "parentUnitId": "src/connect/selectorFactory.ts__pureFinalPropsSelectorFactory#function:pureFinalPropsSelectorFactory",
+        "startLine": 101,
+        "endLine": 109,
+        "isBehavioral": true,
+        "source": "  function handleNewPropsAndNewState() {\n    stateProps = mapStateToProps(state, ownProps)\n\n    if (mapDispatchToProps.dependsOnOwnProps)\n      dispatchProps = mapDispatchToProps(dispatch, ownProps)\n\n    mergedProps = mergeProps(stateProps, dispatchProps, ownProps)\n    return mergedProps\n  }",
+        "detail": {
+          "unitId": "src/connect/selectorFactory.ts__pureFinalPropsSelectorFactory.handleNewPropsAndNewState#function:pureFinalPropsSelectorFactory.handleNewPropsAndNewState",
+          "fileId": "src/connect/selectorFactory.ts__pureFinalPropsSelectorFactory.handleNewPropsAndNewState",
+          "unitKind": "function",
+          "name": "handleNewPropsAndNewState",
+          "qualifiedName": "pureFinalPropsSelectorFactory.handleNewPropsAndNewState",
+          "parentUnitId": "src/connect/selectorFactory.ts__pureFinalPropsSelectorFactory#function:pureFinalPropsSelectorFactory",
+          "startLine": 101,
+          "endLine": 109,
+          "signature": "function handleNewPropsAndNewState()",
+          "parameters": [],
+          "returnType": "mergedProps",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "mut",
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "state is available",
+            "ownProps is available",
+            "dispatch is available",
+            "mapStateToProps function is defined",
+            "mergeProps function is defined",
+            "mapDispatchToProps function is defined"
+          ],
+          "postconditions": [
+            "stateProps is reassigned to the result of mapStateToProps(state, ownProps)",
+            "if mapDispatchToProps.dependsOnOwnProps is truthy, dispatchProps is reassigned to mapDispatchToProps(dispatch, ownProps)",
+            "mergedProps is reassigned to mergeProps(stateProps, dispatchProps, ownProps)",
+            "the newly computed mergedProps is returned"
+          ],
+          "invariants": [],
+          "edgeCases": [
+            "when mapDispatchToProps.dependsOnOwnProps is falsy, dispatchProps remains unchanged from previous computation",
+            "when mapDispatchToProps.dependsOnOwnProps is truthy, dispatchProps is recomputed with current ownProps"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": ["stateProps", "dispatchProps (conditional)", "mergedProps"],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "mapStateToProps", "source": null, "kind": "internal" },
+            { "name": "mapDispatchToProps", "source": null, "kind": "internal" },
+            { "name": "mergeProps", "source": null, "kind": "internal" }
+          ],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Recomputes stateProps, conditionally recompute dispatchProps when ownProps-dependent, then rebuilds mergedProps from all three prop sets and returns the new mergedProps.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "cac9719c22992a362b204db62834244192fe98aa7557841645c23eb1bf7d2a79"
+        }
+      },
+      {
+        "unitId": "src/connect/selectorFactory.ts__pureFinalPropsSelectorFactory.handleNewProps#function:pureFinalPropsSelectorFactory.handleNewProps",
+        "unitKind": "function",
+        "name": "handleNewProps",
+        "qualifiedName": "pureFinalPropsSelectorFactory.handleNewProps",
+        "parentUnitId": "src/connect/selectorFactory.ts__pureFinalPropsSelectorFactory#function:pureFinalPropsSelectorFactory",
+        "startLine": 111,
+        "endLine": 120,
+        "isBehavioral": true,
+        "source": "  function handleNewProps() {\n    if (mapStateToProps.dependsOnOwnProps)\n      stateProps = mapStateToProps(state, ownProps)\n\n    if (mapDispatchToProps.dependsOnOwnProps)\n      dispatchProps = mapDispatchToProps(dispatch, ownProps)\n\n    mergedProps = mergeProps(stateProps, dispatchProps, ownProps)\n    return mergedProps\n  }",
+        "detail": {
+          "unitId": "src/connect/selectorFactory.ts__pureFinalPropsSelectorFactory.handleNewProps#function:pureFinalPropsSelectorFactory.handleNewProps",
+          "fileId": "src/connect/selectorFactory.ts__pureFinalPropsSelectorFactory.handleNewProps",
+          "unitKind": "function",
+          "name": "handleNewProps",
+          "qualifiedName": "pureFinalPropsSelectorFactory.handleNewProps",
+          "parentUnitId": "src/connect/selectorFactory.ts__pureFinalPropsSelectorFactory#function:pureFinalPropsSelectorFactory",
+          "startLine": 111,
+          "endLine": 120,
+          "signature": "function handleNewProps()",
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "mut",
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "Closure-scoped mapStateToProps must be defined and callable as (state, ownProps) => stateProps",
+            "Closure-scoped mapDispatchToProps must be defined and callable as (dispatch, ownProps) => dispatchProps",
+            "Closure-scoped mergeProps must be defined and callable as (stateProps, dispatchProps, ownProps) => mergedProps",
+            "Closure-scoped ownProps must be defined",
+            "Closure-scoped state must be defined",
+            "Closure-scoped dispatch must be defined",
+            "mapStateToProps.dependsOnOwnProps and mapDispatchToProps.dependsOnOwnProps must be checkable for truthiness"
+          ],
+          "postconditions": [
+            "Returns the result of mergeProps(stateProps, dispatchProps, ownProps)",
+            "stateProps is assigned the return value of mapStateToProps(state, ownProps) when mapStateToProps.dependsOnOwnProps is truthy",
+            "dispatchProps is assigned the return value of mapDispatchToProps(dispatch, ownProps) when mapDispatchToProps.dependsOnOwnProps is truthy",
+            "mergedProps is assigned the return value of mergeProps(stateProps, dispatchProps, ownProps)",
+            "If mapStateToProps.dependsOnOwnProps is falsy, stateProps retains its previous value",
+            "If mapDispatchToProps.dependsOnOwnProps is falsy, dispatchProps retains its previous value"
+          ],
+          "invariants": [
+            "mergedProps is always assigned before being returned",
+            "mergeProps is always called unconditionally on every invocation",
+            "The dependsOnOwnProps checks are independent of each other"
+          ],
+          "edgeCases": [
+            "mapStateToProps.dependsOnOwnProps is falsy: stateProps is not recomputed, retains its closure-scoped previous value",
+            "mapDispatchToProps.dependsOnOwnProps is falsy: dispatchProps is not recomputed, retains its closure-scoped previous value",
+            "Both dependsOnOwnProps flags are falsy: only mergeProps runs, using stale stateProps and dispatchProps",
+            "Both dependsOnOwnProps flags are truthy: both mapStateToProps and mapDispatchToProps are recomputed with (state/dispatch, ownProps) before merging",
+            "ownProps, state, and dispatch are accessed from closure scope and must be valid at call time"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "No explicit input validation; invalid closure state propagates to downstream calls (mapStateToProps, mapDispatchToProps, mergeProps) which may throw",
+            "returnsOnError": null
+          },
+          "stateMutations": [
+            "stateProps (closure-scoped variable, reassigned conditionally)",
+            "dispatchProps (closure-scoped variable, reassigned conditionally)",
+            "mergedProps (closure-scoped variable, reassigned unconditionally)"
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "mapStateToProps", "source": null, "kind": "internal" },
+            { "name": "mapDispatchToProps", "source": null, "kind": "internal" },
+            { "name": "mergeProps", "source": null, "kind": "internal" }
+          ],
+          "symbolReferences": [
+            "mapStateToProps",
+            "mapDispatchToProps",
+            "mergeProps",
+            "ownProps",
+            "state",
+            "dispatch",
+            "stateProps",
+            "dispatchProps",
+            "mergedProps"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Recomputes stateProps and dispatchProps from the closure-scoped mapStateToProps/mapDispatchToProps when they depend on ownProps, always merges them with ownProps via mergeProps, assigns the result to mergedProps, and returns it.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "636e6f452a9e4d216186825a056cdbdf8c495b89b66097ece0b9cf0c44c2db75"
+        }
+      },
+      {
+        "unitId": "src/connect/selectorFactory.ts__pureFinalPropsSelectorFactory.handleNewState#function:pureFinalPropsSelectorFactory.handleNewState",
+        "unitKind": "function",
+        "name": "handleNewState",
+        "qualifiedName": "pureFinalPropsSelectorFactory.handleNewState",
+        "parentUnitId": "src/connect/selectorFactory.ts__pureFinalPropsSelectorFactory#function:pureFinalPropsSelectorFactory",
+        "startLine": 122,
+        "endLine": 131,
+        "isBehavioral": true,
+        "source": "  function handleNewState() {\n    const nextStateProps = mapStateToProps(state, ownProps)\n    const statePropsChanged = !areStatePropsEqual(nextStateProps, stateProps)\n    stateProps = nextStateProps\n\n    if (statePropsChanged)\n      mergedProps = mergeProps(stateProps, dispatchProps, ownProps)\n\n    return mergedProps\n  }",
+        "detail": {
+          "unitId": "src/connect/selectorFactory.ts__pureFinalPropsSelectorFactory.handleNewState#function:pureFinalPropsSelectorFactory.handleNewState",
+          "fileId": "src/connect/selectorFactory.ts__pureFinalPropsSelectorFactory.handleNewState",
+          "unitKind": "function",
+          "name": "handleNewState",
+          "qualifiedName": "pureFinalPropsSelectorFactory.handleNewState",
+          "parentUnitId": "src/connect/selectorFactory.ts__pureFinalPropsSelectorFactory#function:pureFinalPropsSelectorFactory",
+          "startLine": 122,
+          "endLine": 131,
+          "signature": "function handleNewState()",
+          "parameters": [],
+          "returnType": "mergedProps",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "nonpayable",
+          "visibility": "internal",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "Closure variables mapStateToProps, ownProps, stateProps, mergedProps, dispatchProps, mergeProps, and areStatePropsEqual must be defined",
+            "mapStateToProps must be a callable expecting (state, ownProps) and returning a plain object",
+            "state (captured from closure) must be the current Redux store state"
+          ],
+          "postconditions": [
+            "stateProps is replaced with the result of mapStateToProps(state, ownProps)",
+            "If stateProps changed (per areStatePropsEqual), mergedProps is recomputed via mergeProps(stateProps, dispatchProps, ownProps)",
+            "The returned value is the current mergedProps"
+          ],
+          "invariants": [
+            "stateProps is always a plain object returned by mapStateToProps",
+            "mergedProps is only updated when stateProps have actually changed (shallow equality check via areStatePropsEqual)",
+            "mergedProps reflects the composition of stateProps, dispatchProps, and ownProps"
+          ],
+          "edgeCases": [
+            "When mapStateToProps returns the same reference as stateProps (per areStatePropsEqual returns true), mergedProps is not recomputed and the old value is returned",
+            "When mapStateToProps returns a new reference (areStatePropsEqual returns false), mergedProps is recomputed before being returned"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [
+              "Any error thrown synchronously by mapStateToProps(state, ownProps)",
+              "Any error thrown synchronously by areStatePropsEqual(nextStateProps, stateProps)",
+              "Any error thrown synchronously by mergeProps(stateProps, dispatchProps, ownProps)"
+            ],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": null
+          },
+          "stateMutations": [
+            "stateProps (closure variable, reassigned to nextStateProps)",
+            "mergedProps (closure variable, reassigned only when statePropsChanged is true)"
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "mapStateToProps", "source": "closure", "kind": "internal" },
+            { "name": "areStatePropsEqual", "source": "closure", "kind": "internal" },
+            { "name": "mergeProps", "source": "closure", "kind": "internal" }
+          ],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Recomputes state-derived props from the current Redux state, updates cached stateProps, and recomputes mergedProps via mergeProps when stateProps change, finally returning mergedProps.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "f5bc260381837e6944aecb2fec9a3dac3b08dc853bb8eb2513eddd6d05b1c690"
+        }
+      },
+      {
+        "unitId": "src/connect/selectorFactory.ts__pureFinalPropsSelectorFactory.handleSubsequentCalls#function:pureFinalPropsSelectorFactory.handleSubsequentCalls",
+        "unitKind": "function",
+        "name": "handleSubsequentCalls",
+        "qualifiedName": "pureFinalPropsSelectorFactory.handleSubsequentCalls",
+        "parentUnitId": "src/connect/selectorFactory.ts__pureFinalPropsSelectorFactory#function:pureFinalPropsSelectorFactory",
+        "startLine": 133,
+        "endLine": 148,
+        "isBehavioral": true,
+        "source": "  function handleSubsequentCalls(nextState: State, nextOwnProps: TOwnProps) {\n    const propsChanged = !areOwnPropsEqual(nextOwnProps, ownProps)\n    const stateChanged = !areStatesEqual(\n      nextState,\n      state,\n      nextOwnProps,\n      ownProps,\n    )\n    state = nextState\n    ownProps = nextOwnProps\n\n    if (propsChanged && stateChanged) return handleNewPropsAndNewState()\n    if (propsChanged) return handleNewProps()\n    if (stateChanged) return handleNewState()\n    return mergedProps\n  }",
+        "detail": {
+          "unitId": "src/connect/selectorFactory.ts__pureFinalPropsSelectorFactory.handleSubsequentCalls#function:pureFinalPropsSelectorFactory.handleSubsequentCalls",
+          "fileId": "src/connect/selectorFactory.ts__pureFinalPropsSelectorFactory.handleSubsequentCalls",
+          "unitKind": "function",
+          "name": "handleSubsequentCalls",
+          "qualifiedName": "pureFinalPropsSelectorFactory.handleSubsequentCalls",
+          "parentUnitId": "src/connect/selectorFactory.ts__pureFinalPropsSelectorFactory#function:pureFinalPropsSelectorFactory",
+          "startLine": 133,
+          "endLine": 148,
+          "signature": "function handleSubsequentCalls(nextState: State, nextOwnProps: TOwnProps)",
+          "parameters": [
+            { "name": "nextState", "type": "State", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "nextOwnProps",
+              "type": "TOwnProps",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "mergedProps",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "mut",
+          "visibility": "internal",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "Caller provides nextState of type State representing the latest observed state.",
+            "Caller provides nextOwnProps of type TOwnProps representing the latest observed own props.",
+            "Internal closures ownProps and state hold the previously observed own props and state respectively."
+          ],
+          "postconditions": [
+            "Updates internal state to reference nextState.",
+            "Updates internal ownProps to reference nextOwnProps.",
+            "Returns the result of handleNewPropsAndNewState() when both props and state have changed.",
+            "Returns the result of handleNewProps() when only props have changed.",
+            "Returns the result of handleNewState() when only state has changed.",
+            "Returns the existing mergedProps value when neither props nor state have changed."
+          ],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [
+            "state (closure variable) is assigned nextState",
+            "ownProps (closure variable) is assigned nextOwnProps"
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "areOwnPropsEqual", "source": "imported utility", "kind": "external" },
+            { "name": "areStatesEqual", "source": "imported utility", "kind": "external" },
+            { "name": "handleNewPropsAndNewState", "source": "closure", "kind": "internal" },
+            { "name": "handleNewProps", "source": "closure", "kind": "internal" },
+            { "name": "handleNewState", "source": "closure", "kind": "internal" }
+          ],
+          "symbolReferences": [
+            "areOwnPropsEqual",
+            "areStatesEqual",
+            "handleNewPropsAndNewState",
+            "handleNewProps",
+            "handleNewState",
+            "mergedProps",
+            "ownProps",
+            "state",
+            "State",
+            "TOwnProps"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Dispatches to the appropriate result handler on subsequent selector invocations by comparing incoming props and state against cached values, and delegates to the matching update path (new props+state, new props only, or new state only), returning existing merged props when nothing has changed.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "7749d1c580e2509005115ea5d5de03920c4002959bb51f2afc3d86340ec1a0ee"
+        }
+      },
+      {
+        "unitId": "src/connect/selectorFactory.ts__pureFinalPropsSelectorFactory.pureFinalPropsSelector#function:pureFinalPropsSelectorFactory.pureFinalPropsSelector",
+        "unitKind": "function",
+        "name": "pureFinalPropsSelector",
+        "qualifiedName": "pureFinalPropsSelectorFactory.pureFinalPropsSelector",
+        "parentUnitId": "src/connect/selectorFactory.ts__pureFinalPropsSelectorFactory#function:pureFinalPropsSelectorFactory",
+        "startLine": 150,
+        "endLine": 157,
+        "isBehavioral": true,
+        "source": "  return function pureFinalPropsSelector(\n    nextState: State,\n    nextOwnProps: TOwnProps,\n  ) {\n    return hasRunAtLeastOnce\n      ? handleSubsequentCalls(nextState, nextOwnProps)\n      : handleFirstCall(nextState, nextOwnProps)\n  }",
+        "detail": {
+          "unitId": "src/connect/selectorFactory.ts__pureFinalPropsSelectorFactory.pureFinalPropsSelector#function:pureFinalPropsSelectorFactory.pureFinalPropsSelector",
+          "fileId": "src/connect/selectorFactory.ts__pureFinalPropsSelectorFactory.pureFinalPropsSelector",
+          "unitKind": "function",
+          "name": "pureFinalPropsSelector",
+          "qualifiedName": "pureFinalPropsSelectorFactory.pureFinalPropsSelector",
+          "parentUnitId": "src/connect/selectorFactory.ts__pureFinalPropsSelectorFactory#function:pureFinalPropsSelectorFactory",
+          "startLine": 150,
+          "endLine": 157,
+          "signature": "return function pureFinalPropsSelector(nextState: State, nextOwnProps: TOwnProps): MemoizedSelector<State, TOwnProps, TStateProps | TDispatchProps | TActionProps | TMergeProps>",
+          "parameters": [
+            { "name": "nextState", "type": "State", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "nextOwnProps",
+              "type": "TOwnProps",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "MemoizedSelector<State, TOwnProps, TStateProps | TDispatchProps | TActionProps | TMergeProps>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "view",
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": ["State", "TOwnProps", "TStateProps", "TDispatchProps", "TActionProps", "TMergeProps"],
+          "logicOutline": [],
+          "preconditions": [
+            "Has access to closures: hasRunAtLeastOnce flag and handler functions bound by pureFinalPropsSelectorFactory.",
+            " nextState conforms to the State type expected by the selector.",
+            " nextOwnProps conforms to TOwnProps type."
+          ],
+          "postconditions": [
+            "Returns a memoized selector result of merged props.",
+            "On first invocation, sets hasRunAtLeastOnce to true via handleFirstCall.",
+            "On subsequent invocations, delegates to handleSubsequentCalls for diffing logic."
+          ],
+          "invariants": [
+            " hasRunAtLeastOnce accurately reflects whether the selector has executed at least once.",
+            " Returned selector maintains referential equality when inputs are unchanged (memoization)."
+          ],
+          "edgeCases": [
+            "First call: nextState and nextOwnProps used to initialize selector state.",
+            "Subsequent calls with identical nextState and nextOwnProps: returns memoized result without recomputation.",
+            "Subsequent calls with changed nextState or nextOwnProps: recomputes merged props via handler functions."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [
+            "Updates hasRunAtLeastOnce closure flag on first call.",
+            "Updates internal memoization cache in handler functions."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "handleFirstCall", "source": "pureFinalPropsSelectorFactory", "kind": "internal" },
+            { "name": "handleSubsequentCalls", "source": "pureFinalPropsSelectorFactory", "kind": "internal" }
+          ],
+          "symbolReferences": [
+            "State",
+            "TOwnProps",
+            "TStateProps",
+            "TDispatchProps",
+            "TActionProps",
+            "TMergeProps",
+            "MemoizedSelector",
+            "hasRunAtLeastOnce"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Memoized selector that computes merged props from next state and own props, routing to first-call initialization or subsequent-call diffing based on prior execution.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Called with nextState and nextOwnProps for the first time.",
+              "then": "hasRunAtLeastOnce becomes true and handleFirstCall is invoked to compute initial merged props.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Called with the same nextState and nextOwnProps as the previous call.",
+              "then": "Returns the memoized result without recomputing merged props.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Called with new nextState and nextOwnProps.",
+              "then": "handleSubsequentCalls is invoked to recompute merged props based on diffed inputs.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "0cf7a6fb861ca042bda9af63fe73056251ea85c29ea528b1d1c14fc42c063fb6"
+        }
+      },
+      {
+        "unitId": "src/connect/selectorFactory.ts__finalPropsSelectorFactory#function:finalPropsSelectorFactory",
+        "unitKind": "function",
+        "name": "finalPropsSelectorFactory",
+        "qualifiedName": "finalPropsSelectorFactory",
+        "parentUnitId": null,
+        "startLine": 206,
+        "endLine": 242,
+        "isBehavioral": true,
+        "source": "export default function finalPropsSelectorFactory<\n  TStateProps,\n  TOwnProps,\n  TDispatchProps,\n  TMergedProps,\n  State,\n>(\n  dispatch: Dispatch<Action<string>>,\n  {\n    initMapStateToProps,\n    initMapDispatchToProps,\n    initMergeProps,\n    ...options\n  }: SelectorFactoryOptions<\n    TStateProps,\n    TOwnProps,\n    TDispatchProps,\n    TMergedProps,\n    State\n  >,\n) {\n  const mapStateToProps = initMapStateToProps(dispatch, options)\n  const mapDispatchToProps = initMapDispatchToProps(dispatch, options)\n  const mergeProps = initMergeProps(dispatch, options)\n\n  if (process.env.NODE_ENV !== 'production') {\n    verifySubselectors(mapStateToProps, mapDispatchToProps, mergeProps)\n  }\n\n  return pureFinalPropsSelectorFactory<\n    TStateProps,\n    TOwnProps,\n    TDispatchProps,\n    TMergedProps,\n    State\n  >(mapStateToProps, mapDispatchToProps, mergeProps, dispatch, options)\n}",
+        "detail": {
+          "unitId": "src/connect/selectorFactory.ts__finalPropsSelectorFactory#function:finalPropsSelectorFactory",
+          "fileId": "src/connect/selectorFactory.ts__finalPropsSelectorFactory",
+          "unitKind": "function",
+          "name": "finalPropsSelectorFactory",
+          "qualifiedName": "finalPropsSelectorFactory",
+          "parentUnitId": null,
+          "startLine": 206,
+          "endLine": 242,
+          "signature": "export default function finalPropsSelectorFactory<TStateProps, TOwnProps, TDispatchProps, TMergedProps, State>(dispatch: Dispatch<Action<string>>, { initMapStateToProps, initMapDispatchToProps, initMergeProps, ...options }: SelectorFactoryOptions<TStateProps, TOwnProps, TDispatchProps, TMergedProps, State>)",
+          "parameters": [
+            {
+              "name": "dispatch",
+              "type": "Dispatch<Action<string>>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "initMapStateToProps",
+              "type": "function",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "initMapDispatchToProps",
+              "type": "function",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            },
+            {
+              "name": "initMergeProps",
+              "type": "function",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 3
+            },
+            {
+              "name": "options",
+              "type": "SelectorFactoryOptions<TStateProps, TOwnProps, TDispatchProps, TMergedProps, State>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 4
+            }
+          ],
+          "returnType": "pureFinalPropsSelectorFactory<TStateProps, TOwnProps, TDispatchProps, TMergedProps, State>",
+          "decorators": [],
+          "modifiersApplied": ["export default"],
+          "mutability": "pure",
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": ["TStateProps", "TOwnProps", "TDispatchProps", "TMergedProps", "State"],
+          "logicOutline": [],
+          "preconditions": [
+            "dispatch must be a valid Dispatch<Action<string>>",
+            "initMapStateToProps, initMapDispatchToProps, and initMergeProps must be functions",
+            "options must conform to SelectorFactoryOptions"
+          ],
+          "postconditions": [
+            "Returns a pure selector created via pureFinalPropsSelectorFactory",
+            "In non-production environments, verifySubselectors is invoked before returning"
+          ],
+          "invariants": [],
+          "edgeCases": [
+            "When process.env.NODE_ENV is 'production', verifySubselectors is skipped",
+            "When options is empty after destructuring initMapStateToProps, initMapDispatchToProps, initMergeProps, the remaining options are passed through"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Undefined behavior if initializers or dispatch are invalid",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "initMapStateToProps", "source": "passed parameter", "kind": "internal" },
+            { "name": "initMapDispatchToProps", "source": "passed parameter", "kind": "internal" },
+            { "name": "initMergeProps", "source": "passed parameter", "kind": "internal" },
+            { "name": "verifySubselectors", "source": "imported module", "kind": "internal" },
+            { "name": "pureFinalPropsSelectorFactory", "source": "sibling function in same file", "kind": "internal" }
+          ],
+          "symbolReferences": ["Dispatch", "Action", "SelectorFactoryOptions"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Constructs a selector by invoking mapStateToProps, mapDispatchToProps, and mergeProps initializers, optionally verifying subselectors in development, then returning a pure selector instance.",
+          "specLiterals": [
+            {
+              "kind": "magic-number",
+              "value": "process.env.NODE_ENV !== 'production'",
+              "role": "Controls whether verifySubselectors is invoked"
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "caad6b2d870ec15871f6ef648aa7786424564b9b595bcb8ffc824e0292037031"
+        }
+      }
+    ]
+  },
+  "out": ["src/types.ts", "src/connect/verifySubselectors.ts"],
+  "in": ["src/connect/mapStateToProps.ts", "src/connect/mergeProps.ts", "src/connect/mapDispatchToProps.ts"],
+  "externals": ["redux", "react"],
+  "impact": { "seeds": 8, "callers": 1, "impactedFiles": [] }
+}

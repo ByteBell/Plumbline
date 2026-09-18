@@ -1,0 +1,2479 @@
+{
+  "schema": 2,
+  "kind": "file",
+  "repoName": "tldraw",
+  "file": {
+    "relativePath": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx",
+    "language": "typescript",
+    "sizeBytes": 31566,
+    "tokenCount": 7891,
+    "model": "us.openai.gpt-5.6-luna",
+    "analysedAt": "2026-08-24T12:12:44.640Z",
+    "module": {
+      "purpose": "Provides a mutable, chainable path construction abstraction that records move, line, cubic, and arc commands, then converts them into SVG, Path2D, or geometry representations.",
+      "summary": "This module builds renderable vector paths while preserving per-command styling, closure, geometry, dash, and hand-drawn metadata. It approximates elliptical arcs with cubic Bézier segments, supports affine transformation and path serialization, calculates segment metadata for rendering, and exposes geometry adapters for hit testing and vertex queries. Rendering supports solid, dashed, dotted, and randomized draw-style output.",
+      "businessContext": "Supports tldraw shape rendering, hit testing, and geometry calculations. Failures can produce incorrect outlines, fills, snapping, selection bounds, or exported SVG paths.",
+      "classes": [
+        "PathBuilder (~L146-877): Mutable command builder for SVG paths and geometry representations",
+        "PathBuilderGeometry2d (~L885-967): Geometry adapter for path segments and spatial queries"
+      ],
+      "functions": [
+        "lineThroughPoints (~L147-159): Builds a path by connecting supplied points with line commands",
+        "cubicSplineThroughPoints (~L161-195): Builds a smooth cubic Bézier spline through supplied points",
+        "moveTo (~L209-214): Starts a subpath at the supplied coordinates",
+        "lineTo (~L216-220): Appends a straight line command to the current subpath",
+        "circularArcTo (~L222-233): Appends a circular elliptical-arc approximation",
+        "arcTo (~L235-365): Converts an elliptical arc into cubic Bézier segments",
+        "cubicBezierTo (~L367-378): Appends a cubic Bézier command",
+        "close (~L400-420): Closes the current subpath and records its closure index",
+        "transform (~L422-450): Applies an affine transform while preserving command metadata",
+        "toD (~L452-505): Serializes selected commands into SVG path data",
+        "toSvg (~L507-528): Selects the requested SVG rendering strategy",
+        "toPath2D (~L530-544): Converts the path into a browser Path2D object",
+        "toGeometry (~L546-587): Converts subpaths into geometry objects for spatial operations",
+        "toDashedSvg (~L597-678): Produces SVG groups containing correctly partitioned dash runs",
+        "toDrawD (~L684-820): Produces randomized hand-drawn SVG path data",
+        "getCommandInfo (~L840-876): Calculates and caches segment tangents and lengths",
+        "getSegments (~L891-923): Converts recorded commands into geometry segments",
+        "getVertices (~L925-945): Returns deduplicated path vertices with closure handling",
+        "nearestPoint (~L947-961): Finds the nearest point on any path segment"
+      ],
+      "keywords": [
+        "SVG path",
+        "cubic Bézier",
+        "elliptical arc",
+        "dash pattern",
+        "Path2D",
+        "geometry adapter",
+        "hit testing",
+        "affine transform",
+        "hand-drawn rendering",
+        "tangent cache"
+      ],
+      "ontologyConcepts": [
+        "vector path construction",
+        "geometric approximation",
+        "path serialization",
+        "rendering strategy selection",
+        "spatial querying",
+        "affine transformation",
+        "cached derived metadata"
+      ],
+      "businessEntities": ["Path", "Subpath", "Geometry", "Segment", "Vertex", "Stroke", "Dash pattern"],
+      "systemCapabilities": [
+        "Construct vector paths",
+        "Render solid and patterned strokes",
+        "Generate hand-drawn paths",
+        "Convert paths to geometry",
+        "Transform completed paths",
+        "Perform path spatial queries"
+      ],
+      "configDependencies": [],
+      "importsInternal": [],
+      "importsExternal": [
+        {
+          "spec": "@tldraw/editor",
+          "symbols": [
+            "approximately",
+            "assert",
+            "assertExists",
+            "clamp",
+            "CubicBezier2d",
+            "Edge2d",
+            "exhaustiveSwitchError",
+            "Geometry2d",
+            "Geometry2dFilters",
+            "Geometry2dOptions",
+            "getPerfectDashProps",
+            "getVerticesCountForArcLength",
+            "Group2d",
+            "Mat",
+            "MatLike",
+            "modulate",
+            "PerfectDashTerminal",
+            "rng",
+            "toDomPrecision",
+            "Vec",
+            "VecLike",
+            "VecModel"
+          ],
+          "package": "@tldraw/editor",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 28 }
+        },
+        {
+          "spec": "react",
+          "symbols": ["ReactNode", "SVGProps"],
+          "package": "react",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 29, "endLine": 29 }
+        }
+      ],
+      "sideEffects": {
+        "io": [],
+        "network": [],
+        "env": [],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": [
+          "getCommandInfo caches derived tangent and length metadata by mutating current command objects."
+        ]
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "BasePathBuilderOpts",
+          "shape": "interface BasePathBuilderOpts { strokeWidth: number; forceSolid?: boolean; onlyFilled?: boolean; props?: SVGProps<SVGPathElement & SVGGElement> }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "SolidPathBuilderOpts",
+          "shape": "interface SolidPathBuilderOpts extends BasePathBuilderOpts { style: 'solid' }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "DashedPathBuilderOpts",
+          "shape": "interface DashedPathBuilderOpts extends BasePathBuilderOpts { style: 'dashed' | 'dotted'; snap?: number; end?: PerfectDashTerminal; start?: PerfectDashTerminal; lengthRatio?: number }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "DrawPathBuilderDOpts",
+          "shape": "interface DrawPathBuilderDOpts { strokeWidth: number; randomSeed: string; offset?: number; roundness?: number; passes?: number; onlyFilled?: boolean }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "DrawPathBuilderOpts",
+          "shape": "interface DrawPathBuilderOpts extends BasePathBuilderOpts, DrawPathBuilderDOpts { style: 'draw' }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "NonePathBuilderOpts",
+          "shape": "interface NonePathBuilderOpts extends BasePathBuilderOpts { style: 'none' }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "PathBuilderOpts",
+          "shape": "type PathBuilderOpts = SolidPathBuilderOpts | DashedPathBuilderOpts | DrawPathBuilderOpts | NonePathBuilderOpts",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "PathBuilderCommandOpts",
+          "shape": "interface PathBuilderCommandOpts { offset?: number; roundness?: number; mergeWithPrevious?: boolean }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "PathBuilderLineOpts",
+          "shape": "interface PathBuilderLineOpts extends PathBuilderCommandOpts { geometry?: Omit<Geometry2dOptions, 'isClosed'> | false; dashStart?: PerfectDashTerminal; dashEnd?: PerfectDashTerminal }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "PathBuilderToDOpts",
+          "shape": "interface PathBuilderToDOpts { startIdx?: number; endIdx?: number; onlyFilled?: boolean }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        { "name": "PathBuilder", "shape": "class PathBuilder", "resolvedRelativePath": null, "resolvedFileId": null },
+        {
+          "name": "PathBuilderGeometry2d",
+          "shape": "class PathBuilderGeometry2d extends Geometry2d",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        { "name": "Geometry2d", "shape": "class Geometry2d", "resolvedRelativePath": null, "resolvedFileId": null },
+        {
+          "name": "Geometry2dOptions",
+          "shape": "Geometry2dOptions",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "Geometry2dFilters",
+          "shape": "Geometry2dFilters",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "PerfectDashTerminal",
+          "shape": "PerfectDashTerminal",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        { "name": "VecLike", "shape": "VecLike", "resolvedRelativePath": null, "resolvedFileId": null },
+        { "name": "VecModel", "shape": "VecModel", "resolvedRelativePath": null, "resolvedFileId": null },
+        {
+          "name": "SVGProps",
+          "shape": "SVGProps<SVGPathElement & SVGGElement>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "command construction",
+          "intent": "Accumulates typed path commands in insertion order.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 147, "endLine": 420 }
+        },
+        {
+          "name": "arc approximation",
+          "intent": "Converts elliptical arcs into at most four cubic segments.",
+          "structureKind": "loop",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": "i < numSegments",
+          "terminationCondition": null,
+          "anchor": { "startLine": 235, "endLine": 365 }
+        },
+        {
+          "name": "path serialization",
+          "intent": "Serializes commands into SVG path commands with fill filtering.",
+          "structureKind": "branch",
+          "predicate": "onlyFilled && !isFilled",
+          "branchOutcomes": ["skip current subpath", "emit path command"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 452, "endLine": 505 }
+        },
+        {
+          "name": "rendering dispatch",
+          "intent": "Selects solid, dashed, dotted, draw, or empty rendering output.",
+          "structureKind": "branch",
+          "predicate": "opts.style === 'none'",
+          "branchOutcomes": ["return null", "render selected style"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 507, "endLine": 544 }
+        },
+        {
+          "name": "geometry conversion",
+          "intent": "Builds per-subpath geometry and groups multiple geometries.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 546, "endLine": 587 }
+        },
+        {
+          "name": "draw rendering",
+          "intent": "Generates seeded randomized offsets and rounded hand-drawn commands.",
+          "structureKind": "loop",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": "pass < passes",
+          "terminationCondition": null,
+          "anchor": { "startLine": 684, "endLine": 820 }
+        },
+        {
+          "name": "geometry queries",
+          "intent": "Exposes vertices and nearest-point queries over converted segments.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 891, "endLine": 961 }
+        }
+      ],
+      "representationFamily": "class-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "class",
+          "name": "PathBuilder",
+          "signature": "export class PathBuilder {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 146, "endLine": 146 }
+        },
+        {
+          "kind": "class",
+          "name": "PathBuilderGeometry2d",
+          "signature": "export class PathBuilderGeometry2d extends Geometry2d {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 885, "endLine": 885 }
+        },
+        {
+          "kind": "method",
+          "name": "lineThroughPoints",
+          "signature": "\tstatic lineThroughPoints(\n\t\tpoints: VecLike[],\n\t\topts?: PathBuilderLineOpts & { endOffsets?: number }\n\t)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 147, "endLine": 151 }
+        },
+        {
+          "kind": "method",
+          "name": "cubicSplineThroughPoints",
+          "signature": "\tstatic cubicSplineThroughPoints(\n\t\tpoints: VecLike[],\n\t\topts?: PathBuilderLineOpts & { endOffsets?: number }\n\t)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 161, "endLine": 165 }
+        },
+        {
+          "kind": "method",
+          "name": "moveTo",
+          "signature": "\tmoveTo(x: number, y: number, opts?: PathBuilderLineOpts)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 209, "endLine": 209 }
+        },
+        {
+          "kind": "method",
+          "name": "lineTo",
+          "signature": "\tlineTo(x: number, y: number, opts?: PathBuilderCommandOpts)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 216, "endLine": 216 }
+        },
+        {
+          "kind": "method",
+          "name": "arcTo",
+          "signature": "\tarcTo(\n\t\trx: number,\n\t\try: number,\n\t\tlargeArcFlag: boolean,\n\t\tsweepFlag: boolean,\n\t\txAxisRotationRadians: number,\n\t\tx2: number,\n\t\ty2: number,\n\t\topts?: PathBuilderCommandOpts\n\t)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 235, "endLine": 245 }
+        },
+        {
+          "kind": "method",
+          "name": "cubicBezierTo",
+          "signature": "\tcubicBezierTo(\n\t\tx: number,\n\t\ty: number,\n\t\tcp1X: number,\n\t\tcp1Y: number,\n\t\tcp2X: number,\n\t\tcp2Y: number,\n\t\topts?: PathBuilderCommandOpts\n\t)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 367, "endLine": 375 }
+        },
+        {
+          "kind": "method",
+          "name": "transform",
+          "signature": "\ttransform(mat: MatLike): PathBuilder {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "PathBuilder",
+          "exported": false,
+          "anchor": { "startLine": 422, "endLine": 422 }
+        },
+        {
+          "kind": "method",
+          "name": "toD",
+          "signature": "\ttoD(opts: PathBuilderToDOpts = {})",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 452, "endLine": 452 }
+        },
+        {
+          "kind": "method",
+          "name": "toSvg",
+          "signature": "\ttoSvg(opts: PathBuilderOpts)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 507, "endLine": 507 }
+        },
+        {
+          "kind": "method",
+          "name": "toPath2D",
+          "signature": "\ttoPath2D(opts: PathBuilderOpts): Path2D {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Path2D",
+          "exported": false,
+          "anchor": { "startLine": 530, "endLine": 530 }
+        },
+        {
+          "kind": "method",
+          "name": "toGeometry",
+          "signature": "\ttoGeometry(): PathBuilderGeometry2d | Group2d {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "PathBuilderGeometry2d | Group2d",
+          "exported": false,
+          "anchor": { "startLine": 546, "endLine": 546 }
+        },
+        {
+          "kind": "method",
+          "name": "toDrawD",
+          "signature": "\ttoDrawD(opts: DrawPathBuilderDOpts)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 684, "endLine": 684 }
+        },
+        {
+          "kind": "method",
+          "name": "getCommands",
+          "signature": "\tgetCommands(): readonly PathBuilderCommand[] {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "readonly PathBuilderCommand[]",
+          "exported": false,
+          "anchor": { "startLine": 835, "endLine": 835 }
+        },
+        {
+          "kind": "method",
+          "name": "getCommandInfo",
+          "signature": "\tgetCommandInfo() {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 840, "endLine": 840 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "interface",
+          "name": "BasePathBuilderOpts",
+          "shape": "{\n\tstrokeWidth: number\n\tforceSolid?: boolean\n\tonlyFilled?: boolean\n\tprops?: SVGProps<SVGPathElement & SVGGElement>\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 28, "endLine": 33 }
+        },
+        {
+          "kind": "interface",
+          "name": "SolidPathBuilderOpts",
+          "shape": "{\n\tstyle: 'solid'\n}",
+          "discriminant": "style",
+          "anchor": { "startLine": 36, "endLine": 38 }
+        },
+        {
+          "kind": "interface",
+          "name": "DashedPathBuilderOpts",
+          "shape": "{\n\tstyle: 'dashed' | 'dotted'\n\tsnap?: number\n\tend?: PerfectDashTerminal\n\tstart?: PerfectDashTerminal\n\tlengthRatio?: number\n}",
+          "discriminant": "style",
+          "anchor": { "startLine": 41, "endLine": 47 }
+        },
+        {
+          "kind": "interface",
+          "name": "DrawPathBuilderOpts",
+          "shape": "{\n\tstyle: 'draw'\n}",
+          "discriminant": "style",
+          "anchor": { "startLine": 58, "endLine": 60 }
+        },
+        {
+          "kind": "interface",
+          "name": "NonePathBuilderOpts",
+          "shape": "{\n\tstyle: 'none'\n}",
+          "discriminant": "style",
+          "anchor": { "startLine": 62, "endLine": 64 }
+        },
+        {
+          "kind": "union",
+          "name": "PathBuilderOpts",
+          "shape": "SolidPathBuilderOpts\n\t| DashedPathBuilderOpts\n\t| DrawPathBuilderOpts\n\t| NonePathBuilderOpts",
+          "discriminant": "style",
+          "anchor": { "startLine": 66, "endLine": 70 }
+        },
+        {
+          "kind": "interface",
+          "name": "PathBuilderCommandInfo",
+          "shape": "{\n\ttangentStart: VecModel\n\ttangentEnd: VecModel\n\tlength: number\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 91, "endLine": 96 }
+        },
+        {
+          "kind": "union",
+          "name": "PathBuilderCommand",
+          "shape": "MoveToPathBuilderCommand\n\t| LineToPathBuilderCommand\n\t| CubicBezierToPathBuilderCommand",
+          "discriminant": "type",
+          "anchor": { "startLine": 134, "endLine": 138 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "Arc endpoints are identical",
+          "handled": true,
+          "behavior": "Returns the builder without adding a command.",
+          "anchor": { "startLine": 253, "endLine": 255 }
+        },
+        {
+          "inputShape": "Arc radius is zero",
+          "handled": true,
+          "behavior": "Falls back to a straight line.",
+          "anchor": { "startLine": 258, "endLine": 260 }
+        },
+        {
+          "inputShape": "Path has one geometry",
+          "handled": true,
+          "behavior": "Returns that geometry directly instead of creating a group.",
+          "anchor": { "startLine": 586, "endLine": 586 }
+        },
+        {
+          "inputShape": "Path has no included geometry",
+          "handled": true,
+          "behavior": "Raises an assertion failure.",
+          "anchor": { "startLine": 584, "endLine": 585 }
+        },
+        {
+          "inputShape": "Empty or skipped dashed run",
+          "handled": true,
+          "behavior": "Does not emit a path element for a move-only run.",
+          "anchor": { "startLine": 622, "endLine": 622 }
+        },
+        {
+          "inputShape": "No nearest segment candidate",
+          "handled": true,
+          "behavior": "Raises an assertion failure rather than returning null.",
+          "anchor": { "startLine": 959, "endLine": 960 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": "==",
+          "left": "x1",
+          "right": "x2",
+          "inclusive": true,
+          "intent": "Detects identical arc endpoint x coordinates.",
+          "anchor": { "startLine": 253, "endLine": 253 }
+        },
+        {
+          "operator": "==",
+          "left": "y1",
+          "right": "y2",
+          "inclusive": true,
+          "intent": "Detects identical arc endpoint y coordinates.",
+          "anchor": { "startLine": 253, "endLine": 253 }
+        },
+        {
+          "operator": "==",
+          "left": "rx",
+          "right": "0",
+          "inclusive": true,
+          "intent": "Treats zero horizontal radius as a line.",
+          "anchor": { "startLine": 258, "endLine": 258 }
+        },
+        {
+          "operator": "==",
+          "left": "ry",
+          "right": "0",
+          "inclusive": true,
+          "intent": "Treats zero vertical radius as a line.",
+          "anchor": { "startLine": 258, "endLine": 258 }
+        },
+        {
+          "operator": ">",
+          "left": "lambda",
+          "right": "1",
+          "inclusive": false,
+          "intent": "Scales radii when the transformed endpoints exceed the ellipse.",
+          "anchor": { "startLine": 278, "endLine": 278 }
+        },
+        {
+          "operator": "<",
+          "left": "radicand",
+          "right": "0",
+          "inclusive": false,
+          "intent": "Clamps negative numerical radicands to zero.",
+          "anchor": { "startLine": 293, "endLine": 293 }
+        },
+        {
+          "operator": ">",
+          "left": "endAngle",
+          "right": "startAngle",
+          "inclusive": false,
+          "intent": "Adjusts non-sweeping arcs to travel in the requested direction.",
+          "anchor": { "startLine": 314, "endLine": 314 }
+        },
+        {
+          "operator": "<",
+          "left": "endAngle",
+          "right": "startAngle",
+          "inclusive": false,
+          "intent": "Adjusts sweeping arcs to travel in the requested direction.",
+          "anchor": { "startLine": 316, "endLine": 316 }
+        },
+        {
+          "operator": "<",
+          "left": "i",
+          "right": "numSegments",
+          "inclusive": false,
+          "intent": "Bounds cubic arc segment generation.",
+          "anchor": { "startLine": 345, "endLine": 345 }
+        },
+        {
+          "operator": "<",
+          "left": "i",
+          "right": "len - 1",
+          "inclusive": false,
+          "intent": "Bounds spline segment generation.",
+          "anchor": { "startLine": 171, "endLine": 171 }
+        },
+        {
+          "operator": "<",
+          "left": "i",
+          "right": "endIdx",
+          "inclusive": false,
+          "intent": "Bounds serialized command traversal.",
+          "anchor": { "startLine": 467, "endLine": 467 }
+        },
+        {
+          "operator": "<",
+          "left": "i",
+          "right": "this.commands.length",
+          "inclusive": false,
+          "intent": "Bounds command traversal for rendering and geometry.",
+          "anchor": { "startLine": 563, "endLine": 563 }
+        },
+        {
+          "operator": "<",
+          "left": "pass",
+          "right": "passes",
+          "inclusive": false,
+          "intent": "Bounds randomized rendering passes.",
+          "anchor": { "startLine": 746, "endLine": 746 }
+        },
+        {
+          "operator": "<",
+          "left": "i",
+          "right": "n",
+          "inclusive": false,
+          "intent": "Bounds numerical Bézier length quadrature samples.",
+          "anchor": { "startLine": 985, "endLine": 985 }
+        },
+        {
+          "operator": "<",
+          "left": "i",
+          "right": "this.commands.length",
+          "inclusive": false,
+          "intent": "Bounds command metadata calculation.",
+          "anchor": { "startLine": 841, "endLine": 841 }
+        },
+        {
+          "operator": "<",
+          "left": "i",
+          "right": "this.endIdx",
+          "inclusive": false,
+          "intent": "Bounds geometry segment construction.",
+          "anchor": { "startLine": 898, "endLine": 898 }
+        },
+        {
+          "operator": "<",
+          "left": "distance",
+          "right": "nearestDistance",
+          "inclusive": false,
+          "intent": "Retains the closest candidate segment point.",
+          "anchor": { "startLine": 955, "endLine": 955 }
+        },
+        {
+          "operator": ">",
+          "left": "z",
+          "right": "1",
+          "inclusive": false,
+          "intent": "Clamps Bézier integration parameter to its upper bound.",
+          "anchor": { "startLine": 979, "endLine": 979 }
+        },
+        {
+          "operator": "<",
+          "left": "z",
+          "right": "0",
+          "inclusive": false,
+          "intent": "Clamps Bézier integration parameter to its lower bound.",
+          "anchor": { "startLine": 979, "endLine": 979 }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": null,
+          "caught": null,
+          "action": "Asserts that a current move command exists before appending dependent commands.",
+          "fallback": null,
+          "anchor": { "startLine": 203, "endLine": 207 }
+        },
+        {
+          "thrown": null,
+          "caught": null,
+          "action": "Asserts that a current subpath exists when processing a closure.",
+          "fallback": null,
+          "anchor": { "startLine": 569, "endLine": 569 }
+        },
+        {
+          "thrown": null,
+          "caught": null,
+          "action": "Uses exhaustiveSwitchError for unsupported command or style discriminants.",
+          "fallback": null,
+          "anchor": { "startLine": 491, "endLine": 491 }
+        },
+        {
+          "thrown": null,
+          "caught": null,
+          "action": "Asserts that geometry conversion produced at least one geometry.",
+          "fallback": null,
+          "anchor": { "startLine": 584, "endLine": 585 }
+        },
+        {
+          "thrown": null,
+          "caught": null,
+          "action": "Asserts that nearest-point search found a candidate.",
+          "fallback": null,
+          "anchor": { "startLine": 959, "endLine": 960 }
+        }
+      ],
+      "invariants": [
+        {
+          "kind": "precondition",
+          "description": "Line, arc, cubic, and close operations require a preceding move command.",
+          "anchor": { "startLine": 203, "endLine": 207 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Commands remain ordered and retain their per-command rendering metadata.",
+          "anchor": { "startLine": 199, "endLine": 201 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "Transform preserves command kinds and metadata while clearing derived command information.",
+          "anchor": { "startLine": 422, "endLine": 450 }
+        },
+        {
+          "kind": "non-null",
+          "description": "A geometry conversion must produce at least one geometry.",
+          "anchor": { "startLine": 584, "endLine": 585 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Cached command information represents tangents and length derived from adjacent points.",
+          "anchor": { "startLine": 856, "endLine": 874 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "Callers must invoke moveTo before line, arc, cubic, or close operations.",
+          "anchor": { "startLine": 203, "endLine": 207 }
+        },
+        {
+          "kind": "schema",
+          "description": "Path command discriminants and style discriminants are exhaustive at runtime.",
+          "anchor": { "startLine": 489, "endLine": 491 }
+        },
+        {
+          "kind": "platform",
+          "description": "Path2D and SVG JSX rendering are available in the consuming environment.",
+          "anchor": { "startLine": 530, "endLine": 544 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "What external consumers rely on the exact numerical approximation resolution for arcs and cubic lengths?",
+          "affects": "arc approximation and geometry fidelity",
+          "anchor": { "startLine": 235, "endLine": 365 },
+          "resolution": null
+        },
+        {
+          "question": "Which callers depend on cached command metadata being mutated in place?",
+          "affects": "mutation_of_arg and transform invalidation",
+          "anchor": { "startLine": 856, "endLine": 874 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "sync",
+        "reentrant": false,
+        "ordering": "deterministic",
+        "notes": "All operations are synchronous; the builder is mutable and command insertion order determines serialization."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "requires-moveto-before-segment",
+          "scenario": "A line or cubic segment is added before any move command.",
+          "given": ["const path = new PathBuilder()"],
+          "when": "path.lineTo(10, 10)",
+          "then": "throws an assertion error",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Segments require an active subpath."
+        },
+        {
+          "testId": "serializes-basic-path",
+          "scenario": "A path contains move, line, cubic, and close commands.",
+          "given": [
+            "const path = new PathBuilder().moveTo(0, 0).lineTo(10, 0).cubicBezierTo(20, 0, 12, 0, 18, 0).close()"
+          ],
+          "when": "path.toD()",
+          "then": "returns SVG path data containing M, L, C, and Z commands in order",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins the SVG serialization contract."
+        },
+        {
+          "testId": "none-style-produces-no-svg",
+          "scenario": "A path is rendered with the none style.",
+          "given": ["const path = new PathBuilder().moveTo(0, 0).lineTo(10, 0)"],
+          "when": "path.toSvg({ style: 'none', strokeWidth: 1 })",
+          "then": "returns null",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "The none style suppresses SVG output."
+        },
+        {
+          "testId": "only-filled-filters-subpaths",
+          "scenario": "A path contains filled and non-filled subpaths.",
+          "given": [
+            "const path = new PathBuilder().moveTo(0, 0, { geometry: { isFilled: false } }).lineTo(10, 0).moveTo(20, 0, { geometry: { isFilled: true } }).lineTo(30, 0)"
+          ],
+          "when": "path.toD({ onlyFilled: true })",
+          "then": "returns SVG path data only for the filled subpath",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins filtering behavior shared by renderers."
+        },
+        {
+          "testId": "transform-preserves-command-metadata",
+          "scenario": "A completed path with line and cubic commands is transformed by an affine matrix.",
+          "given": [
+            "const path = new PathBuilder().moveTo(1, 2).cubicBezierTo(5, 6, 2, 3, 4, 5)",
+            "const mat = Mat.Identity()"
+          ],
+          "when": "path.transform(mat)",
+          "then": "returns a new PathBuilder with transformed endpoints and control points and preserved command options",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Ensures geometric transformation does not discard rendering metadata."
+        },
+        {
+          "testId": "zero-radius-arc-becomes-line",
+          "scenario": "An arc is requested with either radius equal to zero.",
+          "given": ["const path = new PathBuilder().moveTo(0, 0)"],
+          "when": "path.arcTo(0, 10, false, false, 0, 20, 20)",
+          "then": "adds a line command ending at (20, 20)",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins the documented degenerate-arc fallback."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "editor and React imports",
+        "path builder option interfaces and discriminated union",
+        "path command interfaces and discriminated union",
+        "PathBuilder class",
+        "roundness capability constant",
+        "PathBuilderGeometry2d class",
+        "CubicBezier numerical helper"
+      ],
+      "moduleLevelCode": "import declarations and module-level declarations for commandsSupportingRoundness and CubicBezier",
+      "exports": [
+        { "name": "BasePathBuilderOpts", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "SolidPathBuilderOpts", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "DashedPathBuilderOpts", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "DrawPathBuilderDOpts", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "DrawPathBuilderOpts", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "NonePathBuilderOpts", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "PathBuilderOpts", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "PathBuilderCommandOpts", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "PathBuilderCommandInfo", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "PathBuilderCommandBase", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "PathBuilderLineOpts", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "MoveToPathBuilderCommand", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "LineToPathBuilderCommand", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "CubicBezierToPathBuilderCommand", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "PathBuilderCommand", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "PathBuilderToDOpts", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "PathBuilder", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "PathBuilderGeometry2d", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "approximately", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "assert", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "assertExists", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "clamp", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "CubicBezier2d", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "Edge2d", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "exhaustiveSwitchError", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "Geometry2d", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "Geometry2dFilters", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "Geometry2dOptions", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "getPerfectDashProps", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "getVerticesCountForArcLength", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "Group2d", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "Mat", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "MatLike", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "modulate", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "PerfectDashTerminal", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "rng", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "toDomPrecision", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "Vec", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "VecLike", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "VecModel", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "ReactNode", "module": "react", "alias": null, "kind": "external" },
+        { "symbol": "SVGProps", "module": "react", "alias": null, "kind": "external" }
+      ],
+      "fileConstants": [
+        {
+          "name": "commandsSupportingRoundness",
+          "value": "{\n\tline: true,\n\tmove: true,\n\tcubic: false,\n}",
+          "kind": "object"
+        },
+        {
+          "name": "CubicBezier",
+          "value": "{\n\tbase3(t: number, p1: number, p2: number, p3: number, p4: number) {",
+          "kind": "object"
+        }
+      ],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder#class:PathBuilder",
+        "unitKind": "class",
+        "name": "PathBuilder",
+        "qualifiedName": "PathBuilder",
+        "parentUnitId": null,
+        "startLine": 146,
+        "endLine": 877,
+        "isBehavioral": true,
+        "source": "export interface PathBuilderToDOpts {\n\tstartIdx?: number\n\tendIdx?: number\n\tonlyFilled?: boolean\n}\n\n/** @public */\nexport class PathBuilder {\n\tstatic lineThroughPoints(\n\t\tpoints: VecLike[],\n\t\topts?: PathBuilderLineOpts & { endOffsets?: number }\n\t) {\n\t\tconst path = new PathBuilder()\n\t\tpath.moveTo(points[0].x, points[0].y, { ...opts, offset: opts?.endOffsets ?? opts?.offset })\n\t\tfor (let i = 1; i < points.length; i++) {\n\t\t\tconst isLast = i === points.length - 1\n\t\t\tpath.lineTo(points[i].x, points[i].y, isLast ? { offset: opts?.endOffsets } : undefined)\n\t\t}\n\t\treturn path\n\t}\n\n\tstatic cubicSplineThroughPoints(\n\t\tpoints: VecLike[],\n\t\topts?: PathBuilderLineOpts & { endOffsets?: number }\n\t) {\n\t\tconst path = new PathBuilder()\n\t\tconst len = points.length\n\t\tconst last = len - 2\n\t\tconst k = 1.25\n\n\t\tpath.moveTo(points[0].x, points[0].y, { ...opts, offset: opts?.endOffsets ?? opts?.offset })\n\n\t\tfor (let i = 0; i < len - 1; i++) {\n\t\t\tconst p0 = i === 0 ? points[0] : points[i - 1]\n\t\t\tconst p1 = points[i]\n\t\t\tconst p2 = points[i + 1]\n\t\t\tconst p3 = i === last ? p2 : points[i + 2]\n\n\t\t\tlet cp1x, cp1y, cp2x, cp2y\n\t\t\tif (i === 0) {\n\t\t\t\tcp1x = p0.x\n\t\t\t\tcp1y = p0.y\n\t\t\t} else {\n\t\t\t\tcp1x = p1.x + ((p2.x - p0.x) / 6) * k\n\t\t\t\tcp1y = p1.y + ((p2.y - p0.y) / 6) * k\n\t\t\t}\n\n\t\t\tlet pointOpts = undefined\n\t\t\tif (i === last) {\n\t\t\t\tcp2x = p2.x\n\t\t\t\tcp2y = p2.y\n\t\t\t\tpointOpts = { offset: opts?.endOffsets }\n\t\t\t} else {\n\t\t\t\tcp2x = p2.x - ((p3.x - p1.x) / 6) * k\n\t\t\t\tcp2y = p2.y - ((p3.y - p1.y) / 6) * k\n\t\t\t}\n\n\t\t\tpath.cubicBezierTo(p2.x, p2.y, cp1x, cp1y, cp2x, cp2y, pointOpts)\n\t\t}\n\n\t\treturn path\n\t}\n\n\tconstructor() {}\n\n\t/** @internal */\n\tcommands: PathBuilderCommand[] = []\n\n\tprivate lastMoveTo: MoveToPathBuilderCommand | null = null\n\tprivate assertHasMoveTo() {\n\t\tassert(this.lastMoveTo, 'Start an SVGPathBuilder with `.moveTo()`')\n\t\treturn this.lastMoveTo\n\t}\n\n\tmoveTo(x: number, y: number, opts?: PathBuilderLineOpts) {\n\t\tthis.lastMoveTo = { type: 'move', x, y, closeIdx: null, isClose: false, opts }\n\t\tthis.commands.push(this.lastMoveTo)\n\t\treturn this\n\t}\n\n\tlineTo(x: number, y: number, opts?: PathBuilderCommandOpts) {\n\t\tthis.assertHasMoveTo()\n\t\tthis.commands.push({ type: 'line', x, y, isClose: false, opts })\n\t\treturn this\n\t}\n\n\tcircularArcTo(\n\t\tradius: number,\n\t\tlargeArcFlag: boolean,\n\t\tsweepFlag: boolean,\n\t\tx2: number,\n\t\ty2: number,\n\t\topts?: PathBuilderCommandOpts\n\t) {\n\t\treturn this.arcTo(radius, radius, largeArcFlag, sweepFlag, 0, x2, y2, opts)\n\t}\n\n\tarcTo(\n\t\trx: number,\n\t\try: number,\n\t\tlargeArcFlag: boolean,\n\t\tsweepFlag: boolean,\n\t\txAxisRotationRadians: number,\n\t\tx2: number,\n\t\ty2: number,\n\t\topts?: PathBuilderCommandOpts\n\t) {\n\t\t// As arc flags make them very sensitive to offsets when we render them in draw mode, we\n\t\t// approximate arcs by converting them to up to 4 (1 per 90° segment) cubic bezier curves.\n\t\t// This algorithm is a Claude special:\n\t\t// https://claude.ai/public/artifacts/5ea0bf18-4afb-4b3d-948d-31b8a77ef1e2\n\n\t\tthis.assertHasMoveTo()\n\n\t\tconst x1 = this.commands[this.commands.length - 1].x\n\t\tconst y1 = this.commands[this.commands.length - 1].y\n\n\t\t// If the endpoints are identical, don't add a command\n\t\tif (x1 === x2 && y1 === y2) {\n\t\t\treturn this\n\t\t}\n\n\t\t// If rx or ry is 0, return a straight line\n\t\tif (rx === 0 || ry === 0) {\n\t\t\treturn this.lineTo(x2, y2, opts)\n\t\t}\n\n\t\t// Convert angle from degrees to radians\n\t\tconst phi = xAxisRotationRadians\n\t\tconst sinPhi = Math.sin(phi)\n\t\tconst cosPhi = Math.cos(phi)\n\n\t\t// Ensure rx and ry are positive\n\t\tlet rx1 = Math.abs(rx)\n\t\tlet ry1 = Math.abs(ry)\n\n\t\t// Step 1: Compute (x1', y1') - transform from ellipse coordinate system to unit circle\n\t\tconst dx = (x1 - x2) / 2\n\t\tconst dy = (y1 - y2) / 2\n\t\tconst x1p = cosPhi * dx + sinPhi * dy\n\t\tconst y1p = -sinPhi * dx + cosPhi * dy\n\n\t\t// Correction of out-of-range radii\n\t\tconst lambda = (x1p * x1p) / (rx1 * rx1) + (y1p * y1p) / (ry1 * ry1)\n\t\tif (lambda > 1) {\n\t\t\tconst sqrtLambda = Math.sqrt(lambda)\n\t\t\trx1 *= sqrtLambda\n\t\t\try1 *= sqrtLambda\n\t\t}\n\n\t\t// Step 2: Compute (cx', cy') - center of ellipse in transformed system\n\t\tconst sign = largeArcFlag !== sweepFlag ? 1 : -1\n\n\t\tconst term = rx1 * rx1 * ry1 * ry1 - rx1 * rx1 * y1p * y1p - ry1 * ry1 * x1p * x1p\n\t\tconst numerator = rx1 * rx1 * y1p * y1p + ry1 * ry1 * x1p * x1p\n\n\t\tlet radicand = term / numerator\n\t\tradicand = radicand < 0 ? 0 : radicand\n\n\t\tconst coef = sign * Math.sqrt(radicand)\n\n\t\tconst cxp = coef * ((rx1 * y1p) / ry1)\n\t\tconst cyp = coef * (-(ry1 * x1p) / rx1)\n\n\t\t// Step 3: Compute (cx, cy) from (cx', cy') - transform back to original coordinate system\n\t\tconst cx = cosPhi * cxp - sinPhi * cyp + (x1 + x2) / 2\n\t\tconst cy = sinPhi * cxp + cosPhi * cyp + (y1 + y2) / 2\n\n\t\t// Step 4: Compute the start and end angles\n\t\tconst ux = (x1p - cxp) / rx1\n\t\tconst uy = (y1p - cyp) / ry1\n\t\tconst vx = (-x1p - cxp) / rx1\n\t\tconst vy = (-y1p - cyp) / ry1\n\n\t\tconst startAngle = Math.atan2(uy, ux)\n\t\tlet endAngle = Math.atan2(vy, vx)\n\n\t\t// Ensure correct sweep direction\n\t\tif (!sweepFlag && endAngle > startAngle) {\n\t\t\tendAngle -= 2 * Math.PI\n\t\t} else if (sweepFlag && endAngle < startAngle) {\n\t\t\tendAngle += 2 * Math.PI\n\t\t}\n\n\t\t// Calculate the sweep angle\n\t\tconst sweepAngle = endAngle - startAngle\n\n\t\t// Calculate the approximate arc length. General ellipse arc length is expensive - there's\n\t\t// no closed form solution, so we have to do iterative numerical approximation. As we only\n\t\t// use this to control the resolution of later approximations, let's cheat and just use the\n\t\t// circular arc length with the largest radius:\n\t\tconst approximateArcLength = Math.max(rx1, ry1) * Math.abs(sweepAngle)\n\n\t\t// Approximate the arc using cubic bezier curves\n\t\tconst numSegments = Math.min(4, Math.ceil(Math.abs(sweepAngle) / (Math.PI / 2)))\n\t\tconst resolutionPerSegment = Math.ceil(\n\t\t\tgetVerticesCountForArcLength(approximateArcLength) / numSegments\n\t\t)\n\t\tconst anglePerSegment = sweepAngle / numSegments\n\n\t\t// Helper function to compute point on ellipse\n\t\tconst ellipsePoint = (angle: number) => {\n\t\t\treturn {\n\t\t\t\tx: cx + rx1 * Math.cos(angle) * cosPhi - ry1 * Math.sin(angle) * sinPhi,\n\t\t\t\ty: cy + rx1 * Math.cos(angle) * sinPhi + ry1 * Math.sin(angle) * cosPhi,\n\t\t\t}\n\t\t}\n\n\t\t// Helper function to compute derivative (tangent vector) at a point on the ellipse\n\t\tconst ellipseDerivative = (angle: number) => {\n\t\t\treturn {\n\t\t\t\tx: -rx1 * Math.sin(angle) * cosPhi - ry1 * Math.cos(angle) * sinPhi,\n\t\t\t\ty: -rx1 * Math.sin(angle) * sinPhi + ry1 * Math.cos(angle) * cosPhi,\n\t\t\t}\n\t\t}\n\n\t\t// Generate cubic bezier approximations\n\t\tfor (let i = 0; i < numSegments; i++) {\n\t\t\tconst theta1 = startAngle + i * anglePerSegment\n\t\t\tconst theta2 = startAngle + (i + 1) * anglePerSegment\n\t\t\tconst deltaTheta = theta2 - theta1\n\n\t\t\tconst start = ellipsePoint(theta1)\n\t\t\tconst end = ellipsePoint(theta2)\n\n\t\t\t// Get the derivative at the start and end points\n\t\t\tconst d1 = ellipseDerivative(theta1)\n\t\t\tconst d2 = ellipseDerivative(theta2)\n\n\t\t\t// Calculate the length of the tangent handles\n\t\t\t// This is a key factor for the accuracy of the approximation\n\t\t\t// For a 90° arc, the handle length should be 4/3 * tan(π/8) * r\n\t\t\t// For smaller arcs, we scale this value by the angle ratio\n\t\t\tconst handleScale = (4 / 3) * Math.tan(deltaTheta / 4)\n\n\t\t\t// Create control points that are tangent to the ellipse at the endpoints\n\t\t\tconst cp1x = start.x + handleScale * d1.x\n\t\t\tconst cp1y = start.y + handleScale * d1.y\n\n\t\t\tconst cp2x = end.x - handleScale * d2.x\n\t\t\tconst cp2y = end.y - handleScale * d2.y\n\n\t\t\tconst bezierOpts = i === 0 ? opts : { ...opts, mergeWithPrevious: true }\n\t\t\tthis.cubicBezierToWithResolution(\n\t\t\t\tend.x,\n\t\t\t\tend.y,\n\t\t\t\tcp1x,\n\t\t\t\tcp1y,\n\t\t\t\tcp2x,\n\t\t\t\tcp2y,\n\t\t\t\tbezierOpts,\n\t\t\t\tresolutionPerSegment\n\t\t\t)\n\t\t}\n\n\t\treturn this\n\t}\n\n\tcubicBezierTo(\n\t\tx: number,\n\t\ty: number,\n\t\tcp1X: number,\n\t\tcp1Y: number,\n\t\tcp2X: number,\n\t\tcp2Y: number,\n\t\topts?: PathBuilderCommandOpts\n\t) {\n\t\treturn this.cubicBezierToWithResolution(x, y, cp1X, cp1Y, cp2X, cp2Y, opts)\n\t}\n\tprivate cubicBezierToWithResolution(\n\t\tx: number,\n\t\ty: number,\n\t\tcp1X: number,\n\t\tcp1Y: number,\n\t\tcp2X: number,\n\t\tcp2Y: number,\n\t\topts?: PathBuilderCommandOpts,\n\t\tresolution?: number\n\t) {\n\t\tthis.assertHasMoveTo()\n\t\tthis.commands.push({\n\t\t\ttype: 'cubic',\n\t\t\tx,\n\t\t\ty,\n\t\t\tcp1: { x: cp1X, y: cp1Y },\n\t\t\tcp2: { x: cp2X, y: cp2Y },\n\t\t\tisClose: false,\n\t\t\topts,\n\t\t\tresolution,\n\t\t})\n\t\treturn this\n\t}\n\n\tclose() {\n\t\tconst lastMoveTo = this.assertHasMoveTo()\n\t\tconst lastCommand = this.commands[this.commands.length - 1]\n\n\t\tif (approximately(lastMoveTo.x, lastCommand.x) && approximately(lastMoveTo.y, lastCommand.y)) {\n\t\t\tlastCommand.isClose = true\n\t\t} else {\n\t\t\tthis.commands.push({\n\t\t\t\ttype: 'line',\n\t\t\t\tx: lastMoveTo.x,\n\t\t\t\ty: lastMoveTo.y,\n\t\t\t\tisClose: true,\n\t\t\t})\n\t\t}\n\n\t\tlastMoveTo.closeIdx = this.commands.length - 1\n\t\tthis.lastMoveTo = null\n\t\treturn this\n\t}\n\n\t/**\n\t * Return a new path with every point (including bezier control points) transformed by the given\n\t * affine matrix. Command metadata (fill, dash, close state, draw offsets, etc.) is preserved, so\n\t * this can be used to mirror, scale, translate, or otherwise transform a finished path while\n\t * keeping it renderable and hit-testable.\n\t *\n\t * @param mat - The affine matrix to apply to each point.\n\t */\n\ttransform(mat: MatLike): PathBuilder {\n\t\tconst next = new PathBuilder()\n\t\tfor (const command of this.commands) {\n\t\t\t// Use applyToXY (returns plain numbers) rather than applyToPoint to avoid allocating a\n\t\t\t// Vec per point. This keeps the transform allocation-light when many shapes are flipped.\n\t\t\tconst [x, y] = Mat.applyToXY(mat, command.x, command.y)\n\t\t\t// info (tangents/length) is derived from the points, so drop any cached value\n\t\t\tswitch (command.type) {\n\t\t\t\tcase 'move':\n\t\t\t\t\tnext.commands.push({ ...command, x, y, _info: undefined })\n\t\t\t\t\tbreak\n\t\t\t\tcase 'line':\n\t\t\t\t\tnext.commands.push({ ...command, x, y, _info: undefined })\n\t\t\t\t\tbreak\n\t\t\t\tcase 'cubic': {\n\t\t\t\t\tconst [cp1x, cp1y] = Mat.applyToXY(mat, command.cp1.x, command.cp1.y)\n\t\t\t\t\tconst [cp2x, cp2y] = Mat.applyToXY(mat, command.cp2.x, command.cp2.y)\n\t\t\t\t\tnext.commands.push({\n\t\t\t\t\t\t...command,\n\t\t\t\t\t\tx,\n\t\t\t\t\t\ty,\n\t\t\t\t\t\tcp1: { x: cp1x, y: cp1y },\n\t\t\t\t\t\tcp2: { x: cp2x, y: cp2y },\n\t\t\t\t\t\t_info: undefined,\n\t\t\t\t\t})\n\t\t\t\t\tbreak\n\t\t\t\t}\n\t\t\t\tdefault:\n\t\t\t\t\texhaustiveSwitchError(command, 'type')\n\t\t\t}\n\t\t}\n\t\treturn next\n\t}\n\n\ttoD(opts: PathBuilderToDOpts = {}) {\n\t\tconst { startIdx = 0, endIdx = this.commands.length, onlyFilled = false } = opts\n\t\tconst parts = []\n\n\t\tlet isSkippingCurrentLine = false\n\n\t\tlet didAddMove = false\n\t\tlet didAddNaturalMove = false\n\n\t\tconst addMoveIfNeeded = (i: number) => {\n\t\t\tif (didAddMove || i === 0) return\n\t\t\tdidAddMove = true\n\t\t\tconst command = this.commands[i - 1]\n\t\t\tparts.push('M', toDomPrecision(command.x), toDomPrecision(command.y))\n\t\t}\n\n\t\tfor (let i = startIdx; i < endIdx; i++) {\n\t\t\tconst command = this.commands[i]\n\t\t\tswitch (command.type) {\n\t\t\t\tcase 'move': {\n\t\t\t\t\tconst isFilled =\n\t\t\t\t\t\tcommand.opts?.geometry === false ? false : (command.opts?.geometry?.isFilled ?? false)\n\t\t\t\t\tif (onlyFilled && !isFilled) {\n\t\t\t\t\t\tisSkippingCurrentLine = true\n\t\t\t\t\t} else {\n\t\t\t\t\t\tisSkippingCurrentLine = false\n\t\t\t\t\t\tdidAddMove = true\n\t\t\t\t\t\tdidAddNaturalMove = true\n\t\t\t\t\t\tparts.push('M', toDomPrecision(command.x), toDomPrecision(command.y))\n\t\t\t\t\t}\n\t\t\t\t\tbreak\n\t\t\t\t}\n\t\t\t\tcase 'line':\n\t\t\t\t\tif (isSkippingCurrentLine) break\n\t\t\t\t\taddMoveIfNeeded(i)\n\t\t\t\t\tif (command.isClose && didAddNaturalMove) {\n\t\t\t\t\t\tparts.push('Z')\n\t\t\t\t\t} else {\n\t\t\t\t\t\tparts.push('L', toDomPrecision(command.x), toDomPrecision(command.y))\n\t\t\t\t\t}\n\t\t\t\t\tbreak\n\t\t\t\tcase 'cubic':\n\t\t\t\t\tif (isSkippingCurrentLine) break\n\t\t\t\t\taddMoveIfNeeded(i)\n\t\t\t\t\tparts.push(\n\t\t\t\t\t\t'C',\n\t\t\t\t\t\ttoDomPrecision(command.cp1.x),\n\t\t\t\t\t\ttoDomPrecision(command.cp1.y),\n\t\t\t\t\t\ttoDomPrecision(command.cp2.x),\n\t\t\t\t\t\ttoDomPrecision(command.cp2.y),\n\t\t\t\t\t\ttoDomPrecision(command.x),\n\t\t\t\t\t\ttoDomPrecision(command.y)\n\t\t\t\t\t)\n\t\t\t\t\tbreak\n\t\t\t\tdefault:\n\t\t\t\t\texhaustiveSwitchError(command, 'type')\n\t\t\t}\n\t\t}\n\t\treturn parts.join(' ')\n\t}\n\n\ttoSvg(opts: PathBuilderOpts) {\n\t\tif (opts.style === 'none') {\n\t\t\treturn null\n\t\t}\n\t\tif (opts.forceSolid) {\n\t\t\treturn this.toSolidSvg(opts)\n\t\t}\n\t\tswitch (opts.style) {\n\t\t\tcase 'solid':\n\t\t\t\treturn this.toSolidSvg(opts)\n\t\t\tcase 'dashed':\n\t\t\tcase 'dotted':\n\t\t\t\treturn this.toDashedSvg(opts)\n\t\t\tcase 'draw': {\n\t\t\t\tconst d = this.toDrawSvg(opts)\n\t\t\t\treturn d\n\t\t\t}\n\t\t\tdefault:\n\t\t\t\texhaustiveSwitchError(opts, 'style')\n\t\t}\n\t}\n\n\ttoPath2D(opts: PathBuilderOpts): Path2D {\n\t\tif (opts.style === 'none') {\n\t\t\treturn new Path2D()\n\t\t}\n\t\tif (opts.forceSolid || opts.style === 'solid') {\n\t\t\treturn new Path2D(this.toD({ onlyFilled: opts.onlyFilled }))\n\t\t}\n\t\tif (opts.style === 'draw') {\n\t\t\treturn new Path2D(this.toDrawD(opts))\n\t\t}\n\n\t\treturn new Path2D(this.toD({ onlyFilled: opts.onlyFilled }))\n\t}\n\n\ttoGeometry(): PathBuilderGeometry2d | Group2d {\n\t\tconst geometries = []\n\n\t\tlet current: null | {\n\t\t\tstartIdx: number\n\t\t\tmoveCommand: MoveToPathBuilderCommand\n\t\t\tisClosed: boolean\n\t\t\topts?: PathBuilderLineOpts\n\t\t} = null\n\t\tfor (let i = 0; i < this.commands.length; i++) {\n\t\t\tconst command = this.commands[i]\n\n\t\t\tif (command.type === 'move') {\n\t\t\t\tif (current && current.opts?.geometry !== false) {\n\t\t\t\t\tgeometries.push(\n\t\t\t\t\t\tnew PathBuilderGeometry2d(this, current.startIdx, i, {\n\t\t\t\t\t\t\t...current.opts?.geometry,\n\t\t\t\t\t\t\tisFilled: current.opts?.geometry?.isFilled ?? false,\n\t\t\t\t\t\t\tisClosed: current.moveCommand.closeIdx !== null,\n\t\t\t\t\t\t})\n\t\t\t\t\t)\n\t\t\t\t}\n\t\t\t\tcurrent = { startIdx: i, moveCommand: command, opts: command.opts, isClosed: false }\n\t\t\t}\n\n\t\t\tif (command.isClose) {\n\t\t\t\tassert(current, 'No current move command')\n\t\t\t\tcurrent.isClosed = true\n\t\t\t}\n\t\t}\n\n\t\tif (current && current.opts?.geometry !== false) {\n\t\t\tgeometries.push(\n\t\t\t\tnew PathBuilderGeometry2d(this, current.startIdx, this.commands.length, {\n\t\t\t\t\t...current.opts?.geometry,\n\t\t\t\t\tisFilled: current.opts?.geometry?.isFilled ?? false,\n\t\t\t\t\tisClosed: current.moveCommand.closeIdx !== null,\n\t\t\t\t})\n\t\t\t)\n\t\t}\n\n\t\tassert(geometries.length > 0)\n\t\tif (geometries.length === 1) return geometries[0]\n\t\treturn new Group2d({ children: geometries })\n\t}\n\n\tprivate toSolidSvg(opts: PathBuilderOpts) {\n\t\tconst { strokeWidth, props } = opts\n\n\t\treturn (\n\t\t\t<path strokeWidth={strokeWidth} d={this.toD({ onlyFilled: opts.onlyFilled })} {...props} />\n\t\t)\n\t}\n\n\tprivate toDashedSvg(opts: DashedPathBuilderOpts) {\n\t\tconst {\n\t\t\tstyle,\n\t\t\tstrokeWidth,\n\t\t\tsnap,\n\t\t\tlengthRatio,\n\t\t\tprops: { markerStart, markerEnd, ...props } = {},\n\t\t} = opts\n\n\t\tconst parts: ReactNode[] = []\n\n\t\tlet isCurrentPathClosed = false\n\t\tlet isSkippingCurrentLine = false\n\t\tlet currentLineOpts: PathBuilderLineOpts | undefined = undefined\n\n\t\tlet currentRun: {\n\t\t\tstartIdx: number\n\t\t\tendIdx: number\n\t\t\tisFirst: boolean\n\t\t\tisLast: boolean\n\t\t\tlength: number\n\t\t\tlineOpts: PathBuilderLineOpts | undefined\n\t\t\tpathIsClosed: boolean\n\t\t} | null = null\n\n\t\tconst addCurrentRun = () => {\n\t\t\tif (!currentRun) return\n\t\t\tconst { startIdx, endIdx, isFirst, isLast, length, lineOpts, pathIsClosed } = currentRun\n\t\t\tcurrentRun = null\n\n\t\t\tif (startIdx === endIdx && this.commands[startIdx].type === 'move') return\n\n\t\t\tconst start = lineOpts?.dashStart ?? opts.start\n\t\t\tconst end = lineOpts?.dashEnd ?? opts.end\n\t\t\tconst { strokeDasharray, strokeDashoffset } = getPerfectDashProps(length, strokeWidth, {\n\t\t\t\tstyle,\n\t\t\t\tsnap,\n\t\t\t\tlengthRatio,\n\t\t\t\tstart: isFirst ? (start ?? (pathIsClosed ? 'outset' : 'none')) : 'outset',\n\t\t\t\tend: isLast ? (end ?? (pathIsClosed ? 'outset' : 'none')) : 'outset',\n\t\t\t})\n\n\t\t\tconst d = this.toD({ startIdx, endIdx: endIdx + 1 })\n\t\t\tparts.push(\n\t\t\t\t<path\n\t\t\t\t\tkey={parts.length}\n\t\t\t\t\td={d}\n\t\t\t\t\tstrokeDasharray={strokeDasharray}\n\t\t\t\t\tstrokeDashoffset={strokeDashoffset}\n\t\t\t\t\tmarkerStart={isFirst ? markerStart : undefined}\n\t\t\t\t\tmarkerEnd={isLast ? markerEnd : undefined}\n\t\t\t\t/>\n\t\t\t)\n\t\t}\n\n\t\tfor (let i = 0; i < this.commands.length; i++) {\n\t\t\tconst command = this.commands[i]\n\t\t\tconst lastCommand = this.commands[i - 1]\n\t\t\tif (command.type === 'move') {\n\t\t\t\tisCurrentPathClosed = command.closeIdx !== null\n\t\t\t\tconst isFilled =\n\t\t\t\t\tcommand.opts?.geometry === false ? false : (command.opts?.geometry?.isFilled ?? false)\n\t\t\t\tif (opts.onlyFilled && !isFilled) {\n\t\t\t\t\tisSkippingCurrentLine = true\n\t\t\t\t} else {\n\t\t\t\t\tisSkippingCurrentLine = false\n\t\t\t\t\tcurrentLineOpts = command.opts\n\t\t\t\t}\n\t\t\t\tcontinue\n\t\t\t}\n\n\t\t\tif (isSkippingCurrentLine) continue\n\n\t\t\tconst segmentLength = this.calculateSegmentLength(lastCommand, command)\n\t\t\tconst isFirst = lastCommand.type === 'move'\n\t\t\tconst isLast =\n\t\t\t\tcommand.isClose || i === this.commands.length - 1 || this.commands[i + 1]?.type === 'move'\n\n\t\t\tif (currentRun && command.opts?.mergeWithPrevious) {\n\t\t\t\tcurrentRun.length += segmentLength\n\t\t\t\tcurrentRun.endIdx = i\n\t\t\t\tcurrentRun.isLast = isLast\n\t\t\t} else {\n\t\t\t\taddCurrentRun()\n\t\t\t\tcurrentRun = {\n\t\t\t\t\tstartIdx: i,\n\t\t\t\t\tendIdx: i,\n\t\t\t\t\tisFirst,\n\t\t\t\t\tisLast,\n\t\t\t\t\tlength: segmentLength,\n\t\t\t\t\tlineOpts: currentLineOpts,\n\t\t\t\t\tpathIsClosed: isCurrentPathClosed,\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\n\t\taddCurrentRun()\n\n\t\treturn (\n\t\t\t<g strokeWidth={strokeWidth} {...props}>\n\t\t\t\t{parts}\n\t\t\t</g>\n\t\t)\n\t}\n\n\tprivate toDrawSvg(opts: DrawPathBuilderOpts) {\n\t\treturn <path strokeWidth={opts.strokeWidth} d={this.toDrawD(opts)} {...opts.props} />\n\t}\n\n\ttoDrawD(opts: DrawPathBuilderDOpts) {\n\t\tconst {\n\t\t\tstrokeWidth,\n\t\t\trandomSeed,\n\t\t\toffset: defaultOffset = strokeWidth / 3,\n\t\t\troundness: defaultRoundness = strokeWidth * 2,\n\t\t\tpasses = 2,\n\t\t\tonlyFilled = false,\n\t\t} = opts\n\n\t\tconst parts = []\n\n\t\tconst commandInfo = this.getCommandInfo()\n\n\t\t// for each command, we draw the line for the command, plus the corner to the next command.\n\t\tconst drawCommands = []\n\t\tlet lastMoveCommandIdx = null\n\t\tfor (let i = 0; i < this.commands.length; i++) {\n\t\t\tconst command = this.commands[i]\n\t\t\tconst offset = command.opts?.offset ?? defaultOffset\n\t\t\tconst roundness = command.opts?.roundness ?? defaultRoundness\n\n\t\t\tif (command.type === 'move') {\n\t\t\t\tlastMoveCommandIdx = i\n\t\t\t}\n\n\t\t\tconst nextIdx = command.isClose\n\t\t\t\t? assertExists(lastMoveCommandIdx) + 1\n\t\t\t\t: !this.commands[i + 1] || this.commands[i + 1].type === 'move'\n\t\t\t\t\t? undefined\n\t\t\t\t\t: i + 1\n\n\t\t\tconst nextInfo =\n\t\t\t\tnextIdx !== undefined && this.commands[nextIdx] && this.commands[nextIdx]?.type !== 'move'\n\t\t\t\t\t? commandInfo[nextIdx]\n\t\t\t\t\t: undefined\n\n\t\t\tconst currentSupportsRoundness = commandsSupportingRoundness[command.type]\n\t\t\tconst nextSupportsRoundness =\n\t\t\t\tnextIdx !== undefined ? commandsSupportingRoundness[this.commands[nextIdx].type] : false\n\n\t\t\tconst currentInfo = commandInfo[i]\n\n\t\t\tconst tangentToPrev = currentInfo?.tangentEnd\n\t\t\tconst tangentToNext = nextInfo?.tangentStart\n\n\t\t\tconst roundnessClampedForAngle =\n\t\t\t\tcurrentSupportsRoundness &&\n\t\t\t\tnextSupportsRoundness &&\n\t\t\t\ttangentToPrev &&\n\t\t\t\ttangentToNext &&\n\t\t\t\tVec.Len2(tangentToPrev) > 0.01 &&\n\t\t\t\tVec.Len2(tangentToNext) > 0.01\n\t\t\t\t\t? modulate(\n\t\t\t\t\t\t\tMath.abs(Vec.AngleBetween(tangentToPrev, tangentToNext)),\n\t\t\t\t\t\t\t[Math.PI / 2, Math.PI],\n\t\t\t\t\t\t\t[roundness, 0],\n\t\t\t\t\t\t\ttrue\n\t\t\t\t\t\t)\n\t\t\t\t\t: 0\n\n\t\t\tconst shortestDistance = Math.min(\n\t\t\t\tcurrentInfo?.length ?? Infinity,\n\t\t\t\tnextInfo?.length ?? Infinity\n\t\t\t)\n\t\t\tconst offsetLimit = shortestDistance - roundnessClampedForAngle * 2\n\n\t\t\tconst offsetAmount = clamp(offset, 0, offsetLimit / 4)\n\n\t\t\tconst roundnessBeforeClampedForLength = Math.min(\n\t\t\t\troundnessClampedForAngle,\n\t\t\t\t(currentInfo?.length ?? Infinity) / 4\n\t\t\t)\n\t\t\tconst roundnessAfterClampedForLength = Math.min(\n\t\t\t\troundnessClampedForAngle,\n\t\t\t\t(nextInfo?.length ?? Infinity) / 4\n\t\t\t)\n\n\t\t\tconst drawCommand = {\n\t\t\t\tcommand,\n\t\t\t\toffsetAmount,\n\t\t\t\troundnessBefore: roundnessBeforeClampedForLength,\n\t\t\t\troundnessAfter: roundnessAfterClampedForLength,\n\t\t\t\ttangentToPrev: commandInfo[i]?.tangentEnd,\n\t\t\t\ttangentToNext: nextInfo?.tangentStart,\n\t\t\t\tmoveDidClose: false,\n\t\t\t}\n\n\t\t\tdrawCommands.push(drawCommand)\n\n\t\t\tif (command.isClose && lastMoveCommandIdx !== null) {\n\t\t\t\tconst lastMoveCommand = drawCommands[lastMoveCommandIdx]\n\t\t\t\tlastMoveCommand.moveDidClose = true\n\t\t\t\tlastMoveCommand.roundnessAfter = roundnessAfterClampedForLength\n\t\t\t} else if (command.type === 'move') {\n\t\t\t\tlastMoveCommandIdx = i\n\t\t\t}\n\t\t}\n\n\t\tfor (let pass = 0; pass < passes; pass++) {\n\t\t\tconst random = rng(randomSeed + pass)\n\n\t\t\tlet lastMoveToOffset = { x: 0, y: 0 }\n\t\t\tlet isSkippingCurrentLine = false\n\t\t\tfor (const {\n\t\t\t\tcommand,\n\t\t\t\toffsetAmount,\n\t\t\t\troundnessBefore,\n\t\t\t\troundnessAfter,\n\t\t\t\ttangentToNext,\n\t\t\t\ttangentToPrev,\n\t\t\t} of drawCommands) {\n\t\t\t\tlet offset: VecLike\n\t\t\t\tif (command.isClose) {\n\t\t\t\t\toffset = lastMoveToOffset\n\t\t\t\t} else {\n\t\t\t\t\tconst direction = new Vec(random(), random()).uni()",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder#class:PathBuilder",
+          "fileId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder",
+          "unitKind": "class",
+          "name": "PathBuilder",
+          "qualifiedName": "PathBuilder",
+          "parentUnitId": null,
+          "startLine": 146,
+          "endLine": 877,
+          "signature": "export class PathBuilder",
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [
+            {
+              "name": "commands",
+              "kind": "property",
+              "type": "PathBuilderCommand[]",
+              "default": "[]",
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "lastMoveTo",
+              "kind": "property",
+              "type": "MoveToPathBuilderCommand | null",
+              "default": "null",
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "lineThroughPoints",
+              "kind": "method",
+              "type": "static",
+              "default": null,
+              "visibility": "public",
+              "static": true
+            },
+            {
+              "name": "cubicSplineThroughPoints",
+              "kind": "method",
+              "type": "static",
+              "default": null,
+              "visibility": "public",
+              "static": true
+            },
+            {
+              "name": "constructor",
+              "kind": "constructor",
+              "type": "()",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "moveTo",
+              "kind": "method",
+              "type": "(x: number, y: number, opts?: PathBuilderLineOpts)",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "lineTo",
+              "kind": "method",
+              "type": "(x: number, y: number, opts?: PathBuilderCommandOpts)",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "circularArcTo",
+              "kind": "method",
+              "type": "(radius: number, largeArcFlag: boolean, sweepFlag: boolean, x2: number, y2: number, opts?: PathBuilderCommandOpts)",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "arcTo",
+              "kind": "method",
+              "type": "(rx: number, ry: number, largeArcFlag: boolean, sweepFlag: boolean, xAxisRotationRadians: number, x2: number, y2: number, opts?: PathBuilderCommandOpts)",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "cubicBezierTo",
+              "kind": "method",
+              "type": "(x: number, y: number, cp1X: number, cp1Y: number, cp2X: number, cp2Y: number, opts?: PathBuilderCommandOpts)",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "close",
+              "kind": "method",
+              "type": "()",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "transform",
+              "kind": "method",
+              "type": "(mat: MatLike): PathBuilder",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "toD",
+              "kind": "method",
+              "type": "(opts?: PathBuilderToDOpts)",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "toSvg",
+              "kind": "method",
+              "type": "(opts: PathBuilderOpts)",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "toPath2D",
+              "kind": "method",
+              "type": "(opts: PathBuilderOpts): Path2D",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "toGeometry",
+              "kind": "method",
+              "type": "(): PathBuilderGeometry2d | Group2d",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "toDashedSvg",
+              "kind": "method",
+              "type": "(opts: DashedPathBuilderOpts)",
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "toDrawD",
+              "kind": "method",
+              "type": "(opts: DrawPathBuilderDOpts)",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "getCommandInfo",
+              "kind": "method",
+              "type": "()",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            }
+          ],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "PathBuilder represents a sequence of move, line, cubic, and closure commands with rendering and geometry conversion support. It preserves command metadata needed for SVG, canvas, drawing, and hit-testing consumers.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "d579ee20c228ec17e411db442f3cd98c3138697389f980c6dde21e031fcb86c2"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder.lineThroughPoints#method:PathBuilder.lineThroughPoints",
+        "unitKind": "method",
+        "name": "lineThroughPoints",
+        "qualifiedName": "PathBuilder.lineThroughPoints",
+        "parentUnitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder#class:PathBuilder",
+        "startLine": 147,
+        "endLine": 159,
+        "isBehavioral": true,
+        "source": "\tstartIdx?: number\n\tendIdx?: number\n\tonlyFilled?: boolean\n}\n\n/** @public */\nexport class PathBuilder {\n\tstatic lineThroughPoints(\n\t\tpoints: VecLike[],\n\t\topts?: PathBuilderLineOpts & { endOffsets?: number }\n\t) {\n\t\tconst path = new PathBuilder()\n\t\tpath.moveTo(points[0].x, points[0].y, { ...opts, offset: opts?.endOffsets ?? opts?.offset })",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder.lineThroughPoints#method:PathBuilder.lineThroughPoints",
+          "fileId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder.lineThroughPoints",
+          "unitKind": "method",
+          "name": "lineThroughPoints",
+          "qualifiedName": "PathBuilder.lineThroughPoints",
+          "parentUnitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder#class:PathBuilder",
+          "startLine": 147,
+          "endLine": 159,
+          "signature": "static lineThroughPoints(\n\t\tpoints: VecLike[],\n\t\topts?: PathBuilderLineOpts & { endOffsets?: number }\n\t)",
+          "parameters": [
+            {
+              "name": "points",
+              "type": "VecLike[]",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "opts",
+              "type": "PathBuilderLineOpts & { endOffsets?: number }",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["points must contain at least one point with numeric x and y coordinates."],
+          "postconditions": [
+            "Returns a PathBuilder representing a path beginning at points[0] and proceeding through the remaining points in array order."
+          ],
+          "invariants": [
+            "Point order is preserved in the generated path.",
+            "The generated path contains straight-line connections between successive supplied points."
+          ],
+          "edgeCases": [
+            "A single point produces a path whose initial position is that point and has no subsequent point-to-point segment.",
+            "An empty points array attempts to access the first point and fails before producing a usable path.",
+            "When opts.endOffsets is provided, it is used as the offset for the initial move instead of opts.offset.",
+            "When opts.endOffsets is absent, the initial move uses opts.offset if provided."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["A runtime error caused by accessing x and y on an absent first point when points is empty."],
+            "reverts": [],
+            "onInvalidInput": "Invalid point data is not validated explicitly; runtime behavior follows property access and path-builder operations.",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "PathBuilder", "source": "PathBuilder", "kind": "internal" },
+            { "name": "moveTo", "source": "PathBuilder", "kind": "internal" },
+            { "name": "lineTo", "source": "PathBuilder", "kind": "internal" }
+          ],
+          "symbolReferences": ["VecLike", "PathBuilderLineOpts"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Creates a path that begins at the first supplied point and connects the points in order with line segments. Line options are applied to the generated path, with endOffsets taking precedence over offset for the initial move.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "lineThroughPoints(points) is called",
+              "then": "the returned path starts at the first point and contains line connections to the second and third points in order.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "lineThroughPoints(points, opts) is called",
+              "then": "the initial move uses offset 5 rather than offset 2.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "lineThroughPoints(points) is called",
+              "then": "the call fails while attempting to read the coordinates of the first point.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "4a3ebe64ef5a73e26811c0b27f672f61e364e4e83024242ee7d010015010c733"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder.cubicSplineThroughPoints#method:PathBuilder.cubicSplineThroughPoints",
+        "unitKind": "method",
+        "name": "cubicSplineThroughPoints",
+        "qualifiedName": "PathBuilder.cubicSplineThroughPoints",
+        "parentUnitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder#class:PathBuilder",
+        "startLine": 161,
+        "endLine": 195,
+        "isBehavioral": true,
+        "source": "\t\t\tconst isLast = i === points.length - 1\n\t\t\tpath.lineTo(points[i].x, points[i].y, isLast ? { offset: opts?.endOffsets } : undefined)\n\t\t}\n\t\treturn path\n\t}\n\n\tstatic cubicSplineThroughPoints(\n\t\tpoints: VecLike[],\n\t\topts?: PathBuilderLineOpts & { endOffsets?: number }\n\t) {\n\t\tconst path = new PathBuilder()\n\t\tconst len = points.length\n\t\tconst last = len - 2\n\t\tconst k = 1.25\n\n\t\tpath.moveTo(points[0].x, points[0].y, { ...opts, offset: opts?.endOffsets ?? opts?.offset })\n\n\t\tfor (let i = 0; i < len - 1; i++) {\n\t\t\tconst p0 = i === 0 ? points[0] : points[i - 1]\n\t\t\tconst p1 = points[i]\n\t\t\tconst p2 = points[i + 1]\n\t\t\tconst p3 = i === last ? p2 : points[i + 2]\n\n\t\t\tlet cp1x, cp1y, cp2x, cp2y\n\t\t\tif (i === 0) {\n\t\t\t\tcp1x = p0.x\n\t\t\t\tcp1y = p0.y\n\t\t\t} else {\n\t\t\t\tcp1x = p1.x + ((p2.x - p0.x) / 6) * k\n\t\t\t\tcp1y = p1.y + ((p2.y - p0.y) / 6) * k\n\t\t\t}\n\n\t\t\tlet pointOpts = undefined\n\t\t\tif (i === last) {\n\t\t\t\tcp2x = p2.x",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder.cubicSplineThroughPoints#method:PathBuilder.cubicSplineThroughPoints",
+          "fileId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder.cubicSplineThroughPoints",
+          "unitKind": "method",
+          "name": "cubicSplineThroughPoints",
+          "qualifiedName": "PathBuilder.cubicSplineThroughPoints",
+          "parentUnitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder#class:PathBuilder",
+          "startLine": 161,
+          "endLine": 195,
+          "signature": "static cubicSplineThroughPoints(\n\t\tpoints: VecLike[],\n\t\topts?: PathBuilderLineOpts & { endOffsets?: number }\n\t)",
+          "parameters": [
+            {
+              "name": "points",
+              "type": "VecLike[]",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "opts",
+              "type": "PathBuilderLineOpts & { endOffsets?: number }",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "PathBuilder",
+          "decorators": [],
+          "modifiersApplied": ["static"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "Each point in points provides numeric x and y coordinates.",
+            "points contains at least one point."
+          ],
+          "postconditions": [
+            "Returns a PathBuilder whose path starts at points[0].",
+            "For each consecutive pair of points, the returned path contains one cubic spline segment ending at the next point.",
+            "The final endpoint uses opts.endOffsets when supplied."
+          ],
+          "invariants": [
+            "The spline visits every supplied point in order.",
+            "Interior cubic control points are derived from neighboring points using a one-sixth tangent factor scaled by 1.25.",
+            "The first segment's first control point is the first path point.",
+            "The last segment's second control point is the final path point."
+          ],
+          "edgeCases": [
+            "A single point produces a path containing the initial move and no spline segments.",
+            "An empty points array attempts to read the first point and fails before returning a path.",
+            "When opts is omitted, the path is still created and the initial move has no option values.",
+            "When opts.endOffsets is undefined, the initial move uses opts.offset if present; when endOffsets is defined, it takes precedence for the initial move."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["A runtime TypeError or equivalent property-access failure can occur when points is empty."],
+            "reverts": [],
+            "onInvalidInput": "No explicit validation or fallback is performed; invalid point data is passed through to path construction.",
+            "returnsOnError": null
+          },
+          "stateMutations": ["Mutates only the newly allocated local PathBuilder while constructing the path."],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "PathBuilder", "source": "PathBuilder", "kind": "internal" },
+            { "name": "moveTo", "source": "PathBuilder", "kind": "internal" },
+            { "name": "cubicTo", "source": "PathBuilder", "kind": "internal" }
+          ],
+          "symbolReferences": ["VecLike", "PathBuilderLineOpts"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Builds a PathBuilder containing a cubic spline that passes through the supplied points in order. It applies the provided line options to the path start and final endpoint offsets.",
+          "specLiterals": [
+            {
+              "kind": "magic-number",
+              "value": "1.25",
+              "role": "Scaling factor applied to interior spline tangent control-point offsets."
+            },
+            {
+              "kind": "magic-number",
+              "value": "6",
+              "role": "Denominator used when deriving tangent control-point offsets from neighboring points."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "PathBuilder.cubicSplineThroughPoints(points) is called",
+              "then": "The call returns a PathBuilder whose path starts at p and contains no cubic segment.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "PathBuilder.cubicSplineThroughPoints(points) is called",
+              "then": "The returned path starts at p0 and contains one cubic segment ending at p1, with the first control point at p0 and the second control point at p1.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "PathBuilder.cubicSplineThroughPoints(points, opts) is called",
+              "then": "The initial move uses endOffsets rather than offset, and the final endpoint uses endOffsets.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "0e41c933b8e31961441c7b2cac135071407bf2f0c447279f69b9039ea471e2da"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder.arcTo#method:PathBuilder.arcTo",
+        "unitKind": "method",
+        "name": "arcTo",
+        "qualifiedName": "PathBuilder.arcTo",
+        "parentUnitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder#class:PathBuilder",
+        "startLine": 235,
+        "endLine": 365,
+        "isBehavioral": true,
+        "source": "\t\tsweepFlag: boolean,\n\t\tx2: number,\n\t\ty2: number,\n\t\topts?: PathBuilderCommandOpts\n\t) {\n\t\treturn this.arcTo(radius, radius, largeArcFlag, sweepFlag, 0, x2, y2, opts)\n\t}\n\n\tarcTo(\n\t\trx: number,\n\t\try: number,\n\t\tlargeArcFlag: boolean,\n\t\tsweepFlag: boolean,\n\t\txAxisRotationRadians: number,\n\t\tx2: number,\n\t\ty2: number,\n\t\topts?: PathBuilderCommandOpts\n\t) {\n\t\t// As arc flags make them very sensitive to offsets when we render them in draw mode, we\n\t\t// approximate arcs by converting them to up to 4 (1 per 90° segment) cubic bezier curves.\n\t\t// This algorithm is a Claude special:\n\t\t// https://claude.ai/public/artifacts/5ea0bf18-4afb-4b3d-948d-31b8a77ef1e2\n\n\t\tthis.assertHasMoveTo()\n\n\t\tconst x1 = this.commands[this.commands.length - 1].x\n\t\tconst y1 = this.commands[this.commands.length - 1].y\n\n\t\t// If the endpoints are identical, don't add a command\n\t\tif (x1 === x2 && y1 === y2) {\n\t\t\treturn this\n\t\t}\n\n\t\t// If rx or ry is 0, return a straight line\n\t\tif (rx === 0 || ry === 0) {\n\t\t\treturn this.lineTo(x2, y2, opts)\n\t\t}\n\n\t\t// Convert angle from degrees to radians\n\t\tconst phi = xAxisRotationRadians\n\t\tconst sinPhi = Math.sin(phi)\n\t\tconst cosPhi = Math.cos(phi)\n\n\t\t// Ensure rx and ry are positive\n\t\tlet rx1 = Math.abs(rx)\n\t\tlet ry1 = Math.abs(ry)\n\n\t\t// Step 1: Compute (x1', y1') - transform from ellipse coordinate system to unit circle\n\t\tconst dx = (x1 - x2) / 2\n\t\tconst dy = (y1 - y2) / 2\n\t\tconst x1p = cosPhi * dx + sinPhi * dy\n\t\tconst y1p = -sinPhi * dx + cosPhi * dy\n\n\t\t// Correction of out-of-range radii\n\t\tconst lambda = (x1p * x1p) / (rx1 * rx1) + (y1p * y1p) / (ry1 * ry1)\n\t\tif (lambda > 1) {\n\t\t\tconst sqrtLambda = Math.sqrt(lambda)\n\t\t\trx1 *= sqrtLambda\n\t\t\try1 *= sqrtLambda\n\t\t}\n\n\t\t// Step 2: Compute (cx', cy') - center of ellipse in transformed system\n\t\tconst sign = largeArcFlag !== sweepFlag ? 1 : -1\n\n\t\tconst term = rx1 * rx1 * ry1 * ry1 - rx1 * rx1 * y1p * y1p - ry1 * ry1 * x1p * x1p\n\t\tconst numerator = rx1 * rx1 * y1p * y1p + ry1 * ry1 * x1p * x1p\n\n\t\tlet radicand = term / numerator\n\t\tradicand = radicand < 0 ? 0 : radicand\n\n\t\tconst coef = sign * Math.sqrt(radicand)\n\n\t\tconst cxp = coef * ((rx1 * y1p) / ry1)\n\t\tconst cyp = coef * (-(ry1 * x1p) / rx1)\n\n\t\t// Step 3: Compute (cx, cy) from (cx', cy') - transform back to original coordinate system\n\t\tconst cx = cosPhi * cxp - sinPhi * cyp + (x1 + x2) / 2\n\t\tconst cy = sinPhi * cxp + cosPhi * cyp + (y1 + y2) / 2\n\n\t\t// Step 4: Compute the start and end angles\n\t\tconst ux = (x1p - cxp) / rx1\n\t\tconst uy = (y1p - cyp) / ry1\n\t\tconst vx = (-x1p - cxp) / rx1\n\t\tconst vy = (-y1p - cyp) / ry1\n\n\t\tconst startAngle = Math.atan2(uy, ux)\n\t\tlet endAngle = Math.atan2(vy, vx)\n\n\t\t// Ensure correct sweep direction\n\t\tif (!sweepFlag && endAngle > startAngle) {\n\t\t\tendAngle -= 2 * Math.PI\n\t\t} else if (sweepFlag && endAngle < startAngle) {\n\t\t\tendAngle += 2 * Math.PI\n\t\t}\n\n\t\t// Calculate the sweep angle\n\t\tconst sweepAngle = endAngle - startAngle\n\n\t\t// Calculate the approximate arc length. General ellipse arc length is expensive - there's\n\t\t// no closed form solution, so we have to do iterative numerical approximation. As we only\n\t\t// use this to control the resolution of later approximations, let's cheat and just use the\n\t\t// circular arc length with the largest radius:\n\t\tconst approximateArcLength = Math.max(rx1, ry1) * Math.abs(sweepAngle)\n\n\t\t// Approximate the arc using cubic bezier curves\n\t\tconst numSegments = Math.min(4, Math.ceil(Math.abs(sweepAngle) / (Math.PI / 2)))\n\t\tconst resolutionPerSegment = Math.ceil(\n\t\t\tgetVerticesCountForArcLength(approximateArcLength) / numSegments\n\t\t)\n\t\tconst anglePerSegment = sweepAngle / numSegments\n\n\t\t// Helper function to compute point on ellipse\n\t\tconst ellipsePoint = (angle: number) => {\n\t\t\treturn {\n\t\t\t\tx: cx + rx1 * Math.cos(angle) * cosPhi - ry1 * Math.sin(angle) * sinPhi,\n\t\t\t\ty: cy + rx1 * Math.cos(angle) * sinPhi + ry1 * Math.sin(angle) * cosPhi,\n\t\t\t}\n\t\t}\n\n\t\t// Helper function to compute derivative (tangent vector) at a point on the ellipse\n\t\tconst ellipseDerivative = (angle: number) => {\n\t\t\treturn {\n\t\t\t\tx: -rx1 * Math.sin(angle) * cosPhi - ry1 * Math.cos(angle) * sinPhi,\n\t\t\t\ty: -rx1 * Math.sin(angle) * sinPhi + ry1 * Math.cos(angle) * cosPhi,\n\t\t\t}\n\t\t}\n\n\t\t// Generate cubic bezier approximations\n\t\tfor (let i = 0; i < numSegments; i++) {\n\t\t\tconst theta1 = startAngle + i * anglePerSegment\n\t\t\tconst theta2 = startAngle + (i + 1) * anglePerSegment",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder.arcTo#method:PathBuilder.arcTo",
+          "fileId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder.arcTo",
+          "unitKind": "method",
+          "name": "arcTo",
+          "qualifiedName": "PathBuilder.arcTo",
+          "parentUnitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder#class:PathBuilder",
+          "startLine": 235,
+          "endLine": 365,
+          "signature": "arcTo(rx: number, ry: number, largeArcFlag: boolean, sweepFlag: boolean, xAxisRotationRadians: number, x2: number, y2: number, opts?: PathBuilderCommandOpts)",
+          "parameters": [
+            { "name": "rx", "type": "number", "default": null, "optional": false, "variadic": false, "order": 0 },
+            { "name": "ry", "type": "number", "default": null, "optional": false, "variadic": false, "order": 1 },
+            {
+              "name": "largeArcFlag",
+              "type": "boolean",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            },
+            {
+              "name": "sweepFlag",
+              "type": "boolean",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 3
+            },
+            {
+              "name": "xAxisRotationRadians",
+              "type": "number",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 4
+            },
+            { "name": "x2", "type": "number", "default": null, "optional": false, "variadic": false, "order": 5 },
+            { "name": "y2", "type": "number", "default": null, "optional": false, "variadic": false, "order": 6 },
+            {
+              "name": "opts",
+              "type": "PathBuilderCommandOpts",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 7
+            }
+          ],
+          "returnType": "this",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["The path must already contain a move-to command."],
+          "postconditions": [
+            "Returns the same PathBuilder instance.",
+            "If the endpoints differ and both radii are nonzero, the path contains a cubic Bézier approximation of the requested elliptical arc.",
+            "If either radius is zero, the path is extended with a straight line to (x2, y2), using opts.",
+            "If the current point equals (x2, y2), no command is added."
+          ],
+          "invariants": [
+            "The current path endpoint after normal completion is (x2, y2) whenever a non-degenerate arc or fallback line is added.",
+            "Negative radii are treated as their absolute values.",
+            "An arc is split into no more than four segments, with segment boundaries covering the computed sweep angle.",
+            "Radii are scaled when necessary so the requested endpoints are reachable by the ellipse."
+          ],
+          "edgeCases": [
+            "No prior move-to command: the method fails through assertHasMoveTo rather than appending geometry.",
+            "Identical current and target endpoints: returns the builder without adding a command.",
+            "Either rx or ry is zero: delegates to lineTo(x2, y2, opts) and produces a straight-line result.",
+            "Negative radii: radii are converted to positive values before arc computation.",
+            "Radii too small to connect the endpoints: both radii are scaled by the computed correction factor.",
+            "A computed center-term radicand below zero: it is clamped to zero before taking the square root."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["The error produced by assertHasMoveTo when the path has no move-to command."],
+            "reverts": [],
+            "onInvalidInput": "No explicit validation is performed for numeric or flag arguments; degenerate zero-radius and coincident-endpoint cases use the documented fallback behavior.",
+            "returnsOnError": null
+          },
+          "stateMutations": [
+            "Mutates this.commands by appending the generated cubic Bézier commands or the fallback line command."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "assertHasMoveTo", "source": "PathBuilder", "kind": "internal" },
+            { "name": "lineTo", "source": "PathBuilder", "kind": "internal" },
+            { "name": "getVerticesCountForArcLength", "source": null, "kind": "external" }
+          ],
+          "symbolReferences": ["PathBuilderCommandOpts"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Appends an elliptical arc from the current path point to the requested endpoint, approximating the arc with cubic Bézier segments. Degenerate arcs are handled as no-ops or straight lines while preserving the builder chain.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "arcTo is called with valid largeArcFlag and sweepFlag values.",
+              "then": "The same builder is returned, cubic Bézier geometry is appended, and the resulting path endpoint is the requested target.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "arcTo(10, 10, false, true, 0, 5, 7) is called.",
+              "then": "The same builder is returned and its command list is unchanged.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "arcTo(0, 10, false, true, 0, 8, 12, opts) is called.",
+              "then": "The call behaves as lineTo(8, 12, opts), producing a straight-line fallback rather than arc geometry.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "28d08d03169c2f269861333613b45fa3e9331ddea9e3768ac704e47442b1f0ed"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder.transform#method:PathBuilder.transform",
+        "unitKind": "method",
+        "name": "transform",
+        "qualifiedName": "PathBuilder.transform",
+        "parentUnitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder#class:PathBuilder",
+        "startLine": 422,
+        "endLine": 450,
+        "isBehavioral": true,
+        "source": "\t\topts?: PathBuilderCommandOpts,\n\t\tresolution?: number\n\t) {\n\t\tthis.assertHasMoveTo()\n\t\tthis.commands.push({\n\t\t\ttype: 'cubic',\n\t\t\tx,\n\t\t\ty,\n\t\t\tcp1: { x: cp1X, y: cp1Y },\n\t\t\tcp2: { x: cp2X, y: cp2Y },\n\t\t\tisClose: false,\n\t\t\topts,\n\t\t\tresolution,\n\t\t})\n\t\treturn this\n\t}\n\n\tclose() {\n\t\tconst lastMoveTo = this.assertHasMoveTo()\n\t\tconst lastCommand = this.commands[this.commands.length - 1]\n\n\t\tif (approximately(lastMoveTo.x, lastCommand.x) && approximately(lastMoveTo.y, lastCommand.y)) {\n\t\t\tlastCommand.isClose = true\n\t\t} else {\n\t\t\tthis.commands.push({\n\t\t\t\ttype: 'line',\n\t\t\t\tx: lastMoveTo.x,\n\t\t\t\ty: lastMoveTo.y,\n\t\t\t\tisClose: true,",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder.transform#method:PathBuilder.transform",
+          "fileId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder.transform",
+          "unitKind": "method",
+          "name": "transform",
+          "qualifiedName": "PathBuilder.transform",
+          "parentUnitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder#class:PathBuilder",
+          "startLine": 422,
+          "endLine": 450,
+          "signature": "transform(matrix: Mat): this",
+          "parameters": [
+            { "name": "matrix", "type": "Mat", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "this",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["The supplied matrix is a valid transform matrix."],
+          "postconditions": [
+            "All existing path command coordinates affected by the path geometry are transformed by the supplied matrix.",
+            "The method returns the current PathBuilder instance."
+          ],
+          "invariants": [
+            "The ordering and command types of the existing path are preserved.",
+            "The transformation is applied consistently to path endpoints and control points."
+          ],
+          "edgeCases": [
+            "An identity matrix leaves the path geometry unchanged while returning the builder.",
+            "A path containing cubic commands transforms both cubic control points and the endpoint.",
+            "An empty path remains empty after transformation."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [
+            "Mutates the builder's stored path commands by applying the matrix to their geometric coordinates."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["Mat"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Transforms the path builder's existing geometry by the supplied matrix and returns the same builder for continued chaining.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "transform is called with a non-identity matrix.",
+              "then": "The path's endpoints and cubic control points are represented in the transformed coordinate system, command ordering is unchanged, and the same PathBuilder instance is returned.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "92f9cedf0e32005cfae6ee1420466d8a5e7669d0c31205225299a0d840b19e16"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder.toD#method:PathBuilder.toD",
+        "unitKind": "method",
+        "name": "toD",
+        "qualifiedName": "PathBuilder.toD",
+        "parentUnitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder#class:PathBuilder",
+        "startLine": 452,
+        "endLine": 505,
+        "isBehavioral": true,
+        "source": "\t\t}\n\n\t\tlastMoveTo.closeIdx = this.commands.length - 1\n\t\tthis.lastMoveTo = null\n\t\treturn this\n\t}\n\n\t/**\n\t * Return a new path with every point (including bezier control points) transformed by the given\n\t * affine matrix. Command metadata (fill, dash, close state, draw offsets, etc.) is preserved, so\n\t * this can be used to mirror, scale, translate, or otherwise transform a finished path while\n\t * keeping it renderable and hit-testable.\n\t *\n\t * @param mat - The affine matrix to apply to each point.\n\t */\n\ttransform(mat: MatLike): PathBuilder {\n\t\tconst next = new PathBuilder()\n\t\tfor (const command of this.commands) {\n\t\t\t// Use applyToXY (returns plain numbers) rather than applyToPoint to avoid allocating a\n\t\t\t// Vec per point. This keeps the transform allocation-light when many shapes are flipped.\n\t\t\tconst [x, y] = Mat.applyToXY(mat, command.x, command.y)\n\t\t\t// info (tangents/length) is derived from the points, so drop any cached value\n\t\t\tswitch (command.type) {\n\t\t\t\tcase 'move':\n\t\t\t\t\tnext.commands.push({ ...command, x, y, _info: undefined })\n\t\t\t\t\tbreak\n\t\t\t\tcase 'line':\n\t\t\t\t\tnext.commands.push({ ...command, x, y, _info: undefined })\n\t\t\t\t\tbreak\n\t\t\t\tcase 'cubic': {\n\t\t\t\t\tconst [cp1x, cp1y] = Mat.applyToXY(mat, command.cp1.x, command.cp1.y)\n\t\t\t\t\tconst [cp2x, cp2y] = Mat.applyToXY(mat, command.cp2.x, command.cp2.y)\n\t\t\t\t\tnext.commands.push({\n\t\t\t\t\t\t...command,\n\t\t\t\t\t\tx,\n\t\t\t\t\t\ty,\n\t\t\t\t\t\tcp1: { x: cp1x, y: cp1y },\n\t\t\t\t\t\tcp2: { x: cp2x, y: cp2y },\n\t\t\t\t\t\t_info: undefined,\n\t\t\t\t\t})\n\t\t\t\t\tbreak\n\t\t\t\t}\n\t\t\t\tdefault:\n\t\t\t\t\texhaustiveSwitchError(command, 'type')\n\t\t\t}\n\t\t}\n\t\treturn next\n\t}\n\n\ttoD(opts: PathBuilderToDOpts = {}) {\n\t\tconst { startIdx = 0, endIdx = this.commands.length, onlyFilled = false } = opts\n\t\tconst parts = []\n\n\t\tlet isSkippingCurrentLine = false",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder.toD#method:PathBuilder.toD",
+          "fileId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder.toD",
+          "unitKind": "method",
+          "name": "toD",
+          "qualifiedName": "PathBuilder.toD",
+          "parentUnitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder#class:PathBuilder",
+          "startLine": 452,
+          "endLine": 505,
+          "signature": "toD(opts: PathBuilderToDOpts = {})",
+          "parameters": [
+            {
+              "name": "opts",
+              "type": "PathBuilderToDOpts",
+              "default": "{}",
+              "optional": true,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "string",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["The options object, when provided, conforms to PathBuilderToDOpts."],
+          "postconditions": [
+            "Returns a string containing SVG path data for the selected commands.",
+            "The serialized command order follows the selected range in the builder.",
+            "When onlyFilled is true, unfilled path portions are excluded from the serialized output."
+          ],
+          "invariants": [
+            "The PathBuilder command state is not mutated.",
+            "Command geometry and ordering are preserved in the resulting path data."
+          ],
+          "edgeCases": [
+            "With no options, serialization starts at command index 0 and ends at the current command count.",
+            "A custom startIdx and endIdx restrict serialization to the corresponding command range.",
+            "When onlyFilled is true, commands that are not part of filled path portions are skipped.",
+            "An empty selected range produces an empty path data string."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["PathBuilderToDOpts"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Returns an SVG path data string composed from the selected move, line, and cubic path commands.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Serializes the path builder's commands, or a selected command range, into an SVG path data string. It can optionally include only commands belonging to filled portions of the path.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "toD() is called.",
+              "then": "It returns SVG path data representing all commands in their original order without mutating the builder.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "toD({ startIdx, endIdx }) is called.",
+              "then": "The returned SVG path data includes only commands within the selected command range.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "toD({ onlyFilled: true }) is called.",
+              "then": "The returned SVG path data excludes commands belonging to unfilled portions.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "b50ebfe3cb4e76da582076dc4719d38c5dfe9d67457aed80b79b6c4117182001"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder.toGeometry#method:PathBuilder.toGeometry",
+        "unitKind": "method",
+        "name": "toGeometry",
+        "qualifiedName": "PathBuilder.toGeometry",
+        "parentUnitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder#class:PathBuilder",
+        "startLine": 546,
+        "endLine": 587,
+        "isBehavioral": true,
+        "source": "\t\t\t\t\t\t'C',\n\t\t\t\t\t\ttoDomPrecision(command.cp1.x),\n\t\t\t\t\t\ttoDomPrecision(command.cp1.y),\n\t\t\t\t\t\ttoDomPrecision(command.cp2.x),\n\t\t\t\t\t\ttoDomPrecision(command.cp2.y),\n\t\t\t\t\t\ttoDomPrecision(command.x),\n\t\t\t\t\t\ttoDomPrecision(command.y)\n\t\t\t\t\t)\n\t\t\t\t\tbreak\n\t\t\t\tdefault:\n\t\t\t\t\texhaustiveSwitchError(command, 'type')\n\t\t\t}\n\t\t}\n\t\treturn parts.join(' ')\n\t}\n\n\ttoSvg(opts: PathBuilderOpts) {\n\t\tif (opts.style === 'none') {\n\t\t\treturn null\n\t\t}\n\t\tif (opts.forceSolid) {\n\t\t\treturn this.toSolidSvg(opts)\n\t\t}\n\t\tswitch (opts.style) {\n\t\t\tcase 'solid':\n\t\t\t\treturn this.toSolidSvg(opts)\n\t\t\tcase 'dashed':\n\t\t\tcase 'dotted':\n\t\t\t\treturn this.toDashedSvg(opts)\n\t\t\tcase 'draw': {\n\t\t\t\tconst d = this.toDrawSvg(opts)\n\t\t\t\treturn d\n\t\t\t}\n\t\t\tdefault:\n\t\t\t\texhaustiveSwitchError(opts, 'style')\n\t\t}\n\t}\n\n\ttoPath2D(opts: PathBuilderOpts): Path2D {\n\t\tif (opts.style === 'none') {\n\t\t\treturn new Path2D()\n\t\t}",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder.toGeometry#method:PathBuilder.toGeometry",
+          "fileId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder.toGeometry",
+          "unitKind": "method",
+          "name": "toGeometry",
+          "qualifiedName": "PathBuilder.toGeometry",
+          "parentUnitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder#class:PathBuilder",
+          "startLine": 546,
+          "endLine": 587,
+          "signature": "toGeometry(): PathBuilderGeometry2d",
+          "parameters": [],
+          "returnType": "PathBuilderGeometry2d",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": ["Returns a PathBuilderGeometry2d representing the builder's accumulated path commands."],
+          "invariants": ["The returned geometry preserves the path's command sequence and geometry."],
+          "edgeCases": [
+            "An empty path produces geometry representing no path segments.",
+            "A path containing lines, curves, or arcs produces geometry containing the corresponding path structure."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "PathBuilderGeometry2d", "source": null, "kind": "internal" }],
+          "symbolReferences": ["PathBuilderGeometry2d"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Converts the path accumulated by the PathBuilder into a PathBuilderGeometry2d instance representing the same path.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "toGeometry() is called.",
+              "then": "It returns a PathBuilderGeometry2d representing an empty path.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "toGeometry() is called.",
+              "then": "The returned geometry represents those commands in the same order and shape.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "6f4aa98e9f45a71b221a531573fb4d3f33335f7200a3f4c40e84ab24ee656092"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder.toDashedSvg#method:PathBuilder.toDashedSvg",
+        "unitKind": "method",
+        "name": "toDashedSvg",
+        "qualifiedName": "PathBuilder.toDashedSvg",
+        "parentUnitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder#class:PathBuilder",
+        "startLine": 597,
+        "endLine": 678,
+        "isBehavioral": true,
+        "source": "\n\ttoGeometry(): PathBuilderGeometry2d | Group2d {\n\t\tconst geometries = []\n\n\t\tlet current: null | {\n\t\t\tstartIdx: number\n\t\t\tmoveCommand: MoveToPathBuilderCommand\n\t\t\tisClosed: boolean\n\t\t\topts?: PathBuilderLineOpts\n\t\t} = null\n\t\tfor (let i = 0; i < this.commands.length; i++) {\n\t\t\tconst command = this.commands[i]\n\n\t\t\tif (command.type === 'move') {\n\t\t\t\tif (current && current.opts?.geometry !== false) {\n\t\t\t\t\tgeometries.push(\n\t\t\t\t\t\tnew PathBuilderGeometry2d(this, current.startIdx, i, {\n\t\t\t\t\t\t\t...current.opts?.geometry,\n\t\t\t\t\t\t\tisFilled: current.opts?.geometry?.isFilled ?? false,\n\t\t\t\t\t\t\tisClosed: current.moveCommand.closeIdx !== null,\n\t\t\t\t\t\t})\n\t\t\t\t\t)\n\t\t\t\t}\n\t\t\t\tcurrent = { startIdx: i, moveCommand: command, opts: command.opts, isClosed: false }\n\t\t\t}\n\n\t\t\tif (command.isClose) {\n\t\t\t\tassert(current, 'No current move command')\n\t\t\t\tcurrent.isClosed = true\n\t\t\t}\n\t\t}\n\n\t\tif (current && current.opts?.geometry !== false) {\n\t\t\tgeometries.push(\n\t\t\t\tnew PathBuilderGeometry2d(this, current.startIdx, this.commands.length, {\n\t\t\t\t\t...current.opts?.geometry,\n\t\t\t\t\tisFilled: current.opts?.geometry?.isFilled ?? false,\n\t\t\t\t\tisClosed: current.moveCommand.closeIdx !== null,\n\t\t\t\t})\n\t\t\t)\n\t\t}\n\n\t\tassert(geometries.length > 0)\n\t\tif (geometries.length === 1) return geometries[0]\n\t\treturn new Group2d({ children: geometries })\n\t}\n\n\tprivate toSolidSvg(opts: PathBuilderOpts) {\n\t\tconst { strokeWidth, props } = opts\n\n\t\treturn (\n\t\t\t<path strokeWidth={strokeWidth} d={this.toD({ onlyFilled: opts.onlyFilled })} {...props} />\n\t\t)\n\t}\n\n\tprivate toDashedSvg(opts: DashedPathBuilderOpts) {\n\t\tconst {\n\t\t\tstyle,\n\t\t\tstrokeWidth,\n\t\t\tsnap,\n\t\t\tlengthRatio,\n\t\t\tprops: { markerStart, markerEnd, ...props } = {},\n\t\t} = opts\n\n\t\tconst parts: ReactNode[] = []\n\n\t\tlet isCurrentPathClosed = false\n\t\tlet isSkippingCurrentLine = false\n\t\tlet currentLineOpts: PathBuilderLineOpts | undefined = undefined\n\n\t\tlet currentRun: {\n\t\t\tstartIdx: number\n\t\t\tendIdx: number\n\t\t\tisFirst: boolean\n\t\t\tisLast: boolean\n\t\t\tlength: number\n\t\t\tlineOpts: PathBuilderLineOpts | undefined\n\t\t\tpathIsClosed: boolean\n\t\t} | null = null\n\n\t\tconst addCurrentRun = () => {\n\t\t\tif (!currentRun) return",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder.toDashedSvg#method:PathBuilder.toDashedSvg",
+          "fileId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder.toDashedSvg",
+          "unitKind": "method",
+          "name": "toDashedSvg",
+          "qualifiedName": "PathBuilder.toDashedSvg",
+          "parentUnitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder#class:PathBuilder",
+          "startLine": 597,
+          "endLine": 678,
+          "signature": "private toDashedSvg(opts: DashedPathBuilderOpts)",
+          "parameters": [
+            {
+              "name": "opts",
+              "type": "DashedPathBuilderOpts",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "ReactNode",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "private",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "opts is a valid DashedPathBuilderOpts value.",
+            "The PathBuilder contains path commands that can be converted into dashed runs."
+          ],
+          "postconditions": [
+            "Returns React SVG content representing the dashed path.",
+            "The configured stroke width, dash style, snapping, length ratio, and remaining path properties are applied to the generated output.",
+            "markerStart and markerEnd are handled separately from the remaining path properties."
+          ],
+          "invariants": [
+            "The input PathBuilder command sequence is not mutated.",
+            "markerStart and markerEnd are excluded from the properties passed through as the remaining SVG path props.",
+            "Dash-run generation tracks whether the current path is closed and whether a run is first or last."
+          ],
+          "edgeCases": [
+            "Closed paths are tracked separately from open paths when constructing dashed runs.",
+            "Paths containing skipped line portions do not contribute those portions to the current rendered run.",
+            "Absent props are accepted; markerStart and markerEnd are treated as undefined when not supplied.",
+            "A path with no current dashed run produces no run for that segment."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["DashedPathBuilderOpts", "PathBuilderLineOpts", "ReactNode"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Returns React SVG ReactNode content composed from dashed path segments; SVG path properties include the configured stroke width and all supplied props except markerStart and markerEnd, which are handled independently.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Builds React SVG content for a path rendered with the configured dashed-line style. It preserves applicable stroke and path properties while handling markers separately from the generated dashed path segments.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "6149b85fde19b2f67d1c671f904351ecd9607dd283b6c5313801ca1d1a1de585"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder.toDrawD#method:PathBuilder.toDrawD",
+        "unitKind": "method",
+        "name": "toDrawD",
+        "qualifiedName": "PathBuilder.toDrawD",
+        "parentUnitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder#class:PathBuilder",
+        "startLine": 684,
+        "endLine": 820,
+        "isBehavioral": true,
+        "source": "\t\t\tconst start = lineOpts?.dashStart ?? opts.start\n\t\t\tconst end = lineOpts?.dashEnd ?? opts.end\n\t\t\tconst { strokeDasharray, strokeDashoffset } = getPerfectDashProps(length, strokeWidth, {\n\t\t\t\tstyle,\n\t\t\t\tsnap,\n\t\t\t\tlengthRatio,\n\t\t\t\tstart: isFirst ? (start ?? (pathIsClosed ? 'outset' : 'none')) : 'outset',\n\t\t\t\tend: isLast ? (end ?? (pathIsClosed ? 'outset' : 'none')) : 'outset',\n\t\t\t})\n\n\t\t\tconst d = this.toD({ startIdx, endIdx: endIdx + 1 })\n\t\t\tparts.push(\n\t\t\t\t<path\n\t\t\t\t\tkey={parts.length}\n\t\t\t\t\td={d}\n\t\t\t\t\tstrokeDasharray={strokeDasharray}\n\t\t\t\t\tstrokeDashoffset={strokeDashoffset}\n\t\t\t\t\tmarkerStart={isFirst ? markerStart : undefined}\n\t\t\t\t\tmarkerEnd={isLast ? markerEnd : undefined}\n\t\t\t\t/>\n\t\t\t)\n\t\t}\n\n\t\tfor (let i = 0; i < this.commands.length; i++) {\n\t\t\tconst command = this.commands[i]\n\t\t\tconst lastCommand = this.commands[i - 1]\n\t\t\tif (command.type === 'move') {\n\t\t\t\tisCurrentPathClosed = command.closeIdx !== null\n\t\t\t\tconst isFilled =\n\t\t\t\t\tcommand.opts?.geometry === false ? false : (command.opts?.geometry?.isFilled ?? false)\n\t\t\t\tif (opts.onlyFilled && !isFilled) {\n\t\t\t\t\tisSkippingCurrentLine = true\n\t\t\t\t} else {\n\t\t\t\t\tisSkippingCurrentLine = false\n\t\t\t\t\tcurrentLineOpts = command.opts\n\t\t\t\t}\n\t\t\t\tcontinue\n\t\t\t}\n\n\t\t\tif (isSkippingCurrentLine) continue\n\n\t\t\tconst segmentLength = this.calculateSegmentLength(lastCommand, command)\n\t\t\tconst isFirst = lastCommand.type === 'move'\n\t\t\tconst isLast =\n\t\t\t\tcommand.isClose || i === this.commands.length - 1 || this.commands[i + 1]?.type === 'move'\n\n\t\t\tif (currentRun && command.opts?.mergeWithPrevious) {\n\t\t\t\tcurrentRun.length += segmentLength\n\t\t\t\tcurrentRun.endIdx = i\n\t\t\t\tcurrentRun.isLast = isLast\n\t\t\t} else {\n\t\t\t\taddCurrentRun()\n\t\t\t\tcurrentRun = {\n\t\t\t\t\tstartIdx: i,\n\t\t\t\t\tendIdx: i,\n\t\t\t\t\tisFirst,\n\t\t\t\t\tisLast,\n\t\t\t\t\tlength: segmentLength,\n\t\t\t\t\tlineOpts: currentLineOpts,\n\t\t\t\t\tpathIsClosed: isCurrentPathClosed,\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\n\t\taddCurrentRun()\n\n\t\treturn (\n\t\t\t<g strokeWidth={strokeWidth} {...props}>\n\t\t\t\t{parts}\n\t\t\t</g>\n\t\t)\n\t}\n\n\tprivate toDrawSvg(opts: DrawPathBuilderOpts) {\n\t\treturn <path strokeWidth={opts.strokeWidth} d={this.toDrawD(opts)} {...opts.props} />\n\t}\n\n\ttoDrawD(opts: DrawPathBuilderDOpts) {\n\t\tconst {\n\t\t\tstrokeWidth,\n\t\t\trandomSeed,\n\t\t\toffset: defaultOffset = strokeWidth / 3,\n\t\t\troundness: defaultRoundness = strokeWidth * 2,\n\t\t\tpasses = 2,\n\t\t\tonlyFilled = false,\n\t\t} = opts\n\n\t\tconst parts = []\n\n\t\tconst commandInfo = this.getCommandInfo()\n\n\t\t// for each command, we draw the line for the command, plus the corner to the next command.\n\t\tconst drawCommands = []\n\t\tlet lastMoveCommandIdx = null\n\t\tfor (let i = 0; i < this.commands.length; i++) {\n\t\t\tconst command = this.commands[i]\n\t\t\tconst offset = command.opts?.offset ?? defaultOffset\n\t\t\tconst roundness = command.opts?.roundness ?? defaultRoundness\n\n\t\t\tif (command.type === 'move') {\n\t\t\t\tlastMoveCommandIdx = i\n\t\t\t}\n\n\t\t\tconst nextIdx = command.isClose\n\t\t\t\t? assertExists(lastMoveCommandIdx) + 1\n\t\t\t\t: !this.commands[i + 1] || this.commands[i + 1].type === 'move'\n\t\t\t\t\t? undefined\n\t\t\t\t\t: i + 1\n\n\t\t\tconst nextInfo =\n\t\t\t\tnextIdx !== undefined && this.commands[nextIdx] && this.commands[nextIdx]?.type !== 'move'\n\t\t\t\t\t? commandInfo[nextIdx]\n\t\t\t\t\t: undefined\n\n\t\t\tconst currentSupportsRoundness = commandsSupportingRoundness[command.type]\n\t\t\tconst nextSupportsRoundness =\n\t\t\t\tnextIdx !== undefined ? commandsSupportingRoundness[this.commands[nextIdx].type] : false\n\n\t\t\tconst currentInfo = commandInfo[i]\n\n\t\t\tconst tangentToPrev = currentInfo?.tangentEnd\n\t\t\tconst tangentToNext = nextInfo?.tangentStart\n\n\t\t\tconst roundnessClampedForAngle =\n\t\t\t\tcurrentSupportsRoundness &&\n\t\t\t\tnextSupportsRoundness &&\n\t\t\t\ttangentToPrev &&\n\t\t\t\ttangentToNext &&\n\t\t\t\tVec.Len2(tangentToPrev) > 0.01 &&\n\t\t\t\tVec.Len2(tangentToNext) > 0.01\n\t\t\t\t\t? modulate(\n\t\t\t\t\t\t\tMath.abs(Vec.AngleBetween(tangentToPrev, tangentToNext)),\n\t\t\t\t\t\t\t[Math.PI / 2, Math.PI],\n\t\t\t\t\t\t\t[roundness, 0],\n\t\t\t\t\t\t\ttrue\n\t\t\t\t\t\t)\n\t\t\t\t\t: 0",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder.toDrawD#method:PathBuilder.toDrawD",
+          "fileId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder.toDrawD",
+          "unitKind": "method",
+          "name": "toDrawD",
+          "qualifiedName": "PathBuilder.toDrawD",
+          "parentUnitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder#class:PathBuilder",
+          "startLine": 684,
+          "endLine": 820,
+          "signature": "toDrawD(opts: DrawPathBuilderDOpts)",
+          "parameters": [
+            {
+              "name": "opts",
+              "type": "DrawPathBuilderDOpts",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "string",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "opts.strokeWidth is provided.",
+            "Commands that are marked as closed have a preceding move command so their closing segment can resolve the active subpath."
+          ],
+          "postconditions": [
+            "Returns an SVG path data string derived from the builder commands.",
+            "The generated path accounts for per-command or default offset and roundness settings.",
+            "Only commands belonging to filled subpaths are included when opts.onlyFilled is true."
+          ],
+          "invariants": [
+            "Command ordering and subpath boundaries are preserved in the generated path.",
+            "Corner roundness is suppressed when the adjacent commands do not support roundness or their relevant tangents are too short.",
+            "For supported adjacent segments, roundness is reduced as the angle approaches a straight reversal."
+          ],
+          "edgeCases": [
+            "When offset is omitted, it defaults to opts.strokeWidth / 3.",
+            "When roundness is omitted, it defaults to opts.strokeWidth * 2.",
+            "When passes is omitted, two drawing passes are used.",
+            "When onlyFilled is omitted, both filled and non-filled subpaths are eligible for drawing.",
+            "A command at the end of a subpath has no next command for corner construction.",
+            "A closed command resolves its next command from the beginning of the current move-delimited subpath.",
+            "A closed command without a preceding move command fails during required move-command resolution."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["Assertion error when a closed command cannot resolve a preceding move command."],
+            "reverts": [],
+            "onInvalidInput": "Invalid command structure that violates the closed-subpath invariant may throw during path construction.",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "getCommandInfo", "source": "PathBuilder", "kind": "internal" },
+            { "name": "assertExists", "source": null, "kind": "external" },
+            { "name": "Vec.Len2", "source": "Vec", "kind": "external" },
+            { "name": "Vec.AngleBetween", "source": "Vec", "kind": "external" },
+            { "name": "modulate", "source": null, "kind": "external" }
+          ],
+          "symbolReferences": ["DrawPathBuilderDOpts", "commandsSupportingRoundness"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Returns an SVG path data (`d`) string composed from the builder's drawing commands; the result is suitable for use as the `d` attribute of an SVG path element.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Generates an SVG path data string representing the builder's commands as a hand-drawn-style path. Stroke width and drawing options control offsets, corner roundness, pass count, and whether only filled subpaths are rendered.",
+          "specLiterals": [
+            {
+              "kind": "magic-number",
+              "value": "2",
+              "role": "Default number of drawing passes when opts.passes is omitted."
+            },
+            {
+              "kind": "magic-number",
+              "value": "3",
+              "role": "Default offset divisor applied to stroke width when opts.offset is omitted."
+            },
+            {
+              "kind": "magic-number",
+              "value": "0.01",
+              "role": "Minimum squared tangent length threshold for angle-based corner roundness."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "e3cb1260fc306669bdfbfe2f6fa88666ba07ddde890af2134fc276d47a7470ff"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder.getCommandInfo#method:PathBuilder.getCommandInfo",
+        "unitKind": "method",
+        "name": "getCommandInfo",
+        "qualifiedName": "PathBuilder.getCommandInfo",
+        "parentUnitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder#class:PathBuilder",
+        "startLine": 840,
+        "endLine": 876,
+        "isBehavioral": true,
+        "source": "\t\t\t\tcommand,\n\t\t\t\toffsetAmount,\n\t\t\t\troundnessBefore: roundnessBeforeClampedForLength,\n\t\t\t\troundnessAfter: roundnessAfterClampedForLength,\n\t\t\t\ttangentToPrev: commandInfo[i]?.tangentEnd,\n\t\t\t\ttangentToNext: nextInfo?.tangentStart,\n\t\t\t\tmoveDidClose: false,\n\t\t\t}\n\n\t\t\tdrawCommands.push(drawCommand)\n\n\t\t\tif (command.isClose && lastMoveCommandIdx !== null) {\n\t\t\t\tconst lastMoveCommand = drawCommands[lastMoveCommandIdx]\n\t\t\t\tlastMoveCommand.moveDidClose = true\n\t\t\t\tlastMoveCommand.roundnessAfter = roundnessAfterClampedForLength\n\t\t\t} else if (command.type === 'move') {\n\t\t\t\tlastMoveCommandIdx = i\n\t\t\t}\n\t\t}\n\n\t\tfor (let pass = 0; pass < passes; pass++) {\n\t\t\tconst random = rng(randomSeed + pass)\n\n\t\t\tlet lastMoveToOffset = { x: 0, y: 0 }\n\t\t\tlet isSkippingCurrentLine = false\n\t\t\tfor (const {\n\t\t\t\tcommand,\n\t\t\t\toffsetAmount,\n\t\t\t\troundnessBefore,\n\t\t\t\troundnessAfter,\n\t\t\t\ttangentToNext,\n\t\t\t\ttangentToPrev,\n\t\t\t} of drawCommands) {\n\t\t\t\tlet offset: VecLike\n\t\t\t\tif (command.isClose) {\n\t\t\t\t\toffset = lastMoveToOffset\n\t\t\t\t} else {",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder.getCommandInfo#method:PathBuilder.getCommandInfo",
+          "fileId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder.getCommandInfo",
+          "unitKind": "method",
+          "name": "getCommandInfo",
+          "qualifiedName": "PathBuilder.getCommandInfo",
+          "parentUnitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilder#class:PathBuilder",
+          "startLine": 840,
+          "endLine": 876,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["The supplied command is a path command supported by PathBuilder."],
+          "postconditions": ["Returns metadata describing the command for subsequent path rendering calculations."],
+          "invariants": [
+            "The returned metadata is derived from the command geometry and does not mutate externally visible path state."
+          ],
+          "edgeCases": [
+            "Commands without a drawable segment produce metadata appropriate to their non-drawing behavior.",
+            "Commands whose geometry has zero or degenerate length are handled without introducing invalid path metadata."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["PathBuilder path command types"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Derives geometric metadata for a path command, including information used to determine command tangents and length-related rendering behavior.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "da50335adb00de934befe67e572839f404595323f1b096334f9b12c1f8c3ab98"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilderGeometry2d#class:PathBuilderGeometry2d",
+        "unitKind": "class",
+        "name": "PathBuilderGeometry2d",
+        "qualifiedName": "PathBuilderGeometry2d",
+        "parentUnitId": null,
+        "startLine": 885,
+        "endLine": 967,
+        "isBehavioral": true,
+        "source": "\t\t\t\t\t\tcommand.opts?.geometry === false ? false : (command.opts?.geometry?.isFilled ?? false)\n\t\t\t\t\tif (onlyFilled && !isFilled) {\n\t\t\t\t\t\tisSkippingCurrentLine = true\n\t\t\t\t\t} else {\n\t\t\t\t\t\tisSkippingCurrentLine = false\n\t\t\t\t\t}\n\t\t\t\t}\n\n\t\t\t\tif (isSkippingCurrentLine) continue\n\n\t\t\t\tconst offsetPoint = Vec.Add(command, offset)\n\n\t\t\t\tconst endPoint =\n\t\t\t\t\ttangentToNext && roundnessAfter > 0\n\t\t\t\t\t\t? Vec.Mul(tangentToNext, -roundnessAfter).add(offsetPoint)\n\t\t\t\t\t\t: offsetPoint\n\n\t\t\t\tconst startPoint =\n\t\t\t\t\ttangentToPrev && roundnessBefore > 0\n\t\t\t\t\t\t? Vec.Mul(tangentToPrev, roundnessBefore).add(offsetPoint)\n\t\t\t\t\t\t: offsetPoint\n\n\t\t\t\tif (endPoint === offsetPoint || startPoint === offsetPoint) {\n\t\t\t\t\tswitch (command.type) {\n\t\t\t\t\t\tcase 'move':\n\t\t\t\t\t\t\tparts.push('M', toDomPrecision(endPoint.x), toDomPrecision(endPoint.y))\n\t\t\t\t\t\t\tbreak\n\t\t\t\t\t\tcase 'line':\n\t\t\t\t\t\t\tparts.push('L', toDomPrecision(endPoint.x), toDomPrecision(endPoint.y))\n\t\t\t\t\t\t\tbreak\n\t\t\t\t\t\tcase 'cubic': {\n\t\t\t\t\t\t\tconst offsetCp1 = Vec.Add(command.cp1, offset)\n\t\t\t\t\t\t\tconst offsetCp2 = Vec.Add(command.cp2, offset)\n\t\t\t\t\t\t\tparts.push(\n\t\t\t\t\t\t\t\t'C',\n\t\t\t\t\t\t\t\ttoDomPrecision(offsetCp1.x),\n\t\t\t\t\t\t\t\ttoDomPrecision(offsetCp1.y),\n\t\t\t\t\t\t\t\ttoDomPrecision(offsetCp2.x),\n\t\t\t\t\t\t\t\ttoDomPrecision(offsetCp2.y),\n\t\t\t\t\t\t\t\ttoDomPrecision(endPoint.x),\n\t\t\t\t\t\t\t\ttoDomPrecision(endPoint.y)\n\t\t\t\t\t\t\t)\n\t\t\t\t\t\t\tbreak\n\t\t\t\t\t\t}\n\t\t\t\t\t\tdefault:\n\t\t\t\t\t\t\texhaustiveSwitchError(command, 'type')\n\t\t\t\t\t}\n\t\t\t\t} else {\n\t\t\t\t\tswitch (command.type) {\n\t\t\t\t\t\tcase 'move':\n\t\t\t\t\t\t\tparts.push('M', toDomPrecision(endPoint.x), toDomPrecision(endPoint.y))\n\t\t\t\t\t\t\tbreak\n\t\t\t\t\t\tcase 'line':\n\t\t\t\t\t\t\tparts.push(\n\t\t\t\t\t\t\t\t'L',\n\t\t\t\t\t\t\t\ttoDomPrecision(startPoint.x),\n\t\t\t\t\t\t\t\ttoDomPrecision(startPoint.y),\n\n\t\t\t\t\t\t\t\t'Q',\n\t\t\t\t\t\t\t\ttoDomPrecision(offsetPoint.x),\n\t\t\t\t\t\t\t\ttoDomPrecision(offsetPoint.y),\n\t\t\t\t\t\t\t\ttoDomPrecision(endPoint.x),\n\t\t\t\t\t\t\t\ttoDomPrecision(endPoint.y)\n\t\t\t\t\t\t\t)\n\t\t\t\t\t\t\tbreak\n\t\t\t\t\t\tcase 'cubic': {\n\t\t\t\t\t\t\tconst offsetCp1 = Vec.Add(command.cp1, offset)\n\t\t\t\t\t\t\tconst offsetCp2 = Vec.Add(command.cp2, offset)\n\t\t\t\t\t\t\tparts.push(\n\t\t\t\t\t\t\t\t'C',\n\t\t\t\t\t\t\t\ttoDomPrecision(offsetCp1.x),\n\t\t\t\t\t\t\t\ttoDomPrecision(offsetCp1.y),\n\t\t\t\t\t\t\t\ttoDomPrecision(offsetCp2.x),\n\t\t\t\t\t\t\t\ttoDomPrecision(offsetCp2.y),\n\t\t\t\t\t\t\t\ttoDomPrecision(offsetPoint.x),\n\t\t\t\t\t\t\t\ttoDomPrecision(offsetPoint.y)\n\t\t\t\t\t\t\t)\n\t\t\t\t\t\t\tbreak\n\t\t\t\t\t\t}\n\t\t\t\t\t\tdefault:\n\t\t\t\t\t\t\texhaustiveSwitchError(command, 'type')\n\t\t\t\t\t}\n\t\t\t\t}",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilderGeometry2d#class:PathBuilderGeometry2d",
+          "fileId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilderGeometry2d",
+          "unitKind": "class",
+          "name": "PathBuilderGeometry2d",
+          "qualifiedName": "PathBuilderGeometry2d",
+          "parentUnitId": null,
+          "startLine": 885,
+          "endLine": 967,
+          "signature": "class PathBuilderGeometry2d extends Geometry2d",
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": ["Geometry2d"],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [
+            "PathBuilderGeometry2d.getSegments",
+            "PathBuilderGeometry2d.getVertices",
+            "PathBuilderGeometry2d.nearestPoint"
+          ],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Provides a Geometry2d-compatible representation of path-builder geometry for segment, vertex, and nearest-point queries.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "b0e814e687d9800a9081c5f9a224cca54fa9c1579c0eca6bcbb6a590e767534c"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilderGeometry2d.getSegments#method:PathBuilderGeometry2d.getSegments",
+        "unitKind": "method",
+        "name": "getSegments",
+        "qualifiedName": "PathBuilderGeometry2d.getSegments",
+        "parentUnitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilderGeometry2d#class:PathBuilderGeometry2d",
+        "startLine": 891,
+        "endLine": 923,
+        "isBehavioral": true,
+        "source": "\t\t\t\t}\n\n\t\t\t\tif (isSkippingCurrentLine) continue\n\n\t\t\t\tconst offsetPoint = Vec.Add(command, offset)\n\n\t\t\t\tconst endPoint =\n\t\t\t\t\ttangentToNext && roundnessAfter > 0\n\t\t\t\t\t\t? Vec.Mul(tangentToNext, -roundnessAfter).add(offsetPoint)\n\t\t\t\t\t\t: offsetPoint\n\n\t\t\t\tconst startPoint =\n\t\t\t\t\ttangentToPrev && roundnessBefore > 0\n\t\t\t\t\t\t? Vec.Mul(tangentToPrev, roundnessBefore).add(offsetPoint)\n\t\t\t\t\t\t: offsetPoint\n\n\t\t\t\tif (endPoint === offsetPoint || startPoint === offsetPoint) {\n\t\t\t\t\tswitch (command.type) {\n\t\t\t\t\t\tcase 'move':\n\t\t\t\t\t\t\tparts.push('M', toDomPrecision(endPoint.x), toDomPrecision(endPoint.y))\n\t\t\t\t\t\t\tbreak\n\t\t\t\t\t\tcase 'line':\n\t\t\t\t\t\t\tparts.push('L', toDomPrecision(endPoint.x), toDomPrecision(endPoint.y))\n\t\t\t\t\t\t\tbreak\n\t\t\t\t\t\tcase 'cubic': {\n\t\t\t\t\t\t\tconst offsetCp1 = Vec.Add(command.cp1, offset)\n\t\t\t\t\t\t\tconst offsetCp2 = Vec.Add(command.cp2, offset)\n\t\t\t\t\t\t\tparts.push(\n\t\t\t\t\t\t\t\t'C',\n\t\t\t\t\t\t\t\ttoDomPrecision(offsetCp1.x),\n\t\t\t\t\t\t\t\ttoDomPrecision(offsetCp1.y),\n\t\t\t\t\t\t\t\ttoDomPrecision(offsetCp2.x),\n\t\t\t\t\t\t\t\ttoDomPrecision(offsetCp2.y),",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilderGeometry2d.getSegments#method:PathBuilderGeometry2d.getSegments",
+          "fileId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilderGeometry2d.getSegments",
+          "unitKind": "method",
+          "name": "getSegments",
+          "qualifiedName": "PathBuilderGeometry2d.getSegments",
+          "parentUnitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilderGeometry2d#class:PathBuilderGeometry2d",
+          "startLine": 891,
+          "endLine": 923,
+          "signature": "getSegments()",
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": ["Returns the path geometry's segments."],
+          "invariants": ["The returned segments correspond to the associated path definition."],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Returns the geometric segments represented by the associated path geometry for use by geometry consumers.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "b49386e9952ac5bb9c4fce8fe904ba94b49a65f446abdeb7183698e17251427b"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilderGeometry2d.getVertices#method:PathBuilderGeometry2d.getVertices",
+        "unitKind": "method",
+        "name": "getVertices",
+        "qualifiedName": "PathBuilderGeometry2d.getVertices",
+        "parentUnitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilderGeometry2d#class:PathBuilderGeometry2d",
+        "startLine": 925,
+        "endLine": 945,
+        "isBehavioral": true,
+        "source": "\t\t\t\t\t\t\t\ttoDomPrecision(endPoint.y)\n\t\t\t\t\t\t\t)\n\t\t\t\t\t\t\tbreak\n\t\t\t\t\t\t}\n\t\t\t\t\t\tdefault:\n\t\t\t\t\t\t\texhaustiveSwitchError(command, 'type')\n\t\t\t\t\t}\n\t\t\t\t} else {\n\t\t\t\t\tswitch (command.type) {\n\t\t\t\t\t\tcase 'move':\n\t\t\t\t\t\t\tparts.push('M', toDomPrecision(endPoint.x), toDomPrecision(endPoint.y))\n\t\t\t\t\t\t\tbreak\n\t\t\t\t\t\tcase 'line':\n\t\t\t\t\t\t\tparts.push(\n\t\t\t\t\t\t\t\t'L',\n\t\t\t\t\t\t\t\ttoDomPrecision(startPoint.x),\n\t\t\t\t\t\t\t\ttoDomPrecision(startPoint.y),\n\n\t\t\t\t\t\t\t\t'Q',\n\t\t\t\t\t\t\t\ttoDomPrecision(offsetPoint.x),\n\t\t\t\t\t\t\t\ttoDomPrecision(offsetPoint.y),",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilderGeometry2d.getVertices#method:PathBuilderGeometry2d.getVertices",
+          "fileId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilderGeometry2d.getVertices",
+          "unitKind": "method",
+          "name": "getVertices",
+          "qualifiedName": "PathBuilderGeometry2d.getVertices",
+          "parentUnitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilderGeometry2d#class:PathBuilderGeometry2d",
+          "startLine": 925,
+          "endLine": 945,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [
+            "Returns the path geometry's segment-start vertices in path order.",
+            "Returns an empty collection when the path contains no segments."
+          ],
+          "invariants": ["Vertex ordering matches the ordering of the path's segments."],
+          "edgeCases": [
+            "An empty path produces an empty collection.",
+            "A path containing multiple segments produces one vertex for each segment start, in traversal order."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "getSegments", "source": "PathBuilderGeometry2d", "kind": "internal" }],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Returns the vertices represented by the path geometry, preserving the path's segment order.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "getVertices() is called",
+              "then": "It returns an empty collection.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "getVertices() is called",
+              "then": "It returns the corresponding segment-start vertices in that same order.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "2c61396816e74c4013a1aafa68e89262b9f25f9c5496fffde74dfe7aa825483e"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilderGeometry2d.nearestPoint#method:PathBuilderGeometry2d.nearestPoint",
+        "unitKind": "method",
+        "name": "nearestPoint",
+        "qualifiedName": "PathBuilderGeometry2d.nearestPoint",
+        "parentUnitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilderGeometry2d#class:PathBuilderGeometry2d",
+        "startLine": 947,
+        "endLine": 961,
+        "isBehavioral": true,
+        "source": "\t\t\t\t\t\t\t\ttoDomPrecision(endPoint.y)\n\t\t\t\t\t\t\t)\n\t\t\t\t\t\t\tbreak\n\t\t\t\t\t\tcase 'cubic': {\n\t\t\t\t\t\t\tconst offsetCp1 = Vec.Add(command.cp1, offset)\n\t\t\t\t\t\t\tconst offsetCp2 = Vec.Add(command.cp2, offset)\n\t\t\t\t\t\t\tparts.push(\n\t\t\t\t\t\t\t\t'C',\n\t\t\t\t\t\t\t\ttoDomPrecision(offsetCp1.x),\n\t\t\t\t\t\t\t\ttoDomPrecision(offsetCp1.y),\n\t\t\t\t\t\t\t\ttoDomPrecision(offsetCp2.x),\n\t\t\t\t\t\t\t\ttoDomPrecision(offsetCp2.y),\n\t\t\t\t\t\t\t\ttoDomPrecision(offsetPoint.x),\n\t\t\t\t\t\t\t\ttoDomPrecision(offsetPoint.y)\n\t\t\t\t\t\t\t)",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilderGeometry2d.nearestPoint#method:PathBuilderGeometry2d.nearestPoint",
+          "fileId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilderGeometry2d.nearestPoint",
+          "unitKind": "method",
+          "name": "nearestPoint",
+          "qualifiedName": "PathBuilderGeometry2d.nearestPoint",
+          "parentUnitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__PathBuilderGeometry2d#class:PathBuilderGeometry2d",
+          "startLine": 947,
+          "endLine": 961,
+          "signature": "nearestPoint(point: VecLike): Vec",
+          "parameters": [
+            { "name": "point", "type": "VecLike", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "Vec",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["The argument is a point-like value compatible with VecLike."],
+          "postconditions": [
+            "Returns a Vec representing the nearest point on the path geometry to the supplied point."
+          ],
+          "invariants": [
+            "The selected result is determined by comparing candidate nearest points from the path's segments."
+          ],
+          "edgeCases": [
+            "For a point lying on the path, returns that point on the path.",
+            "For a point outside the path, returns the closest point among the path's segments.",
+            "For an empty or degenerate path, behavior follows the geometry's segment collection and nearest-point calculation."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "getSegments", "source": "PathBuilderGeometry2d", "kind": "internal" },
+            { "name": "nearestPoint", "source": "path segment", "kind": "internal" }
+          ],
+          "symbolReferences": ["VecLike", "Vec"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Returns the point on the represented path geometry that is nearest to the supplied point.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "e45c4ea25c3640d1468cf063bafd38dd54a6e3ec1e4fa1b853fb5edf67f13c9a"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__CubicBezier#module:CubicBezier",
+        "unitKind": "module",
+        "name": "CubicBezier",
+        "qualifiedName": "CubicBezier",
+        "parentUnitId": null,
+        "startLine": 969,
+        "endLine": 1002,
+        "isBehavioral": true,
+        "source": "\t\t}\n\n\t\treturn parts.join(' ')\n\t}\n\n\tprivate calculateSegmentLength(lastPoint: VecLike, command: PathBuilderCommand) {\n\t\tswitch (command.type) {\n\t\t\tcase 'move':\n\t\t\t\treturn 0\n\t\t\tcase 'line':\n\t\t\t\treturn Vec.Dist(lastPoint, command)\n\t\t\tcase 'cubic':\n\t\t\t\treturn CubicBezier.length(\n\t\t\t\t\tlastPoint.x,\n\t\t\t\t\tlastPoint.y,\n\t\t\t\t\tcommand.cp1.x,\n\t\t\t\t\tcommand.cp1.y,\n\t\t\t\t\tcommand.cp2.x,\n\t\t\t\t\tcommand.cp2.y,\n\t\t\t\t\tcommand.x,\n\t\t\t\t\tcommand.y\n\t\t\t\t)\n\t\t\tdefault:\n\t\t\t\texhaustiveSwitchError(command, 'type')\n\t\t}\n\t}\n\n\t/** @internal */\n\tgetCommands(): readonly PathBuilderCommand[] {\n\t\treturn this.commands\n\t}\n\n\t/** @internal */\n\tgetCommandInfo() {",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__CubicBezier#module:CubicBezier",
+          "fileId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx__CubicBezier",
+          "unitKind": "module",
+          "name": "CubicBezier",
+          "qualifiedName": "CubicBezier",
+          "parentUnitId": null,
+          "startLine": 969,
+          "endLine": 1002,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Provides cubic Bézier curve utilities used by path construction code, including cubic segment length calculation.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "e15a2381baf36264862387d2309e05e54d320d18c8d4103e9b6f5af9d2558b46"
+        }
+      }
+    ]
+  },
+  "out": [],
+  "in": [
+    "packages/tldraw/src/lib/shapes/arrow/ArrowShapeUtil.tsx",
+    "packages/tldraw/src/lib/shapes/arrow/ArrowPath.tsx",
+    "packages/tldraw/src/lib/shapes/geo/getGeoShapePath.ts",
+    "packages/tldraw/src/lib/shapes/geo/GeoShapeUtil.test.tsx",
+    "packages/tldraw/src/lib/shapes/shared/PathBuilder.test.tsx",
+    "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx"
+  ],
+  "externals": ["@tldraw/editor", "react"],
+  "impact": {
+    "seeds": 15,
+    "callers": 14,
+    "impactedFiles": [
+      "packages/tldraw/src/lib/shapes/geo/getGeoShapePath.ts",
+      "packages/tldraw/src/lib/shapes/arrow/ArrowPath.tsx",
+      "packages/tldraw/src/lib/shapes/shared/PathBuilder.test.tsx"
+    ]
+  }
+}

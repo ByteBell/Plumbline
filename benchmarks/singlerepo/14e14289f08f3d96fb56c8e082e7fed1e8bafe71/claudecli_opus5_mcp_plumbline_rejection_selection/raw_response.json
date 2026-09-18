@@ -1,0 +1,71 @@
+{
+  "duration_api_ms": 198376,
+  "stop_reason": "end_turn",
+  "session_id": "a912d530-36d9-4cce-ba65-ed1f6e6aa53e",
+  "total_cost_usd": 3.4682739999999996,
+  "usage": {
+    "input_tokens": 28,
+    "cache_creation_input_tokens": 216215,
+    "cache_read_input_tokens": 1827168,
+    "output_tokens": 15696,
+    "output_tokens_details": { "thinking_tokens": 4929 },
+    "server_tool_use": { "web_search_requests": 0, "web_fetch_requests": 0 },
+    "service_tier": "standard",
+    "cache_creation": { "ephemeral_1h_input_tokens": 216215, "ephemeral_5m_input_tokens": 0 },
+    "inference_geo": "not_available",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 4836,
+        "cache_read_input_tokens": 208148,
+        "cache_creation_input_tokens": 8067,
+        "cache_creation": { "ephemeral_5m_input_tokens": 0, "ephemeral_1h_input_tokens": 8067 },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-opus-5": {
+      "inputTokens": 28,
+      "outputTokens": 15696,
+      "cacheReadInputTokens": 1827168,
+      "cacheCreationInputTokens": 216215,
+      "webSearchRequests": 0,
+      "costUSD": 3.4682739999999996,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "canonicalModel": "claude-opus-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": { "background": 0, "foreground": 0, "unset": 0 },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": { "parent": 0, "user": 0, "system": 0 },
+    "refused": { "depth_limit": 0, "concurrency_limit": 0, "budget": 0 },
+    "by_type": {}
+  },
+  "is_error": false,
+  "num_turns": 27,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## LEDGER\n\n**RETAINED[]** (areas kept at 0.3, with the verdict that kept it)\n\n| area prefix | verdict |\n|---|---|\n| `packages/features` | blueprint: domain module holding the booking lifecycle (`@calcom/features`, 1574 files, \"host assignment\") |\n| `packages/lib` | blueprint: shared \"availability, booking access\" utilities; owns error-code vocabulary |\n| `packages/trpc` | blueprint: typed boundary with \"standardized errors\" — a booking caller |\n| `apps/api/v2` | blueprint: versioned HTTP API for bookings; where a generic failure reaches a caller |\n| `apps/api/v1` | blueprint: API v1 booking endpoints — sibling surface of the same booking handler |\n| `apps/web` | blueprint: booking routes + i18n message catalogue for error codes |\n| `packages/platform/libraries` | blueprint: \"stable access to booking business services\" — re-export path |\n| `packages/platform/atoms`, `packages/atoms` | blueprint: Booker UI consuming booking errors |\n| `packages/core` | blueprint: \"scheduling rules … calculate availability\" — could hold the gate |\n| `packages/prisma` | blueprint: schema declaring host `isFixed` / `SchedulingType` |\n| `packages/types` | blueprint: shared scheduling contracts |\n| `packages/app-store/routing-forms` | unlikely peer kept per 2.2 — routes responses into round-robin host selection |\n\n**DROPPED[]**\n\n| area | verdict |\n|---|---|\n| `packages/app-store/*` (all provider adapters: alby…zoomvideo, templates) | blueprint: each declares \"registers <vendor> integration / credentials\"; none owns host-availability or booking error semantics |\n| `packages/ui`, `packages/coss-ui`, `apps/ui-playground`, `apps/storybook` | blueprint: presentation primitives only |\n| `packages/embeds/*` | blueprint: iframe embed API, no booking-server logic |\n| `packages/emails`, `packages/sms` | blueprint: notification dispatch after a booking exists |\n| `packages/dayjs`, `packages/kysely`, `packages/config`, `packages/tsconfig`, `packages/eslint-*`, `scripts`, `deploy`, `infra` | blueprint: tooling/config/infrastructure |\n| `docs/*`, `apps/docs`, `apps/swagger`, `specs`, `agents`, `__checks__`, `tests`, `packages/testing`, `vitest-mocks` | docs/tests — also barred by 6.6 |\n| `apps/ai` | blueprint: Cal.ai email agent, calls booking APIs but does not own the gate |\n\nNo 4.2a correction was forced: `ensureAvailableUsers` and `handleBookingError` each resolved to a single sibling under RETAINED areas.\n\n**Obligations**\n\n| id | phrase | status | closers |\n|---|---|---|---|\n| OB-1 | \"only the always-present hosts are checked\" (violator) | CLOSED | `packages/features/bookings/lib/handleNewBooking.ts`, `packages/features/bookings/lib/handleNewBooking/ensureAvailableUsers.ts` |\n| OB-2 | \"nobody from the rotating pool is free\" — where rotation is resolved | CLOSED | `packages/features/bookings/lib/handleNewBooking.ts` (806-899), `packages/lib/server/getLuckyUser.ts` |\n| OB-3 | \"booking is taken and then falls over afterwards\" | CLOSED | `packages/features/bookings/lib/handleNewBooking.ts` (896-901) |\n| OB-4 | \"generic failure that never says which condition was not met\" | CLOSED | `packages/lib/errorCodes.ts`, `apps/api/v2/src/ee/bookings/2024-08-13/services/errors.service.ts`, `apps/web/public/static/locales/en/common.json` |\n\nCounts: |SEEN| = 74 · |CONFIRMED| = 6 · |RULED_OUT| = 0 · |CANDIDATES| = 30 emitted (rest below cap by rank).\n\nEvidence for the verdict, verbatim: `ensureAvailableUsers.ts:249-252` throws one undifferentiated `ErrorCode.NoAvailableUsersFound` for any empty result; `handleNewBooking.ts:724-738` comments \"each fixed user must be available\" and loops **only** `fixedUsers` for the extra recurring slots; `handleNewBooking.ts:896-899` enforces \"ALL fixed users must be available\" with `ErrorCode.HostsUnavailableForBooking` but there is **no** matching guard that `luckyUsers.length > 0` for a `SchedulingType.ROUND_ROBIN` event — the `while` loop at 827 can `break` at 832/855/886 leaving it empty, after which `users = [...fixedUserPool, ...luckyUsers]` (901) proceeds with fixed hosts alone. `errorCodes.ts:1-25` has no code for that condition, and `errors.service.ts:34-53` therefore maps whatever surfaces to the blanket \"One of the hosts either already has booking at this time or is not available\".\n\n{\"contract\": \"A team event whose hosts are split into always-present (fixed) hosts and a rotating (round-robin) pool must not be accepted unless BOTH conditions hold at the requested time: every fixed host is available AND at least one host from the rotating pool has actually been assigned. The check must run before the booking is persisted, and any failure must be reported with an error code that names which of the two conditions was unmet, carried unchanged through every layer that translates booking errors into a caller-facing message (the error-code enum, the i18n catalogue, and each API version's error translator), so the caller learns whether the fixed hosts or the rotating pool was the blocker.\", \"defect_location\": {\"repo\": \"calcom/cal.com\", \"summary\": \"packages/features/bookings/lib/handleNewBooking.ts:806-901 splits the available users into fixedUserPool and luckyUserPool and then enforces only half the contract: lines 896-899 assert 'ALL fixed users must be available' and throw ErrorCode.HostsUnavailableForBooking, but there is no symmetric assertion that a rotating host was picked. The while loop at 827-895 can exit with luckyUsers empty (break at 832 when freeUsers runs out, at 854-856 when getLuckyUser returns nothing, or via the catch at 886-891 that pushes every candidate into notAvailableLuckyUsers), and line 901 then sets users = [...fixedUserPool, ...luckyUsers] with the fixed hosts alone, so the booking is created and only falls over downstream. The same one-sided rule appears in the recurring pre-check at handleNewBooking.ts:724-738, whose comment says 'each fixed user must be available' and which iterates only fixedUsers, never a rotating host. The availability gate it calls, packages/features/bookings/lib/handleNewBooking/ensureAvailableUsers.ts:213-252, accumulates availableUsers without regard to user.isFixed and at 249-252 throws a single undifferentiated Error(ErrorCode.NoAvailableUsersFound), so no caller can tell the two failure modes apart; it is also the file that would have to return or raise the fixed-vs-rotating distinction. packages/lib/errorCodes.ts:1-25 lists NoAvailableUsersFound and HostsUnavailableForBooking but no code for 'no rotating host available', and because these enum values are i18n keys (apps/web/public/static/locales/en/common.json:118 maps 'hosts_unavailable_for_booking' to its message) a new condition needs an entry there too. apps/api/v2/src/ee/bookings/2024-08-13/services/errors.service.ts:34-53 is where the loss becomes the reported symptom: 'no_available_users_found_error' and 'hosts_unavailable_for_booking' both collapse into the blanket BadRequestException 'One of the hosts either already has booking at this time or is not available', and anything unrecognised is rethrown raw at line 53. packages/features/bookings/Booker/components/hooks/useBookings.ts:18,295 is the client-side counterpart that special-cases individual ErrorCode values and would need the new one. packages/lib/server/getLuckyUser.ts is the rotation resolver whose empty result the missing guard fails to detect.\", \"repo_paths_cited\": true}, \"answer\": [\"packages/features/bookings/lib/handleNewBooking.ts\", \"packages/lib/errorCodes.ts\", \"apps/api/v2/src/ee/bookings/2024-08-13/services/errors.service.ts\", \"apps/web/public/static/locales/en/common.json\", \"packages/features/bookings/lib/handleNewBooking/ensureAvailableUsers.ts\", \"packages/lib/server/getLuckyUser.ts\", \"apps/api/v2/src/ee/bookings/2024-08-13/services/bookings.service.ts\", \"packages/features/bookings/Booker/components/hooks/useBookings.ts\", \"packages/trpc/server/routers/viewer/slots/util.ts\", \"apps/api/v1/pages/api/bookings/_post.ts\", \"packages/features/bookings/lib/handleNewRecurringBooking.ts\", \"packages/lib/bookings/findQualifiedHostsWithDelegationCredentials.ts\", \"apps/api/v2/src/ee/bookings/2024-08-13/controllers/bookings.controller.ts\", \"apps/web/components/dialog/ReassignDialog.tsx\", \"packages/trpc/server/routers/viewer/teams/roundRobin/getRoundRobinHostsToReasign.handler.ts\", \"packages/features/bookings/lib/handleNewBooking/loadAndValidateUsers.ts\", \"packages/lib/getUserAvailability.ts\", \"apps/api/v2/src/ee/bookings/2024-04-15/controllers/bookings.controller.ts\", \"packages/features/bookings/Booker/components/BookEventForm/BookEventForm.tsx\", \"packages/features/bookings/lib/handleNewBooking/loadUsers.ts\", \"packages/lib/bookings/filterHostsByLeadThreshold.ts\", \"packages/features/ee/round-robin/roundRobinReassignment.ts\", \"packages/lib/errors.ts\", \"packages/features/bookings/lib/handleNewBooking/types.ts\", \"packages/features/ee/round-robin/utils/getTeamMembers.ts\", \"packages/features/ee/round-robin/roundRobinManualReassignment.ts\", \"packages/features/bookings/lib/handleNewBooking/getEventTypesFromDB.ts\", \"packages/features/bookings/lib/conflictChecker/checkForConflicts.ts\", \"packages/features/bookings/lib/handleSeats/handleSeats.ts\", \"packages/features/bookings/lib/handleNewBooking/checkBookingAndDurationLimits.ts\", \"packages/lib/getBusyTimes.ts\", \"packages/features/bookings/lib/handleNewBooking/validateBookingTimeIsNotOutOfBounds.ts\", \"packages/features/bookings/lib/handleNewBooking/getBookingData.ts\", \"packages/lib/getAggregatedAvailability.ts\", \"packages/prisma/schema.prisma\"]}",
+  "ttft_ms": 1668,
+  "type": "result",
+  "duration_ms": 458187,
+  "uuid": "48d64006-2214-4a02-9332-41f32aec9937",
+  "ttft_stream_ms": 1463,
+  "time_to_request_ms": 24,
+  "queued_turn_count": 0
+}

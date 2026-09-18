@@ -1,0 +1,2887 @@
+{
+  "schema": 2,
+  "kind": "file",
+  "repoName": "cal.diy",
+  "file": {
+    "relativePath": "packages/prisma/zod-utils.ts",
+    "language": "typescript",
+    "sizeBytes": 24071,
+    "tokenCount": 6018,
+    "model": "z-ai/glm-5.3-flash",
+    "analysedAt": "2026-09-04T19:30:37.540Z",
+    "module": {
+      "purpose": "Central Zod schema and validation utility module for the Cal.com Prisma package. It defines reusable schemas for event type metadata, booking responses/cancellation, user/team metadata, org settings, recordings, signup/email validation, and helper functions for schema transformation (denullish, entries, fromEntries, optionToValue). It also re-declares lightweight enums (Frequency, BookerLayouts, BillingPeriod) to avoid importing the heavy Prisma client.",
+      "summary": "This file is a shared validation layer built on Zod that underpins Cal.com's API and data-validation flows. It exports schemas for event type metadata (including managed event unlocked fields, booker layouts, confirmation thresholds), booking request/response payloads (responses, cancellation, confirmation, seat data), user and team metadata (conferencing app defaults, Stripe subscription fields, org migration info), organization settings, custom inputs, event locations, recurring event rules, and Daily video recordings. It includes utility type helpers like ZodDenullish and runtime helpers denullish/denullishShape/entries/fromEntries, plus generic parser factories (optionToValueSchema, getParserWithGeneric). Enum re-implementations (Frequency, BookerLayouts, BillingPeriod) avoid importing the full Prisma client bundle. Validation of booking responses is dynamic elsewhere; this file only covers static schemas. Signup validation integrates password rules via isPasswordValid and email regex.",
+      "businessContext": "Serving Cal.com's scheduling platform, this file validates core booking and event configuration data across API routes and client forms. If it fails, event creation, booking acceptance/cancellation, signup, and org onboarding lose input validation, risking corrupted metadata and invalid bookings.",
+      "classes": [],
+      "functions": [
+        "denullish (~L519-522): Recursively unwraps ZodNullable and ZodOptional schema wrappers",
+        "denullishShape (~L529-545): Rebuilds a ZodObject with all nullable/optional fields unwrapped",
+        "entries (~L553-561): Typed Object.entries returning accurately typed tuple arrays",
+        "fromEntries (~L584-590): Typed Object.fromEntries constructing objects from tuple arrays",
+        "optionToValueSchema (~L599-606): Builds schema converting Select label/value option to plain value",
+        "getParserWithGeneric (~L612-621): Returns parser preserving original data inference alongside schema output",
+        "emailSchemaRefinement (~L716-718): Tests a value against the shared email regex",
+        "getStringAsNumberRequiredSchema (~L750-751): Creates required string-to-number schema with translated error"
+      ],
+      "keywords": [
+        "zod schema",
+        "event type metadata",
+        "booking responses",
+        "booker layouts",
+        "managed event type props",
+        "team metadata",
+        "user metadata",
+        "recurring event",
+        "booking cancellation",
+        "slugify"
+      ],
+      "ontologyConcepts": [
+        "schema validation",
+        "metadata shape",
+        "nullable transformation",
+        "enum re-declaration",
+        "type-level utility",
+        "prefill validation",
+        "managed event unlockable fields",
+        "input sanitization"
+      ],
+      "businessEntities": [
+        "EventType",
+        "Booking",
+        "BookingSeat",
+        "Team",
+        "Organization",
+        "User",
+        "CustomInput",
+        "RecordingItem"
+      ],
+      "systemCapabilities": [
+        "Validate booking and event type payloads",
+        "Define shared metadata schemas",
+        "Transform and denullish Zod schemas",
+        "Validate signup credentials and emails",
+        "Model managed event type properties"
+      ],
+      "configDependencies": [],
+      "importsInternal": [
+        {
+          "spec": "@calcom/features/auth/lib/isPasswordValid",
+          "symbols": ["isPasswordValid"],
+          "anchor": { "startLine": 13, "endLine": 13 },
+          "resolvedRelativePath": "packages/features/auth/lib/isPasswordValid.ts",
+          "resolvedFileId": "packages/features/auth/lib/isPasswordValid.ts",
+          "resolvedHint": "packages/features/auth/lib/isPasswordValid.ts"
+        },
+        {
+          "spec": "@calcom/features/form-builder/schema",
+          "symbols": ["FieldType", "fieldsSchema"],
+          "anchor": { "startLine": 14, "endLine": 15 },
+          "resolvedRelativePath": "packages/features/form-builder/schema.ts",
+          "resolvedFileId": "packages/features/form-builder/schema.ts",
+          "resolvedHint": "packages/features/form-builder/schema.ts"
+        },
+        {
+          "spec": "@calcom/lib/emailSchema",
+          "symbols": ["emailSchema", "emailRegex"],
+          "anchor": { "startLine": 16, "endLine": 16 },
+          "resolvedRelativePath": "packages/lib/emailSchema.ts",
+          "resolvedFileId": "packages/lib/emailSchema.ts",
+          "resolvedHint": "packages/lib/emailSchema.ts"
+        },
+        {
+          "spec": "@calcom/lib/intervalLimits/intervalLimitSchema",
+          "symbols": ["IntervalLimit"],
+          "anchor": { "startLine": 17, "endLine": 17 },
+          "resolvedRelativePath": "packages/lib/intervalLimits/intervalLimitSchema.ts",
+          "resolvedFileId": "packages/lib/intervalLimits/intervalLimitSchema.ts",
+          "resolvedHint": "packages/lib/intervalLimits/intervalLimitSchema.ts"
+        },
+        {
+          "spec": "@calcom/lib/raqb/zod",
+          "symbols": ["zodAttributesQueryValue"],
+          "anchor": { "startLine": 18, "endLine": 18 },
+          "resolvedRelativePath": "packages/lib/raqb/zod.ts",
+          "resolvedFileId": "packages/lib/raqb/zod.ts",
+          "resolvedHint": "packages/lib/raqb/zod.ts"
+        },
+        {
+          "spec": "@calcom/lib/slugify",
+          "symbols": ["slugify"],
+          "anchor": { "startLine": 19, "endLine": 19 },
+          "resolvedRelativePath": "packages/lib/slugify.ts",
+          "resolvedFileId": "packages/lib/slugify.ts",
+          "resolvedHint": "packages/lib/slugify.ts"
+        },
+        {
+          "spec": "@calcom/prisma/enums",
+          "symbols": ["EventTypeCustomInputType"],
+          "anchor": { "startLine": 20, "endLine": 20 },
+          "resolvedRelativePath": null,
+          "resolvedFileId": null,
+          "resolvedHint": "packages/prisma/enums.ts"
+        },
+        {
+          "spec": "./client",
+          "symbols": ["Prisma"],
+          "anchor": { "startLine": 22, "endLine": 22 },
+          "resolvedRelativePath": null,
+          "resolvedFileId": null,
+          "resolvedHint": "packages/prisma/client.ts"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "dayjs",
+          "symbols": ["UnitTypeLongPlural"],
+          "package": "dayjs",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 1 }
+        },
+        {
+          "spec": "i18next",
+          "symbols": ["TFunction"],
+          "package": "i18next",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 2, "endLine": 2 }
+        },
+        {
+          "spec": "zod",
+          "symbols": [
+            "z",
+            "ZodNullable",
+            "ZodObject",
+            "ZodOptional",
+            "AnyZodObject",
+            "objectInputType",
+            "objectOutputType",
+            "ZodNullableDef",
+            "ZodOptionalDef",
+            "ZodRawShape",
+            "ZodTypeAny"
+          ],
+          "package": "zod",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 3, "endLine": 11 }
+        }
+      ],
+      "sideEffects": { "io": [], "network": [], "env": [], "fs": [], "process": [], "mutationOfArg": [] },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "EventTypeMetaDataSchema",
+          "shape": "eventTypeMetaDataSchemaWithUntypedApps.nullable() — event-type metadata incl. apps: z.record(z.string(), z.any())",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "bookingResponses",
+          "shape": "z.object({ email, attendeePhoneNumber?, name: string|{firstName,lastName?}, guests?, notes?, location?, smsReminderNumber?, rescheduleReason? }).nullable()",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "signupSchema",
+          "shape": "z.object({ username?, email: regex(emailRegex), password: superRefine(isPasswordValid), language?, token? })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "bookingCancelInput",
+          "shape": "bookingCancelSchema.refine(data => !!data.id || !!data.uid, \"At least one of the following required: 'id', 'uid'.\")",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "bookingCancelWithCsrfSchema",
+          "shape": "bookingCancelSchema.extend({ csrfToken: z.string().length(64) }).refine(!!data.id || !!data.uid)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "bookerLayouts",
+          "shape": "z.object({ enabledLayouts: z.array(layoutOptions), defaultLayout: layoutOptions }).nullable()",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "teamMetadataStrictSchema",
+          "shape": "baseTeamMetadataSchema.extend({ subscriptionId: refine startsWith 'sub_', subscriptionItemId: refine startsWith 'si_' }).partial().nullable()",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "eventTypeSlug",
+          "shape": "z.string().trim().transform(slugify).refine(len>=1)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "denullish",
+          "shape": "<T extends ZodTypeAny>(schema: T) => ZodDenullish<T>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "denullishShape",
+          "shape": "(obj: ZodObject<T,...>) => ZodObject<ZodDenullishShape<T>, UnknownKeys, Catchall>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "Frequency",
+          "shape": "enum YEARLY=0..SECONDLY=6",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "intervalLimitsType",
+          "shape": "re-export of zod schema from @calcom/lib/intervalLimits/intervalLimitSchema",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "isPasswordValid",
+          "shape": "isPasswordValid(data, true, isStrict) => Record<string, boolean>",
+          "resolvedRelativePath": "packages/features/auth/lib/isPasswordValid.ts",
+          "resolvedFileId": "packages/features/auth/lib/isPasswordValid.ts"
+        },
+        {
+          "name": "fieldsSchema",
+          "shape": "formBuilderFieldsSchema — form-builder fields zod schema",
+          "resolvedRelativePath": "packages/features/form-builder/schema.ts",
+          "resolvedFileId": "packages/features/form-builder/schema.ts"
+        },
+        {
+          "name": "emailRegex",
+          "shape": "RegExp from @calcom/lib/emailSchema",
+          "resolvedRelativePath": "packages/lib/emailSchema.ts",
+          "resolvedFileId": "packages/lib/emailSchema.ts"
+        },
+        {
+          "name": "slugify",
+          "shape": "(val: string) => string",
+          "resolvedRelativePath": "packages/lib/slugify.ts",
+          "resolvedFileId": "packages/lib/slugify.ts"
+        },
+        {
+          "name": "zodAttributesQueryValue",
+          "shape": "zod schema from @calcom/lib/raqb/zod",
+          "resolvedRelativePath": "packages/lib/raqb/zod.ts",
+          "resolvedFileId": "packages/lib/raqb/zod.ts"
+        },
+        {
+          "name": "IntervalLimit",
+          "shape": "type from @calcom/lib/intervalLimits/intervalLimitSchema",
+          "resolvedRelativePath": "packages/lib/intervalLimits/intervalLimitSchema.ts",
+          "resolvedFileId": "packages/lib/intervalLimits/intervalLimitSchema.ts"
+        },
+        {
+          "name": "Prisma.EventTypeSelect",
+          "shape": "Prisma.EventTypeSelect keyed record of true",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "EventTypeCustomInputType",
+          "shape": "enum from @calcom/prisma/enums",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "Enums and constants",
+          "intent": "Define Frequency, BookerLayouts enums and bookerLayoutOptions",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 26, "endLine": 46 }
+        },
+        {
+          "name": "Zod schema declarations",
+          "intent": "Declare exported validation schemas for event, booking, user, team metadata",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 48, "endLine": 425 }
+        },
+        {
+          "name": "iso8601 transform",
+          "intent": "Parse ISO string to Date via Date.parse, issue custom error if invalid",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 200, "endLine": 211 }
+        },
+        {
+          "name": "Zod utility types",
+          "intent": "Define ZodDenullish and ZodDenullishShape conditional types",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 511, "endLine": 517 }
+        },
+        {
+          "name": "denullish",
+          "intent": "Recursively unwrap ZodNullable/ZodOptional inner types",
+          "structureKind": "recursion",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": "schema is neither ZodNullable nor ZodOptional",
+          "anchor": { "startLine": 519, "endLine": 522 }
+        },
+        {
+          "name": "denullishShape",
+          "intent": "Build new ZodObject with denullished shape fields",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 529, "endLine": 545 }
+        },
+        {
+          "name": "entries/fromEntries helpers",
+          "intent": "Typed wrappers over Object.entries and Object.fromEntries",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 553, "endLine": 590 }
+        },
+        {
+          "name": "Generic parser factories",
+          "intent": "optionToValueSchema and getParserWithGeneric higher-order schema builders",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 599, "endLine": 621 }
+        },
+        {
+          "name": "Managed event type props",
+          "intent": "Enumerate all managed event type properties and unlocked subset",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 632, "endLine": 709 }
+        },
+        {
+          "name": "signupSchema password validation",
+          "intent": "Validate password via isPasswordValid, map failures to per-key issues",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 720, "endLine": 740 }
+        }
+      ],
+      "representationFamily": "schema",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "enum",
+          "name": "Frequency",
+          "signature": "export enum Frequency {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 26, "endLine": 34 }
+        },
+        {
+          "kind": "enum",
+          "name": "BookerLayouts",
+          "signature": "export enum BookerLayouts {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 36, "endLine": 40 }
+        },
+        {
+          "kind": "const",
+          "name": "bookerLayoutOptions",
+          "signature": "export const bookerLayoutOptions = [",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 42, "endLine": 46 }
+        },
+        {
+          "kind": "const",
+          "name": "bookerLayouts",
+          "signature": "export const bookerLayouts = z\n  .object({\n    enabledLayouts: z.array(layoutOptions),\n    defaultLayout: layoutOptions,\n  })\n  .nullable();",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 54, "endLine": 59 }
+        },
+        {
+          "kind": "const",
+          "name": "orgOnboardingInvitedMembersSchema",
+          "signature": "export const orgOnboardingInvitedMembersSchema = z.array(\n  z.object({ email: z.string().email(), name: z.string().optional() })\n);",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 61, "endLine": 63 }
+        },
+        {
+          "kind": "const",
+          "name": "orgOnboardingTeamsSchema",
+          "signature": "export const orgOnboardingTeamsSchema = z.array(\n  z.object({\n    id: z.number(),\n    name: z.string(),\n    isBeingMigrated: z.boolean(),\n    // \"slug\" is null for new teams\n    slug: z.string().nullable(),\n  })\n);",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 65, "endLine": 73 }
+        },
+        {
+          "kind": "const",
+          "name": "defaultBookerLayoutSettings",
+          "signature": "export const defaultBookerLayoutSettings = {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 75, "endLine": 79 }
+        },
+        {
+          "kind": "type",
+          "name": "BookerLayoutSettings",
+          "signature": "export type BookerLayoutSettings = z.infer<typeof bookerLayouts>;",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 81, "endLine": 81 }
+        },
+        {
+          "kind": "const",
+          "name": "RequiresConfirmationThresholdUnits",
+          "signature": "export const RequiresConfirmationThresholdUnits: z.ZodType<UnitTypeLongPlural> = z.enum([\"hours\", \"minutes\"]);",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 83, "endLine": 83 }
+        },
+        {
+          "kind": "const",
+          "name": "eventTypeMetaDataSchemaWithUntypedApps",
+          "signature": "export const eventTypeMetaDataSchemaWithUntypedApps = _eventTypeMetaDataSchemaWithoutApps.merge(\n  z.object({\n    apps: z.record(z.string(), z.any()).optional(),\n  })\n);",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 127, "endLine": 131 }
+        },
+        {
+          "kind": "const",
+          "name": "EventTypeMetaDataSchema",
+          "signature": "export const EventTypeMetaDataSchema = eventTypeMetaDataSchemaWithUntypedApps.nullable();",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 133, "endLine": 133 }
+        },
+        {
+          "kind": "const",
+          "name": "eventTypeMetaDataSchemaWithoutApps",
+          "signature": "export const eventTypeMetaDataSchemaWithoutApps = _eventTypeMetaDataSchemaWithoutApps.nullable();",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 134, "endLine": 134 }
+        },
+        {
+          "kind": "type",
+          "name": "EventTypeMetadata",
+          "signature": "export type EventTypeMetadata = z.infer<typeof EventTypeMetaDataSchema>;",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 136, "endLine": 136 }
+        },
+        {
+          "kind": "const",
+          "name": "eventTypeBookingFields",
+          "signature": "export const eventTypeBookingFields = formBuilderFieldsSchema;",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 138, "endLine": 138 }
+        },
+        {
+          "kind": "const",
+          "name": "BookingFieldTypeEnum",
+          "signature": "export const BookingFieldTypeEnum = eventTypeBookingFields.element.shape.type.Enum;",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 139, "endLine": 139 }
+        },
+        {
+          "kind": "type",
+          "name": "BookingFieldType",
+          "signature": "export type BookingFieldType = FormBuilderFieldType;",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 140, "endLine": 140 }
+        },
+        {
+          "kind": "const",
+          "name": "bookingResponses",
+          "signature": "export const bookingResponses = z\n  .object({\n    email: z.string(),\n    attendeePhoneNumber: z.string().optional(),\n    //TODO: Why don't we move name out of bookingResponses and let it be handled like user fields?\n    name: z.union([\n      z.string(),\n      z.object({\n        firstName: z.string(),\n        lastName: z.string().optional(),\n      }),\n    ]),\n    guests: z.array(z.string()).optional(),\n    notes: z.string().optional(),\n    location: z\n      .object({\n        optionValue: z.string(),\n        value: z.string(),\n      })\n      .optional(),\n    smsReminderNumber: z.string().optional(),\n    rescheduleReason: z.string().optional(),\n  })\n  .nullable();",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 145, "endLine": 168 }
+        },
+        {
+          "kind": "type",
+          "name": "BookingResponses",
+          "signature": "export type BookingResponses = z.infer<typeof bookingResponses>;",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 170, "endLine": 170 }
+        },
+        {
+          "kind": "const",
+          "name": "eventTypeLocations",
+          "signature": "export const eventTypeLocations = z.array(\n  z.object({\n    // TODO: Couldn't find a way to make it a union of types from App Store locations\n    // Creating a dynamic union by iterating over the object doesn't seem to make TS happy\n    type: z.string(),\n    address: z.string().optional(),\n    link: z.string().url().optional(),\n    displayLocationPublicly: z.boolean().optional(),\n    hostPhoneNumber: z.string().optional(),\n    credentialId: z.number().optional(),\n    teamName: z.string().optional(),\n    customLabel: z.string().optional(),\n  })\n);",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 172, "endLine": 185 }
+        },
+        {
+          "kind": "const",
+          "name": "recurringEventType",
+          "signature": "export const recurringEventType = z\n  .object({\n    dtstart: z.date().optional(),\n    interval: z.number(),\n    count: z.number(),\n    freq: z.nativeEnum(Frequency),\n    until: z.date().optional(),\n    tzid: z.string().optional(),\n  })\n  .nullable();",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 188, "endLine": 197 }
+        },
+        {
+          "kind": "const",
+          "name": "iso8601",
+          "signature": "export const iso8601 = z.string().transform((val, ctx) => {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 200, "endLine": 211 }
+        },
+        {
+          "kind": "const",
+          "name": "eventTypeColor",
+          "signature": "export const eventTypeColor = z\n  .object({\n    lightEventTypeColor: z.string(),\n    darkEventTypeColor: z.string(),\n  })\n  .nullable();",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 213, "endLine": 218 }
+        },
+        {
+          "kind": "type",
+          "name": "IntervalLimitsType",
+          "signature": "export type IntervalLimitsType = IntervalLimit | null;",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 220, "endLine": 220 }
+        },
+        {
+          "kind": "reexport",
+          "name": "intervalLimitsType",
+          "signature": "export { intervalLimitsType } from \"@calcom/lib/intervalLimits/intervalLimitSchema\";",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 222, "endLine": 222 }
+        },
+        {
+          "kind": "const",
+          "name": "eventTypeSlug",
+          "signature": "export const eventTypeSlug = z\n  .string()\n  .trim()\n  .transform((val) => slugify(val))\n  .refine((val) => val.length >= 1, {\n    message: \"Please enter at least one character\",\n  });",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 224, "endLine": 230 }
+        },
+        {
+          "kind": "const",
+          "name": "stringToDate",
+          "signature": "export const stringToDate = z.string().transform((a) => new Date(a));",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 232, "endLine": 232 }
+        },
+        {
+          "kind": "const",
+          "name": "stringOrNumber",
+          "signature": "export const stringOrNumber = z.union([",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 234, "endLine": 246 }
+        },
+        {
+          "kind": "const",
+          "name": "requiredCustomInputSchema",
+          "signature": "export const requiredCustomInputSchema = z.union([\n  // string must be given & nonempty\n  z.string().trim().min(1),\n  // boolean must be true if set.\n  z.boolean().refine((v) => v === true),\n]);",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 248, "endLine": 253 }
+        },
+        {
+          "kind": "type",
+          "name": "PlatformClientParams",
+          "signature": "export type PlatformClientParams = z.infer<typeof PlatformClientParamsSchema>;",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 264, "endLine": 264 }
+        },
+        {
+          "kind": "const",
+          "name": "bookingConfirmPatchBodySchema",
+          "signature": "export const bookingConfirmPatchBodySchema = z.object({\n  bookingId: z.number(),\n  confirmed: z.boolean(),\n  recurringEventId: z.string().optional(),\n  reason: z.string().optional(),\n  emailsEnabled: z.boolean().default(true),\n  platformClientParams: PlatformClientParamsSchema.optional(),\n});",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 266, "endLine": 273 }
+        },
+        {
+          "kind": "const",
+          "name": "bookingCancelSchema",
+          "signature": "export const bookingCancelSchema = z.object({",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 275, "endLine": 293 }
+        },
+        {
+          "kind": "const",
+          "name": "bookingCancelAttendeeSeatSchema",
+          "signature": "export const bookingCancelAttendeeSeatSchema = z.object({\n  seatReferenceUid: z.string(),\n});",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 295, "endLine": 297 }
+        },
+        {
+          "kind": "const",
+          "name": "bookingCancelInput",
+          "signature": "export const bookingCancelInput = bookingCancelSchema.refine(\n  (data) => !!data.id || !!data.uid,\n  \"At least one of the following required: 'id', 'uid'.\"\n);",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 299, "endLine": 302 }
+        },
+        {
+          "kind": "const",
+          "name": "bookingCancelWithCsrfSchema",
+          "signature": "export const bookingCancelWithCsrfSchema = bookingCancelSchema\n  .extend({\n    csrfToken: z.string().length(64, \"Invalid CSRF token\"),\n  })\n  .refine((data) => !!data.id || !!data.uid, \"At least one of the following required: 'id', 'uid'.\");",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 304, "endLine": 308 }
+        },
+        {
+          "kind": "const",
+          "name": "vitalSettingsUpdateSchema",
+          "signature": "export const vitalSettingsUpdateSchema = z.object({\n  connected: z.boolean().optional(),\n  selectedParam: z.string().optional(),\n  sleepValue: z.number().optional(),\n});",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 310, "endLine": 314 }
+        },
+        {
+          "kind": "const",
+          "name": "createdEventSchema",
+          "signature": "export const createdEventSchema = z\n  .object({\n    id: z.string(),\n    thirdPartyRecurringEventId: z.string(),\n    password: z.union([z.string(), z.undefined()]),\n    onlineMeetingUrl: z.string().nullable(),\n    iCalUID: z.string().optional(),\n  })\n  .passthrough();",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 316, "endLine": 324 }
+        },
+        {
+          "kind": "const",
+          "name": "userMetadata",
+          "signature": "export const userMetadata = z",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 331, "endLine": 353 }
+        },
+        {
+          "kind": "type",
+          "name": "DefaultConferencingApp",
+          "signature": "export type DefaultConferencingApp = z.infer<typeof schemaDefaultConferencingApp>;",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 355, "endLine": 355 }
+        },
+        {
+          "kind": "const",
+          "name": "orgSettingsSchema",
+          "signature": "export const orgSettingsSchema = z",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 357, "endLine": 365 }
+        },
+        {
+          "kind": "type",
+          "name": "userMetadataType",
+          "signature": "export type userMetadataType = z.infer<typeof userMetadata>;",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 366, "endLine": 366 }
+        },
+        {
+          "kind": "enum",
+          "name": "BillingPeriod",
+          "signature": "export enum BillingPeriod {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 368, "endLine": 371 }
+        },
+        {
+          "kind": "const",
+          "name": "teamMetadataSchema",
+          "signature": "export const teamMetadataSchema = baseTeamMetadataSchema.partial().nullable();",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 392, "endLine": 392 }
+        },
+        {
+          "kind": "const",
+          "name": "teamMetadataStrictSchema",
+          "signature": "export const teamMetadataStrictSchema = baseTeamMetadataSchema",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 394, "endLine": 410 }
+        },
+        {
+          "kind": "const",
+          "name": "bookingMetadataSchema",
+          "signature": "export const bookingMetadataSchema = z\n  .object({\n    videoCallUrl: z.string().optional(),\n  })\n  .and(z.record(z.string()))\n  .nullable()\n  .describe(\"BookingMetadata\");",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 412, "endLine": 418 }
+        },
+        {
+          "kind": "const",
+          "name": "customInputOptionSchema",
+          "signature": "export const customInputOptionSchema = z.array(\n  z.object({\n    label: z.string(),\n    type: z.string(),\n  })\n);",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 420, "endLine": 425 }
+        },
+        {
+          "kind": "const",
+          "name": "customInputSchema",
+          "signature": "export const customInputSchema = z.object({",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 427, "endLine": 436 }
+        },
+        {
+          "kind": "type",
+          "name": "CustomInputSchema",
+          "signature": "export type CustomInputSchema = z.infer<typeof customInputSchema>;",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 438, "endLine": 438 }
+        },
+        {
+          "kind": "const",
+          "name": "recordingItemSchema",
+          "signature": "export const recordingItemSchema = z",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 440, "endLine": 450 }
+        },
+        {
+          "kind": "const",
+          "name": "recordingItemsSchema",
+          "signature": "export const recordingItemsSchema = z.array(recordingItemSchema);",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 452, "endLine": 452 }
+        },
+        {
+          "kind": "type",
+          "name": "RecordingItemSchema",
+          "signature": "export type RecordingItemSchema = z.infer<typeof recordingItemSchema>;",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 454, "endLine": 454 }
+        },
+        {
+          "kind": "const",
+          "name": "getRecordingsResponseSchema",
+          "signature": "export const getRecordingsResponseSchema = z.union([\n  z.object({\n    total_count: z.number(),\n    data: recordingItemsSchema,\n  }),\n  z.object({}),\n]);",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 456, "endLine": 462 }
+        },
+        {
+          "kind": "type",
+          "name": "GetRecordingsResponseSchema",
+          "signature": "export type GetRecordingsResponseSchema = z.infer<typeof getRecordingsResponseSchema>;",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 464, "endLine": 464 }
+        },
+        {
+          "kind": "const",
+          "name": "successRedirectUrl",
+          "signature": "export const successRedirectUrl = z",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 472, "endLine": 480 }
+        },
+        {
+          "kind": "const",
+          "name": "RoutingFormSettings",
+          "signature": "export const RoutingFormSettings = z",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 482, "endLine": 491 }
+        },
+        {
+          "kind": "const",
+          "name": "DeploymentTheme",
+          "signature": "export const DeploymentTheme = z",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 493, "endLine": 509 }
+        },
+        {
+          "kind": "type",
+          "name": "ZodDenullish",
+          "signature": "export type ZodDenullish<T extends ZodTypeAny> = T extends ZodNullable<infer U> | ZodOptional<infer U>\n  ? ZodDenullish<U>\n  : T;",
+          "generics": "<T extends ZodTypeAny>",
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 511, "endLine": 513 }
+        },
+        {
+          "kind": "type",
+          "name": "ZodDenullishShape",
+          "signature": "export type ZodDenullishShape<T extends ZodRawShape> = {\n  [k in keyof T]: ZodDenullish<T[k]>;\n};",
+          "generics": "<T extends ZodRawShape>",
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 515, "endLine": 517 }
+        },
+        {
+          "kind": "function",
+          "name": "denullish",
+          "signature": "export const denullish = <T extends ZodTypeAny>(schema: T): ZodDenullish<T> =>",
+          "generics": "<T extends ZodTypeAny>",
+          "decorators": [],
+          "returnType": "ZodDenullish<T>",
+          "exported": true,
+          "anchor": { "startLine": 519, "endLine": 522 }
+        },
+        {
+          "kind": "function",
+          "name": "denullishShape",
+          "signature": "export function denullishShape<\n  T extends ZodRawShape,\n  UnknownKeys extends UnknownKeysParam = \"strip\",\n  Catchall extends ZodTypeAny = ZodTypeAny,\n  Output = objectOutputType<T, Catchall>,\n  Input = objectInputType<T, Catchall>\n>(\n  obj: ZodObject<T, UnknownKeys, Catchall, Output, Input>\n): ZodObject<ZodDenullishShape<T>, UnknownKeys, Catchall> {",
+          "generics": "<T extends ZodRawShape, UnknownKeys extends UnknownKeysParam = \"strip\", Catchall extends ZodTypeAny = ZodTypeAny, Output = objectOutputType<T, Catchall>, Input = objectInputType<T, Catchall>>",
+          "decorators": [],
+          "returnType": "ZodObject<ZodDenullishShape<T>, UnknownKeys, Catchall>",
+          "exported": true,
+          "anchor": { "startLine": 529, "endLine": 545 }
+        },
+        {
+          "kind": "function",
+          "name": "entries",
+          "signature": "export const entries = <O extends Record<string, unknown>>(\n  obj: O\n): {\n  readonly [K in keyof O]: [K, O[K]];\n}[keyof O][] => {",
+          "generics": "<O extends Record<string, unknown>>",
+          "decorators": [],
+          "returnType": "{\n  readonly [K in keyof O]: [K, O[K]];\n}[keyof O][]",
+          "exported": true,
+          "anchor": { "startLine": 553, "endLine": 561 }
+        },
+        {
+          "kind": "function",
+          "name": "fromEntries",
+          "signature": "export const fromEntries = <\n  E extends [PropertyKey, unknown][] | ReadonlyArray<readonly [PropertyKey, unknown]>\n>(\n  entries: E\n): FromEntries<DeepWriteable<E>> => {",
+          "generics": "<E extends [PropertyKey, unknown][] | ReadonlyArray<readonly [PropertyKey, unknown]>>",
+          "decorators": [],
+          "returnType": "FromEntries<DeepWriteable<E>>",
+          "exported": true,
+          "anchor": { "startLine": 584, "endLine": 590 }
+        },
+        {
+          "kind": "const",
+          "name": "getAccessLinkResponseSchema",
+          "signature": "export const getAccessLinkResponseSchema = z.object({\n  download_link: z.string().url(),\n});",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 592, "endLine": 594 }
+        },
+        {
+          "kind": "type",
+          "name": "GetAccessLinkResponseSchema",
+          "signature": "export type GetAccessLinkResponseSchema = z.infer<typeof getAccessLinkResponseSchema>;",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 596, "endLine": 596 }
+        },
+        {
+          "kind": "function",
+          "name": "optionToValueSchema",
+          "signature": "export const optionToValueSchema = <T extends z.ZodTypeAny>(valueSchema: T) =>",
+          "generics": "<T extends z.ZodTypeAny>",
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 599, "endLine": 606 }
+        },
+        {
+          "kind": "function",
+          "name": "getParserWithGeneric",
+          "signature": "export const getParserWithGeneric =",
+          "generics": "<T extends AnyZodObject>",
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 612, "endLine": 621 }
+        },
+        {
+          "kind": "const",
+          "name": "sendDailyVideoRecordingEmailsSchema",
+          "signature": "export const sendDailyVideoRecordingEmailsSchema = z.object({\n  recordingId: z.string(),\n  bookingUID: z.string(),\n});",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 622, "endLine": 625 }
+        },
+        {
+          "kind": "const",
+          "name": "downloadLinkSchema",
+          "signature": "export const downloadLinkSchema = z.object({\n  download_link: z.string(),\n});",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 627, "endLine": 629 }
+        },
+        {
+          "kind": "const",
+          "name": "allManagedEventTypeProps",
+          "signature": "export const allManagedEventTypeProps: { [k in keyof Omit<Prisma.EventTypeSelect, \"id\">]: true } = {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 632, "endLine": 701 }
+        },
+        {
+          "kind": "const",
+          "name": "unlockedManagedEventTypeProps",
+          "signature": "export const unlockedManagedEventTypeProps = {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 705, "endLine": 709 }
+        },
+        {
+          "kind": "const",
+          "name": "emailSchema",
+          "signature": "export const emailSchema = emailRegexSchema;",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 711, "endLine": 711 }
+        },
+        {
+          "kind": "function",
+          "name": "emailSchemaRefinement",
+          "signature": "export const emailSchemaRefinement = (value: string) => {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 716, "endLine": 718 }
+        },
+        {
+          "kind": "const",
+          "name": "signupSchema",
+          "signature": "export const signupSchema = z.object({",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 720, "endLine": 740 }
+        },
+        {
+          "kind": "const",
+          "name": "ZVerifyCodeInputSchema",
+          "signature": "export const ZVerifyCodeInputSchema = z.object({\n  email: emailSchema,\n  code: z.string(),\n});",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 742, "endLine": 745 }
+        },
+        {
+          "kind": "type",
+          "name": "ZVerifyCodeInputSchema",
+          "signature": "export type ZVerifyCodeInputSchema = z.infer<typeof ZVerifyCodeInputSchema>;",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 747, "endLine": 747 }
+        },
+        {
+          "kind": "const",
+          "name": "coerceToDate",
+          "signature": "export const coerceToDate = z.coerce.date();",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 749, "endLine": 749 }
+        },
+        {
+          "kind": "function",
+          "name": "getStringAsNumberRequiredSchema",
+          "signature": "export const getStringAsNumberRequiredSchema = (t: TFunction) =>\n  z.string().min(1, t(\"error_required_field\")).pipe(z.coerce.number());",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 750, "endLine": 751 }
+        },
+        {
+          "kind": "const",
+          "name": "bookingSeatDataSchema",
+          "signature": "export const bookingSeatDataSchema = z.object({\n  description: z.string().optional(),\n  responses: bookingResponses,\n});",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 753, "endLine": 756 }
+        },
+        {
+          "kind": "const",
+          "name": "serviceAccountKeySchema",
+          "signature": "export const serviceAccountKeySchema = z",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 759, "endLine": 766 }
+        },
+        {
+          "kind": "type",
+          "name": "TServiceAccountKeySchema",
+          "signature": "export type TServiceAccountKeySchema = z.infer<typeof serviceAccountKeySchema>;",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 768, "endLine": 768 }
+        },
+        {
+          "kind": "const",
+          "name": "rrSegmentQueryValueSchema",
+          "signature": "export const rrSegmentQueryValueSchema = zodAttributesQueryValue.nullish();",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 770, "endLine": 770 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "enum",
+          "name": "Frequency",
+          "shape": "{\n  YEARLY = 0,\n  MONTHLY = 1,\n  WEEKLY = 2,\n  DAILY = 3,\n  HOURLY = 4,\n  MINUTELY = 5,\n  SECONDLY = 6,\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 26, "endLine": 34 }
+        },
+        {
+          "kind": "enum",
+          "name": "BookerLayouts",
+          "shape": "{\n  MONTH_VIEW = \"month_view\",\n  WEEK_VIEW = \"week_view\",\n  COLUMN_VIEW = \"column_view\",\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 36, "endLine": 40 }
+        },
+        {
+          "kind": "enum",
+          "name": "BillingPeriod",
+          "shape": "{\n  MONTHLY = \"MONTHLY\",\n  ANNUALLY = \"ANNUALLY\",\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 368, "endLine": 371 }
+        },
+        {
+          "kind": "alias",
+          "name": "BookerLayoutSettings",
+          "shape": "z.infer<typeof bookerLayouts>",
+          "discriminant": null,
+          "anchor": { "startLine": 81, "endLine": 81 }
+        },
+        {
+          "kind": "alias",
+          "name": "EventTypeMetadata",
+          "shape": "z.infer<typeof EventTypeMetaDataSchema>",
+          "discriminant": null,
+          "anchor": { "startLine": 136, "endLine": 136 }
+        },
+        {
+          "kind": "alias",
+          "name": "BookingFieldType",
+          "shape": "FormBuilderFieldType",
+          "discriminant": null,
+          "anchor": { "startLine": 140, "endLine": 140 }
+        },
+        {
+          "kind": "alias",
+          "name": "BookingResponses",
+          "shape": "z.infer<typeof bookingResponses>",
+          "discriminant": null,
+          "anchor": { "startLine": 170, "endLine": 170 }
+        },
+        {
+          "kind": "alias",
+          "name": "IntervalLimitsType",
+          "shape": "IntervalLimit | null",
+          "discriminant": null,
+          "anchor": { "startLine": 220, "endLine": 220 }
+        },
+        {
+          "kind": "alias",
+          "name": "PlatformClientParams",
+          "shape": "z.infer<typeof PlatformClientParamsSchema>",
+          "discriminant": null,
+          "anchor": { "startLine": 264, "endLine": 264 }
+        },
+        {
+          "kind": "alias",
+          "name": "DefaultConferencingApp",
+          "shape": "z.infer<typeof schemaDefaultConferencingApp>",
+          "discriminant": null,
+          "anchor": { "startLine": 355, "endLine": 355 }
+        },
+        {
+          "kind": "alias",
+          "name": "userMetadataType",
+          "shape": "z.infer<typeof userMetadata>",
+          "discriminant": null,
+          "anchor": { "startLine": 366, "endLine": 366 }
+        },
+        {
+          "kind": "alias",
+          "name": "CustomInputSchema",
+          "shape": "z.infer<typeof customInputSchema>",
+          "discriminant": null,
+          "anchor": { "startLine": 438, "endLine": 438 }
+        },
+        {
+          "kind": "alias",
+          "name": "RecordingItemSchema",
+          "shape": "z.infer<typeof recordingItemSchema>",
+          "discriminant": null,
+          "anchor": { "startLine": 454, "endLine": 454 }
+        },
+        {
+          "kind": "alias",
+          "name": "GetRecordingsResponseSchema",
+          "shape": "z.infer<typeof getRecordingsResponseSchema>",
+          "discriminant": null,
+          "anchor": { "startLine": 464, "endLine": 464 }
+        },
+        {
+          "kind": "alias",
+          "name": "ZodDenullish",
+          "shape": "T extends ZodNullable<infer U> | ZodOptional<infer U>\n  ? ZodDenullish<U>\n  : T",
+          "discriminant": null,
+          "anchor": { "startLine": 511, "endLine": 513 }
+        },
+        {
+          "kind": "alias",
+          "name": "ZodDenullishShape",
+          "shape": "{\n  [k in keyof T]: ZodDenullish<T[k]>;\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 515, "endLine": 517 }
+        },
+        {
+          "kind": "alias",
+          "name": "UnknownKeysParam",
+          "shape": "\"passthrough\" | \"strict\" | \"strip\"",
+          "discriminant": null,
+          "anchor": { "startLine": 524, "endLine": 524 }
+        },
+        {
+          "kind": "alias",
+          "name": "DeepWriteable",
+          "shape": "T extends Readonly<{\n  -readonly [K in keyof T]: T[K];\n}>\n  ? {\n      -readonly [K in keyof T]: DeepWriteable<T[K]>;\n    }\n  : T",
+          "discriminant": null,
+          "anchor": { "startLine": 566, "endLine": 572 }
+        },
+        {
+          "kind": "alias",
+          "name": "FromEntries",
+          "shape": "T extends [infer Keys, unknown][]\n  ? { [K in Keys & PropertyKey]: Extract<T[number], [K, unknown]>[1] }\n  : never",
+          "discriminant": null,
+          "anchor": { "startLine": 574, "endLine": 576 }
+        },
+        {
+          "kind": "alias",
+          "name": "GetAccessLinkResponseSchema",
+          "shape": "z.infer<typeof getAccessLinkResponseSchema>",
+          "discriminant": null,
+          "anchor": { "startLine": 596, "endLine": 596 }
+        },
+        {
+          "kind": "alias",
+          "name": "ZVerifyCodeInputSchema",
+          "shape": "z.infer<typeof ZVerifyCodeInputSchema>",
+          "discriminant": null,
+          "anchor": { "startLine": 747, "endLine": 747 }
+        },
+        {
+          "kind": "alias",
+          "name": "TServiceAccountKeySchema",
+          "shape": "z.infer<typeof serviceAccountKeySchema>",
+          "discriminant": null,
+          "anchor": { "startLine": 768, "endLine": 768 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "Invalid ISO date string in iso8601",
+          "handled": true,
+          "behavior": "Date.parse returns NaN (falsy), custom 'Invalid ISO Date' issue added; a Date with time NaN is still returned",
+          "anchor": { "startLine": 200, "endLine": 211 }
+        },
+        {
+          "inputShape": "Non-numeric string in stringOrNumber",
+          "handled": true,
+          "behavior": "parseInt yields NaN, 'Not a number' custom issue added",
+          "anchor": { "startLine": 234, "endLine": 246 }
+        },
+        {
+          "inputShape": "Empty string slug in eventTypeSlug",
+          "handled": true,
+          "behavior": "After trim/slugify, length < 1 fails refine with 'Please enter at least one character'",
+          "anchor": { "startLine": 224, "endLine": 230 }
+        },
+        {
+          "inputShape": "Non-http(s) or non-URL successRedirectUrl (e.g. javascript:, mailto:)",
+          "handled": true,
+          "behavior": "Rejected by z.string().url() plus /^http(s)?:\\/\\/.*\\/ regex; empty string literal allowed",
+          "anchor": { "startLine": 472, "endLine": 480 }
+        },
+        {
+          "inputShape": "bookingCancelInput missing both id and uid",
+          "handled": true,
+          "behavior": "Refine fails: \"At least one of the following required: 'id', 'uid'.\"",
+          "anchor": { "startLine": 299, "endLine": 302 }
+        },
+        {
+          "inputShape": "bookingCancelWithCsrfSchema with CSRF token not exactly 64 chars",
+          "handled": true,
+          "behavior": "Fails with 'Invalid CSRF token'",
+          "anchor": { "startLine": 304, "endLine": 308 }
+        },
+        {
+          "inputShape": "Password failing isPasswordValid rules in signupSchema",
+          "handled": true,
+          "behavior": "Custom issue added per failing rule key with path [key]",
+          "anchor": { "startLine": 725, "endLine": 737 }
+        },
+        {
+          "inputShape": "subscriptionId/subscriptionItemId not starting with sub_/si_ in teamMetadataStrictSchema",
+          "handled": true,
+          "behavior": "Refine fails with respective message",
+          "anchor": { "startLine": 394, "endLine": 410 }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": "z.ZodIssueCode.custom 'Invalid ISO Date'",
+          "caught": null,
+          "action": "Add issue to zod ctx in iso8601 transform",
+          "fallback": null,
+          "anchor": { "startLine": 200, "endLine": 211 }
+        },
+        {
+          "thrown": "z.ZodIssueCode.custom 'Not a number'",
+          "caught": null,
+          "action": "Add issue to zod ctx in stringOrNumber transform",
+          "fallback": null,
+          "anchor": { "startLine": 234, "endLine": 246 }
+        },
+        {
+          "thrown": "custom issues per password rule key",
+          "caught": null,
+          "action": "superRefine adds issue with path [key] and message key",
+          "fallback": null,
+          "anchor": { "startLine": 725, "endLine": 737 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "env",
+          "description": "Relies on zod v3 API (ZodNullable._def.innerType, ctx.addIssue in transforms)",
+          "anchor": { "startLine": 3, "endLine": 3 }
+        },
+        {
+          "kind": "caller",
+          "description": "getStringAsNumberRequiredSchema expects an i18next TFunction for error message",
+          "anchor": { "startLine": 750, "endLine": 751 }
+        },
+        {
+          "kind": "init-order",
+          "description": "bookerLayoutOptions must be defined before layoutOptions literals reference it",
+          "anchor": { "startLine": 42, "endLine": 52 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "apps record in eventTypeMetaDataSchemaWithUntypedApps is z.any — what app schemas apply?",
+          "affects": "eventTypeMetaDataSchemaWithUntypedApps",
+          "anchor": { "startLine": 127, "endLine": 131 },
+          "resolution": null
+        },
+        {
+          "question": "bookingResponses validation for actual booking responses is dynamic and defined elsewhere (getBookingResponsesSchema)",
+          "affects": "bookingResponses",
+          "anchor": { "startLine": 142, "endLine": 168 },
+          "resolution": null
+        },
+        {
+          "question": "Frequency numeric values must stay aligned with rrule's Frequency enum",
+          "affects": "Frequency",
+          "anchor": { "startLine": 26, "endLine": 34 },
+          "resolution": null
+        }
+      ],
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "booking-cancel-requires-id-or-uid",
+          "scenario": "Cancelling a booking without providing either id or uid is rejected.",
+          "given": ["bookingCancelInput"],
+          "when": "bookingCancelInput.safeParse({})",
+          "then": "result.success === false with message \"At least one of the following required: 'id', 'uid'.\"",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Cancellation must always be attributable to a specific booking."
+        },
+        {
+          "testId": "booking-cancel-accepts-uid-only",
+          "scenario": "Cancelling by uid alone is accepted.",
+          "given": ["bookingCancelInput"],
+          "when": "bookingCancelInput.safeParse({ uid: \"abc\" })",
+          "then": "result.success === true",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "csrf-token-must-be-64-chars",
+          "scenario": "CSRF-protected cancel body enforces a 64-character csrfToken.",
+          "given": ["bookingCancelWithCsrfSchema"],
+          "when": "bookingCancelWithCsrfSchema.safeParse({ uid: \"abc\", csrfToken: \"short\" })",
+          "then": "result.success === false with message \"Invalid CSRF token\"",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "event-type-slug-slugifies-and-requires-output",
+          "scenario": "An event-type slug is slugified and must be non-empty after trimming/slugify.",
+          "given": ["eventTypeSlug"],
+          "when": "eventTypeSlug.safeParse(\"--\")",
+          "then": "result.success === false with message \"Please enter at least one character\"",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Guards slugify collapsing input to empty string."
+        },
+        {
+          "testId": "iso8601-rejects-unparseable-date",
+          "scenario": "The iso8601 schema rejects strings that cannot be parsed as dates.",
+          "given": ["iso8601"],
+          "when": "iso8601.safeParse(\"not-a-date\")",
+          "then": "result.success === false with issue message \"Invalid ISO Date\"",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "string-or-number-parses-numeric-strings",
+          "scenario": "Numeric strings are coerced to integers; non-numeric strings are rejected.",
+          "given": ["stringOrNumber"],
+          "when": "stringOrNumber.safeParse(\"42\") and stringOrNumber.safeParse(\"abc\")",
+          "then": "\"42\" parses to 42; \"abc\" fails with \"Not a number\"",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "signup-rejects-invalid-email",
+          "scenario": "Signup requires an email matching the shared emailRegex.",
+          "given": ["signupSchema"],
+          "when": "signupSchema.safeParse({ email: \"not-an-email\", password: \"Validpass123!\" })",
+          "then": "result.success === false with message \"Invalid email\"",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "signup-password-failures-map-to-field-issues",
+          "scenario": "Signup password failing password policy yields a zod issue per failed criterion keyed by criterion name.",
+          "given": ["signupSchema"],
+          "when": "signupSchema.safeParse({ email: \"a@b.com\", password: \"bad\" })",
+          "then": "result.success === false with issues whose path equals the failed password criterion keys",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Issues surface as field-level errors, not a single message."
+        },
+        {
+          "testId": "strict-team-metadata-rejects-non-sub-prefix",
+          "scenario": "Strict team metadata rejects subscription ids not prefixed sub_ / si_.",
+          "given": ["teamMetadataStrictSchema"],
+          "when": "teamMetadataStrictSchema.safeParse({ subscriptionId: \"cus_123\" })",
+          "then": "result.success === false with message \"subscriptionId must start with 'sub_'\"",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "denullish-strips-nullable-and-optional-wrappers",
+          "scenario": "denullish unwraps ZodNullable/ZodOptional down to the inner type.",
+          "given": ["denullish", "z.string().nullable().optional()"],
+          "when": "denullish(z.string().nullable().optional())",
+          "then": "result parses \"x\" successfully (no nullable/optional wrapper behaviour remains)",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "denullish-shape-preserves-keys",
+          "scenario": "denullishShape returns an object schema with the same fields but nullability removed.",
+          "given": ["denullishShape", "z.object({ a: z.string().nullable(), b: z.number().optional() })"],
+          "when": "denullishShape(z.object({ a: z.string().nullable(), b: z.number().optional() })).parse({ a: \"x\", b: 1 })",
+          "then": "returns { a: \"x\", b: 1 }",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "success-redirect-url-only-http",
+          "scenario": "successRedirectUrl accepts only http(s) URLs or empty string, blocking javascript:/mailto: schemes.",
+          "given": ["successRedirectUrl"],
+          "when": "successRedirectUrl.safeParse(\"javascript:alert('hi')\") and successRedirectUrl.safeParse(\"\")",
+          "then": "javascript: URL fails; empty string succeeds",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "XSS prevention on redirect targets."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "import type { UnitTypeLongPlural } from \"dayjs\"",
+        "import type { TFunction } from \"i18next\"",
+        "import z from \"zod\"",
+        "import type { AnyZodObject, ... } from \"zod\"",
+        "import { isPasswordValid } from \"@calcom/features/auth/lib/isPasswordValid\"",
+        "import type { FieldType as FormBuilderFieldType } from \"@calcom/features/form-builder/schema\"",
+        "import { fieldsSchema as formBuilderFieldsSchema } from \"@calcom/features/form-builder/schema\"",
+        "import { emailSchema as emailRegexSchema, emailRegex } from \"@calcom/lib/emailSchema\"",
+        "import type { IntervalLimit } from \"@calcom/lib/intervalLimits/intervalLimitSchema\"",
+        "import { zodAttributesQueryValue } from \"@calcom/lib/raqb/zod\"",
+        "import { slugify } from \"@calcom/lib/slugify\"",
+        "import { EventTypeCustomInputType } from \"@calcom/prisma/enums\"",
+        "import type { Prisma } from \"./client\"",
+        "enum Frequency",
+        "enum BookerLayouts",
+        "const bookerLayoutOptions",
+        "const layoutOptions",
+        "const bookerLayouts",
+        "const orgOnboardingInvitedMembersSchema",
+        "const orgOnboardingTeamsSchema",
+        "const defaultBookerLayoutSettings",
+        "type BookerLayoutSettings",
+        "const RequiresConfirmationThresholdUnits",
+        "const _eventTypeMetaDataSchemaWithoutApps",
+        "const eventTypeMetaDataSchemaWithUntypedApps",
+        "const EventTypeMetaDataSchema",
+        "const eventTypeMetaDataSchemaWithoutApps",
+        "type EventTypeMetadata",
+        "const eventTypeBookingFields",
+        "const BookingFieldTypeEnum",
+        "type BookingFieldType",
+        "const bookingResponses",
+        "type BookingResponses",
+        "const eventTypeLocations",
+        "const recurringEventType",
+        "const iso8601",
+        "const eventTypeColor",
+        "type IntervalLimitsType",
+        "export { intervalLimitsType }",
+        "const eventTypeSlug",
+        "const stringToDate",
+        "const stringOrNumber",
+        "const requiredCustomInputSchema",
+        "const PlatformClientParamsSchema",
+        "type PlatformClientParams",
+        "const bookingConfirmPatchBodySchema",
+        "const bookingCancelSchema",
+        "const bookingCancelAttendeeSeatSchema",
+        "const bookingCancelInput",
+        "const bookingCancelWithCsrfSchema",
+        "const vitalSettingsUpdateSchema",
+        "const createdEventSchema",
+        "const schemaDefaultConferencingApp",
+        "const userMetadata",
+        "type DefaultConferencingApp",
+        "const orgSettingsSchema",
+        "type userMetadataType",
+        "enum BillingPeriod",
+        "const baseTeamMetadataSchema",
+        "const teamMetadataSchema",
+        "const teamMetadataStrictSchema",
+        "const bookingMetadataSchema",
+        "const customInputOptionSchema",
+        "const customInputSchema",
+        "type CustomInputSchema",
+        "const recordingItemSchema",
+        "const recordingItemsSchema",
+        "type RecordingItemSchema",
+        "const getRecordingsResponseSchema",
+        "type GetRecordingsResponseSchema",
+        "const successRedirectUrl",
+        "const RoutingFormSettings",
+        "const DeploymentTheme",
+        "type ZodDenullish",
+        "type ZodDenullishShape",
+        "const denullish",
+        "type UnknownKeysParam",
+        "function denullishShape",
+        "const entries",
+        "type DeepWriteable",
+        "type FromEntries",
+        "const fromEntries",
+        "const getAccessLinkResponseSchema",
+        "type GetAccessLinkResponseSchema",
+        "const optionToValueSchema",
+        "const getParserWithGeneric",
+        "const sendDailyVideoRecordingEmailsSchema",
+        "const downloadLinkSchema",
+        "const allManagedEventTypeProps",
+        "const unlockedManagedEventTypeProps",
+        "const emailSchema",
+        "const emailSchemaRefinement",
+        "const signupSchema",
+        "const ZVerifyCodeInputSchema",
+        "type ZVerifyCodeInputSchema",
+        "const coerceToDate",
+        "const getStringAsNumberRequiredSchema",
+        "const bookingSeatDataSchema",
+        "const serviceAccountKeySchema",
+        "type TServiceAccountKeySchema",
+        "const rrSegmentQueryValueSchema"
+      ],
+      "moduleLevelCode": "import type { UnitTypeLongPlural } from \"dayjs\";\nimport type { TFunction } from \"i18next\";\nimport z, { ZodNullable, ZodObject, ZodOptional } from \"zod\";\nimport type { AnyZodObject, objectInputType, objectOutputType, ZodNullableDef, ZodOptionalDef, ZodRawShape, ZodTypeAny } from \"zod\";\nimport { isPasswordValid } from \"@calcom/features/auth/lib/isPasswordValid\";\nimport type { FieldType as FormBuilderFieldType } from \"@calcom/features/form-builder/schema\";\nimport { fieldsSchema as formBuilderFieldsSchema } from \"@calcom/features/form-builder/schema\";\nimport { emailSchema as emailRegexSchema, emailRegex } from \"@calcom/lib/emailSchema\";\nimport type { IntervalLimit } from \"@calcom/lib/intervalLimits/intervalLimitSchema\";\nimport { zodAttributesQueryValue } from \"@calcom/lib/raqb/zod\";\nimport { slugify } from \"@calcom/lib/slugify\";\nimport { EventTypeCustomInputType } from \"@calcom/prisma/enums\";\nimport type { Prisma } from \"./client\";",
+      "exports": [
+        { "name": "Frequency", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "BookerLayouts", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "bookerLayoutOptions", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "bookerLayouts", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "orgOnboardingInvitedMembersSchema", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "orgOnboardingTeamsSchema", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "defaultBookerLayoutSettings", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "BookerLayoutSettings", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "RequiresConfirmationThresholdUnits", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "eventTypeMetaDataSchemaWithUntypedApps", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "EventTypeMetaDataSchema", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "eventTypeMetaDataSchemaWithoutApps", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "EventTypeMetadata", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "eventTypeBookingFields", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "BookingFieldTypeEnum", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "BookingFieldType", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "bookingResponses", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "BookingResponses", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "eventTypeLocations", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "recurringEventType", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "iso8601", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "eventTypeColor", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "IntervalLimitsType", "kind": "own", "fromSpec": null, "exportedAs": null },
+        {
+          "name": "intervalLimitsType",
+          "kind": "re-export",
+          "fromSpec": "@calcom/lib/intervalLimits/intervalLimitSchema",
+          "exportedAs": null
+        },
+        { "name": "eventTypeSlug", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "stringToDate", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "stringOrNumber", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "requiredCustomInputSchema", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "PlatformClientParams", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "bookingConfirmPatchBodySchema", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "bookingCancelSchema", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "bookingCancelAttendeeSeatSchema", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "bookingCancelInput", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "bookingCancelWithCsrfSchema", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "vitalSettingsUpdateSchema", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "createdEventSchema", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "userMetadata", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "DefaultConferencingApp", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "orgSettingsSchema", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "userMetadataType", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "BillingPeriod", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "teamMetadataSchema", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "teamMetadataStrictSchema", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "bookingMetadataSchema", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "customInputOptionSchema", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "customInputSchema", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "CustomInputSchema", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "recordingItemSchema", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "recordingItemsSchema", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "RecordingItemSchema", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "getRecordingsResponseSchema", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "GetRecordingsResponseSchema", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "successRedirectUrl", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "RoutingFormSettings", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "DeploymentTheme", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "ZodDenullish", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "ZodDenullishShape", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "denullish", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "denullishShape", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "entries", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "fromEntries", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "getAccessLinkResponseSchema", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "GetAccessLinkResponseSchema", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "optionToValueSchema", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "getParserWithGeneric", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendDailyVideoRecordingEmailsSchema", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "downloadLinkSchema", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "allManagedEventTypeProps", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "unlockedManagedEventTypeProps", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "emailSchema", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "emailSchemaRefinement", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "signupSchema", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "ZVerifyCodeInputSchema", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "coerceToDate", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "getStringAsNumberRequiredSchema", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "bookingSeatDataSchema", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "serviceAccountKeySchema", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "TServiceAccountKeySchema", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "rrSegmentQueryValueSchema", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "UnitTypeLongPlural", "module": "dayjs", "alias": null, "kind": "external" },
+        { "symbol": "TFunction", "module": "i18next", "alias": null, "kind": "external" },
+        { "symbol": "z", "module": "zod", "alias": null, "kind": "external" },
+        { "symbol": "ZodNullable", "module": "zod", "alias": null, "kind": "external" },
+        { "symbol": "ZodObject", "module": "zod", "alias": null, "kind": "external" },
+        { "symbol": "ZodOptional", "module": "zod", "alias": null, "kind": "external" },
+        { "symbol": "AnyZodObject", "module": "zod", "alias": null, "kind": "external" },
+        { "symbol": "objectInputType", "module": "zod", "alias": null, "kind": "external" },
+        { "symbol": "objectOutputType", "module": "zod", "alias": null, "kind": "external" },
+        { "symbol": "ZodNullableDef", "module": "zod", "alias": null, "kind": "external" },
+        { "symbol": "ZodOptionalDef", "module": "zod", "alias": null, "kind": "external" },
+        { "symbol": "ZodRawShape", "module": "zod", "alias": null, "kind": "external" },
+        { "symbol": "ZodTypeAny", "module": "zod", "alias": null, "kind": "external" },
+        {
+          "symbol": "isPasswordValid",
+          "module": "@calcom/features/auth/lib/isPasswordValid",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "FieldType",
+          "module": "@calcom/features/form-builder/schema",
+          "alias": "FormBuilderFieldType",
+          "kind": "internal"
+        },
+        {
+          "symbol": "fieldsSchema",
+          "module": "@calcom/features/form-builder/schema",
+          "alias": "formBuilderFieldsSchema",
+          "kind": "internal"
+        },
+        {
+          "symbol": "emailSchema",
+          "module": "@calcom/lib/emailSchema",
+          "alias": "emailRegexSchema",
+          "kind": "internal"
+        },
+        { "symbol": "emailRegex", "module": "@calcom/lib/emailSchema", "alias": null, "kind": "internal" },
+        {
+          "symbol": "IntervalLimit",
+          "module": "@calcom/lib/intervalLimits/intervalLimitSchema",
+          "alias": null,
+          "kind": "internal"
+        },
+        { "symbol": "zodAttributesQueryValue", "module": "@calcom/lib/raqb/zod", "alias": null, "kind": "internal" },
+        { "symbol": "slugify", "module": "@calcom/lib/slugify", "alias": null, "kind": "internal" },
+        { "symbol": "EventTypeCustomInputType", "module": "@calcom/prisma/enums", "alias": null, "kind": "internal" },
+        { "symbol": "Prisma", "module": "./client", "alias": null, "kind": "internal" }
+      ],
+      "fileConstants": [
+        {
+          "name": "bookerLayoutOptions",
+          "value": "[\n  BookerLayouts.MONTH_VIEW,\n  BookerLayouts.WEEK_VIEW,\n  BookerLayouts.COLUMN_VIEW,\n]",
+          "kind": "array-literal"
+        },
+        {
+          "name": "defaultBookerLayoutSettings",
+          "value": "{\n  defaultLayout: BookerLayouts.MONTH_VIEW,\n  enabledLayouts: bookerLayoutOptions,\n}",
+          "kind": "object-literal"
+        },
+        {
+          "name": "allManagedEventTypeProps",
+          "value": "{ title: true, description: true, interfaceLanguage: true, isInstantEvent: true, instantMeetingParameters: true, instantMeetingExpiryTimeOffsetInSeconds: true, aiPhoneCallConfig: true, currency: true, periodDays: true, position: true, price: true, slug: true, length: true, offsetStart: true, locations: true, hidden: true, availability: true, recurringEvent: true, customInputs: true, disableGuests: true, disableCancelling: true, disableRescheduling: true, allowReschedulingCancelledBookings: true, requiresConfirmation: true, canSendCalVideoTranscriptionEmails: true, requiresConfirmationForFreeEmail: true, requiresConfirmationWillBlockSlot: true, eventName: true, metadata: true, children: true, hideCalendarNotes: true, hideCalendarEventDetails: true, minimumBookingNotice: true, beforeEventBuffer: true, afterEventBuffer: true, successRedirectUrl: true, seatsPerTimeSlot: true, seatsShowAttendees: true, seatsShowAvailabilityCount: true, forwardParamsSuccessRedirect: true, periodType: true, hashedLink: true, webhooks: true, periodStartDate: true, periodEndDate: true, destinationCalendar: true, periodCountCalendarDays: true, bookingLimits: true, onlyShowFirstAvailableSlot: true, slotInterval: true, scheduleId: true, workflows: true, bookingFields: true, durationLimits: true, maxActiveBookingsPerBooker: true, maxActiveBookingPerBookerOfferReschedule: true, lockTimeZoneToggleOnBookingPage: true, lockedTimeZone: true, requiresBookerEmailVerification: true, assignAllTeamMembers: true, isRRWeightsEnabled: true, eventTypeColor: true, allowReschedulingPastBookings: true, hideOrganizerEmail: true, rescheduleWithSameRoundRobinHost: true, maxLeadThreshold: true, customReplyToEmail: true, bookingRequiresAuthentication: true }",
+          "kind": "object-literal"
+        },
+        {
+          "name": "unlockedManagedEventTypeProps",
+          "value": "{\n  locations: allManagedEventTypeProps.locations,\n  scheduleId: allManagedEventTypeProps.scheduleId,\n  destinationCalendar: allManagedEventTypeProps.destinationCalendar,\n}",
+          "kind": "object-literal"
+        }
+      ],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/prisma/zod-utils.ts__Frequency_1#enum:Frequency",
+        "unitKind": "enum",
+        "name": "Frequency",
+        "qualifiedName": "Frequency",
+        "parentUnitId": null,
+        "startLine": 26,
+        "endLine": 34,
+        "isBehavioral": false,
+        "source": "export enum Frequency {\n  YEARLY = 0,\n  MONTHLY = 1,\n  WEEKLY = 2,\n  DAILY = 3,\n  HOURLY = 4,\n  MINUTELY = 5,\n  SECONDLY = 6,\n}"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__BookerLayouts_2#enum:BookerLayouts",
+        "unitKind": "enum",
+        "name": "BookerLayouts",
+        "qualifiedName": "BookerLayouts",
+        "parentUnitId": null,
+        "startLine": 36,
+        "endLine": 40,
+        "isBehavioral": false,
+        "source": "export enum BookerLayouts {\n  MONTH_VIEW = \"month_view\",\n  WEEK_VIEW = \"week_view\",\n  COLUMN_VIEW = \"column_view\",\n}"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__bookerLayoutOptions_3#const:bookerLayoutOptions",
+        "unitKind": "const",
+        "name": "bookerLayoutOptions",
+        "qualifiedName": "bookerLayoutOptions",
+        "parentUnitId": null,
+        "startLine": 42,
+        "endLine": 46,
+        "isBehavioral": false,
+        "source": "export const bookerLayoutOptions = [\n  BookerLayouts.MONTH_VIEW,\n  BookerLayouts.WEEK_VIEW,\n  BookerLayouts.COLUMN_VIEW,\n];"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__layoutOptions_4#const:layoutOptions",
+        "unitKind": "const",
+        "name": "layoutOptions",
+        "qualifiedName": "layoutOptions",
+        "parentUnitId": null,
+        "startLine": 48,
+        "endLine": 52,
+        "isBehavioral": false,
+        "source": "const layoutOptions = z.union([\n  z.literal(bookerLayoutOptions[0]),\n  z.literal(bookerLayoutOptions[1]),\n  z.literal(bookerLayoutOptions[2]),\n]);"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__bookerLayouts_5#const:bookerLayouts",
+        "unitKind": "const",
+        "name": "bookerLayouts",
+        "qualifiedName": "bookerLayouts",
+        "parentUnitId": null,
+        "startLine": 54,
+        "endLine": 58,
+        "isBehavioral": false,
+        "source": "export const bookerLayouts = z\n  .object({\n    enabledLayouts: z.array(layoutOptions),\n    defaultLayout: layoutOptions,\n  })"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__orgOnboardingInvitedMembersSchema_6#const:orgOnboardingInvitedMembersSchema",
+        "unitKind": "const",
+        "name": "orgOnboardingInvitedMembersSchema",
+        "qualifiedName": "orgOnboardingInvitedMembersSchema",
+        "parentUnitId": null,
+        "startLine": 61,
+        "endLine": 63,
+        "isBehavioral": false,
+        "source": "export const orgOnboardingInvitedMembersSchema = z.array(\n  z.object({ email: z.string().email(), name: z.string().optional() })\n);"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__orgOnboardingTeamsSchema_7#const:orgOnboardingTeamsSchema",
+        "unitKind": "const",
+        "name": "orgOnboardingTeamsSchema",
+        "qualifiedName": "orgOnboardingTeamsSchema",
+        "parentUnitId": null,
+        "startLine": 65,
+        "endLine": 72,
+        "isBehavioral": false,
+        "source": "export const orgOnboardingTeamsSchema = z.array(\n  z.object({\n    id: z.number(),\n    name: z.string(),\n    isBeingMigrated: z.boolean(),\n    // \"slug\" is null for new teams\n    slug: z.string().nullable(),\n  })"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__defaultBookerLayoutSettings_8#const:defaultBookerLayoutSettings",
+        "unitKind": "const",
+        "name": "defaultBookerLayoutSettings",
+        "qualifiedName": "defaultBookerLayoutSettings",
+        "parentUnitId": null,
+        "startLine": 75,
+        "endLine": 79,
+        "isBehavioral": false,
+        "source": "export const defaultBookerLayoutSettings = {\n  defaultLayout: BookerLayouts.MONTH_VIEW,\n  // if the user has no explicit layouts set (not in user profile and not in event settings), all layouts are enabled.\n  enabledLayouts: bookerLayoutOptions,\n};"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__BookerLayoutSettings_9#type_alias:BookerLayoutSettings",
+        "unitKind": "type_alias",
+        "name": "BookerLayoutSettings",
+        "qualifiedName": "BookerLayoutSettings",
+        "parentUnitId": null,
+        "startLine": 81,
+        "endLine": 81,
+        "isBehavioral": false,
+        "source": "export type BookerLayoutSettings = z.infer<typeof bookerLayouts>;"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__RequiresConfirmationThresholdUnits_10#const:RequiresConfirmationThresholdUnits",
+        "unitKind": "const",
+        "name": "RequiresConfirmationThresholdUnits",
+        "qualifiedName": "RequiresConfirmationThresholdUnits",
+        "parentUnitId": null,
+        "startLine": 83,
+        "endLine": 83,
+        "isBehavioral": false,
+        "source": "export const RequiresConfirmationThresholdUnits: z.ZodType<UnitTypeLongPlural> = z.enum([\"hours\", \"minutes\"]);"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts___eventTypeMetaDataSchemaWithoutApps_11#const:_eventTypeMetaDataSchemaWithoutApps",
+        "unitKind": "const",
+        "name": "_eventTypeMetaDataSchemaWithoutApps",
+        "qualifiedName": "_eventTypeMetaDataSchemaWithoutApps",
+        "parentUnitId": null,
+        "startLine": 85,
+        "endLine": 125,
+        "isBehavioral": false,
+        "source": "const _eventTypeMetaDataSchemaWithoutApps = z.object({\n  smartContractAddress: z.string().optional(),\n  blockchainId: z.number().optional(),\n  multipleDuration: z.number().array().optional(),\n  giphyThankYouPage: z.string().optional(),\n  additionalNotesRequired: z.boolean().optional(),\n  disableSuccessPage: z.boolean().optional(),\n  disableStandardEmails: z\n    .object({\n      all: z\n        .object({\n          host: z.boolean().optional(),\n          attendee: z.boolean().optional(),\n        })\n        .optional(),\n      confirmation: z\n        .object({\n          host: z.boolean().optional(),\n          attendee: z.boolean().optional(),\n        })\n        .optional(),\n    })\n    .optional(),\n  managedEventConfig: z\n    .object({\n      unlockedFields: z.custom<{ [k in keyof Omit<Prisma.EventTypeSelect, \"id\">]: true }>().optional(),\n    })\n    .optional(),\n  requiresConfirmationThreshold: z\n    .object({\n      time: z.number(),\n      unit: RequiresConfirmationThresholdUnits,\n    })\n    .optional(),\n  config: z\n    .object({\n      useHostSchedulesForTeamEvent: z.boolean().optional(),\n    })\n    .optional(),\n  bookerLayouts: bookerLayouts.optional(),\n});"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__eventTypeMetaDataSchemaWithUntypedApps_12#const:eventTypeMetaDataSchemaWithUntypedApps",
+        "unitKind": "const",
+        "name": "eventTypeMetaDataSchemaWithUntypedApps",
+        "qualifiedName": "eventTypeMetaDataSchemaWithUntypedApps",
+        "parentUnitId": null,
+        "startLine": 127,
+        "endLine": 130,
+        "isBehavioral": false,
+        "source": "export const eventTypeMetaDataSchemaWithUntypedApps = _eventTypeMetaDataSchemaWithoutApps.merge(\n  z.object({\n    apps: z.record(z.string(), z.any()).optional(),\n  })"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__EventTypeMetaDataSchema_13#const:EventTypeMetaDataSchema",
+        "unitKind": "const",
+        "name": "EventTypeMetaDataSchema",
+        "qualifiedName": "EventTypeMetaDataSchema",
+        "parentUnitId": null,
+        "startLine": 133,
+        "endLine": 133,
+        "isBehavioral": false,
+        "source": "export const EventTypeMetaDataSchema = eventTypeMetaDataSchemaWithUntypedApps.nullable();"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__eventTypeMetaDataSchemaWithoutApps_14#const:eventTypeMetaDataSchemaWithoutApps",
+        "unitKind": "const",
+        "name": "eventTypeMetaDataSchemaWithoutApps",
+        "qualifiedName": "eventTypeMetaDataSchemaWithoutApps",
+        "parentUnitId": null,
+        "startLine": 134,
+        "endLine": 134,
+        "isBehavioral": false,
+        "source": "export const eventTypeMetaDataSchemaWithoutApps = _eventTypeMetaDataSchemaWithoutApps.nullable();"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__EventTypeMetadata_15#type_alias:EventTypeMetadata",
+        "unitKind": "type_alias",
+        "name": "EventTypeMetadata",
+        "qualifiedName": "EventTypeMetadata",
+        "parentUnitId": null,
+        "startLine": 136,
+        "endLine": 136,
+        "isBehavioral": false,
+        "source": "export type EventTypeMetadata = z.infer<typeof EventTypeMetaDataSchema>;"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__eventTypeBookingFields_16#const:eventTypeBookingFields",
+        "unitKind": "const",
+        "name": "eventTypeBookingFields",
+        "qualifiedName": "eventTypeBookingFields",
+        "parentUnitId": null,
+        "startLine": 138,
+        "endLine": 138,
+        "isBehavioral": false,
+        "source": "export const eventTypeBookingFields = formBuilderFieldsSchema;"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__BookingFieldTypeEnum_17#const:BookingFieldTypeEnum",
+        "unitKind": "const",
+        "name": "BookingFieldTypeEnum",
+        "qualifiedName": "BookingFieldTypeEnum",
+        "parentUnitId": null,
+        "startLine": 139,
+        "endLine": 139,
+        "isBehavioral": false,
+        "source": "export const BookingFieldTypeEnum = eventTypeBookingFields.element.shape.type.Enum;"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__BookingFieldType_18#type_alias:BookingFieldType",
+        "unitKind": "type_alias",
+        "name": "BookingFieldType",
+        "qualifiedName": "BookingFieldType",
+        "parentUnitId": null,
+        "startLine": 140,
+        "endLine": 140,
+        "isBehavioral": false,
+        "source": "export type BookingFieldType = FormBuilderFieldType;"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__bookingResponses_19#const:bookingResponses",
+        "unitKind": "const",
+        "name": "bookingResponses",
+        "qualifiedName": "bookingResponses",
+        "parentUnitId": null,
+        "startLine": 145,
+        "endLine": 167,
+        "isBehavioral": false,
+        "source": "export const bookingResponses = z\n  .object({\n    email: z.string(),\n    attendeePhoneNumber: z.string().optional(),\n    //TODO: Why don't we move name out of bookingResponses and let it be handled like user fields?\n    name: z.union([\n      z.string(),\n      z.object({\n        firstName: z.string(),\n        lastName: z.string().optional(),\n      }),\n    ]),\n    guests: z.array(z.string()).optional(),\n    notes: z.string().optional(),\n    location: z\n      .object({\n        optionValue: z.string(),\n        value: z.string(),\n      })\n      .optional(),\n    smsReminderNumber: z.string().optional(),\n    rescheduleReason: z.string().optional(),\n  })"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__BookingResponses_20#type_alias:BookingResponses",
+        "unitKind": "type_alias",
+        "name": "BookingResponses",
+        "qualifiedName": "BookingResponses",
+        "parentUnitId": null,
+        "startLine": 170,
+        "endLine": 170,
+        "isBehavioral": false,
+        "source": "export type BookingResponses = z.infer<typeof bookingResponses>;"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__eventTypeLocations_21#const:eventTypeLocations",
+        "unitKind": "const",
+        "name": "eventTypeLocations",
+        "qualifiedName": "eventTypeLocations",
+        "parentUnitId": null,
+        "startLine": 172,
+        "endLine": 184,
+        "isBehavioral": false,
+        "source": "export const eventTypeLocations = z.array(\n  z.object({\n    // TODO: Couldn't find a way to make it a union of types from App Store locations\n    // Creating a dynamic union by iterating over the object doesn't seem to make TS happy\n    type: z.string(),\n    address: z.string().optional(),\n    link: z.string().url().optional(),\n    displayLocationPublicly: z.boolean().optional(),\n    hostPhoneNumber: z.string().optional(),\n    credentialId: z.number().optional(),\n    teamName: z.string().optional(),\n    customLabel: z.string().optional(),\n  })"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__recurringEventType_22#const:recurringEventType",
+        "unitKind": "const",
+        "name": "recurringEventType",
+        "qualifiedName": "recurringEventType",
+        "parentUnitId": null,
+        "startLine": 188,
+        "endLine": 196,
+        "isBehavioral": false,
+        "source": "export const recurringEventType = z\n  .object({\n    dtstart: z.date().optional(),\n    interval: z.number(),\n    count: z.number(),\n    freq: z.nativeEnum(Frequency),\n    until: z.date().optional(),\n    tzid: z.string().optional(),\n  })"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__iso8601_23#const:iso8601",
+        "unitKind": "const",
+        "name": "iso8601",
+        "qualifiedName": "iso8601",
+        "parentUnitId": null,
+        "startLine": 200,
+        "endLine": 211,
+        "isBehavioral": false,
+        "source": "export const iso8601 = z.string().transform((val, ctx) => {\n  const time = Date.parse(val);\n  if (!time) {\n    ctx.addIssue({\n      code: z.ZodIssueCode.custom,\n      message: \"Invalid ISO Date\",\n    });\n  }\n  const d = new Date();\n  d.setTime(time);\n  return d;\n});"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__eventTypeColor_24#const:eventTypeColor",
+        "unitKind": "const",
+        "name": "eventTypeColor",
+        "qualifiedName": "eventTypeColor",
+        "parentUnitId": null,
+        "startLine": 213,
+        "endLine": 217,
+        "isBehavioral": false,
+        "source": "export const eventTypeColor = z\n  .object({\n    lightEventTypeColor: z.string(),\n    darkEventTypeColor: z.string(),\n  })"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__IntervalLimitsType_25#type_alias:IntervalLimitsType",
+        "unitKind": "type_alias",
+        "name": "IntervalLimitsType",
+        "qualifiedName": "IntervalLimitsType",
+        "parentUnitId": null,
+        "startLine": 220,
+        "endLine": 220,
+        "isBehavioral": false,
+        "source": "export type IntervalLimitsType = IntervalLimit | null;"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__intervalLimitsType_26#const:intervalLimitsType",
+        "unitKind": "const",
+        "name": "intervalLimitsType",
+        "qualifiedName": "intervalLimitsType",
+        "parentUnitId": null,
+        "startLine": 222,
+        "endLine": 222,
+        "isBehavioral": false,
+        "source": "export { intervalLimitsType } from \"@calcom/lib/intervalLimits/intervalLimitSchema\";"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__eventTypeSlug_27#const:eventTypeSlug",
+        "unitKind": "const",
+        "name": "eventTypeSlug",
+        "qualifiedName": "eventTypeSlug",
+        "parentUnitId": null,
+        "startLine": 224,
+        "endLine": 230,
+        "isBehavioral": false,
+        "source": "export const eventTypeSlug = z\n  .string()\n  .trim()\n  .transform((val) => slugify(val))\n  .refine((val) => val.length >= 1, {\n    message: \"Please enter at least one character\",\n  });"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__stringToDate_28#const:stringToDate",
+        "unitKind": "const",
+        "name": "stringToDate",
+        "qualifiedName": "stringToDate",
+        "parentUnitId": null,
+        "startLine": 232,
+        "endLine": 232,
+        "isBehavioral": false,
+        "source": "export const stringToDate = z.string().transform((a) => new Date(a));"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__stringOrNumber_29#const:stringOrNumber",
+        "unitKind": "const",
+        "name": "stringOrNumber",
+        "qualifiedName": "stringOrNumber",
+        "parentUnitId": null,
+        "startLine": 234,
+        "endLine": 244,
+        "isBehavioral": false,
+        "source": "export const stringOrNumber = z.union([\n  z.string().transform((v, ctx) => {\n    const parsed = parseInt(v);\n    if (isNaN(parsed)) {\n      ctx.addIssue({\n        code: z.ZodIssueCode.custom,\n        message: \"Not a number\",\n      });\n    }\n    return parsed;\n  }),"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__requiredCustomInputSchema_30#const:requiredCustomInputSchema",
+        "unitKind": "const",
+        "name": "requiredCustomInputSchema",
+        "qualifiedName": "requiredCustomInputSchema",
+        "parentUnitId": null,
+        "startLine": 248,
+        "endLine": 253,
+        "isBehavioral": false,
+        "source": "export const requiredCustomInputSchema = z.union([\n  // string must be given & nonempty\n  z.string().trim().min(1),\n  // boolean must be true if set.\n  z.boolean().refine((v) => v === true),\n]);"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__PlatformClientParamsSchema_31#const:PlatformClientParamsSchema",
+        "unitKind": "const",
+        "name": "PlatformClientParamsSchema",
+        "qualifiedName": "PlatformClientParamsSchema",
+        "parentUnitId": null,
+        "startLine": 255,
+        "endLine": 262,
+        "isBehavioral": false,
+        "source": "const PlatformClientParamsSchema = z.object({\n  platformClientId: z.string().optional(),\n  platformRescheduleUrl: z.string().nullable().optional(),\n  platformCancelUrl: z.string().nullable().optional(),\n  platformBookingUrl: z.string().nullable().optional(),\n  platformBookingLocation: z.string().optional(),\n  areCalendarEventsEnabled: z.boolean().optional(),\n});"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__PlatformClientParams_32#type_alias:PlatformClientParams",
+        "unitKind": "type_alias",
+        "name": "PlatformClientParams",
+        "qualifiedName": "PlatformClientParams",
+        "parentUnitId": null,
+        "startLine": 264,
+        "endLine": 264,
+        "isBehavioral": false,
+        "source": "export type PlatformClientParams = z.infer<typeof PlatformClientParamsSchema>;"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__bookingConfirmPatchBodySchema_33#const:bookingConfirmPatchBodySchema",
+        "unitKind": "const",
+        "name": "bookingConfirmPatchBodySchema",
+        "qualifiedName": "bookingConfirmPatchBodySchema",
+        "parentUnitId": null,
+        "startLine": 266,
+        "endLine": 273,
+        "isBehavioral": false,
+        "source": "export const bookingConfirmPatchBodySchema = z.object({\n  bookingId: z.number(),\n  confirmed: z.boolean(),\n  recurringEventId: z.string().optional(),\n  reason: z.string().optional(),\n  emailsEnabled: z.boolean().default(true),\n  platformClientParams: PlatformClientParamsSchema.optional(),\n});"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__bookingCancelSchema_34#const:bookingCancelSchema",
+        "unitKind": "const",
+        "name": "bookingCancelSchema",
+        "qualifiedName": "bookingCancelSchema",
+        "parentUnitId": null,
+        "startLine": 275,
+        "endLine": 293,
+        "isBehavioral": false,
+        "source": "export const bookingCancelSchema = z.object({\n  id: z.number().optional(),\n  uid: z.string().optional(),\n  // note(Lauris): allRemainingBookings will cancel all bookings that have start time greater than this moment.\n  allRemainingBookings: z.boolean().optional(),\n  // note(Lauris): cancelSubsequentBookings will cancel all bookings after one specified by id or uid.\n  cancelSubsequentBookings: z.boolean().optional(),\n  cancellationReason: z.string().optional(),\n  seatReferenceUid: z.string().optional(),\n  cancelledBy: z.string().email({ message: \"Invalid email\" }).optional(),\n  internalNote: z\n    .object({\n      id: z.number(),\n      name: z.string(),\n      cancellationReason: z.string().optional().nullable(),\n    })\n    .optional()\n    .nullable(),\n});"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__bookingCancelAttendeeSeatSchema_35#const:bookingCancelAttendeeSeatSchema",
+        "unitKind": "const",
+        "name": "bookingCancelAttendeeSeatSchema",
+        "qualifiedName": "bookingCancelAttendeeSeatSchema",
+        "parentUnitId": null,
+        "startLine": 295,
+        "endLine": 297,
+        "isBehavioral": false,
+        "source": "export const bookingCancelAttendeeSeatSchema = z.object({\n  seatReferenceUid: z.string(),\n});"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__bookingCancelInput_36#const:bookingCancelInput",
+        "unitKind": "const",
+        "name": "bookingCancelInput",
+        "qualifiedName": "bookingCancelInput",
+        "parentUnitId": null,
+        "startLine": 299,
+        "endLine": 302,
+        "isBehavioral": false,
+        "source": "export const bookingCancelInput = bookingCancelSchema.refine(\n  (data) => !!data.id || !!data.uid,\n  \"At least one of the following required: 'id', 'uid'.\"\n);"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__bookingCancelWithCsrfSchema_37#const:bookingCancelWithCsrfSchema",
+        "unitKind": "const",
+        "name": "bookingCancelWithCsrfSchema",
+        "qualifiedName": "bookingCancelWithCsrfSchema",
+        "parentUnitId": null,
+        "startLine": 304,
+        "endLine": 307,
+        "isBehavioral": false,
+        "source": "export const bookingCancelWithCsrfSchema = bookingCancelSchema\n  .extend({\n    csrfToken: z.string().length(64, \"Invalid CSRF token\"),\n  })"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__vitalSettingsUpdateSchema_38#const:vitalSettingsUpdateSchema",
+        "unitKind": "const",
+        "name": "vitalSettingsUpdateSchema",
+        "qualifiedName": "vitalSettingsUpdateSchema",
+        "parentUnitId": null,
+        "startLine": 310,
+        "endLine": 314,
+        "isBehavioral": false,
+        "source": "export const vitalSettingsUpdateSchema = z.object({\n  connected: z.boolean().optional(),\n  selectedParam: z.string().optional(),\n  sleepValue: z.number().optional(),\n});"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__createdEventSchema_39#const:createdEventSchema",
+        "unitKind": "const",
+        "name": "createdEventSchema",
+        "qualifiedName": "createdEventSchema",
+        "parentUnitId": null,
+        "startLine": 316,
+        "endLine": 323,
+        "isBehavioral": false,
+        "source": "export const createdEventSchema = z\n  .object({\n    id: z.string(),\n    thirdPartyRecurringEventId: z.string(),\n    password: z.union([z.string(), z.undefined()]),\n    onlineMeetingUrl: z.string().nullable(),\n    iCalUID: z.string().optional(),\n  })"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__schemaDefaultConferencingApp_40#const:schemaDefaultConferencingApp",
+        "unitKind": "const",
+        "name": "schemaDefaultConferencingApp",
+        "qualifiedName": "schemaDefaultConferencingApp",
+        "parentUnitId": null,
+        "startLine": 326,
+        "endLine": 329,
+        "isBehavioral": false,
+        "source": "const schemaDefaultConferencingApp = z.object({\n  appSlug: z.string().default(\"daily-video\").optional(),\n  appLink: z.string().optional(),\n});"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__userMetadata_41#const:userMetadata",
+        "unitKind": "const",
+        "name": "userMetadata",
+        "qualifiedName": "userMetadata",
+        "parentUnitId": null,
+        "startLine": 331,
+        "endLine": 352,
+        "isBehavioral": false,
+        "source": "export const userMetadata = z\n  .object({\n    proPaidForByTeamId: z.number().optional(),\n    stripeCustomerId: z.string().optional(),\n    vitalSettings: vitalSettingsUpdateSchema.optional(),\n    isPremium: z.boolean().optional(),\n    sessionTimeout: z.number().optional(), // Minutes\n    defaultConferencingApp: schemaDefaultConferencingApp.optional(),\n    defaultBookerLayouts: bookerLayouts.optional(),\n    emailChangeWaitingForVerification: z\n      .string()\n      .transform((data) => data.toLowerCase())\n      .optional(),\n    migratedToOrgFrom: z\n      .object({\n        username: z.string().or(z.null()).optional(),\n        lastMigrationTime: z.string().optional(),\n        reverted: z.boolean().optional(),\n        revertTime: z.string().optional(),\n      })\n      .optional(),\n  })"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__DefaultConferencingApp_42#type_alias:DefaultConferencingApp",
+        "unitKind": "type_alias",
+        "name": "DefaultConferencingApp",
+        "qualifiedName": "DefaultConferencingApp",
+        "parentUnitId": null,
+        "startLine": 355,
+        "endLine": 355,
+        "isBehavioral": false,
+        "source": "export type DefaultConferencingApp = z.infer<typeof schemaDefaultConferencingApp>;"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__orgSettingsSchema_43#const:orgSettingsSchema",
+        "unitKind": "const",
+        "name": "orgSettingsSchema",
+        "qualifiedName": "orgSettingsSchema",
+        "parentUnitId": null,
+        "startLine": 357,
+        "endLine": 364,
+        "isBehavioral": false,
+        "source": "export const orgSettingsSchema = z\n  .object({\n    isOrganizationVerified: z.boolean().optional(),\n    isOrganizationConfigured: z.boolean().optional(),\n    isAdminReviewed: z.boolean().optional(),\n    orgAutoAcceptEmail: z.string().optional(),\n    isAdminAPIEnabled: z.boolean().optional(),\n  })"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__userMetadataType_44#type_alias:userMetadataType",
+        "unitKind": "type_alias",
+        "name": "userMetadataType",
+        "qualifiedName": "userMetadataType",
+        "parentUnitId": null,
+        "startLine": 366,
+        "endLine": 366,
+        "isBehavioral": false,
+        "source": "export type userMetadataType = z.infer<typeof userMetadata>;"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__BillingPeriod_45#enum:BillingPeriod",
+        "unitKind": "enum",
+        "name": "BillingPeriod",
+        "qualifiedName": "BillingPeriod",
+        "parentUnitId": null,
+        "startLine": 368,
+        "endLine": 371,
+        "isBehavioral": false,
+        "source": "export enum BillingPeriod {\n  MONTHLY = \"MONTHLY\",\n  ANNUALLY = \"ANNUALLY\",\n}"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__baseTeamMetadataSchema_46#const:baseTeamMetadataSchema",
+        "unitKind": "const",
+        "name": "baseTeamMetadataSchema",
+        "qualifiedName": "baseTeamMetadataSchema",
+        "parentUnitId": null,
+        "startLine": 373,
+        "endLine": 390,
+        "isBehavioral": false,
+        "source": "const baseTeamMetadataSchema = z.object({\n  defaultConferencingApp: schemaDefaultConferencingApp.optional(),\n  requestedSlug: z.string().or(z.null()),\n  paymentId: z.string(),\n  subscriptionId: z.string().nullable(),\n  subscriptionItemId: z.string().nullable(),\n  orgSeats: z.number().nullable(),\n  orgPricePerSeat: z.number().nullable(),\n  migratedToOrgFrom: z\n    .object({\n      teamSlug: z.string().or(z.null()).optional(),\n      lastMigrationTime: z.string().optional(),\n      reverted: z.boolean().optional(),\n      lastRevertTime: z.string().optional(),\n    })\n    .optional(),\n  billingPeriod: z.nativeEnum(BillingPeriod).optional(),\n});"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__teamMetadataSchema_47#const:teamMetadataSchema",
+        "unitKind": "const",
+        "name": "teamMetadataSchema",
+        "qualifiedName": "teamMetadataSchema",
+        "parentUnitId": null,
+        "startLine": 392,
+        "endLine": 392,
+        "isBehavioral": false,
+        "source": "export const teamMetadataSchema = baseTeamMetadataSchema.partial().nullable();"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__teamMetadataStrictSchema_48#const:teamMetadataStrictSchema",
+        "unitKind": "const",
+        "name": "teamMetadataStrictSchema",
+        "qualifiedName": "teamMetadataStrictSchema",
+        "parentUnitId": null,
+        "startLine": 394,
+        "endLine": 408,
+        "isBehavioral": false,
+        "source": "export const teamMetadataStrictSchema = baseTeamMetadataSchema\n  .extend({\n    subscriptionId: z\n      .string()\n      .refine((val) => val.startsWith(\"sub_\"), {\n        message: \"subscriptionId must start with 'sub_'\",\n      })\n      .nullable(),\n    subscriptionItemId: z\n      .string()\n      .refine((val) => val.startsWith(\"si_\"), {\n        message: \"subscriptionItemId must start with 'si_'\",\n      })\n      .nullable(),\n  })"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__bookingMetadataSchema_49#const:bookingMetadataSchema",
+        "unitKind": "const",
+        "name": "bookingMetadataSchema",
+        "qualifiedName": "bookingMetadataSchema",
+        "parentUnitId": null,
+        "startLine": 412,
+        "endLine": 415,
+        "isBehavioral": false,
+        "source": "export const bookingMetadataSchema = z\n  .object({\n    videoCallUrl: z.string().optional(),\n  })"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__customInputOptionSchema_50#const:customInputOptionSchema",
+        "unitKind": "const",
+        "name": "customInputOptionSchema",
+        "qualifiedName": "customInputOptionSchema",
+        "parentUnitId": null,
+        "startLine": 420,
+        "endLine": 424,
+        "isBehavioral": false,
+        "source": "export const customInputOptionSchema = z.array(\n  z.object({\n    label: z.string(),\n    type: z.string(),\n  })"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__customInputSchema_51#const:customInputSchema",
+        "unitKind": "const",
+        "name": "customInputSchema",
+        "qualifiedName": "customInputSchema",
+        "parentUnitId": null,
+        "startLine": 427,
+        "endLine": 436,
+        "isBehavioral": false,
+        "source": "export const customInputSchema = z.object({\n  id: z.number(),\n  eventTypeId: z.number(),\n  label: z.string(),\n  type: z.nativeEnum(EventTypeCustomInputType),\n  options: customInputOptionSchema.optional().nullable(),\n  required: z.boolean(),\n  placeholder: z.string(),\n  hasToBeCreated: z.boolean().optional(),\n});"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__CustomInputSchema_52#type_alias:CustomInputSchema",
+        "unitKind": "type_alias",
+        "name": "CustomInputSchema",
+        "qualifiedName": "CustomInputSchema",
+        "parentUnitId": null,
+        "startLine": 438,
+        "endLine": 438,
+        "isBehavioral": false,
+        "source": "export type CustomInputSchema = z.infer<typeof customInputSchema>;"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__recordingItemSchema_53#const:recordingItemSchema",
+        "unitKind": "const",
+        "name": "recordingItemSchema",
+        "qualifiedName": "recordingItemSchema",
+        "parentUnitId": null,
+        "startLine": 440,
+        "endLine": 449,
+        "isBehavioral": false,
+        "source": "export const recordingItemSchema = z\n  .object({\n    id: z.string(),\n    room_name: z.string(),\n    start_ts: z.number(),\n    status: z.string(),\n    max_participants: z.number().optional(),\n    duration: z.number(),\n    share_token: z.string(),\n  })"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__recordingItemsSchema_54#const:recordingItemsSchema",
+        "unitKind": "const",
+        "name": "recordingItemsSchema",
+        "qualifiedName": "recordingItemsSchema",
+        "parentUnitId": null,
+        "startLine": 452,
+        "endLine": 452,
+        "isBehavioral": false,
+        "source": "export const recordingItemsSchema = z.array(recordingItemSchema);"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__RecordingItemSchema_55#type_alias:RecordingItemSchema",
+        "unitKind": "type_alias",
+        "name": "RecordingItemSchema",
+        "qualifiedName": "RecordingItemSchema",
+        "parentUnitId": null,
+        "startLine": 454,
+        "endLine": 454,
+        "isBehavioral": false,
+        "source": "export type RecordingItemSchema = z.infer<typeof recordingItemSchema>;"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__getRecordingsResponseSchema_56#const:getRecordingsResponseSchema",
+        "unitKind": "const",
+        "name": "getRecordingsResponseSchema",
+        "qualifiedName": "getRecordingsResponseSchema",
+        "parentUnitId": null,
+        "startLine": 456,
+        "endLine": 460,
+        "isBehavioral": false,
+        "source": "export const getRecordingsResponseSchema = z.union([\n  z.object({\n    total_count: z.number(),\n    data: recordingItemsSchema,\n  }),"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__GetRecordingsResponseSchema_57#type_alias:GetRecordingsResponseSchema",
+        "unitKind": "type_alias",
+        "name": "GetRecordingsResponseSchema",
+        "qualifiedName": "GetRecordingsResponseSchema",
+        "parentUnitId": null,
+        "startLine": 464,
+        "endLine": 464,
+        "isBehavioral": false,
+        "source": "export type GetRecordingsResponseSchema = z.infer<typeof getRecordingsResponseSchema>;"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__successRedirectUrl_58#const:successRedirectUrl",
+        "unitKind": "const",
+        "name": "successRedirectUrl",
+        "qualifiedName": "successRedirectUrl",
+        "parentUnitId": null,
+        "startLine": 472,
+        "endLine": 480,
+        "isBehavioral": false,
+        "source": "export const successRedirectUrl = z\n  .union([\n    z.literal(\"\"),\n    z\n      .string()\n      .url()\n      .regex(/^http(s)?:\\/\\/.*/),\n  ])\n  .optional();"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__RoutingFormSettings_59#const:RoutingFormSettings",
+        "unitKind": "const",
+        "name": "RoutingFormSettings",
+        "qualifiedName": "RoutingFormSettings",
+        "parentUnitId": null,
+        "startLine": 482,
+        "endLine": 490,
+        "isBehavioral": false,
+        "source": "export const RoutingFormSettings = z\n  .object({\n    // Applicable only for User Forms\n    emailOwnerOnSubmission: z.boolean(),\n\n    // Applicable only for Team Forms\n    sendUpdatesTo: z.array(z.number()).optional(),\n    sendToAll: z.boolean().optional(),\n  })"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__DeploymentTheme_60#const:DeploymentTheme",
+        "unitKind": "const",
+        "name": "DeploymentTheme",
+        "qualifiedName": "DeploymentTheme",
+        "parentUnitId": null,
+        "startLine": 493,
+        "endLine": 508,
+        "isBehavioral": false,
+        "source": "export const DeploymentTheme = z\n  .object({\n    brand: z.string().default(\"#292929\"),\n    textBrand: z.string().default(\"#ffffff\"),\n    darkBrand: z.string().default(\"#fafafa\"),\n    textDarkBrand: z.string().default(\"#292929\"),\n    bookingHighlight: z.string().default(\"#10B981\"),\n    bookingLightest: z.string().default(\"#E1E1E1\"),\n    bookingLighter: z.string().default(\"#ACACAC\"),\n    bookingLight: z.string().default(\"#888888\"),\n    bookingMedian: z.string().default(\"#494949\"),\n    bookingDark: z.string().default(\"#313131\"),\n    bookingDarker: z.string().default(\"#292929\"),\n    fontName: z.string().default(\"Cal Sans\"),\n    fontSrc: z.string().default(\"https://cal.com/cal.ttf\"),\n  })"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__ZodDenullish_61#type_alias:ZodDenullish",
+        "unitKind": "type_alias",
+        "name": "ZodDenullish",
+        "qualifiedName": "ZodDenullish",
+        "parentUnitId": null,
+        "startLine": 511,
+        "endLine": 513,
+        "isBehavioral": false,
+        "source": "export type ZodDenullish<T extends ZodTypeAny> = T extends ZodNullable<infer U> | ZodOptional<infer U>\n  ? ZodDenullish<U>\n  : T;"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__ZodDenullishShape_62#type_alias:ZodDenullishShape",
+        "unitKind": "type_alias",
+        "name": "ZodDenullishShape",
+        "qualifiedName": "ZodDenullishShape",
+        "parentUnitId": null,
+        "startLine": 515,
+        "endLine": 517,
+        "isBehavioral": false,
+        "source": "export type ZodDenullishShape<T extends ZodRawShape> = {\n  [k in keyof T]: ZodDenullish<T[k]>;\n};"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__denullish_63#const:denullish",
+        "unitKind": "const",
+        "name": "denullish",
+        "qualifiedName": "denullish",
+        "parentUnitId": null,
+        "startLine": 519,
+        "endLine": 522,
+        "isBehavioral": true,
+        "source": "export const denullish = <T extends ZodTypeAny>(schema: T): ZodDenullish<T> =>\n  (schema instanceof ZodNullable || schema instanceof ZodOptional\n    ? denullish((schema._def as ZodNullableDef | ZodOptionalDef).innerType)\n    : schema) as ZodDenullish<T>;"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__UnknownKeysParam_64#type_alias:UnknownKeysParam",
+        "unitKind": "type_alias",
+        "name": "UnknownKeysParam",
+        "qualifiedName": "UnknownKeysParam",
+        "parentUnitId": null,
+        "startLine": 524,
+        "endLine": 524,
+        "isBehavioral": false,
+        "source": "type UnknownKeysParam = \"passthrough\" | \"strict\" | \"strip\";"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__denullishShape_65#function:denullishShape",
+        "unitKind": "function",
+        "name": "denullishShape",
+        "qualifiedName": "denullishShape",
+        "parentUnitId": null,
+        "startLine": 529,
+        "endLine": 534,
+        "isBehavioral": true,
+        "source": "export function denullishShape<\n  T extends ZodRawShape,\n  UnknownKeys extends UnknownKeysParam = \"strip\",\n  Catchall extends ZodTypeAny = ZodTypeAny,\n  Output = objectOutputType<T, Catchall>,\n  Input = objectInputType<T, Catchall>"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__entries_66#const:entries",
+        "unitKind": "const",
+        "name": "entries",
+        "qualifiedName": "entries",
+        "parentUnitId": null,
+        "startLine": 553,
+        "endLine": 554,
+        "isBehavioral": true,
+        "source": "export const entries = <O extends Record<string, unknown>>(\n  obj: O"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__DeepWriteable_67#type_alias:DeepWriteable",
+        "unitKind": "type_alias",
+        "name": "DeepWriteable",
+        "qualifiedName": "DeepWriteable",
+        "parentUnitId": null,
+        "startLine": 566,
+        "endLine": 568,
+        "isBehavioral": false,
+        "source": "type DeepWriteable<T> = T extends Readonly<{\n  -readonly [K in keyof T]: T[K];\n}>"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__FromEntries_68#type_alias:FromEntries",
+        "unitKind": "type_alias",
+        "name": "FromEntries",
+        "qualifiedName": "FromEntries",
+        "parentUnitId": null,
+        "startLine": 574,
+        "endLine": 576,
+        "isBehavioral": false,
+        "source": "type FromEntries<T> = T extends [infer Keys, unknown][]\n  ? { [K in Keys & PropertyKey]: Extract<T[number], [K, unknown]>[1] }\n  : never;"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__fromEntries_69#const:fromEntries",
+        "unitKind": "const",
+        "name": "fromEntries",
+        "qualifiedName": "fromEntries",
+        "parentUnitId": null,
+        "startLine": 584,
+        "endLine": 585,
+        "isBehavioral": true,
+        "source": "export const fromEntries = <\n  E extends [PropertyKey, unknown][] | ReadonlyArray<readonly [PropertyKey, unknown]>"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__getAccessLinkResponseSchema_70#const:getAccessLinkResponseSchema",
+        "unitKind": "const",
+        "name": "getAccessLinkResponseSchema",
+        "qualifiedName": "getAccessLinkResponseSchema",
+        "parentUnitId": null,
+        "startLine": 592,
+        "endLine": 594,
+        "isBehavioral": false,
+        "source": "export const getAccessLinkResponseSchema = z.object({\n  download_link: z.string().url(),\n});"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__GetAccessLinkResponseSchema_71#type_alias:GetAccessLinkResponseSchema",
+        "unitKind": "type_alias",
+        "name": "GetAccessLinkResponseSchema",
+        "qualifiedName": "GetAccessLinkResponseSchema",
+        "parentUnitId": null,
+        "startLine": 596,
+        "endLine": 596,
+        "isBehavioral": false,
+        "source": "export type GetAccessLinkResponseSchema = z.infer<typeof getAccessLinkResponseSchema>;"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__optionToValueSchema_72#const:optionToValueSchema",
+        "unitKind": "const",
+        "name": "optionToValueSchema",
+        "qualifiedName": "optionToValueSchema",
+        "parentUnitId": null,
+        "startLine": 599,
+        "endLine": 606,
+        "isBehavioral": true,
+        "source": "export const optionToValueSchema = <T extends z.ZodTypeAny>(valueSchema: T) =>\n  z\n    .object({\n      label: z.string(),\n      value: valueSchema,\n    })\n    // eslint-disable-next-line @typescript-eslint/no-explicit-any\n    .transform((foo) => (foo as any).value as z.infer<T>);"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__getParserWithGeneric_73#const:getParserWithGeneric",
+        "unitKind": "const",
+        "name": "getParserWithGeneric",
+        "qualifiedName": "getParserWithGeneric",
+        "parentUnitId": null,
+        "startLine": 612,
+        "endLine": 621,
+        "isBehavioral": true,
+        "source": "export const getParserWithGeneric =\n  <T extends AnyZodObject>(valueSchema: T) =>\n  <Data>(data: Data) => {\n    type Output = z.infer<T>;\n    type SimpleFormValues = string | number | null | undefined;\n    return valueSchema.parse(data) as {\n      // TODO: Invesitage why this broke on zod 3.22.2 upgrade\n      [key in keyof Data]: Data[key] extends SimpleFormValues ? Data[key] : Output[key];\n    };\n  };"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__sendDailyVideoRecordingEmailsSchema_74#const:sendDailyVideoRecordingEmailsSchema",
+        "unitKind": "const",
+        "name": "sendDailyVideoRecordingEmailsSchema",
+        "qualifiedName": "sendDailyVideoRecordingEmailsSchema",
+        "parentUnitId": null,
+        "startLine": 622,
+        "endLine": 625,
+        "isBehavioral": false,
+        "source": "export const sendDailyVideoRecordingEmailsSchema = z.object({\n  recordingId: z.string(),\n  bookingUID: z.string(),\n});"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__downloadLinkSchema_75#const:downloadLinkSchema",
+        "unitKind": "const",
+        "name": "downloadLinkSchema",
+        "qualifiedName": "downloadLinkSchema",
+        "parentUnitId": null,
+        "startLine": 627,
+        "endLine": 629,
+        "isBehavioral": false,
+        "source": "export const downloadLinkSchema = z.object({\n  download_link: z.string(),\n});"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__allManagedEventTypeProps_76#const:allManagedEventTypeProps",
+        "unitKind": "const",
+        "name": "allManagedEventTypeProps",
+        "qualifiedName": "allManagedEventTypeProps",
+        "parentUnitId": null,
+        "startLine": 632,
+        "endLine": 701,
+        "isBehavioral": false,
+        "source": "export const allManagedEventTypeProps: { [k in keyof Omit<Prisma.EventTypeSelect, \"id\">]: true } = {\n  title: true,\n  description: true,\n  interfaceLanguage: true,\n  isInstantEvent: true,\n  instantMeetingParameters: true,\n  instantMeetingExpiryTimeOffsetInSeconds: true,\n  aiPhoneCallConfig: true,\n  currency: true,\n  periodDays: true,\n  position: true,\n  price: true,\n  slug: true,\n  length: true,\n  offsetStart: true,\n  locations: true,\n  hidden: true,\n  availability: true,\n  recurringEvent: true,\n  customInputs: true,\n  disableGuests: true,\n  disableCancelling: true,\n  disableRescheduling: true,\n  allowReschedulingCancelledBookings: true,\n  requiresConfirmation: true,\n  canSendCalVideoTranscriptionEmails: true,\n  requiresConfirmationForFreeEmail: true,\n  requiresConfirmationWillBlockSlot: true,\n  eventName: true,\n  metadata: true,\n  children: true,\n  hideCalendarNotes: true,\n  hideCalendarEventDetails: true,\n  minimumBookingNotice: true,\n  beforeEventBuffer: true,\n  afterEventBuffer: true,\n  successRedirectUrl: true,\n  seatsPerTimeSlot: true,\n  seatsShowAttendees: true,\n  seatsShowAvailabilityCount: true,\n  forwardParamsSuccessRedirect: true,\n  periodType: true,\n  hashedLink: true,\n  webhooks: true,\n  periodStartDate: true,\n  periodEndDate: true,\n  destinationCalendar: true,\n  periodCountCalendarDays: true,\n  bookingLimits: true,\n  onlyShowFirstAvailableSlot: true,\n  slotInterval: true,\n  scheduleId: true,\n  workflows: true,\n  bookingFields: true,\n  durationLimits: true,\n  maxActiveBookingsPerBooker: true,\n  maxActiveBookingPerBookerOfferReschedule: true,\n  lockTimeZoneToggleOnBookingPage: true,\n  lockedTimeZone: true,\n  requiresBookerEmailVerification: true,\n  assignAllTeamMembers: true,\n  isRRWeightsEnabled: true,\n  eventTypeColor: true,\n  allowReschedulingPastBookings: true,\n  hideOrganizerEmail: true,\n  rescheduleWithSameRoundRobinHost: true,\n  maxLeadThreshold: true,\n  customReplyToEmail: true,\n  bookingRequiresAuthentication: true,\n};"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__unlockedManagedEventTypeProps_77#const:unlockedManagedEventTypeProps",
+        "unitKind": "const",
+        "name": "unlockedManagedEventTypeProps",
+        "qualifiedName": "unlockedManagedEventTypeProps",
+        "parentUnitId": null,
+        "startLine": 705,
+        "endLine": 709,
+        "isBehavioral": false,
+        "source": "export const unlockedManagedEventTypeProps = {\n  locations: allManagedEventTypeProps.locations,\n  scheduleId: allManagedEventTypeProps.scheduleId,\n  destinationCalendar: allManagedEventTypeProps.destinationCalendar,\n};"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__emailSchema_78#const:emailSchema",
+        "unitKind": "const",
+        "name": "emailSchema",
+        "qualifiedName": "emailSchema",
+        "parentUnitId": null,
+        "startLine": 711,
+        "endLine": 711,
+        "isBehavioral": false,
+        "source": "export const emailSchema = emailRegexSchema;"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__emailSchemaRefinement_79#const:emailSchemaRefinement",
+        "unitKind": "const",
+        "name": "emailSchemaRefinement",
+        "qualifiedName": "emailSchemaRefinement",
+        "parentUnitId": null,
+        "startLine": 716,
+        "endLine": 718,
+        "isBehavioral": true,
+        "source": "export const emailSchemaRefinement = (value: string) => {\n  return emailRegex.test(value);\n};"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__signupSchema_80#const:signupSchema",
+        "unitKind": "const",
+        "name": "signupSchema",
+        "qualifiedName": "signupSchema",
+        "parentUnitId": null,
+        "startLine": 720,
+        "endLine": 740,
+        "isBehavioral": false,
+        "source": "export const signupSchema = z.object({\n  // Username is marked optional here because it's requirement depends on if it's the Organization invite or a team invite which isn't easily done in zod\n  // It's better handled beyond zod in `validateAndGetCorrectedUsernameAndEmail`\n  username: z.string().optional(),\n  email: z.string().regex(emailRegex, { message: \"Invalid email\" }),\n  password: z.string().superRefine((data, ctx) => {\n    const isStrict = false;\n    const result = isPasswordValid(data, true, isStrict);\n    Object.keys(result).map((key: string) => {\n      if (!result[key as keyof typeof result]) {\n        ctx.addIssue({\n          code: z.ZodIssueCode.custom,\n          path: [key],\n          message: key,\n        });\n      }\n    });\n  }),\n  language: z.string().optional(),\n  token: z.string().optional(),\n});"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__ZVerifyCodeInputSchema_81#const:ZVerifyCodeInputSchema",
+        "unitKind": "const",
+        "name": "ZVerifyCodeInputSchema",
+        "qualifiedName": "ZVerifyCodeInputSchema",
+        "parentUnitId": null,
+        "startLine": 742,
+        "endLine": 745,
+        "isBehavioral": false,
+        "source": "export const ZVerifyCodeInputSchema = z.object({\n  email: emailSchema,\n  code: z.string(),\n});"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__ZVerifyCodeInputSchema_82#type_alias:ZVerifyCodeInputSchema",
+        "unitKind": "type_alias",
+        "name": "ZVerifyCodeInputSchema",
+        "qualifiedName": "ZVerifyCodeInputSchema",
+        "parentUnitId": null,
+        "startLine": 747,
+        "endLine": 747,
+        "isBehavioral": false,
+        "source": "export type ZVerifyCodeInputSchema = z.infer<typeof ZVerifyCodeInputSchema>;"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__coerceToDate_83#const:coerceToDate",
+        "unitKind": "const",
+        "name": "coerceToDate",
+        "qualifiedName": "coerceToDate",
+        "parentUnitId": null,
+        "startLine": 749,
+        "endLine": 749,
+        "isBehavioral": false,
+        "source": "export const coerceToDate = z.coerce.date();"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__getStringAsNumberRequiredSchema_84#const:getStringAsNumberRequiredSchema",
+        "unitKind": "const",
+        "name": "getStringAsNumberRequiredSchema",
+        "qualifiedName": "getStringAsNumberRequiredSchema",
+        "parentUnitId": null,
+        "startLine": 750,
+        "endLine": 751,
+        "isBehavioral": true,
+        "source": "export const getStringAsNumberRequiredSchema = (t: TFunction) =>\n  z.string().min(1, t(\"error_required_field\")).pipe(z.coerce.number());"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__bookingSeatDataSchema_85#const:bookingSeatDataSchema",
+        "unitKind": "const",
+        "name": "bookingSeatDataSchema",
+        "qualifiedName": "bookingSeatDataSchema",
+        "parentUnitId": null,
+        "startLine": 753,
+        "endLine": 756,
+        "isBehavioral": false,
+        "source": "export const bookingSeatDataSchema = z.object({\n  description: z.string().optional(),\n  responses: bookingResponses,\n});"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__serviceAccountKeySchema_86#const:serviceAccountKeySchema",
+        "unitKind": "const",
+        "name": "serviceAccountKeySchema",
+        "qualifiedName": "serviceAccountKeySchema",
+        "parentUnitId": null,
+        "startLine": 759,
+        "endLine": 765,
+        "isBehavioral": false,
+        "source": "export const serviceAccountKeySchema = z\n  .object({\n    private_key: z.string(),\n    client_email: z.string().optional(),\n    client_id: z.string(),\n    tenant_id: z.string().optional(),\n  })"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__TServiceAccountKeySchema_87#type_alias:TServiceAccountKeySchema",
+        "unitKind": "type_alias",
+        "name": "TServiceAccountKeySchema",
+        "qualifiedName": "TServiceAccountKeySchema",
+        "parentUnitId": null,
+        "startLine": 768,
+        "endLine": 768,
+        "isBehavioral": false,
+        "source": "export type TServiceAccountKeySchema = z.infer<typeof serviceAccountKeySchema>;"
+      },
+      {
+        "unitId": "packages/prisma/zod-utils.ts__rrSegmentQueryValueSchema_88#const:rrSegmentQueryValueSchema",
+        "unitKind": "const",
+        "name": "rrSegmentQueryValueSchema",
+        "qualifiedName": "rrSegmentQueryValueSchema",
+        "parentUnitId": null,
+        "startLine": 770,
+        "endLine": 770,
+        "isBehavioral": false,
+        "source": "export const rrSegmentQueryValueSchema = zodAttributesQueryValue.nullish();"
+      }
+    ]
+  },
+  "out": [
+    "packages/lib/emailSchema.ts",
+    "packages/lib/intervalLimits/intervalLimitSchema.ts",
+    "packages/features/auth/lib/isPasswordValid.ts",
+    "packages/lib/slugify.ts",
+    "packages/features/form-builder/schema.ts",
+    "packages/lib/raqb/zod.ts"
+  ],
+  "in": [
+    "packages/trpc/server/routers/viewer/organizations/createTeams.handler.ts",
+    "packages/trpc/server/routers/viewer/eventTypes/types.ts",
+    "packages/trpc/server/routers/viewer/eventTypes/heavy/update.handler.ts",
+    "packages/trpc/server/routers/viewer/me/updateProfile.schema.ts",
+    "packages/platform/libraries/app-store.ts",
+    "packages/features/bookings/lib/getBookingFields.ts",
+    "packages/features/bookings/Booker/components/hooks/useBookings.ts",
+    "packages/features/auth/signup/handlers/calcomHandler.ts",
+    "packages/features/auth/lib/next-auth-options.ts",
+    "packages/features/ee/organizations/pages/settings/admin/AdminOrgEditPage.tsx",
+    "packages/features/ee/payments/pages/payment.tsx",
+    "packages/features/ee/round-robin/roundRobinReassignment.ts",
+    "packages/features/ee/workflows/api/scheduleEmailReminders.ts",
+    "packages/features/ee/managed-event-types/lib/handleChildrenEventTypes.ts",
+    "packages/features/eventtypes/components/tabs/advanced/RequiresConfirmationController.tsx",
+    "packages/features/eventtypes/components/EventType.tsx",
+    "packages/features/eventtypes/lib/types.ts",
+    "packages/prisma/seed.ts",
+    "packages/prisma/seed-utils.ts",
+    "packages/app-store/_utils/payments/handlePaymentSuccess.ts",
+    "packages/app-store/_utils/setDefaultConferencingApp.ts",
+    "packages/app-store/_utils/getDefaultLocations.ts",
+    "packages/app-store/stripepayment/lib/PaymentService.ts",
+    "packages/app-store/dailyvideo/lib/VideoApiAdapter.ts",
+    "packages/lib/event-types/getEventTypesByViewer.ts",
+    "packages/lib/event-types/getEventTypesPublic.ts",
+    "packages/lib/server/repository/user.ts",
+    "packages/lib/hooks/useCreateEventType.ts",
+    "packages/lib/getPaymentAppData.ts",
+    "apps/web/playwright/fixtures/users.ts",
+    "apps/web/lib/team/[slug]/[type]/getServerSideProps.tsx",
+    "apps/web/modules/bookings/views/bookings-single-view.getServerSideProps.tsx",
+    "apps/web/modules/apps/installation/[[...step]]/step-view.tsx"
+  ],
+  "externals": ["dayjs", "i18next", "zod", "@calcom/prisma/enums", "./client"],
+  "impact": {
+    "seeds": 88,
+    "callers": 14,
+    "impactedFiles": [
+      "packages/trpc/server/routers/viewer/me/updateProfile.schema.ts",
+      "packages/features/eventtypes/lib/types.ts"
+    ]
+  }
+}

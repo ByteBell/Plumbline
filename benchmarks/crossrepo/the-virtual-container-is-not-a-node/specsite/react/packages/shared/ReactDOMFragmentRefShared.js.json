@@ -1,0 +1,450 @@
+{
+  "schema": 1,
+  "kind": "file",
+  "repoName": "react",
+  "commitHash": "3a717e42438afac81020cdec297dadb5613a4304",
+  "generatedAt": "2026-08-01T22:13:01.193Z",
+  "file": {
+    "relativePath": "packages/shared/ReactDOMFragmentRefShared.js",
+    "language": "javascript",
+    "sizeBytes": 2136,
+    "tokenCount": 477,
+    "model": "poolside/laguna-s-2.1",
+    "analysedAt": "2026-08-01T16:56:50.940Z",
+    "module": {
+      "purpose": "Implements shared Fragment Ref comparison logic used by both DOM and Fabric React renderer configs to compute a node's document-position relationship relative to an empty fragment (a fragment Fiber that rendered no children). It derives position from the fragment's parent host instance and its next rendered sibling, returning a bitwise mask of Node.DOCUMENT_POSITION_* constants so ref attachment and aria/sibling ordering resolve identically across configs.",
+      "summary": "A single exported Flow-typed utility in the React reconciler shared layer computes the DOM document position of an arbitrary otherNode relative to an empty fragment fiber. It first queries the parent host instance via compareDocumentPosition; if that reports the otherNode is contained as a sibling, it consults the reconciler's tree-reflection helper to fetch the next sibling fiber, maps it back to a public instance through an injected getPublicInstance callback, and queries its position to decide whether the otherNode follows or precedes the fragment. Every returned mask is OR-ed with DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC. The helper holds no module state, relies on a global Node bitmask, and is consumed by renderer configs to order refs and owner/nesting queries around childless fragments.",
+      "businessContext": "DOM and Fabric React renderer configs share this helper to order fragment refs and sibling/owner relationships around childless fragments. A defect here misorders empty-fragment refs, breaking ref callbacks, focus management, and aria-owns resolution.",
+      "classes": [],
+      "functions": [
+        "compareDocumentPositionForEmptyFragment (~L16-59): Computes a node's document-position bitmask relative to an empty React fragment using parent and sibling relationships"
+      ],
+      "keywords": [
+        "React",
+        "Fragment",
+        "Fiber",
+        "reconciler",
+        "compareDocumentPosition",
+        "DOCUMENT_POSITION",
+        "Fabric",
+        "DOM",
+        "host instance",
+        "sibling"
+      ],
+      "ontologyConcepts": [
+        "fragment reconciliation",
+        "document position comparison",
+        "sibling traversal",
+        "empty fragment",
+        "DOM bitmask",
+        "public instance resolution"
+      ],
+      "businessEntities": ["Fragment", "Fiber", "HostInstance", "Sibling", "DocumentPosition"],
+      "systemCapabilities": [
+        "compare DOM document positions",
+        "resolve empty fragment sibling order",
+        "compute node-to-fragment positioning"
+      ],
+      "configDependencies": [],
+      "importsInternal": [],
+      "importsExternal": [
+        {
+          "spec": "react-reconciler/src/ReactInternalTypes",
+          "symbols": ["Fiber"],
+          "package": "react-reconciler",
+          "subpath": "src/ReactInternalTypes",
+          "isBuiltin": false,
+          "anchor": { "startLine": 12, "endLine": 12 }
+        },
+        {
+          "spec": "react-reconciler/src/ReactFiberTreeReflection",
+          "symbols": ["getNextSiblingInstanceOrTextInstanceFiber"],
+          "package": "react-reconciler",
+          "subpath": "src/ReactFiberTreeReflection",
+          "isBuiltin": false,
+          "anchor": { "startLine": 14, "endLine": 14 }
+        }
+      ],
+      "sideEffects": {
+        "io": [
+          "Queries DOM position via parentHostInstance.compareDocumentPosition(otherNode) (line 27)",
+          "Queries DOM position via nextSiblingInstance.compareDocumentPosition(otherNode) (line 44)"
+        ],
+        "network": [],
+        "env": [],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": []
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "compareDocumentPositionForEmptyFragment",
+          "shape": "function compareDocumentPositionForEmptyFragment<TPublicInstance>(fragmentFiber: Fiber, parentHostInstance: TPublicInstance, otherNode: TPublicInstance, getPublicInstance: (fiber: Fiber) => TPublicInstance): number",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [],
+      "sectionMap": [
+        {
+          "name": "parent_position_setup",
+          "intent": "Initialize result from the parent-vs-otherNode document position query",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 22, "endLine": 28 }
+        },
+        {
+          "name": "self_containment_check",
+          "intent": "Branch on whether otherNode is the parent host instance itself",
+          "structureKind": "branch",
+          "predicate": "parentHostInstance === otherNode",
+          "branchOutcomes": ["contains", "siblings"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 29, "endLine": 31 }
+        },
+        {
+          "name": "sibling_containment_check",
+          "intent": "Branch on whether otherNode is contained as a sibling of the empty fragment",
+          "structureKind": "branch",
+          "predicate": "parentResult & Node.DOCUMENT_POSITION_CONTAINED_BY",
+          "branchOutcomes": ["resolve_sibling", "fall_through"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 32, "endLine": 54 }
+        },
+        {
+          "name": "next_sibling_fiber_lookup",
+          "intent": "Retrieve the next sibling fiber via tree reflection",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 35, "endLine": 36 }
+        },
+        {
+          "name": "null_sibling_check",
+          "intent": "Branch on whether a next sibling fiber exists",
+          "structureKind": "branch",
+          "predicate": "nextSiblingFiber === null",
+          "branchOutcomes": ["preceding", "compare_next"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 37, "endLine": 52 }
+        },
+        {
+          "name": "next_sibling_position_compare",
+          "intent": "Compare next sibling position to decide following or preceding",
+          "structureKind": "branch",
+          "predicate": "nextSiblingResult === 0 ||\n          nextSiblingResult & Node.DOCUMENT_POSITION_FOLLOWING",
+          "branchOutcomes": ["following", "preceding"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 45, "endLine": 51 }
+        },
+        {
+          "name": "final_position_merge",
+          "intent": "OR in implementation-specific flag and return the bitmask",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 57, "endLine": 58 }
+        }
+      ],
+      "representationFamily": "function-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "function",
+          "name": "compareDocumentPositionForEmptyFragment",
+          "signature": "export function compareDocumentPositionForEmptyFragment<TPublicInstance>(\n  fragmentFiber: Fiber,\n  parentHostInstance: TPublicInstance,\n  otherNode: TPublicInstance,\n  getPublicInstance: (fiber: Fiber) => TPublicInstance,\n): number {",
+          "generics": "<TPublicInstance>",
+          "decorators": [],
+          "returnType": "number",
+          "exported": true,
+          "anchor": { "startLine": 16, "endLine": 21 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "type",
+          "name": "getPublicInstance",
+          "shape": "(fiber: Fiber) => TPublicInstance",
+          "discriminant": null,
+          "anchor": { "startLine": 20, "endLine": 20 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "otherNode is identical to parentHostInstance (self containment)",
+          "handled": true,
+          "behavior": "Returns DOCUMENT_POSITION_CONTAINS merged with IMPLEMENTATION_SPECIFIC",
+          "anchor": { "startLine": 29, "endLine": 30 }
+        },
+        {
+          "inputShape": "parentResult has no DOCUMENT_POSITION_CONTAINED_BY flag (otherNode not inside parent)",
+          "handled": true,
+          "behavior": "Leaves result as parentResult and only ORs IMPLEMENTATION_SPECIFIC",
+          "anchor": { "startLine": 32, "endLine": 54 }
+        },
+        {
+          "inputShape": "no next sibling fiber exists (fragment is last child)",
+          "handled": true,
+          "behavior": "Sets result to DOCUMENT_POSITION_PRECEDING then ORs IMPLEMENTATION_SPECIFIC",
+          "anchor": { "startLine": 37, "endLine": 38 }
+        },
+        {
+          "inputShape": "nextSiblingResult is 0 (coincident or identical nodes)",
+          "handled": true,
+          "behavior": "Treats the position as DOCUMENT_POSITION_FOLLOWING",
+          "anchor": { "startLine": 46, "endLine": 49 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": "==",
+          "left": "parentHostInstance",
+          "right": "otherNode",
+          "inclusive": true,
+          "intent": "Detect the self-containment case where the other node is the parent host instance",
+          "anchor": { "startLine": 29, "endLine": 29 }
+        },
+        {
+          "operator": "==",
+          "left": "nextSiblingFiber",
+          "right": "null",
+          "inclusive": true,
+          "intent": "Detect absence of a next sibling so the other node is treated as preceding",
+          "anchor": { "startLine": 37, "endLine": 37 }
+        },
+        {
+          "operator": "==",
+          "left": "nextSiblingResult",
+          "right": "0",
+          "inclusive": true,
+          "intent": "Treat a zero (coincident) next-sibling position as following",
+          "anchor": { "startLine": 46, "endLine": 46 }
+        }
+      ],
+      "errorHandling": [],
+      "invariants": [
+        {
+          "kind": "non-null",
+          "description": "nextSiblingFiber is guaranteed non-null when getPublicInstance is called, guarded by the preceding === null check",
+          "anchor": { "startLine": 37, "endLine": 40 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "result is always a defined numeric bitmask (initialized from parentResult, refined by branches) at return",
+          "anchor": { "startLine": 22, "endLine": 58 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "platform",
+          "description": "Global Node and its DOCUMENT_POSITION_* bitmask constants are available (DOM or Fabric host environment)",
+          "anchor": { "startLine": 30, "endLine": 30 }
+        },
+        {
+          "kind": "caller",
+          "description": "Injected getPublicInstance maps a Fiber to a public instance exposing a compareDocumentPosition method",
+          "anchor": { "startLine": 20, "endLine": 20 }
+        },
+        {
+          "kind": "env",
+          "description": "getNextSiblingInstanceOrTextInstanceFiber traverses the live fiber tree and may legitimately return null",
+          "anchor": { "startLine": 35, "endLine": 36 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "On Fabric configs the PublicInstance type is opaque (FlowFixMe[prop-missing] at lines 25-26 and 42-43): does it actually implement compareDocumentPosition, or is this helper DOM-only?",
+          "affects": "behavioral correctness on Fabric hosts",
+          "anchor": { "startLine": 25, "endLine": 43 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "sync",
+        "reentrant": true,
+        "ordering": "deterministic",
+        "notes": "Synchronous pure computation given inputs; reentrant because it holds no state between calls, though correctness depends on the injected getPublicInstance and getNextSiblingInstanceOrTextInstanceFiber helpers being safe to call repeatedly. Ordering is deterministic within a single call as DOM reads occur synchronously."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [],
+      "language": "javascript",
+      "moduleLayout": [
+        "Copyright/license header comment",
+        "@flow pragma",
+        "import type {Fiber} from 'react-reconciler/src/ReactInternalTypes'",
+        "import {getNextSiblingInstanceOrTextInstanceFiber} from 'react-reconciler/src/ReactFiberTreeReflection'",
+        "export function compareDocumentPositionForEmptyFragment<TPublicInstance>(...)"
+      ],
+      "moduleLevelCode": "@flow pragma (line 9); type import of Fiber (line 12); value import of getNextSiblingInstanceOrTextInstanceFiber (line 14)",
+      "exports": [
+        { "name": "compareDocumentPositionForEmptyFragment", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "Fiber", "module": "react-reconciler/src/ReactInternalTypes", "alias": null, "kind": "external" },
+        {
+          "symbol": "getNextSiblingInstanceOrTextInstanceFiber",
+          "module": "react-reconciler/src/ReactFiberTreeReflection",
+          "alias": null,
+          "kind": "external"
+        }
+      ],
+      "fileConstants": [],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/shared/ReactDOMFragmentRefShared.js__compareDocumentPositionForEmptyFragment#function:compareDocumentPositionForEmptyFragment",
+        "unitKind": "function",
+        "name": "compareDocumentPositionForEmptyFragment",
+        "qualifiedName": "compareDocumentPositionForEmptyFragment",
+        "parentUnitId": null,
+        "startLine": 16,
+        "endLine": 59,
+        "isBehavioral": true,
+        "source": "export function compareDocumentPositionForEmptyFragment<TPublicInstance>(\n  fragmentFiber: Fiber,\n  parentHostInstance: TPublicInstance,\n  otherNode: TPublicInstance,\n  getPublicInstance: (fiber: Fiber) => TPublicInstance,\n): number {\n  let result;\n  // If the fragment has no children, we can use the parent and\n  // siblings to determine a position.\n  // $FlowFixMe[incompatible-use] Fabric PublicInstance is opaque\n  // $FlowFixMe[prop-missing]\n  const parentResult = parentHostInstance.compareDocumentPosition(otherNode);\n  result = parentResult;\n  if (parentHostInstance === otherNode) {\n    result = Node.DOCUMENT_POSITION_CONTAINS;\n  } else {\n    if (parentResult & Node.DOCUMENT_POSITION_CONTAINED_BY) {\n      // otherNode is one of the fragment's siblings. Use the next\n      // sibling to determine if its preceding or following.\n      const nextSiblingFiber =\n        getNextSiblingInstanceOrTextInstanceFiber(fragmentFiber);\n      if (nextSiblingFiber === null) {\n        result = Node.DOCUMENT_POSITION_PRECEDING;\n      } else {\n        const nextSiblingInstance = getPublicInstance(nextSiblingFiber);\n        const nextSiblingResult =\n          // $FlowFixMe[incompatible-use] Fabric PublicInstance is opaque\n          // $FlowFixMe[prop-missing]\n          nextSiblingInstance.compareDocumentPosition(otherNode);\n        if (\n          nextSiblingResult === 0 ||\n          nextSiblingResult & Node.DOCUMENT_POSITION_FOLLOWING\n        ) {\n          result = Node.DOCUMENT_POSITION_FOLLOWING;\n        } else {\n          result = Node.DOCUMENT_POSITION_PRECEDING;\n        }\n      }\n    }\n  }\n\n  result |= Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;\n  return result;\n}",
+        "detail": {
+          "unitId": "packages/shared/ReactDOMFragmentRefShared.js__compareDocumentPositionForEmptyFragment#function:compareDocumentPositionForEmptyFragment",
+          "fileId": "packages/shared/ReactDOMFragmentRefShared.js__compareDocumentPositionForEmptyFragment",
+          "unitKind": "function",
+          "name": "compareDocumentPositionForEmptyFragment",
+          "qualifiedName": "compareDocumentPositionForEmptyFragment",
+          "parentUnitId": null,
+          "startLine": 16,
+          "endLine": 59,
+          "signature": "export function compareDocumentPositionForEmptyFragment<TPublicInstance>(fragmentFiber: Fiber, parentHostInstance: TPublicInstance, otherNode: TPublicInstance, getPublicInstance: (fiber: Fiber) => TPublicInstance): number",
+          "parameters": [
+            {
+              "name": "fragmentFiber",
+              "type": "Fiber",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "parentHostInstance",
+              "type": "TPublicInstance",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "otherNode",
+              "type": "TPublicInstance",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            },
+            {
+              "name": "getPublicInstance",
+              "type": "(fiber: Fiber) => TPublicInstance",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 3
+            }
+          ],
+          "returnType": "number",
+          "decorators": [],
+          "modifiersApplied": ["export"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": ["TPublicInstance"],
+          "logicOutline": [],
+          "preconditions": [
+            "parentHostInstance has a compareDocumentPosition method",
+            "otherNode is a valid node accepted by compareDocumentPosition",
+            "fragmentFiber is a Fiber representing an empty fragment",
+            "getPublicInstance is a function mapping Fiber to TPublicInstance"
+          ],
+          "postconditions": [
+            "Returns a number that is a bitmask of Node.DOCUMENT_POSITION_* constants",
+            "Returned number always has Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC bit set"
+          ],
+          "invariants": ["Result is always OR-ed with Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC before returning"],
+          "edgeCases": [
+            "parentHostInstance === otherNode: result = Node.DOCUMENT_POSITION_CONTAINS",
+            "parentResult & Node.DOCUMENT_POSITION_CONTAINED_BY and nextSiblingFiber === null: result = Node.DOCUMENT_POSITION_PRECEDING",
+            "parentResult & Node.DOCUMENT_POSITION_CONTAINED_BY and nextSiblingResult === 0 or & Node.DOCUMENT_POSITION_FOLLOWING: result = Node.DOCUMENT_POSITION_FOLLOWING",
+            "parentResult & Node.DOCUMENT_POSITION_CONTAINED_BY and nextSiblingResult otherwise: result = Node.DOCUMENT_POSITION_PRECEDING",
+            "parentResult does not have CONTAINED_BY and parentHostInstance !== otherNode: result = parentResult (with IMPLEMENTATION_SPECIFIC added)"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "getNextSiblingInstanceOrTextInstanceFiber", "source": null, "kind": "internal" },
+            { "name": "getPublicInstance", "source": null, "kind": "internal" },
+            { "name": "parentHostInstance.compareDocumentPosition", "source": null, "kind": "external" },
+            { "name": "nextSiblingInstance.compareDocumentPosition", "source": null, "kind": "external" }
+          ],
+          "symbolReferences": ["Fiber", "Node", "TPublicInstance"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Computes a DocumentPosition bitmask for an empty React fragment relative to another node, using the parent host instance and the fragment's next sibling when needed. Ensures the result always includes the IMPLEMENTATION_SPECIFIC flag.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "compareDocumentPositionForEmptyFragment(fragmentFiber, parentHostInstance, otherNode, getPublicInstance)",
+              "then": "returns Node.DOCUMENT_POSITION_CONTAINS | Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "function computes position for empty fragment",
+              "then": "returns Node.DOCUMENT_POSITION_PRECEDING | Node.DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "b3e6871c4f11ed537e7a5e3102f7ddfb44a020518681ff84db910bb48da86eac"
+        }
+      }
+    ]
+  },
+  "out": [],
+  "in": ["packages/react-native-renderer/src/ReactFiberConfigFabric.js"],
+  "externals": ["react-reconciler/src/ReactInternalTypes", "react-reconciler/src/ReactFiberTreeReflection"],
+  "impact": { "seeds": 1, "callers": 0, "impactedFiles": [] }
+}

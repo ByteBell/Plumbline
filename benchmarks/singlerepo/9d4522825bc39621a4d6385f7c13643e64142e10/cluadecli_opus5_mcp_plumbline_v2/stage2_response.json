@@ -1,0 +1,71 @@
+{
+  "duration_api_ms": 67726,
+  "stop_reason": "end_turn",
+  "session_id": "b02369af-0546-4360-bbb6-1ed1bc423c08",
+  "total_cost_usd": 0.5684605,
+  "usage": {
+    "input_tokens": 16,
+    "cache_creation_input_tokens": 26410,
+    "cache_read_input_tokens": 356211,
+    "output_tokens": 5047,
+    "output_tokens_details": { "thinking_tokens": 1430 },
+    "server_tool_use": { "web_search_requests": 0, "web_fetch_requests": 0 },
+    "service_tier": "standard",
+    "cache_creation": { "ephemeral_1h_input_tokens": 26410, "ephemeral_5m_input_tokens": 0 },
+    "inference_geo": "not_available",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 1365,
+        "cache_read_input_tokens": 53202,
+        "cache_creation_input_tokens": 648,
+        "cache_creation": { "ephemeral_5m_input_tokens": 0, "ephemeral_1h_input_tokens": 648 },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-opus-5": {
+      "inputTokens": 16,
+      "outputTokens": 5047,
+      "cacheReadInputTokens": 356211,
+      "cacheCreationInputTokens": 26410,
+      "webSearchRequests": 0,
+      "costUSD": 0.5684605,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "canonicalModel": "claude-opus-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": { "background": 0, "foreground": 0, "unset": 0 },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": { "parent": 0, "user": 0, "system": 0 },
+    "refused": { "depth_limit": 0, "concurrency_limit": 0, "budget": 0 },
+    "by_type": {}
+  },
+  "is_error": false,
+  "num_turns": 11,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "**Case** `cal.com.processed/9d4522825bc39621a4d6385f7c13643e64142e10` (case_id `fc4ecf500af9`) — **arm** `cluadecli_opus5_mcp_plumbline_v2`\n\nI read `ranked.json` before opening any gold file. The gold file used was **`gold.json`** (no `golden.json` in this case dir). The answer shape was a **flat array** of 24 paths — single-repo form, already matching gold's shape, so no flattening was needed. ranked.json was not modified.\n\n**Metrics** (from `score_arm.py`, exit 0):\n\n| metric | value |\n|---|---|\n| hits / gold_total | 4 / 7 |\n| recall@10 | 0.571 |\n| recall@20 | 0.571 |\n| recall@full (@25, @50 — degenerate, list is 24) | 0.571 |\n| precision@5 | 0.400 |\n| MRR | 0.500 |\n\nThe scorer emits only `recall@{10,20,25,50}`, `precision@5` and `MRR` (plus the null core/propagation splits — this gold is `verified-no-split`). It does **not** emit precision@10, precision@20, F1@20 or F1_full_list, and I did not compute them by hand.\n\n**found (4):**\n- `apps/web/server/lib/[user]/getServerSideProps.ts` (rank 2)\n- `packages/features/profile/repositories/ProfileRepository.ts` (rank 5)\n- `apps/web/modules/bookings/views/bookings-single-view.getServerSideProps.tsx` (rank 8)\n- `apps/web/lib/booking.ts` (rank 9)\n\n**missed_gold (3):**\n- `apps/web/lib/apps/routing-forms/[...pages]/getServerSidePropsRoutingLink.ts`\n- `apps/web/lib/team/[slug]/[type]/getServerSideProps.tsx`\n- `packages/features/eventtypes/lib/defaultEvents.ts`\n\n**Surface verdict: comparable.** `not_comparable` is empty. Counts taken from `commands.log` (25 calls, verified line by line against the scorer's tally): ToolSearch 2, `roll_call` 1, `stakeout` 4, `shakedown` 2, `case_file` 1, `the_receipts` 12, `collateral_damage` 1, `interrogation` 1, `manhunt` 1. No filesystem or shell tool appears; ToolSearch is schema loading, not a repository read. The retriever's own search tool (`stakeout`) was called, so what was measured is that retriever. `cache_read` and `cache_creation` are both 0 and cost is present ($9.796, 26 turns, 444.5 s).\n\n**What the misses share:** all three are peer entry points on the same layer the arm did hit — server-side props/data-assembly modules that build the booking-page branding payload for a *route family other than the personal user link*. The run anchored on the personal-profile and booking-detail path (`[user]/getServerSideProps.ts`, `booking.ts`, `bookings-single-view.getServerSideProps.tsx`) and on the profile repository beneath it, then explored downward and sideways into rendering and theme consumers (`use-brand-colors`, `useTheme`, `getBrandColours`, the public views). The unretrieved gold sits laterally: the team `[slug]/[type]` props file, the routing-forms link props file, and `defaultEvents.ts` — the dynamic/default event branch. They are siblings that call the same branding-resolution contract from different route surfaces, and none of them carry the identifiers the run pivoted on; the arm returned the *analogous* team files it did find (`getTeamData.ts`, `getTeamEventType.ts`, the team `queries.ts`) rather than these, so the register missed is \"the same fix applied at every other route's props entry point,\" not a different subsystem.\n\nWritten: `result.json` (scorer output verbatim, including its `surface` block, `case_id`, `arm`, `index_at`) and `cost.json`.",
+  "ttft_ms": 1979,
+  "type": "result",
+  "duration_ms": 68105,
+  "uuid": "f02b513e-9abc-4a19-947e-13b6fc9c261b",
+  "ttft_stream_ms": 1501,
+  "time_to_request_ms": 33,
+  "queued_turn_count": 0
+}

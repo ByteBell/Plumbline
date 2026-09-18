@@ -1,0 +1,235 @@
+{
+  "contract": "Whether Cal.com's own name/logo branding is suppressed must be resolved for the BOOKING'S event (its team, with the parent organization's setting overriding, else its owner with that owner's organization profile overriding) through the centralized resolver in packages/features/profile/lib/hideBranding.ts \u2014 every surface that renders or sends on behalf of that event (booking page, metadata, and every automated workflow message) must derive the flag from that same resolution, never from a raw `owner.hideBranding`/`user.hideBranding` column or from the workflow's own owner.",
+  "defect_location": {
+    "repo": "calcom/cal.com",
+    "summary": "The booking page resolves branding correctly through the resolver: apps/web/server/lib/[user]/[type]/getServerSideProps.ts:299 calls shouldHideBrandingForUserEvent, apps/web/lib/team/[slug]/[type]/getServerSideProps.tsx:199 and apps/web/app/(booking-page-wrapper)/team/[slug]/[type]/pageWithCachedData.tsx:36 call shouldHideBrandingForTeamEvent, apps/web/lib/d/[link]/[slug]/getServerSideProps.tsx:61,103 and packages/features/ee/payments/pages/payment.tsx:58 likewise \u2014 all of which apply the organization/parent override defined in packages/features/profile/lib/hideBranding.ts:35-45 (resolveHideBranding) and 85-110 (shouldHideBrandingForEventUsingProfile). The automation path reads the flag from somewhere else. (a) packages/features/ee/workflows/lib/service/EmailWorkflowService.ts:90-93 resolves it from the WORKFLOW's owner \u2014 getHideBranding({userId: workflow.userId, teamId: workflow.teamId}) \u2014 not from the booking's event type; that value is then passed on at :103 and :233 and finally into customTemplate at :491. (b) Every booking-flow caller passes the raw owner column, ignoring team and organization: packages/features/bookings/lib/service/RegularBookingService.ts:2618,2793,2808 (`!!eventType.owner?.hideBranding`), packages/features/bookings/lib/handleConfirmation.ts:459,472, packages/features/bookings/lib/handleCancelBooking.ts:471, packages/features/handleMarkNoShow.ts:377, packages/features/ee/round-robin/roundRobinManualReassignment.ts:671 \u2014 and the query that feeds them selects only that column (packages/features/bookings/lib/handleNewBooking/getEventTypesFromDB.ts:109-113). (c) The cron sender re-derives it the same wrong way: packages/features/ee/workflows/api/scheduleEmailReminders.ts:246-248,274-276,433-435 use `reminder.booking.eventType?.team?.hideBranding : reminder.booking.user?.hideBranding`, off the select shapes in packages/features/ee/workflows/lib/getWorkflowReminders.ts:170,201 \u2014 neither reads team.parent or the owner's organization profile, which is exactly what the resolver's repositories fetch (packages/features/ee/teams/repositories/TeamRepository.ts:462-472 findTeamWithParentHideBranding, packages/features/users/repositories/UserRepository.ts:1323-1335 findUserWithHideBranding). The flag then travels untouched through packages/features/ee/workflows/lib/reminders/reminderScheduler.ts:97,161,213,248,280, emailReminderManager.ts:115,147,182,204 and scheduleMandatoryReminder.ts:18-38,82 to the templates that print 'Scheduling by <APP_NAME>' (customTemplate.ts:216, emailReminderTemplate.ts:82-83, emailRatingTemplate.ts:79-80), so an attendee of an org-branded customer still receives the vendor branding the booking page hides."
+  },
+  "retained": [
+    {
+      "unit": "packages/features",
+      "relevance": 0.95,
+      "depth": 3,
+      "traces": [
+        "packages/features/profile/lib/hideBranding.ts",
+        "packages/features/ee/workflows/lib/reminders/reminderScheduler.ts",
+        "packages/features/ee/workflows/lib/service/EmailWorkflowService.ts",
+        "packages/features/ee/workflows/lib/reminders/scheduleMandatoryReminder.ts",
+        "packages/features/ee/workflows/api/scheduleEmailReminders.ts",
+        "packages/features/bookings/lib/handleConfirmation.ts"
+      ],
+      "reopened": false,
+      "note": "Owns both the resolver and every violating automation read; all six traces included the dependencies lens."
+    },
+    {
+      "unit": "apps/web",
+      "relevance": 0.65,
+      "depth": 2,
+      "traces": [
+        "apps/web/lib/isBrandingHidden.tsx",
+        "apps/web/modules/bookings/views/bookings-single-view.getServerSideProps.tsx"
+      ],
+      "reopened": false,
+      "note": "Holds the correct side of the disagreement: server props that call the resolver, plus the cron route and PoweredBy/metadata rendering."
+    },
+    {
+      "unit": "packages/emails",
+      "relevance": 0.4,
+      "depth": 2,
+      "traces": ["packages/emails/templates/workflow-email.ts"],
+      "reopened": false,
+      "note": "One trace only: the workflow email template has no branding logic of its own \u2014 it ships the already-rendered html, so a second trace would have added no edge."
+    },
+    {
+      "unit": "packages/trpc",
+      "relevance": 0.35,
+      "depth": 1,
+      "traces": ["packages/trpc/server/routers/viewer/me/updateProfile.schema.ts"],
+      "reopened": false,
+      "note": "Where the hideBranding preference is submitted and persisted, and where booking confirmation is triggered."
+    },
+    {
+      "unit": "apps/api/v2",
+      "relevance": 0.35,
+      "depth": 1,
+      "traces": ["apps/api/v2/src/modules/teams/teams/inputs/update-team.input.ts"],
+      "reopened": false,
+      "note": "Platform API sets/exposes hideBranding on teams and users; no independent workflow branding resolution found."
+    },
+    {
+      "unit": "packages/prisma",
+      "relevance": 0.35,
+      "depth": 1,
+      "traces": ["packages/prisma/zod-utils.ts"],
+      "reopened": false,
+      "note": "Defines the User/Team/Organization hideBranding columns the resolver and the violating selects both read."
+    },
+    {
+      "unit": "packages/lib",
+      "relevance": 0.35,
+      "depth": 1,
+      "traces": ["packages/lib/constants.ts"],
+      "reopened": false,
+      "note": "Supplies APP_NAME/SENDER_NAME that the branding footer prints; no branding decision lives here."
+    }
+  ],
+  "dropped": [
+    {
+      "unit": "packages/ui / packages/coss-ui",
+      "verdict": "Presentational component library with no entity data access; branding visibility is decided server-side and passed in as props (PoweredBy lives in apps/web)."
+    },
+    {
+      "unit": "packages/platform/atoms",
+      "verdict": "Client embeddable booking components consume server-resolved props; they neither query hideBranding nor send workflow messages."
+    },
+    {
+      "unit": "packages/sms",
+      "verdict": "Delivery transport only; verified that smsReminderManager.ts, whatsappReminderManager.ts and api/scheduleSMSReminders.ts contain no 'branding' text at this commit, so the branding decision is not made on the SMS path."
+    },
+    {
+      "unit": "packages/embeds",
+      "verdict": "Embed loader/iframe bridge; carries brandColor for theming only, holds no plan-based branding suppression."
+    },
+    {
+      "unit": "apps/api/v1",
+      "verdict": "Thin legacy REST validation layer over Prisma models; no workflow reminder rendering and no branding resolution."
+    },
+    {
+      "unit": "companion",
+      "verdict": "Browser extension client; no server-side message sending or entity branding resolution."
+    },
+    {
+      "unit": "apps/docs / docs",
+      "verdict": "Documentation, excluded by source-only rule and holds no behaviour."
+    }
+  ],
+  "obligations": [
+    {
+      "id": "OB1",
+      "phrase": "workflow reminder hide branding",
+      "status": "CLOSED",
+      "closers": [
+        "packages/features/ee/workflows/lib/service/EmailWorkflowService.ts",
+        "packages/features/ee/workflows/api/scheduleEmailReminders.ts",
+        "packages/features/bookings/lib/service/RegularBookingService.ts",
+        "packages/features/bookings/lib/handleConfirmation.ts",
+        "packages/features/bookings/lib/handleCancelBooking.ts",
+        "packages/features/handleMarkNoShow.ts",
+        "packages/features/ee/round-robin/roundRobinManualReassignment.ts"
+      ]
+    },
+    {
+      "id": "OB2",
+      "phrase": "hide cal.com branding booking page",
+      "status": "CLOSED",
+      "closers": [
+        "apps/web/server/lib/[user]/[type]/getServerSideProps.ts",
+        "apps/web/lib/team/[slug]/[type]/getServerSideProps.tsx",
+        "apps/web/lib/d/[link]/[slug]/getServerSideProps.tsx",
+        "apps/web/app/(booking-page-wrapper)/team/[slug]/[type]/pageWithCachedData.tsx",
+        "packages/features/ee/payments/pages/payment.tsx",
+        "apps/web/lib/isBrandingHidden.tsx"
+      ]
+    },
+    {
+      "id": "OB3",
+      "phrase": "hideBranding setting team user profile organization",
+      "status": "CLOSED",
+      "closers": [
+        "packages/features/profile/lib/hideBranding.ts",
+        "packages/features/users/repositories/UserRepository.ts",
+        "packages/features/ee/teams/repositories/TeamRepository.ts",
+        "packages/features/profile/repositories/ProfileRepository.ts",
+        "packages/features/bookings/lib/handleNewBooking/getEventTypesFromDB.ts",
+        "packages/features/ee/workflows/lib/getWorkflowReminders.ts"
+      ]
+    },
+    {
+      "id": "OB4",
+      "phrase": "branding footer scheduling by app name in reminder",
+      "status": "CLOSED",
+      "closers": [
+        "packages/features/ee/workflows/lib/reminders/templates/customTemplate.ts",
+        "packages/features/ee/workflows/lib/reminders/templates/emailReminderTemplate.ts",
+        "packages/features/ee/workflows/lib/reminders/templates/emailRatingTemplate.ts",
+        "packages/features/ee/workflows/lib/reminders/reminderScheduler.ts",
+        "packages/features/ee/workflows/lib/reminders/emailReminderManager.ts",
+        "packages/features/ee/workflows/lib/reminders/scheduleMandatoryReminder.ts"
+      ]
+    }
+  ],
+  "counts": {
+    "seen": 214,
+    "confirmed": 24,
+    "ruled_out": 7,
+    "candidates": 43
+  },
+  "answer": [
+    "packages/features/ee/workflows/lib/service/EmailWorkflowService.ts",
+    "packages/features/bookings/lib/service/RegularBookingService.ts",
+    "packages/features/bookings/lib/handleConfirmation.ts",
+    "packages/features/ee/workflows/api/scheduleEmailReminders.ts",
+    "packages/features/profile/lib/hideBranding.ts",
+    "packages/features/bookings/lib/handleNewBooking/getEventTypesFromDB.ts",
+    "packages/features/ee/workflows/lib/getWorkflowReminders.ts",
+    "packages/features/bookings/lib/handleCancelBooking.ts",
+    "packages/features/handleMarkNoShow.ts",
+    "packages/features/ee/round-robin/roundRobinManualReassignment.ts",
+    "packages/features/ee/workflows/lib/service/WorkflowService.ts",
+    "packages/features/ee/workflows/lib/reminders/reminderScheduler.ts",
+    "packages/features/ee/workflows/lib/reminders/emailReminderManager.ts",
+    "packages/features/ee/workflows/lib/reminders/scheduleMandatoryReminder.ts",
+    "packages/features/users/repositories/UserRepository.ts",
+    "packages/features/ee/teams/repositories/TeamRepository.ts",
+    "packages/features/profile/repositories/ProfileRepository.ts",
+    "packages/features/ee/workflows/lib/reminders/templates/customTemplate.ts",
+    "packages/features/ee/workflows/lib/reminders/templates/emailReminderTemplate.ts",
+    "packages/features/ee/workflows/lib/reminders/templates/emailRatingTemplate.ts",
+    "packages/features/tasker/tasks/triggerFormSubmittedNoEvent/triggerFormSubmittedNoEventWorkflow.ts",
+    "packages/features/tasker/tasks/sendWorkflowEmails.ts",
+    "packages/features/ee/payments/pages/payment.tsx",
+    "packages/features/profile/lib/getBranding.ts",
+    "packages/features/ee/workflows/lib/types.ts",
+    "apps/web/server/lib/[user]/[type]/getServerSideProps.ts",
+    "apps/web/lib/team/[slug]/[type]/getServerSideProps.tsx",
+    "apps/web/lib/d/[link]/[slug]/getServerSideProps.tsx",
+    "apps/web/app/(booking-page-wrapper)/team/[slug]/[type]/pageWithCachedData.tsx",
+    "apps/web/modules/bookings/views/bookings-single-view.getServerSideProps.tsx",
+    "apps/web/lib/org/[orgSlug]/instant-meeting/team/[slug]/[type]/getServerSideProps.ts",
+    "apps/web/lib/isBrandingHidden.tsx",
+    "apps/web/app/_utils.tsx",
+    "apps/web/modules/ee/common/components/PoweredBy.tsx",
+    "apps/web/app/api/cron/workflows/scheduleEmailReminders/route.ts",
+    "apps/web/app/(booking-page-wrapper)/[user]/[type]/page.tsx",
+    "apps/web/modules/bookings/views/bookings-single-view.tsx",
+    "apps/web/modules/ee/organizations/appearance.tsx",
+    "apps/web/modules/ee/teams/views/team-appearance-view.tsx",
+    "apps/web/modules/ee/common/components/BrandColorsForm.tsx",
+    "apps/web/app/(booking-page-wrapper)/org/[orgSlug]/[user]/page.tsx",
+    "apps/web/lib/booking.ts",
+    "packages/emails/templates/workflow-email.ts",
+    "packages/emails/workflow-email-service.ts",
+    "packages/emails/templates/_base-email.ts",
+    "packages/emails/email-manager.ts",
+    "packages/emails/src/components/EmailSchedulingBodyHeader.tsx",
+    "packages/emails/src/renderEmail.ts",
+    "packages/trpc/server/routers/viewer/me/updateProfile.handler.ts",
+    "packages/trpc/server/routers/viewer/me/updateProfile.schema.ts",
+    "packages/trpc/server/routers/viewer/bookings/confirm.handler.ts",
+    "packages/trpc/server/routers/viewer/me/get.handler.ts",
+    "apps/api/v2/src/modules/teams/teams/inputs/update-team.input.ts",
+    "apps/api/v2/src/modules/teams/teams/inputs/create-team.input.ts",
+    "apps/api/v2/src/modules/teams/teams/services/teams.service.ts",
+    "apps/api/v2/src/modules/users/outputs/get-users.output.ts",
+    "apps/api/v2/src/modules/organizations/teams/index/inputs/update-organization-team.input.ts",
+    "apps/api/v2/src/modules/teams/teams/controllers/teams.controller.ts",
+    "apps/api/v2/src/modules/organizations/teams/index/organizations-teams.controller.ts",
+    "apps/api/v2/src/modules/users/users.repository.ts",
+    "apps/api/v2/src/ee/me/services/me.service.ts",
+    "packages/prisma/schema.prisma",
+    "packages/prisma/zod-utils.ts",
+    "packages/prisma/index.ts",
+    "packages/lib/constants.ts",
+    "packages/lib/getBrandColours.tsx",
+    "packages/app-store/_utils/payments/handlePaymentSuccess.ts"
+  ]
+}

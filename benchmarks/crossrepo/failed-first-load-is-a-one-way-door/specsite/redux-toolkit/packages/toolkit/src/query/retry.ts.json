@@ -1,0 +1,943 @@
+{
+  "schema": 1,
+  "kind": "file",
+  "repoName": "redux-toolkit",
+  "commitHash": "b1c5130154c454ca8387f55da6122fcb507c560c",
+  "generatedAt": "2026-08-01T22:01:37.770Z",
+  "file": {
+    "relativePath": "packages/toolkit/src/query/retry.ts",
+    "language": "typescript",
+    "sizeBytes": 6548,
+    "tokenCount": 1678,
+    "model": "tencent/hy3",
+    "analysedAt": "2026-08-01T15:11:51.706Z",
+    "module": {
+      "purpose": "Provides a retry enhancer for RTK Query base queries that automatically retries failed requests with exponential backoff, abort support, and configurable retry conditions.",
+      "summary": "This file implements the `retry` utility for Redux Toolkit Query. It exports a `retry` function (created via Object.assign of an enhancer and a `fail` helper) that wraps a base query. The wrapper retries failed queries using an exponential backoff algorithm (defaultBackoff), checks an abort signal before each attempt and before backoff, and respects either a max retry count or a custom retry condition callback. Errors thrown as HandledError are inspected to decide whether to continue retrying or return early. Unexpected errors are retried up to maxRetries and then returned as error responses. The module is purely a functional enhancer with no external IO of its own beyond timers and abort listeners.",
+      "businessContext": "Part of RTK Query resilience layer. If it fails, queries lose automatic retry, hurting app stability under flaky networks.",
+      "classes": [],
+      "functions": [
+        "defaultBackoff (~L26-54): Exponential backoff delay with abort signal support",
+        "fail (~L93-100): Throws HandledError flagged to abort retry loop immediately",
+        "failIfAborted (~L106-110): Triggers immediate fail when abort signal is set",
+        "retryWithBackoff (~L114-196): Enhancer retrying baseQuery with backoff and conditions"
+      ],
+      "keywords": [
+        "exponential backoff",
+        "retry",
+        "RTK Query",
+        "baseQuery enhancer",
+        "AbortSignal",
+        "HandledError",
+        "retryCondition"
+      ],
+      "ontologyConcepts": [
+        "retry policy",
+        "backoff timing",
+        "abort propagation",
+        "error classification",
+        "query resilience"
+      ],
+      "businessEntities": ["baseQuery", "RetryOptions", "query error", "abort signal"],
+      "systemCapabilities": [
+        "retry failed queries",
+        "abort in-flight retries",
+        "configure backoff strategy",
+        "short-circuit on handled errors"
+      ],
+      "configDependencies": [],
+      "importsInternal": [
+        {
+          "spec": "./baseQueryTypes",
+          "symbols": [
+            "BaseQueryApi",
+            "BaseQueryArg",
+            "BaseQueryEnhancer",
+            "BaseQueryError",
+            "BaseQueryExtraOptions",
+            "BaseQueryFn",
+            "BaseQueryMeta"
+          ],
+          "anchor": { "startLine": 1, "endLine": 9 },
+          "resolvedRelativePath": "packages/toolkit/src/query/baseQueryTypes.ts",
+          "resolvedFileId": "packages/toolkit/src/query/baseQueryTypes.ts",
+          "resolvedHint": "packages/toolkit/src/query/baseQueryTypes.ts"
+        },
+        {
+          "spec": "./fetchBaseQuery",
+          "symbols": ["FetchBaseQueryError"],
+          "anchor": { "startLine": 10, "endLine": 10 },
+          "resolvedRelativePath": "packages/toolkit/src/query/fetchBaseQuery.ts",
+          "resolvedFileId": "packages/toolkit/src/query/fetchBaseQuery.ts",
+          "resolvedHint": "packages/toolkit/src/query/fetchBaseQuery.ts"
+        },
+        {
+          "spec": "./HandledError",
+          "symbols": ["HandledError"],
+          "anchor": { "startLine": 11, "endLine": 11 },
+          "resolvedRelativePath": "packages/toolkit/src/query/HandledError.ts",
+          "resolvedFileId": "packages/toolkit/src/query/HandledError.ts",
+          "resolvedHint": "packages/toolkit/src/query/HandledError.ts"
+        }
+      ],
+      "importsExternal": [],
+      "sideEffects": {
+        "io": [
+          "Sets a setTimeout timer to delay retry",
+          "Adds abort event listener on provided AbortSignal",
+          "Clears timeout on abort"
+        ],
+        "network": [],
+        "env": [],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": []
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "retry",
+          "shape": "const retry: BaseQueryEnhancer<unknown, RetryOptions, RetryOptions | void> & { fail: <BaseQuery extends BaseQueryFn>(error: BaseQueryError<BaseQuery>, meta?: BaseQueryMeta<BaseQuery>) => never }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "RetryOptions",
+          "shape": "type RetryOptions = { backoff?: (attempt: number, maxRetries: number, signal?: AbortSignal) => Promise<void> } & ({ maxRetries?: number; retryCondition?: undefined } | { retryCondition?: RetryConditionFunction; maxRetries?: undefined })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "BaseQueryEnhancer",
+          "shape": "BaseQueryEnhancer<unknown, RetryOptions, RetryOptions | void>",
+          "resolvedRelativePath": "packages/toolkit/src/query/baseQueryTypes.ts",
+          "resolvedFileId": "packages/toolkit/src/query/baseQueryTypes.ts"
+        },
+        {
+          "name": "HandledError",
+          "shape": "class HandledError { constructor(value: { error: any; meta?: any }) }",
+          "resolvedRelativePath": "packages/toolkit/src/query/HandledError.ts",
+          "resolvedFileId": "packages/toolkit/src/query/HandledError.ts"
+        },
+        {
+          "name": "FetchBaseQueryError",
+          "shape": "type FetchBaseQueryError",
+          "resolvedRelativePath": "packages/toolkit/src/query/fetchBaseQuery.ts",
+          "resolvedFileId": "packages/toolkit/src/query/fetchBaseQuery.ts"
+        },
+        {
+          "name": "BaseQueryFn",
+          "shape": "type BaseQueryFn",
+          "resolvedRelativePath": "packages/toolkit/src/query/baseQueryTypes.ts",
+          "resolvedFileId": "packages/toolkit/src/query/baseQueryTypes.ts"
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "defaultBackoff",
+          "intent": "Compute delayed promise rejecting on abort",
+          "structureKind": "async",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 26, "endLine": 54 }
+        },
+        {
+          "name": "retryLoop",
+          "intent": "Repeatedly call baseQuery until success, abort, or condition fails",
+          "structureKind": "loop",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": "while (true) {",
+          "anchor": { "startLine": 145, "endLine": 195 }
+        },
+        {
+          "name": "errorBranch",
+          "intent": "Distinguish immediate-fail, handled, and unexpected errors",
+          "structureKind": "branch",
+          "predicate": "if (e.throwImmediately)",
+          "branchOutcomes": ["return e.value", "throw e", "check retryCondition", "return { error: e }"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 155, "endLine": 194 }
+        }
+      ],
+      "representationFamily": "function-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "function",
+          "name": "defaultBackoff",
+          "signature": "async function defaultBackoff(\n  attempt: number = 0,\n  maxRetries: number = 5,\n  signal?: AbortSignal,\n) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Promise<void>",
+          "exported": false,
+          "anchor": { "startLine": 26, "endLine": 30 }
+        },
+        {
+          "kind": "function",
+          "name": "fail",
+          "signature": "function fail<BaseQuery extends BaseQueryFn = BaseQueryFn>(\n  error: BaseQueryError<BaseQuery>,\n  meta?: BaseQueryMeta<BaseQuery>,\n): never {",
+          "generics": "<BaseQuery extends BaseQueryFn = BaseQueryFn>",
+          "decorators": [],
+          "returnType": "never",
+          "exported": false,
+          "anchor": { "startLine": 93, "endLine": 96 }
+        },
+        {
+          "kind": "function",
+          "name": "failIfAborted",
+          "signature": "function failIfAborted(signal: AbortSignal): void {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "void",
+          "exported": false,
+          "anchor": { "startLine": 106, "endLine": 106 }
+        },
+        {
+          "kind": "const",
+          "name": "retryWithBackoff",
+          "signature": "const retryWithBackoff: BaseQueryEnhancer<\n  unknown,\n  RetryOptions,\n  RetryOptions | void\n> = (baseQuery, defaultOptions) => async (args, api, extraOptions) => {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "BaseQueryEnhancer<unknown, RetryOptions, RetryOptions | void>",
+          "exported": false,
+          "anchor": { "startLine": 114, "endLine": 118 }
+        },
+        {
+          "kind": "const",
+          "name": "retry",
+          "signature": "export const retry = /* @__PURE__ */ Object.assign(retryWithBackoff, { fail })",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 220, "endLine": 220 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "type",
+          "name": "RetryConditionFunction",
+          "shape": "type RetryConditionFunction = (\n  error: BaseQueryError<BaseQueryFn>,\n  args: BaseQueryArg<BaseQueryFn>,\n  extraArgs: {\n    attempt: number\n    baseQueryApi: BaseQueryApi\n    extraOptions: BaseQueryExtraOptions<BaseQueryFn> & RetryOptions\n  },\n) => boolean",
+          "discriminant": null,
+          "anchor": { "startLine": 56, "endLine": 64 }
+        },
+        {
+          "kind": "type",
+          "name": "RetryOptions",
+          "shape": "export type RetryOptions = {\n  backoff?: (\n    attempt: number,\n    maxRetries: number,\n    signal?: AbortSignal,\n  ) => Promise<void>\n} & (\n  | {\n      maxRetries?: number\n      retryCondition?: undefined\n    }\n  | {\n      retryCondition?: RetryConditionFunction\n      maxRetries?: undefined\n    }\n)",
+          "discriminant": null,
+          "anchor": { "startLine": 66, "endLine": 91 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "AbortSignal already aborted at backoff start",
+          "handled": true,
+          "behavior": "Promise rejects with Error('Aborted') immediately",
+          "anchor": { "startLine": 46, "endLine": 48 }
+        },
+        {
+          "inputShape": "Error with throwImmediately and HandledError",
+          "handled": true,
+          "behavior": "Returns e.value without further retries",
+          "anchor": { "startLine": 158, "endLine": 161 }
+        },
+        {
+          "inputShape": "Unexpected error exceeding maxRetries",
+          "handled": true,
+          "behavior": "Returns { error: e } instead of throwing",
+          "anchor": { "startLine": 178, "endLine": 180 }
+        },
+        {
+          "inputShape": "Backoff promise rejected via abort",
+          "handled": true,
+          "behavior": "failIfAborted called then backoffError rethrown",
+          "anchor": { "startLine": 188, "endLine": 193 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": "==",
+          "left": "x",
+          "right": "undefined",
+          "inclusive": false,
+          "intent": "Filter out undefined maxRetries entries from candidate list",
+          "anchor": { "startLine": 126, "endLine": 126 }
+        },
+        {
+          "operator": "<=",
+          "left": "attempt",
+          "right": "maxRetries",
+          "inclusive": true,
+          "intent": "Default retry condition continues while attempt count not exceeded",
+          "anchor": { "startLine": 130, "endLine": 130 }
+        },
+        {
+          "operator": ">",
+          "left": "retry",
+          "right": "options.maxRetries",
+          "inclusive": false,
+          "intent": "Stop retrying unexpected errors after exceeding maxRetries",
+          "anchor": { "startLine": 178, "endLine": 178 }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": "Object.assign(new HandledError({ error, meta }), { throwImmediately: true })",
+          "caught": null,
+          "action": "Throws to break retry loop immediately",
+          "fallback": null,
+          "anchor": { "startLine": 97, "endLine": 99 }
+        },
+        {
+          "thrown": "new Error('Aborted')",
+          "caught": null,
+          "action": "Rejects backoff promise so caller can abort",
+          "fallback": null,
+          "anchor": { "startLine": 42, "endLine": 42 }
+        },
+        {
+          "thrown": null,
+          "caught": "catch (e: any)",
+          "action": "Increment retry, handle throwImmediately, evaluate retryCondition, possibly return value/error",
+          "fallback": "returns e.value or { error: e }",
+          "anchor": { "startLine": 155, "endLine": 194 }
+        },
+        {
+          "thrown": null,
+          "caught": "catch (backoffError)",
+          "action": "Check abort then rethrow backoff error",
+          "fallback": null,
+          "anchor": { "startLine": 188, "endLine": 193 }
+        }
+      ],
+      "invariants": [
+        {
+          "kind": "precondition",
+          "description": "api.signal is a valid AbortSignal passed to retryWithBackoff",
+          "anchor": { "startLine": 147, "endLine": 147 }
+        },
+        {
+          "kind": "invariant",
+          "description": "maxRetries is last defined among 5, defaultOptions, extraOptions",
+          "anchor": { "startLine": 122, "endLine": 127 }
+        },
+        {
+          "kind": "ordering",
+          "description": "failIfAborted checked before each attempt and before backoff",
+          "anchor": { "startLine": 147, "endLine": 147 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "Caller supplies api.signal AbortSignal to the wrapped query",
+          "anchor": { "startLine": 147, "endLine": 147 }
+        },
+        {
+          "kind": "caller",
+          "description": "defaultOptions and extraOptions may be undefined or lack maxRetries",
+          "anchor": { "startLine": 124, "endLine": 125 }
+        },
+        {
+          "kind": "schema",
+          "description": "HandledError instance exposes a `value` property with { error, meta }",
+          "anchor": { "startLine": 160, "endLine": 160 }
+        }
+      ],
+      "ambiguities": [],
+      "concurrencyModel": {
+        "kind": "async",
+        "reentrant": false,
+        "ordering": "deterministic",
+        "notes": "Retries are awaited sequentially; abort signals shared per query instance; no shared mutable state across calls."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "retries-until-success",
+          "scenario": "retry enhancer retries baseQuery on handled error until it succeeds",
+          "given": ["const bq = async () => (attempt++ < 2 ? { error: 'err' } : { data: 'ok' })"],
+          "when": "await retry(bq)(args, api, {})",
+          "then": "returns { data: 'ok' } after 3 total calls",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "ensures transient errors are retried"
+        },
+        {
+          "testId": "respects-max-retries",
+          "scenario": "stops retrying after maxRetries and returns error",
+          "given": ["const bq = async () => ({ error: 'always' })", "extraOptions = { maxRetries: 2 }"],
+          "when": "await retry(bq)(args, api, extraOptions)",
+          "then": "returns { error: 'always' } after at most 3 attempts",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "aborts-immediately-on-signal",
+          "scenario": "if abort signal already aborted, fails immediately without calling baseQuery",
+          "given": [
+            "const signal = AbortSignal.abort()",
+            "let calls = 0",
+            "const bq = async () => { calls++; return { data: 1 } }"
+          ],
+          "when": "await retry(bq)(args, { signal }, {})",
+          "then": "returns { error: { status: 'CUSTOM_ERROR', error: 'Aborted' } } and calls === 0",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "clean exit on abort"
+        },
+        {
+          "testId": "default-backoff-exponential",
+          "scenario": "defaultBackoff delay grows exponentially with attempt",
+          "given": ["const t0 = await measure(defaultBackoff(1))", "const t1 = await measure(defaultBackoff(2))"],
+          "when": "compare t0 and t1",
+          "then": "t1 is approximately double t0 (within random jitter)",
+          "targets": [],
+          "oracleKind": "property",
+          "rationale": "exponential backoff prevents thundering herd"
+        },
+        {
+          "testId": "retry-condition-false-stops",
+          "scenario": "custom retryCondition returning false stops retries",
+          "given": ["const opts = { retryCondition: () => false }", "const bq = async () => ({ error: 'e' })"],
+          "when": "await retry(bq, opts)(args, api, {})",
+          "then": "returns { error: 'e' } after exactly 1 attempt",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "fail-throws-handled-immediately",
+          "scenario": "fail() throws HandledError marked throwImmediately",
+          "given": ["const err = { status: 'CUSTOM_ERROR', error: 'x' }"],
+          "when": "fail(err)",
+          "then": "throws HandledError with throwImmediately: true and value { error: err }",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "allows immediate termination of retry loop"
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "import type declarations (lines 1-10)",
+        "defaultBackoff function (26-54)",
+        "RetryConditionFunction type (56-64)",
+        "RetryOptions exported type (66-91)",
+        "fail function (93-100)",
+        "failIfAborted function (106-110)",
+        "EMPTY_OPTIONS const (112)",
+        "retryWithBackoff const enhancer (114-196)",
+        "retry exported const (220)"
+      ],
+      "moduleLevelCode": "import type { BaseQueryApi, BaseQueryArg, BaseQueryEnhancer, BaseQueryError, BaseQueryExtraOptions, BaseQueryFn, BaseQueryMeta } from './baseQueryTypes'\nimport type { FetchBaseQueryError } from './fetchBaseQuery'\nimport { HandledError } from './HandledError'\nexport const retry = /* @__PURE__ */ Object.assign(retryWithBackoff, { fail })",
+      "exports": [
+        { "name": "RetryOptions", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "retry", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "BaseQueryApi", "module": "./baseQueryTypes", "alias": null, "kind": "internal" },
+        { "symbol": "BaseQueryArg", "module": "./baseQueryTypes", "alias": null, "kind": "internal" },
+        { "symbol": "BaseQueryEnhancer", "module": "./baseQueryTypes", "alias": null, "kind": "internal" },
+        { "symbol": "BaseQueryError", "module": "./baseQueryTypes", "alias": null, "kind": "internal" },
+        { "symbol": "BaseQueryExtraOptions", "module": "./baseQueryTypes", "alias": null, "kind": "internal" },
+        { "symbol": "BaseQueryFn", "module": "./baseQueryTypes", "alias": null, "kind": "internal" },
+        { "symbol": "BaseQueryMeta", "module": "./baseQueryTypes", "alias": null, "kind": "internal" },
+        { "symbol": "FetchBaseQueryError", "module": "./fetchBaseQuery", "alias": null, "kind": "internal" },
+        { "symbol": "HandledError", "module": "./HandledError", "alias": null, "kind": "internal" }
+      ],
+      "fileConstants": [{ "name": "EMPTY_OPTIONS", "value": "{}", "kind": "object" }],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/toolkit/src/query/retry.ts__defaultBackoff#function:defaultBackoff",
+        "unitKind": "function",
+        "name": "defaultBackoff",
+        "qualifiedName": "defaultBackoff",
+        "parentUnitId": null,
+        "startLine": 26,
+        "endLine": 54,
+        "isBehavioral": true,
+        "source": "async function defaultBackoff(\n  attempt: number = 0,\n  maxRetries: number = 5,\n  signal?: AbortSignal,\n) {\n  const attempts = Math.min(attempt, maxRetries)\n\n  const timeout = ~~((Math.random() + 0.4) * (300 << attempts)) // Force a positive int in the case we make this an option\n\n  await new Promise<void>((resolve, reject) => {\n    const timeoutId = setTimeout(() => resolve(), timeout)\n\n    // If signal is provided and gets aborted, clear timeout and reject\n    if (signal) {\n      const abortHandler = () => {\n        clearTimeout(timeoutId)\n        reject(new Error('Aborted'))\n      }\n\n      // Check if already aborted\n      if (signal.aborted) {\n        clearTimeout(timeoutId)\n        reject(new Error('Aborted'))\n      } else {\n        signal.addEventListener('abort', abortHandler, { once: true })\n      }\n    }\n  })\n}",
+        "detail": {
+          "unitId": "packages/toolkit/src/query/retry.ts__defaultBackoff#function:defaultBackoff",
+          "fileId": "packages/toolkit/src/query/retry.ts__defaultBackoff",
+          "unitKind": "function",
+          "name": "defaultBackoff",
+          "qualifiedName": "defaultBackoff",
+          "parentUnitId": null,
+          "startLine": 26,
+          "endLine": 54,
+          "signature": "async function defaultBackoff(attempt: number = 0, maxRetries: number = 5, signal?: AbortSignal): Promise<void>",
+          "parameters": [
+            { "name": "attempt", "type": "number", "default": "0", "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "maxRetries",
+              "type": "number",
+              "default": "5",
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "signal",
+              "type": "AbortSignal",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 2
+            }
+          ],
+          "returnType": "Promise<void>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "attempt is a number (defaults to 0)",
+            "maxRetries is a number (defaults to 5)",
+            "signal is either an AbortSignal or undefined"
+          ],
+          "postconditions": [
+            "Returns a Promise that resolves after the computed timeout when no abort occurs",
+            "If signal is provided and is aborted before or during the wait, the Promise rejects with Error('Aborted') and any pending timeout is cleared"
+          ],
+          "invariants": [
+            "timeout is a positive integer because ~~ coerces to int and (Math.random()+0.4) >= 0.4 with (300 << attempts) >= 300",
+            "attempts used in shift is clamped to maxRetries via Math.min(attempt, maxRetries)"
+          ],
+          "edgeCases": [
+            "attempt greater than maxRetries: attempts clamped to maxRetries",
+            "signal already aborted on entry: promise rejects immediately with Error('Aborted')",
+            "signal aborts during wait: clearTimeout called and promise rejects with Error('Aborted')",
+            "no signal supplied: promise resolves after full computed timeout"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["Error('Aborted')"],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "setTimeout", "source": null, "kind": "external" },
+            { "name": "clearTimeout", "source": null, "kind": "external" },
+            { "name": "Math.random", "source": null, "kind": "external" },
+            { "name": "Math.min", "source": null, "kind": "external" },
+            { "name": "Promise", "source": null, "kind": "external" },
+            { "name": "AbortSignal.addEventListener", "source": null, "kind": "external" }
+          ],
+          "symbolReferences": ["AbortSignal", "Error", "Promise", "setTimeout", "clearTimeout", "Math"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Computes a randomized exponential backoff delay capped by maxRetries and waits that long, unless an optional AbortSignal aborts the wait early. Guarantees a positive integer timeout and rejects with a specific Error on abort.",
+          "specLiterals": [
+            {
+              "kind": "error-message",
+              "value": "Aborted",
+              "role": "Error message thrown when abort signal is already aborted or aborts during wait"
+            },
+            {
+              "kind": "magic-number",
+              "value": "300",
+              "role": "Base multiplier for exponential backoff shift (300 << attempts)"
+            },
+            {
+              "kind": "magic-number",
+              "value": "0.4",
+              "role": "Offset added to Math.random to force positive timeout lower bound"
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "defaultBackoff(0, 5, signal) is awaited",
+              "then": "The returned promise rejects with an Error whose message is 'Aborted'",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "defaultBackoff(0, 5, signal) is awaited and signal.abort() is invoked before timeout",
+              "then": "The pending timeout is cleared and the promise rejects with Error('Aborted')",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "defaultBackoff(0, 5) is awaited",
+              "then": "The promise resolves after a positive integer delay computed as ~~((Math.random()+0.4)*300)",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "075505547d256734d0b612642ae0fff45f9fca9830672e9be0a9b16003077cce"
+        }
+      },
+      {
+        "unitId": "packages/toolkit/src/query/retry.ts__fail#function:fail",
+        "unitKind": "function",
+        "name": "fail",
+        "qualifiedName": "fail",
+        "parentUnitId": null,
+        "startLine": 93,
+        "endLine": 100,
+        "isBehavioral": true,
+        "source": "function fail<BaseQuery extends BaseQueryFn = BaseQueryFn>(\n  error: BaseQueryError<BaseQuery>,\n  meta?: BaseQueryMeta<BaseQuery>,\n): never {\n  throw Object.assign(new HandledError({ error, meta }), {\n    throwImmediately: true,\n  })\n}",
+        "detail": {
+          "unitId": "packages/toolkit/src/query/retry.ts__fail#function:fail",
+          "fileId": "packages/toolkit/src/query/retry.ts__fail",
+          "unitKind": "function",
+          "name": "fail",
+          "qualifiedName": "fail",
+          "parentUnitId": null,
+          "startLine": 93,
+          "endLine": 100,
+          "signature": "function fail<BaseQuery extends BaseQueryFn = BaseQueryFn>(error: BaseQueryError<BaseQuery>, meta?: BaseQueryMeta<BaseQuery>): never",
+          "parameters": [
+            {
+              "name": "error",
+              "type": "BaseQueryError<BaseQuery>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "meta",
+              "type": "BaseQueryMeta<BaseQuery>",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "never",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": ["BaseQuery extends BaseQueryFn = BaseQueryFn"],
+          "logicOutline": [],
+          "preconditions": ["error must be provided as a value of type BaseQueryError<BaseQuery>"],
+          "postconditions": [
+            "Never returns; always throws an instance of HandledError with throwImmediately property set to true and error/meta attached"
+          ],
+          "invariants": [],
+          "edgeCases": ["When meta argument is omitted, the constructed HandledError receives meta as undefined"],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": ["HandledError"], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "HandledError", "source": null, "kind": "internal" }],
+          "symbolReferences": ["BaseQueryFn", "BaseQueryError", "BaseQueryMeta", "HandledError"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Throws a HandledError annotated with throwImmediately=true carrying the provided error and optional meta, to signal an immediate query failure without retry.",
+          "specLiterals": [
+            {
+              "kind": "magic-number",
+              "value": "throwImmediately: true",
+              "role": "flag set on thrown error object to indicate immediate failure bypassing retry"
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "fail(error) is called",
+              "then": "throws an instance of HandledError whose throwImmediately is true and whose error property equals the passed error",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "807613433cd6b44807558bc7357d76be759934b0d2413a5b31b835fc4b0ff512"
+        }
+      },
+      {
+        "unitId": "packages/toolkit/src/query/retry.ts__failIfAborted#function:failIfAborted",
+        "unitKind": "function",
+        "name": "failIfAborted",
+        "qualifiedName": "failIfAborted",
+        "parentUnitId": null,
+        "startLine": 106,
+        "endLine": 110,
+        "isBehavioral": true,
+        "source": "function failIfAborted(signal: AbortSignal): void {\n  if (signal.aborted) {\n    fail({ status: 'CUSTOM_ERROR', error: 'Aborted' })\n  }\n}",
+        "detail": {
+          "unitId": "packages/toolkit/src/query/retry.ts__failIfAborted#function:failIfAborted",
+          "fileId": "packages/toolkit/src/query/retry.ts__failIfAborted",
+          "unitKind": "function",
+          "name": "failIfAborted",
+          "qualifiedName": "failIfAborted",
+          "parentUnitId": null,
+          "startLine": 106,
+          "endLine": 110,
+          "signature": "function failIfAborted(signal: AbortSignal): void",
+          "parameters": [
+            {
+              "name": "signal",
+              "type": "AbortSignal",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "void",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["signal is a defined AbortSignal instance"],
+          "postconditions": [
+            "If signal.aborted is false, returns normally with no effect.",
+            "If signal.aborted is true, invokes fail with { status: 'CUSTOM_ERROR', error: 'Aborted' } and does not return."
+          ],
+          "invariants": [],
+          "edgeCases": [
+            "signal.aborted === true -> calls fail with { status: 'CUSTOM_ERROR', error: 'Aborted' }",
+            "signal.aborted === false -> no-op"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["fail invocation (CUSTOM_ERROR)"],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "fail", "source": null, "kind": "internal" }],
+          "symbolReferences": ["AbortSignal"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Ensures execution is terminated via fail when the given AbortSignal is already aborted; otherwise returns silently without side effects.",
+          "specLiterals": [
+            { "kind": "error-message", "value": "Aborted", "role": "error string passed to fail when signal aborted" },
+            { "kind": "enum-value", "value": "CUSTOM_ERROR", "role": "status field value in fail call contract" }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "failIfAborted(signal) is invoked",
+              "then": "fail is called with object { status: 'CUSTOM_ERROR', error: 'Aborted' }",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "51cfa49cdd3c22deac6ce3c9f7f1898c5923d9e744a96dfc2c259badd48b3532"
+        }
+      },
+      {
+        "unitId": "packages/toolkit/src/query/retry.ts__retryWithBackoff#function:retryWithBackoff",
+        "unitKind": "function",
+        "name": "retryWithBackoff",
+        "qualifiedName": "retryWithBackoff",
+        "parentUnitId": null,
+        "startLine": 114,
+        "endLine": 196,
+        "isBehavioral": true,
+        "source": "const retryWithBackoff: BaseQueryEnhancer<\n  unknown,\n  RetryOptions,\n  RetryOptions | void\n> = (baseQuery, defaultOptions) => async (args, api, extraOptions) => {\n  // We need to figure out `maxRetries` before we define `defaultRetryCondition.\n  // This is probably goofy, but ought to work.\n  // Put our defaults in one array, filter out undefineds, grab the last value.\n  const possibleMaxRetries: number[] = [\n    5,\n    ((defaultOptions as any) || EMPTY_OPTIONS).maxRetries,\n    ((extraOptions as any) || EMPTY_OPTIONS).maxRetries,\n  ].filter((x) => x !== undefined)\n  const [maxRetries] = possibleMaxRetries.slice(-1)\n\n  const defaultRetryCondition: RetryConditionFunction = (_, __, { attempt }) =>\n    attempt <= maxRetries\n\n  const options: {\n    maxRetries: number\n    backoff: typeof defaultBackoff\n    retryCondition: typeof defaultRetryCondition\n  } = {\n    maxRetries,\n    backoff: defaultBackoff,\n    retryCondition: defaultRetryCondition,\n    ...defaultOptions,\n    ...extraOptions,\n  }\n  let retry = 0\n\n  while (true) {\n    // Check if aborted before each attempt\n    failIfAborted(api.signal)\n\n    try {\n      const result = await baseQuery(args, api, extraOptions)\n      // baseQueries _should_ return an error property, so we should check for that and throw it to continue retrying\n      if (result.error) {\n        throw new HandledError(result)\n      }\n      return result\n    } catch (e: any) {\n      retry++\n\n      if (e.throwImmediately) {\n        if (e instanceof HandledError) {\n          return e.value\n        }\n\n        // We don't know what this is, so we have to rethrow it\n        throw e\n      }\n\n      if (e instanceof HandledError) {\n        if (\n          !options.retryCondition(e.value.error as FetchBaseQueryError, args, {\n            attempt: retry,\n            baseQueryApi: api,\n            extraOptions,\n          })\n        ) {\n          return e.value // Max retries for expected error\n        }\n      } else {\n        // For unexpected errors, respect maxRetries\n        if (retry > options.maxRetries) {\n          // Return the error as a proper error response instead of throwing\n          return { error: e }\n        }\n      }\n\n      // Check if aborted before backoff\n      failIfAborted(api.signal)\n\n      try {\n        await options.backoff(retry, options.maxRetries, api.signal)\n      } catch (backoffError) {\n        // If backoff was aborted, exit the retry loop\n        failIfAborted(api.signal)\n        // Otherwise, rethrow the backoff error\n        throw backoffError\n      }",
+        "detail": {
+          "unitId": "packages/toolkit/src/query/retry.ts__retryWithBackoff#function:retryWithBackoff",
+          "fileId": "packages/toolkit/src/query/retry.ts__retryWithBackoff",
+          "unitKind": "function",
+          "name": "retryWithBackoff",
+          "qualifiedName": "retryWithBackoff",
+          "parentUnitId": null,
+          "startLine": 114,
+          "endLine": 196,
+          "signature": "const retryWithBackoff: BaseQueryEnhancer< unknown, RetryOptions, RetryOptions | void > = (baseQuery, defaultOptions) => async (args, api, extraOptions) =>",
+          "parameters": [
+            { "name": "baseQuery", "type": null, "default": null, "optional": false, "variadic": false, "order": 0 },
+            { "name": "defaultOptions", "type": null, "default": null, "optional": true, "variadic": false, "order": 1 }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "api.signal provides abort checking capability",
+            "baseQuery is callable and returns a promise that may contain an error property",
+            "extraOptions and defaultOptions may be undefined or contain retry config"
+          ],
+          "postconditions": [
+            "Returns successful baseQuery result when no error occurs",
+            "Returns e.value when HandledError and retryCondition false or throwImmediately",
+            "Returns { error: e } for unexpected errors after retry > maxRetries",
+            "Throws only for non-HandledError with throwImmediately or non-abort backoff failure"
+          ],
+          "invariants": [
+            "maxRetries is the last defined value among [5, defaultOptions.maxRetries, extraOptions.maxRetries]",
+            "retry counter increments exactly once per caught error",
+            "failIfAborted is checked before each attempt and before backoff"
+          ],
+          "edgeCases": [
+            "result.error present: wrapped as HandledError and evaluated by retryCondition",
+            "e.throwImmediately && HandledError: returns e.value immediately",
+            "e.throwImmediately && !HandledError: rethrows original error",
+            "backoff aborts: failIfAborted exits loop",
+            "unexpected error with retry > maxRetries: returns { error: e } instead of throwing"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["non-HandledError when e.throwImmediately", "backoffError when not abort"],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": "e.value for handled non-retryable errors; { error: e } for unexpected errors after max retries"
+          },
+          "stateMutations": [
+            "local retry counter incremented per caught error",
+            "options object constructed by merging defaults, defaultOptions, extraOptions"
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "failIfAborted", "source": null, "kind": "internal" },
+            { "name": "defaultBackoff", "source": null, "kind": "internal" },
+            { "name": "baseQuery", "source": null, "kind": "external" }
+          ],
+          "symbolReferences": [
+            "BaseQueryEnhancer",
+            "RetryOptions",
+            "EMPTY_OPTIONS",
+            "HandledError",
+            "RetryConditionFunction",
+            "FetchBaseQueryError",
+            "BaseQueryApi"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Wraps a base query function with retry and backoff logic, honoring maxRetries derived from defaults and extraOptions, abort signals, and retry conditions, returning the result or a finalized error.",
+          "specLiterals": [
+            { "kind": "magic-number", "value": "5", "role": "default maxRetries when not overridden by options" }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "wrapped query invoked",
+              "then": "returns { data: 1 } without calling backoff",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "invoked",
+              "then": "returns the handled error value immediately",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "failIfAborted called before attempt",
+              "then": "throws abort error ending retry loop",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "9035623adfe467716378307f72be1c9cf012a6bc5edc4eb1d623c27d263c6962"
+        }
+      }
+    ]
+  },
+  "out": [
+    "packages/toolkit/src/query/baseQueryTypes.ts",
+    "packages/toolkit/src/query/fetchBaseQuery.ts",
+    "packages/toolkit/src/query/HandledError.ts"
+  ],
+  "in": ["packages/toolkit/src/query/index.ts"],
+  "externals": [],
+  "impact": { "seeds": 4, "callers": 2, "impactedFiles": [] }
+}

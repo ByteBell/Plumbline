@@ -1,0 +1,221 @@
+CROSS-REPOSITORY RETRIEVAL TASK — run the algorithm below, in order.
+
+CASE:      xrepo-v6-21-the-list-shrank-but-the-view-did-not-medium
+SURFACE:   the plumbline MCP server, and nothing else. No Bash, Read, Grep, Glob,
+           no other MCP server, no network, no subagents. Every path you name must
+           have come back from a plumbline call. Reaching the answer by any other
+           route voids the run.
+ROSTER:    16 repositories, each pinned at exactly one commit. This is the whole
+           world for the task; do not use another revision or later history.
+
+  repo             commit                                     repo             commit
+  redux            3084fc33bb23ab4cab4796172eafe342da4e73d9   query            46d7f02f1c7b9fcd3255082cc7103e8bfa3dab76
+  redux-toolkit    b1c5130154c454ca8387f55da6122fcb507c560c   table            ce123bc6651bcbf188f3198627c6bb0b10588162
+  react-redux      ad5d1e0816d0cb1464b25cf2853f2a7d73433f5b   tldraw           5590d14d8edd4faab7dc1177b6e1adb28876fd23
+  reselect         950112a328f71d97d18fd543159d6fdefa432b38   redux-devtools   f4b4668c30ae08920c59a76cc4629c35c16ef0fa
+  react            1d4758e0f6aae560024b36ce07ed8a67b3f7d78f   router           3dee5b2e9453d01a3172c73426959007b290b3fc
+  jotai            5c4ca26b0db5571114be58393e17854a771f7790   primitives       58164e06ca67dff9a68dd375d858180cfdc8ec27
+  zustand          b57db4f86ef179285da216eeb291266da82c361c   zod              912f0f51b0ced654d0069741e7160834dca742ee
+  db               7f0fa36ff6d48b0494ed5f6a1223fd18c317e41f   xyflow           360f5b13e2bc6899ea06b4be1a49b068d86926cf
+
+PROBLEM (identifiers are deliberately withheld — searching these words will not
+find the answer):
+
+A reactive projection of a collection in one of these libraries is maintained in place: when the underlying collection changes, the projection's existing slots are overwritten one by one and new slots are appended. Nothing removes slots. So the projection is correct whenever the collection grows or stays the same size and wrong whenever it shrinks - the tail of the previous, longer collection is still there, still reactive, and still rendered, and shrinking by more than one at a time leaves more than one stale entry behind. The bug is structural rather than arithmetic: the update path was written as 'assign each new item to a slot' rather than 'make the projection equal to the new collection'. The contract is that a projection must converge on the source in both directions, and that removals are as much a part of an update as insertions. Elsewhere in the folder that symmetry is explicit: one library's incremental builder records additions and removals as it goes and can still yield the whole, and another renders its collection through a keyed pass that drops the elements whose keys are gone. Which files update a projection without shrinking it, and which own the converge-in-both-directions contract they have to be brought in line with?
+
+GOAL: name every file, in every repository above, that must change to satisfy that
+contract. The answer spans multiple repositories that do not import one another.
+
+
+================================ ALGORITHM ================================
+
+THE CENTRAL FACT, read before anything else:
+  Two call sites of the same contract usually do NOT depend on each other. Tracing
+  dependents outward from one NEVER reaches the other. No fold, however well seeded,
+  crosses between them — only an exact-name sweep does.
+  Therefore your first job is NOT to find files. It is to LEARN THE NAME. Everything
+  before STEP 3 exists to turn a behaviour description into identifiers.
+
+STEP 0 — VERIFY THE SURFACE
+  0.1  Call roll_call once. Keep the response; reuse it all run.
+  0.2  For every repo you intend to answer from, confirm lastIndexedCommit equals
+       the pin above.
+  0.3  IF a repo is missing or drifted -> STOP and say so plainly. A drifted run is
+       a failed run to relaunch, not an empty answer. Never answer from memory.
+
+STEP 1 — STATE THE CONTRACT
+  1.1  In one sentence, write the rule the defect breaks, in your own words.
+  1.2  Derive two vocabularies and keep both:
+         V-contract = the words the RULE uses.
+         V-symptom  = the words the BUG description uses.
+
+STEP 2 — HARVEST NAMES (you cannot name the contract yet — that is the problem)
+       The change is described by BEHAVIOUR, not by an identifier. In that condition
+       stakeout, manhunt and cross_repo_lookup all go thin at once, because a
+       convention that spans repos is called something DIFFERENT in each one. Do not
+       keep rephrasing a concept search; it cannot converge.
+  2.1  Run dragnet on V-contract. dragnet walks the graph outward and harvests the
+       next round of names FROM the graph — that is what it is for here.
+  2.2  Spend a stakeout to resolve an IDENTIFIER, not to collect impact. A text hit
+       is not impact. Working out what a thing is really called is the one thing
+       text search is better at, and the only thing you should spend it on.
+  2.3  Write down every candidate identifier the graph gave you — function, method,
+       class, exported symbol. This list, not your file list, is the output of
+       STEP 2.
+  2.4  IF you have no identifiers yet, do NOT proceed to STEP 4. Go back to 2.1 with
+       the names dragnet returned as new seeds. Names beget names.
+
+STEP 3 — THE ORG-WIDE EXACT-NAME SWEEP (the step that finds siblings)
+  3.1  For each identifier from STEP 2: manhunt {name} with the knowledgeId
+       OMITTED. One call, exact, org-wide. Absence from one repo is not absence
+       from the org.
+  3.2  The rows this returns are CANDIDATES to rule in or out one by one, NOT files
+       to report. A row earns a place only if it actually uses the contract: open
+       it (case_file, then the_receipts on the range that matters) and confirm.
+       Sharing a repo, a package or a topic with a real call site is not impact,
+       and a long sweep result is not a long answer.
+
+  3.2a THE ELIMINATION LAW — ruling a candidate OUT costs exactly what ruling it IN
+       costs, and this is the single most important rule in this document.
+
+       You may eliminate a candidate ONLY after the_receipts has returned THAT
+       FILE'S OWN update path — the actual line range where it writes the
+       projection — and that source, read by you, shows the whole-value form.
+       Name the line range in your checkpoint when you drop it.
+
+       NONE of the following is grounds to eliminate. Each is a statement about
+       your query, not about the file:
+         - a bulk_search that returned noMatch for a string you guessed;
+         - the absence of any token, operator or call you expected to find;
+         - a purpose / summary / businessContext / logicSteps field — all of that
+           prose was written by a model at index time and is a LEAD, never evidence;
+         - a signature, a symbol list, a token count, a path, or any other metadata;
+         - the file being in a package, framework or language you think is unlikely;
+         - a sibling in the same package having been confirmed or eliminated.
+
+       bulk_search is a LOCATOR, not a classifier. It tells you where a string is.
+       It cannot tell you what a file does, because a file that does the very same
+       thing in different syntax returns noMatch and looks identical to a file that
+       does not do it at all. Treating noMatch as a behavioural verdict is the RULE
+       1 failure run backwards: absence of a string you invented, promoted to a
+       finding. A measured run lost 3 of its 4 gold files exactly this way — it
+       swept "] = " and "push(" across sibling adapters, read noMatch as "replaces
+       wholesale", and wrote those files off without ever opening one of them.
+
+  3.2b UNDECIDED IS NOT ELIMINATED. Every candidate ends the run in exactly one of
+       three states, and you must be able to say which for each:
+         CONFIRMED    you read its update path; it violates the contract   -> report
+         ELIMINATED   you read its update path; it uses the whole-value form
+                      -> do not report, and cite the line range you read
+         UNDECIDED    you never read its update path                       -> REPORT,
+                      ranked below every CONFIRMED file
+       Running out of calls is normal and is not a verdict. An UNDECIDED candidate
+       that a sweep surfaced is better evidence than a file you never saw at all, so
+       it belongs in the answer. Silently dropping it is the one thing you must not
+       do — it converts "I did not check" into "it is not affected", which is a
+       claim you have not earned.
+
+  3.2c BUDGET, so the law above is affordable. manhunt and shakedown are rationed and
+       the allowance GROWS as the run goes on: spending a cross_repo_lookup or a
+       collateral_damage buys more manhunt. A refusal naming a cap is a price, not a
+       wall, and never a server failure. Do not spend the_receipts on guessed-string
+       bulk_search sweeps — that is the call you will want for reading an update path,
+       and it is the scarcer of the two. Reading four candidate update paths is a
+       better run than sweeping forty files for a token.
+  3.3  RENAMING IS THE NORM. The counterpart in a sibling package is routinely
+       renamed to that package's own conventions — a different prefix, a verb
+       swapped for the idiomatic one. Searching the name you already have will miss
+       it. For each identifier, ask what the file DOES, and sweep again for that
+       behaviour under the other conventions. A sibling you did not find is far
+       more likely renamed than absent.
+  3.4  Repositories that ship ONE capability as several sibling packages (adapters,
+       bindings, backends, drivers, plugins, engines) are where this bites hardest:
+       siblings couple by PUBLISHED package name, not by a path the indexer
+       resolves, so `imports` between two of them returns 0. The sweep is the only
+       thing that reaches them all.
+
+STEP 4 — FOLD, FOR DEPENDENTS ONLY (secondary, never your discovery route)
+  4.1  collateral_damage on units the sweep confirmed, to find what CONSUMES them.
+  4.2  Always pass commitHash. A file indexed at several commits returns an ERROR
+       without it, and that error reads like an empty result.
+  4.3  A fold tells you what is connected to a file. It does not tell you the file
+       owns the contract, and it will not hand you a sibling. Do not use it to
+       search.
+
+STEP 5 — CLASSIFY EVERY FILE YOU WILL NAME
+       Each file is one of two kinds, and BOTH belong in the answer:
+         AUTHORING SITE  it DEFINES the contract — the epicenter. Report it even
+                         with zero dependents. Zero dependents means the ripple
+                         stops there, NOT that the file is unaffected.
+         DEPENDENT       it consumes or violates the contract — the ripple.
+  5.1  Rank by how you know it, strongest first:
+         band 1  you OPENED it and confirmed it owns or violates the contract
+         band 2  an exact-name sweep returned it and its purpose fits
+         band 3  it appeared ONLY as a neighbour in a fold
+         band 4  UNDECIDED per 3.2b — a sweep surfaced it, you never read its
+                 update path, and nothing you read eliminated it
+  5.2  Band 3 NEVER outranks band 1 or 2. An edge proves connection, not ownership.
+  5.3  Do not pad toward the cap. Twenty files with real evidence means twenty.
+       Band 4 is not padding: it is a candidate you surfaced and did not clear. What
+       would be padding is a file no call ever returned.
+
+STEP 6 — CHECKPOINT, EVERY 4 CALLS
+       Write in plain text before any further call:
+
+         CHECKPOINT <n>
+         identifiers known: <list>
+         swept: <which identifiers have had an org-wide manhunt>
+         confirmed files: <count>   undecided candidates: <count>
+         ledger: one line per candidate you have touched, as
+                 <path> CONFIRMED|ELIMINATED|UNDECIDED <the_receipts line range,
+                 or "not read">
+       An ELIMINATED line without a line range you actually read is a rule
+       violation; rewrite it as UNDECIDED before continuing.
+
+  6.1  IF identifiers known is still empty -> you are in STEP 2, not STEP 4. More
+       concept searches will not help; run dragnet and harvest.
+  6.2  IF every known identifier has been swept and opened, and two consecutive
+       checkpoints add no confirmed file -> stop SEARCHING. You are not finished:
+       spend what is left reading the update paths of UNDECIDED candidates, nearest
+       to the contract first. Answer when the ledger has no UNDECIDED line you could
+       still afford to read.
+  6.3  Before you emit, re-read your ledger and ask of every ELIMINATED line: did I
+       actually read that file's update path, or did I infer it from a search that
+       came back empty? Any line that fails becomes UNDECIDED and is reported.
+
+STEP 7 — EMIT
+  7.1  Rank most likely first. Cap 75 paths across all repositories.
+  7.2  Repo-relative paths only: no leading slash, no repo-name prefix.
+       Example: packages/<package-name>/src/<SomeFile>.ts
+  7.3  Source files only — no tests, docs, examples, fixtures, benchmarks, build
+       output, dependency dirs, generated API reports.
+  7.4  Every path must have been RETURNED by a call. A path you completed from
+       memory or inferred from directory layout is not a result.
+  7.5  Pinpoints (optional, best effort): for files you actually READ, give symbol
+       and line range as the source spells them. A symbol or range you did not read
+       is a fabrication and discredits the whole answer — omit the pinpoint
+       instead. Pinpoints never change WHICH files you name or their order.
+  7.6  Output ONLY this JSON array. No prose, no markdown fence, nothing before or
+       after it. CHECKPOINTs belong in earlier turns; your FINAL message is the
+       array and nothing else — do not restate the last checkpoint above it:
+
+[{"repo": "<repo>",
+  "files": ["<path>", "..."],
+  "pinpoints": [{"path": "<a path already in files>",
+                 "symbol": "<function/method/class, as the source spells it>",
+                 "lines": "<start-end>",
+                 "change": "<what has to change there, one line>"}]}, ...]
+
+       "files" MUST be a flat array of path strings in rank order — it is what is
+       scored, and an object inside it voids the run. "pinpoints" is separate and
+       optional; omit the key entirely where you pinned nothing down, and never
+       name a path there that is not already in "files".
+
+RUN CONDITIONS (the run is invalid if any fails)
+  R1  One fresh session. Cache created and read back WITHIN this run is fine;
+      inheriting cache from an earlier session is not. Do not resume, reuse, or
+      re-attempt a case in a session that already attempted it.
+  R2  STEP 0 must pass before any search.
+  R3  The harness records the transcript, every call and the cost, and writes
+      ranked.json from your final message. You have no write tools — do not try to
+      create files. Your only job is the ranked answer.

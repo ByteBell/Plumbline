@@ -1,0 +1,84 @@
+{
+  "duration_api_ms": 424029,
+  "stop_reason": "end_turn",
+  "session_id": "6406d86f-48cf-4b21-b0c6-13a77f0967f5",
+  "total_cost_usd": 4.4796795000000005,
+  "usage": {
+    "input_tokens": 40,
+    "cache_creation_input_tokens": 226347,
+    "cache_read_input_tokens": 2759869,
+    "output_tokens": 33171,
+    "output_tokens_details": { "thinking_tokens": 15650 },
+    "server_tool_use": { "web_search_requests": 0, "web_fetch_requests": 0 },
+    "service_tier": "standard",
+    "cache_creation": { "ephemeral_1h_input_tokens": 226347, "ephemeral_5m_input_tokens": 0 },
+    "inference_geo": "not_available",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 9680,
+        "cache_read_input_tokens": 220598,
+        "cache_creation_input_tokens": 5749,
+        "cache_creation": { "ephemeral_5m_input_tokens": 0, "ephemeral_1h_input_tokens": 5749 },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 6655,
+      "outputTokens": 29,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.0068000000000000005,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "claude-haiku-4-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    },
+    "claude-opus-5": {
+      "inputTokens": 40,
+      "outputTokens": 33171,
+      "cacheReadInputTokens": 2759869,
+      "cacheCreationInputTokens": 226347,
+      "webSearchRequests": 0,
+      "costUSD": 4.4728795,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "canonicalModel": "claude-opus-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": { "background": 0, "foreground": 0, "unset": 0 },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": { "parent": 0, "user": 0, "system": 0 },
+    "refused": { "depth_limit": 0, "concurrency_limit": 0, "budget": 0 },
+    "by_type": {}
+  },
+  "is_error": false,
+  "num_turns": 40,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## LEDGER\n\n**(a) Obligations and closers**\n\n**OB-1 — VIOLATOR: long-lived manager owns in-flight fading trails, never records which page each started on, nothing tears them down on page change.** — **CLOSED**\n- `tldraw: packages/editor/src/lib/editor/managers/ScribbleManager/ScribbleManager.ts` — read verbatim (1–330). The internal `Session` record (48–56) holds `id, items, state, options, idleTimeoutHandle, fadeElapsed, totalPointsAtFadeStart` — **no page identity**. A bulk_search for `PageId` over the whole file returned **0 matches**. `startSession` (74–99) never captures the current page; `addPoint`/`complete`/`stop` (281–330) search *all* sessions blindly.\n- `tldraw: packages/editor/src/lib/editor/Editor.ts` — read verbatim. Constructs `this.scribbles = new ScribbleManager(this)` once at 510, holds it as `readonly scribbles` (1172), and ticks it unconditionally every frame at 10980. `setCurrentPage` (4963–4971) comments *\"finish off any in-progress interactions\"* but **never touches `this.scribbles`**.\n\n**OB-2 — transient status of an in-flight fetch reset when its scope/key changes.** — **CLOSED**\n- `query: packages/query-core/src/queryObserver.ts`, `packages/query-core/src/query.ts` (fetchStatus owned by a cache-lived observer across key changes)\n- `db: packages/db/src/collection/sync.ts`, `packages/db/src/collection/lifecycle.ts`\n- `redux-toolkit: packages/toolkit/src/query/core/buildMiddleware/cacheLifecycle.ts`\n- `tldraw: packages/editor/src/lib/editor/managers/FontManager/FontManager.ts` — in the same folder; holds in-flight font loads, has `reset` (3 matches), **no `PageId`**.\n\n**OB-3 — a pending selection reset when the scope changes underneath it.** — **CLOSED**\n- `table: packages/table-core/src/features/RowSelection.ts` — verbatim: **`autoReset` appears 0 times**, while sibling features `RowExpanding.ts` (6) and `RowPagination.ts` (6) and `core/table.ts` (4) do carry it. Selection is owned by the long-lived table and only ever cleared by an explicit `resetRowSelection`.\n- `table: packages/table-core/src/features/RowPagination.ts`, `RowExpanding.ts`, `core/table.ts` — the peers that own the reset-on-scope-change contract (EVIDENCE).\n\n**OB-4 — an interaction still in progress torn down when its scope changes.** — **CLOSED**\n- `xyflow: packages/system/src/utils/store.ts` (26 `connection` matches), `packages/react/src/store/initialState.ts`, `packages/svelte/src/lib/store/initial-store.svelte.ts`, `packages/system/src/xyhandle/XYHandle.ts` — in-progress connection state held in the long-lived store; the React and Svelte stores are sibling packages that **do not import one another**.\n- `tldraw: ClickManager.ts, EdgeScrollManager.ts, SnapManager.ts, InputsManager.ts` — same folder; verbatim: none of them contains `PageId`, and `ClickManager`/`EdgeScrollManager`/`SnapManager` contain no `reset` either.\n\n**In-repo counterexample grounding every verdict above (EVIDENCE, therefore named in `files` per 6.3):**\n- `tldraw: packages/editor/src/lib/editor/managers/SpatialIndexManager/SpatialIndexManager.ts` — read verbatim: `private lastPageId: TLPageId | null = null` (43), rebuild when `this.lastPageId !== currentPageId` (83–86), re-stamp in `buildFromScratch` (99), drop elements whose ancestor page ≠ `lastPageId` (244), `dispose()` nulls it (331–334). This is exactly the contract `ScribbleManager` violates.\n- `tldraw: packages/editor/src/lib/editor/managers/CollaboratorsManager/CollaboratorsManager.ts` — 4 `PageId` matches; the other page-aware manager.\n\n**(b) SWEEP MATRIX**\n\n| OB | repos in SWEPT | planned |\n|---|---|---|\n| OB-1 | tldraw, xyflow, primitives, react, redux-devtools | 5 of 5 ✓ |\n| OB-2 | query, db, router, redux-toolkit, jotai, zustand, react-redux | 7 of 7 ✓ |\n| OB-3 | table, redux, reselect, zod | **4 of 6 — 3.5 did NOT hold** |\n| OB-4 | *(none with its own phrase)* | **0 of 6 — 3.5 did NOT hold** |\n\nStating it plainly: `stakeout` hit its run allowance after 16 calls, so OB-3 was never carried into tldraw/primitives/xyflow/db under its own phrase, and OB-4 was never swept under its own phrase at all. Those two rows were reached instead by `collateral_damage` folds and verbatim `the_receipts` bulk_search — which is how the xyflow connection-state and tldraw interaction managers entered the answer — but they are not a substitute for the sweep, and files those sweeps would have found may be missing. All 16 roster repos were touched at their pinned commits.\n\n[{\"repo\":\"tldraw\",\"files\":[\"packages/editor/src/lib/editor/managers/ScribbleManager/ScribbleManager.ts\",\"packages/editor/src/lib/editor/Editor.ts\",\"packages/editor/src/lib/editor/managers/SpatialIndexManager/SpatialIndexManager.ts\",\"packages/editor/src/lib/editor/managers/CollaboratorsManager/CollaboratorsManager.ts\",\"packages/editor/src/lib/editor/managers/SnapManager/SnapManager.ts\",\"packages/editor/src/lib/editor/managers/ClickManager/ClickManager.ts\",\"packages/editor/src/lib/editor/managers/EdgeScrollManager/EdgeScrollManager.ts\",\"packages/editor/src/lib/editor/managers/FontManager/FontManager.ts\",\"packages/editor/src/lib/editor/managers/InputsManager/InputsManager.ts\",\"packages/editor/src/lib/editor/managers/HistoryManager/HistoryManager.ts\",\"packages/editor/src/lib/editor/managers/TickManager/TickManager.ts\",\"packages/editor/src/lib/editor/managers/TextManager/TextManager.ts\",\"packages/editor/src/lib/editor/overlays/OverlayManager.ts\",\"packages/editor/src/lib/editor/managers/SnapManager/BoundsSnaps.ts\",\"packages/editor/src/lib/editor/managers/SnapManager/HandleSnaps.ts\",\"packages/tldraw/src/lib/tools/LaserTool/LaserTool.ts\",\"packages/tldraw/src/lib/tools/LaserTool/childStates/Lasering.ts\",\"packages/tldraw/src/lib/tools/LaserTool/childStates/Idle.ts\",\"packages/tldraw/src/lib/overlays/ScribbleOverlayUtil.ts\",\"packages/tldraw/src/lib/overlays/CollaboratorScribbleOverlayUtil.ts\",\"packages/tldraw/src/lib/tools/SelectTool/childStates/ScribbleBrushing.ts\",\"packages/editor/src/lib/config/TLSessionStateSnapshot.ts\",\"packages/tlschema/src/misc/TLScribble.ts\",\"packages/editor/src/lib/editor/managers/SpatialIndexManager/RBushIndex.ts\",\"packages/editor/src/lib/editor/managers/EditorManager.ts\",\"packages/editor/src/lib/editor/managers/FocusManager/FocusManager.ts\"],\"pinpoints\":[{\"path\":\"packages/editor/src/lib/editor/managers/ScribbleManager/ScribbleManager.ts\",\"symbol\":\"Session\",\"lines\":\"48-56\",\"change\":\"Add a pageId field so every in-flight trail records the page it was started on.\"},{\"path\":\"packages/editor/src/lib/editor/managers/ScribbleManager/ScribbleManager.ts\",\"symbol\":\"ScribbleManager.startSession\",\"lines\":\"74-99\",\"change\":\"Stamp the session with editor.getCurrentPageId() when it is created.\"},{\"path\":\"packages/editor/src/lib/editor/managers/ScribbleManager/ScribbleManager.ts\",\"symbol\":\"ScribbleManager.tick\",\"lines\":\"276-304\",\"change\":\"Skip and tear down sessions whose recorded page is no longer the current page instead of ticking every session.\"},{\"path\":\"packages/editor/src/lib/editor/Editor.ts\",\"symbol\":\"setCurrentPage\",\"lines\":\"4963-4971\",\"change\":\"Where it finishes off in-progress interactions, also clear the scribble manager's sessions for the page being left.\"},{\"path\":\"packages/editor/src/lib/editor/Editor.ts\",\"symbol\":\"Editor.constructor\",\"lines\":\"510-514\",\"change\":\"The scribble manager is created once for the editor's lifetime with no page teardown registered; add a disposable/side-effect that resets it on page change.\"},{\"path\":\"packages/editor/src/lib/editor/managers/SpatialIndexManager/SpatialIndexManager.ts\",\"symbol\":\"SpatialIndexManager\",\"lines\":\"40-99\",\"change\":\"Reference implementation of the contract (lastPageId compared against getCurrentPageId, rebuilt on mismatch, nulled in dispose); factor this page-scoping check out so the other managers share it.\"}]},{\"repo\":\"table\",\"files\":[\"packages/table-core/src/features/RowSelection.ts\",\"packages/table-core/src/features/RowPagination.ts\",\"packages/table-core/src/features/RowExpanding.ts\",\"packages/table-core/src/core/table.ts\",\"packages/table-core/src/features/ColumnSizing.ts\",\"packages/table-core/src/features/ColumnFiltering.ts\",\"packages/table-core/src/features/GlobalFiltering.ts\",\"packages/table-core/src/features/RowSorting.ts\",\"packages/table-core/src/features/ColumnPinning.ts\",\"packages/table-core/src/types.ts\"]},{\"repo\":\"xyflow\",\"files\":[\"packages/system/src/utils/store.ts\",\"packages/react/src/store/initialState.ts\",\"packages/svelte/src/lib/store/initial-store.svelte.ts\",\"packages/system/src/xyhandle/XYHandle.ts\",\"packages/react/src/store/index.ts\",\"packages/svelte/src/lib/store/index.ts\",\"packages/react/src/components/Handle/index.tsx\",\"packages/system/src/xydrag/XYDrag.ts\",\"packages/react/src/container/Pane/index.tsx\"]},{\"repo\":\"query\",\"files\":[\"packages/query-core/src/queryObserver.ts\",\"packages/query-core/src/query.ts\",\"packages/query-core/src/queriesObserver.ts\",\"packages/query-core/src/infiniteQueryObserver.ts\",\"packages/react-query/src/useBaseQuery.ts\",\"packages/query-core/src/queryCache.ts\"]},{\"repo\":\"router\",\"files\":[\"packages/router-core/src/load-client.ts\",\"packages/router-core/src/router.ts\",\"packages/react-router/src/Transitioner.tsx\",\"packages/router-core/src/Matches.ts\"]},{\"repo\":\"db\",\"files\":[\"packages/db/src/collection/state.ts\",\"packages/db/src/collection/sync.ts\",\"packages/db/src/collection/lifecycle.ts\",\"packages/db/src/collection/subscription.ts\",\"packages/db/src/query/live/collection-subscriber.ts\",\"packages/vue-db/src/useLiveQuery.ts\"]},{\"repo\":\"redux-toolkit\",\"files\":[\"packages/toolkit/src/query/core/buildMiddleware/cacheLifecycle.ts\",\"packages/toolkit/src/query/core/buildInitiate.ts\",\"packages/toolkit/src/query/core/buildSlice.ts\",\"packages/toolkit/src/query/core/buildMiddleware/polling.ts\"]},{\"repo\":\"react-redux\",\"files\":[\"src/utils/Subscription.ts\",\"src/connect/selectorFactory.ts\",\"src/components/connect.tsx\",\"src/hooks/useSelector.ts\"]},{\"repo\":\"primitives\",\"files\":[\"packages/react/select/src/select.tsx\",\"packages/react/navigation-menu/src/navigation-menu.tsx\",\"packages/react/use-controllable-state/src/use-controllable-state.tsx\"]},{\"repo\":\"jotai\",\"files\":[\"src/vanilla/internals.ts\",\"src/react/useAtomValue.ts\"]},{\"repo\":\"redux-devtools\",\"files\":[\"packages/redux-devtools-app-core/src/reducers/instances.ts\"]}]",
+  "ttft_ms": 2001,
+  "type": "result",
+  "duration_ms": 906142,
+  "uuid": "365b252a-2f21-496f-95c6-176d3a66eecc",
+  "ttft_stream_ms": 1487,
+  "time_to_request_ms": 24,
+  "queued_turn_count": 0
+}

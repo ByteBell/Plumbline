@@ -1,0 +1,71 @@
+{
+  "duration_api_ms": 72803,
+  "stop_reason": "end_turn",
+  "session_id": "873df331-01a9-47a2-b7fe-d6cd040b523d",
+  "total_cost_usd": 0.8815345,
+  "usage": {
+    "input_tokens": 16,
+    "cache_creation_input_tokens": 55149,
+    "cache_read_input_tokens": 396179,
+    "output_tokens": 5275,
+    "output_tokens_details": { "thinking_tokens": 1397 },
+    "server_tool_use": { "web_search_requests": 0, "web_fetch_requests": 0 },
+    "service_tier": "standard",
+    "cache_creation": { "ephemeral_1h_input_tokens": 55149, "ephemeral_5m_input_tokens": 0 },
+    "inference_geo": "not_available",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 1306,
+        "cache_read_input_tokens": 65211,
+        "cache_creation_input_tokens": 1772,
+        "cache_creation": { "ephemeral_5m_input_tokens": 0, "ephemeral_1h_input_tokens": 1772 },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-opus-5": {
+      "inputTokens": 16,
+      "outputTokens": 5275,
+      "cacheReadInputTokens": 396179,
+      "cacheCreationInputTokens": 55149,
+      "webSearchRequests": 0,
+      "costUSD": 0.8815345,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "canonicalModel": "claude-opus-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": { "background": 0, "foreground": 0, "unset": 0 },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": { "parent": 0, "user": 0, "system": 0 },
+    "refused": { "depth_limit": 0, "concurrency_limit": 0, "budget": 0 },
+    "by_type": {}
+  },
+  "is_error": false,
+  "num_turns": 11,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Both files written.\n\n**Gold file / order of reading.** I read `ranked.json` in full before opening any gold. The case has `gold.json` (no `golden.json`); that is what the scorer used. The answer is a **flat array of 51 paths — single-repo shape**, matching `gold.json`'s flat `gold` list, so no flattening was needed.\n\n**Metrics** (from `score_arm.py`, verbatim — I did not hand-compute anything):\n\n| metric | value |\n|---|---|\n| hits / gold_total | 4 / 8 |\n| recall@10 | 0.25 |\n| recall@20 | 0.25 |\n| recall@25 | 0.25 |\n| recall@50 | 0.50 |\n| recall@75 | 0.50 (degenerate: list is 51 long) |\n| precision@5 | 0.40 |\n| MRR | 1.00 |\n\n`score_arm.py` emits only these. It does **not** compute recall@full as a distinct key (recall@50 = 0.50 covers the whole 51-item list), nor precision@10, precision@20, F1@20 or F1_full_list. Per the rules I did not substitute my own arithmetic for the missing ones — they are simply not in this scorer's output, so they are absent from `result.json` too.\n\n**found** (4)\n- `packages/features/ee/workflows/lib/service/EmailWorkflowService.ts` (rank 1)\n- `packages/features/bookings/lib/service/RegularBookingService.ts` (rank 3)\n- `packages/features/ee/workflows/lib/types.ts` (rank 34)\n- `packages/features/tasker/tasks/sendWorkflowEmails.ts` (rank 38)\n\n**missed_gold** (4)\n- `apps/api/v2/src/ee/bookings/2024-04-15/controllers/bookings.controller.ts`\n- `apps/api/v2/src/ee/bookings/2024-08-13/services/input.service.ts`\n- `packages/features/ee/workflows/api/scheduleEmailReminders.ts`\n- `packages/prisma/zod-utils.ts`\n\n**Surface verdict: NOT comparable.** The surface itself is clean — I re-derived the counts from `commands.log` (25 calls) rather than from the run's self-report, and they match exactly: `ToolSearch` 1, `roll_call` 1, `blueprint` 1, `stakeout` 6, `the_receipts` 8, `manhunt` 1, `collateral_damage` 7. No filesystem or shell tool was touched, and the retriever's own search tool (`stakeout`) was called 6 times, so what was measured is that retriever. The single disqualifying reason is caching: `cache_read = 2,767,375` and `cache_creation = 177,264` are both nonzero (warm session, $3.847), so the cost figure is not comparable with cold runs. Note that `score_arm.py`'s own surface block reports `not_comparable: []` / `comparable: true` — it does not apply the cache rule; `result.json` records both its verdict and the run-level one.\n\n**What the misses share.** All four sit at the edges of the request/persistence envelope rather than in the workflow-email execution path the run mapped. Two are v2 REST API layer files under `apps/api/v2` — a separate app tree the run never entered, having anchored its whole fold on `packages/features` and `apps/web`. The other two are the boundary declarations rather than the behaviour: `scheduleEmailReminders.ts` is the workflow package's `api/` entry point, and `zod-utils.ts` is the shared schema module where the field's type is declared. The four hits are all *service/implementation* files reached by walking call and import edges from `hideBranding`; the four misses are *interface* files — HTTP controllers, an API route handler, and a schema definition — which carry the field as part of a payload contract and so don't mention the branding mechanism the run was pivoting on.",
+  "ttft_ms": 1363,
+  "type": "result",
+  "duration_ms": 73146,
+  "uuid": "75c472bf-d47d-42b4-a4e7-97a58a854bd0",
+  "ttft_stream_ms": 910,
+  "time_to_request_ms": 24,
+  "queued_turn_count": 0
+}

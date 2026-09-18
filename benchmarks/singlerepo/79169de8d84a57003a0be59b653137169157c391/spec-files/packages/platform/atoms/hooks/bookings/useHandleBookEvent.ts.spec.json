@@ -1,0 +1,738 @@
+{
+  "schema": 2,
+  "kind": "file",
+  "repoName": "cal.diy",
+  "file": {
+    "relativePath": "packages/platform/atoms/hooks/bookings/useHandleBookEvent.ts",
+    "language": "typescript",
+    "sizeBytes": 5983,
+    "tokenCount": 1496,
+    "model": "z-ai/glm-5.3-flash",
+    "analysedAt": "2026-09-04T19:27:32.987Z",
+    "module": {
+      "purpose": "Provides the useHandleBookEvent React hook for the Cal.com booking platform, which assembles and dispatches booking mutations (standard, instant, or recurring) from the Booker form state.",
+      "summary": "This TypeScript file defines the `useHandleBookEvent` hook used within the Cal.com booking flow (the Booker). The hook accepts the booking form instance, selected event data, metadata, hashed link details, and handler callbacks for standard, instant, and recurring bookings. It reads shared Booker store state via `useBookerStoreContext` (selected timeslot, duration, reschedule identifiers, seated event data, instant meeting flag, org/team/CRM context) and the user's timezone and locale. The returned `handleBookEvent` function validates the timeslot, clears stale form values and errors, validates the requested duration against the event's allowed durations, and constructs a `bookingInput` object containing form values, event data, timezone, language, reschedule info, CRM fields, routing form search params, and dry-run flag. It extracts UTM tracking parameters from URL search params and routes the booking to one of three handlers: instant meeting bookings, recurring bookings (when a recurring frequency and count exist and it is not a reschedule), or standard bookings. Errors are surfaced as translated toast messages. The hook abstracts booking dispatch logic shared between the platform (atoms) and core booker features.",
+      "businessContext": "Part of Cal.com's scheduling product: converts a user's booking form submission into an actual calendar booking, reschedule, instant meeting, or recurring series. Failure breaks the core checkout action of the booking page.",
+      "classes": [],
+      "functions": [
+        "handleBookEvent (~L72-134): Validates slot, builds booking input, dispatches booking mutation",
+        "useHandleBookEvent (~L36-137): Hook wiring store state and booking dispatch handlers"
+      ],
+      "keywords": [
+        "booking mutation",
+        "recurring booking",
+        "instant meeting",
+        "reschedule",
+        "booker store",
+        "UTM tracking",
+        "hashed link",
+        "CRM owner record",
+        "routing form search params",
+        "dry run"
+      ],
+      "ontologyConcepts": [
+        "event-driven dispatch",
+        "form state management",
+        "booking orchestration",
+        "rescheduling",
+        "recurring events",
+        "error handling"
+      ],
+      "businessEntities": [
+        "Booking",
+        "Event",
+        "Timeslot",
+        "Reschedule",
+        "Recurring Event",
+        "Seated Event",
+        "Team Member",
+        "Organization"
+      ],
+      "systemCapabilities": [
+        "Create standard bookings",
+        "Create instant meetings",
+        "Create recurring booking series",
+        "Support booking reschedules",
+        "Attach UTM tracking to bookings",
+        "Surface booking errors via toast"
+      ],
+      "configDependencies": [],
+      "importsInternal": [
+        {
+          "spec": "@calcom/atoms/hooks/useIsPlatform",
+          "symbols": ["useIsPlatform"],
+          "anchor": { "startLine": 3, "endLine": 3 },
+          "resolvedRelativePath": "packages/platform/atoms/hooks/useIsPlatform.ts",
+          "resolvedFileId": "packages/platform/atoms/hooks/useIsPlatform.ts",
+          "resolvedHint": "packages/platform/atoms/hooks/useIsPlatform.ts"
+        },
+        {
+          "spec": "@calcom/features/bookings/Booker/BookerStoreProvider",
+          "symbols": ["useBookerStoreContext"],
+          "anchor": { "startLine": 4, "endLine": 4 },
+          "resolvedRelativePath": "packages/features/bookings/Booker/BookerStoreProvider.tsx",
+          "resolvedFileId": "packages/features/bookings/Booker/BookerStoreProvider.tsx",
+          "resolvedHint": "packages/features/bookings/Booker/BookerStoreProvider.tsx"
+        },
+        {
+          "spec": "@calcom/features/bookings/Booker/components/hooks/useBookerTime",
+          "symbols": ["useBookerTime"],
+          "anchor": { "startLine": 5, "endLine": 5 },
+          "resolvedRelativePath": "packages/features/bookings/Booker/components/hooks/useBookerTime.ts",
+          "resolvedFileId": "packages/features/bookings/Booker/components/hooks/useBookerTime.ts",
+          "resolvedHint": "packages/features/bookings/Booker/components/hooks/useBookerTime.ts"
+        },
+        {
+          "spec": "@calcom/features/bookings/Booker/components/hooks/useBookingForm",
+          "symbols": ["UseBookingFormReturnType"],
+          "anchor": { "startLine": 6, "endLine": 6 },
+          "resolvedRelativePath": "packages/features/bookings/Booker/components/hooks/useBookingForm.ts",
+          "resolvedFileId": "packages/features/bookings/Booker/components/hooks/useBookingForm.ts",
+          "resolvedHint": "packages/features/bookings/Booker/components/hooks/useBookingForm.ts"
+        },
+        {
+          "spec": "@calcom/features/bookings/lib",
+          "symbols": ["mapBookingToMutationInput", "mapRecurringBookingToMutationInput"],
+          "anchor": { "startLine": 7, "endLine": 7 },
+          "resolvedRelativePath": "packages/features/bookings/lib/index.ts",
+          "resolvedFileId": "packages/features/bookings/lib/index.ts",
+          "resolvedHint": "packages/features/bookings/lib/index.ts"
+        },
+        {
+          "spec": "@calcom/features/bookings/lib/bookingCreateBodySchema",
+          "symbols": ["BookingCreateBody"],
+          "anchor": { "startLine": 8, "endLine": 8 },
+          "resolvedRelativePath": "packages/features/bookings/lib/bookingCreateBodySchema.ts",
+          "resolvedFileId": "packages/features/bookings/lib/bookingCreateBodySchema.ts",
+          "resolvedHint": "packages/features/bookings/lib/bookingCreateBodySchema.ts"
+        },
+        {
+          "spec": "@calcom/features/bookings/types",
+          "symbols": ["BookerEvent"],
+          "anchor": { "startLine": 9, "endLine": 9 },
+          "resolvedRelativePath": "packages/features/bookings/types.ts",
+          "resolvedFileId": "packages/features/bookings/types.ts",
+          "resolvedHint": "packages/features/bookings/types.ts"
+        },
+        {
+          "spec": "@calcom/lib/hooks/useLocale",
+          "symbols": ["useLocale"],
+          "anchor": { "startLine": 10, "endLine": 10 },
+          "resolvedRelativePath": "packages/lib/hooks/useLocale.ts",
+          "resolvedFileId": "packages/lib/hooks/useLocale.ts",
+          "resolvedHint": "packages/lib/hooks/useLocale.ts"
+        },
+        {
+          "spec": "@calcom/platform-types",
+          "symbols": ["RoutingFormSearchParams"],
+          "anchor": { "startLine": 11, "endLine": 11 },
+          "resolvedRelativePath": "packages/platform/types/index.ts",
+          "resolvedFileId": "packages/platform/types/index.ts",
+          "resolvedHint": "packages/platform/types/index.ts"
+        },
+        {
+          "spec": "@calcom/ui/components/toast",
+          "symbols": ["showToast"],
+          "anchor": { "startLine": 12, "endLine": 12 },
+          "resolvedRelativePath": null,
+          "resolvedFileId": null,
+          "resolvedHint": "packages/ui/components/toast/index.tsx"
+        },
+        {
+          "spec": "../../lib/getUtmTrackingParameters",
+          "symbols": ["getUtmTrackingParameters"],
+          "anchor": { "startLine": 14, "endLine": 14 },
+          "resolvedRelativePath": "packages/platform/atoms/lib/getUtmTrackingParameters.ts",
+          "resolvedFileId": "packages/platform/atoms/lib/getUtmTrackingParameters.ts",
+          "resolvedHint": "packages/platform/lib/getUtmTrackingParameters.ts"
+        },
+        {
+          "spec": "./useCreateBooking",
+          "symbols": ["UseCreateBookingInput"],
+          "anchor": { "startLine": 15, "endLine": 15 },
+          "resolvedRelativePath": "packages/platform/atoms/hooks/bookings/useCreateBooking.ts",
+          "resolvedFileId": "packages/platform/atoms/hooks/bookings/useCreateBooking.ts",
+          "resolvedHint": "packages/platform/atoms/hooks/bookings/useCreateBooking.ts"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "next/navigation",
+          "symbols": ["useSearchParams"],
+          "package": "next",
+          "subpath": "navigation",
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 1 }
+        }
+      ],
+      "sideEffects": {
+        "io": [
+          "Shows an error toast via showToast on booking error (handleError)",
+          "Calls bookingForm.setError('globalError') when event data is missing"
+        ],
+        "network": [
+          "Delegates to provided handleBooking / handleInstantBooking / handleRecBooking callbacks which perform booking mutations (network side effects outside this file)"
+        ],
+        "env": [],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": [
+          "Resets booker store form values via setFormValues({}) and clears booking form errors before and after dispatch"
+        ]
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "useHandleBookEvent",
+          "shape": "useHandleBookEvent(props: UseHandleBookingProps) => (inputTimeSlot?: string) => void",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "UseHandleBookingProps",
+          "shape": "{ bookingForm: UseBookingFormReturnType[\"bookingForm\"]; event?: { data?: Pick<BookerEvent, \"id\"|\"isDynamic\"|\"metadata\"|\"recurringEvent\"|\"length\"|\"slug\"|\"schedulingType\"> | null }; metadata: Record<string,string>; hashedLink?: string|null; handleBooking: (input: UseCreateBookingInput, callbacks?: Callbacks) => void; handleInstantBooking: (input: BookingCreateBody, callbacks?: Callbacks) => void; handleRecBooking: (input: BookingCreateBody[], callbacks?: Callbacks) => void; locationUrl?: string; routingFormSearchParams?: RoutingFormSearchParams; isBookingDryRun?: boolean }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "useBookingForm().bookingForm",
+          "shape": "{ getValues(): values; clearErrors(): void; setError(name, { message }): void }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "useBookerStoreContext",
+          "shape": "state => { setFormValues, selectedTimeslot, selectedDuration, rescheduleUid, rescheduledBy, username, recurringEventCount, bookingData, seatedEventData, isInstantMeeting, org, teamMemberEmail, crmOwnerRecordType, crmAppSlug, crmRecordId }",
+          "resolvedRelativePath": "packages/features/bookings/Booker/BookerStoreProvider.tsx",
+          "resolvedFileId": "packages/features/bookings/Booker/BookerStoreProvider.tsx"
+        },
+        {
+          "name": "handleBooking",
+          "shape": "(input: UseCreateBookingInput, callbacks?: Callbacks) => void",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "handleInstantBooking",
+          "shape": "(input: BookingCreateBody, callbacks?: Callbacks) => void",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "handleRecBooking",
+          "shape": "(input: BookingCreateBody[], callbacks?: Callbacks) => void",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "mapBookingToMutationInput",
+          "shape": "(bookingInput) => BookingCreateBody",
+          "resolvedRelativePath": "packages/features/bookings/lib/index.ts",
+          "resolvedFileId": "packages/features/bookings/lib/index.ts"
+        },
+        {
+          "name": "mapRecurringBookingToMutationInput",
+          "shape": "(bookingInput, recurringEventCount, tracking) => BookingCreateBody[]",
+          "resolvedRelativePath": "packages/features/bookings/lib/index.ts",
+          "resolvedFileId": "packages/features/bookings/lib/index.ts"
+        },
+        {
+          "name": "getUtmTrackingParameters",
+          "shape": "(searchParams) => tracking",
+          "resolvedRelativePath": "packages/platform/atoms/lib/getUtmTrackingParameters.ts",
+          "resolvedFileId": "packages/platform/atoms/lib/getUtmTrackingParameters.ts"
+        },
+        {
+          "name": "useBookerTime",
+          "shape": "() => { timezone }",
+          "resolvedRelativePath": "packages/features/bookings/Booker/components/hooks/useBookerTime.ts",
+          "resolvedFileId": "packages/features/bookings/Booker/components/hooks/useBookerTime.ts"
+        },
+        {
+          "name": "useLocale",
+          "shape": "() => { t, i18n }",
+          "resolvedRelativePath": "packages/lib/hooks/useLocale.ts",
+          "resolvedFileId": "packages/lib/hooks/useLocale.ts"
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "hook setup",
+          "intent": "Read booker store state, form, timezone, locale, and search params",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 36, "endLine": 70 }
+        },
+        {
+          "name": "handleError",
+          "intent": "Translate error message and show error toast",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 66, "endLine": 69 }
+        },
+        {
+          "name": "handleBookEvent body",
+          "intent": "Read form values and resolve timeslot and callbacks",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 72, "endLine": 75 }
+        },
+        {
+          "name": "timeslot guard",
+          "intent": "Only proceed when a timeslot is available",
+          "structureKind": "branch",
+          "predicate": "if (timeslot) {",
+          "branchOutcomes": ["timeslot present: continue booking flow", "timeslot absent: no-op"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 76, "endLine": 133 }
+        },
+        {
+          "name": "missing event guard",
+          "intent": "Set global form error and return when event data absent",
+          "structureKind": "branch",
+          "predicate": "if (!event?.data) {",
+          "branchOutcomes": ["event data missing: set globalError and return", "event data present: continue"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 83, "endLine": 86 }
+        },
+        {
+          "name": "duration validation",
+          "intent": "Validate duration against dynamic or multipleDuration options, else default length",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 88, "endLine": 94 }
+        },
+        {
+          "name": "booking input assembly",
+          "intent": "Build bookingInput object and extract UTM tracking params",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 96, "endLine": 118 }
+        },
+        {
+          "name": "dispatch booking",
+          "intent": "Route to instant, recurring, or standard booking handler then clear form state",
+          "structureKind": "branch",
+          "predicate": "if (isInstantMeeting) { ... } else if (event.data?.recurringEvent?.freq && recurringEventCount && !rescheduleUid) {",
+          "branchOutcomes": [
+            "instant meeting: handleInstantBooking",
+            "recurring event with count and no rescheduleUid: handleRecBooking",
+            "otherwise: handleBooking with locationUrl and tracking"
+          ],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 120, "endLine": 132 }
+        }
+      ],
+      "representationFamily": "function-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "function",
+          "name": "useHandleBookEvent",
+          "signature": "export const useHandleBookEvent = ({",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 36, "endLine": 137 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "type",
+          "name": "Callbacks",
+          "shape": "type Callbacks = { onSuccess?: () => void; onError?: (err: any) => void };",
+          "discriminant": null,
+          "anchor": { "startLine": 17, "endLine": 17 }
+        },
+        {
+          "kind": "type",
+          "name": "UseHandleBookingProps",
+          "shape": "type UseHandleBookingProps = {\n  bookingForm: UseBookingFormReturnType[\"bookingForm\"];\n  event?: {\n    data?: Pick<\n      BookerEvent,\n      \"id\" | \"isDynamic\" | \"metadata\" | \"recurringEvent\" | \"length\" | \"slug\" | \"schedulingType\"\n    > | null;\n  };\n  metadata: Record<string, string>;\n  hashedLink?: string | null;\n  handleBooking: (input: UseCreateBookingInput, callbacks?: Callbacks) => void;\n  handleInstantBooking: (input: BookingCreateBody, callbacks?: Callbacks) => void;\n  handleRecBooking: (input: BookingCreateBody[], callbacks?: Callbacks) => void;\n  locationUrl?: string;\n  routingFormSearchParams?: RoutingFormSearchParams;\n  isBookingDryRun?: boolean;\n};",
+          "discriminant": null,
+          "anchor": { "startLine": 18, "endLine": 34 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "no timeslot (inputTimeSlot undefined and storeTimeSlot empty)",
+          "handled": true,
+          "behavior": "handleBookEvent is a no-op; nothing is dispatched and form state is untouched",
+          "anchor": { "startLine": 74, "endLine": 76 }
+        },
+        {
+          "inputShape": "event?.data missing/null",
+          "handled": true,
+          "behavior": "Sets bookingForm globalError to t('error_booking_event') and returns early",
+          "anchor": { "startLine": 83, "endLine": 86 }
+        },
+        {
+          "inputShape": "duration not in allowed multipleDuration list (non-dynamic event)",
+          "handled": true,
+          "behavior": "Falls back to event.data.length as validDuration",
+          "anchor": { "startLine": 90, "endLine": 94 }
+        },
+        {
+          "inputShape": "duration empty on dynamic event",
+          "handled": true,
+          "behavior": "Falls back to event.data.length",
+          "anchor": { "startLine": 90, "endLine": 94 }
+        },
+        {
+          "inputShape": "reschedule of a recurring event (rescheduleUid set)",
+          "handled": true,
+          "behavior": "Recurring branch is skipped; handled via handleBooking as a normal booking",
+          "anchor": { "startLine": 122, "endLine": 126 }
+        },
+        {
+          "inputShape": "error during booking mutation (non-platform, with inputTimeSlot)",
+          "handled": true,
+          "behavior": "onError callback (handleError) shows translated error toast, defaulting to 'can_you_try_again' when err.message absent",
+          "anchor": { "startLine": 66, "endLine": 75 }
+        },
+        {
+          "inputShape": "username empty",
+          "handled": true,
+          "behavior": "Coerced to empty string in bookingInput",
+          "anchor": { "startLine": 106, "endLine": 106 }
+        },
+        {
+          "inputShape": "orgSlug absent",
+          "handled": true,
+          "behavior": "orgSlug set to undefined in bookingInput",
+          "anchor": { "startLine": 113, "endLine": 113 }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": null,
+          "caught": null,
+          "action": "handleError translates err.message (fallback key 'can_you_try_again') and shows error toast",
+          "fallback": "toast with t('can_you_try_again') when err?.message is falsy",
+          "anchor": { "startLine": 66, "endLine": 69 }
+        },
+        {
+          "thrown": null,
+          "caught": null,
+          "action": "Sets bookingForm globalError with t('error_booking_event') when event data is missing",
+          "fallback": null,
+          "anchor": { "startLine": 83, "endLine": 86 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "Caller supplies functional handleBooking, handleInstantBooking, handleRecBooking callbacks",
+          "anchor": { "startLine": 28, "endLine": 30 }
+        },
+        {
+          "kind": "env",
+          "description": "useBookerStoreContext provider, next/navigation router context, and locale/i18n providers are mounted",
+          "anchor": { "startLine": 48, "endLine": 70 }
+        },
+        {
+          "kind": "init-order",
+          "description": "bookingForm.getValues() returns current form values at invocation time",
+          "anchor": { "startLine": 73, "endLine": 73 }
+        },
+        {
+          "kind": "schema",
+          "description": "bookingInput is compatible with mapBookingToMutationInput / mapRecurringBookingToMutationInput signatures",
+          "anchor": { "startLine": 96, "endLine": 118 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "Why are error toasts suppressed on platform (isPlatform) and/or when inputTimeSlot is absent?",
+          "affects": "edge_cases / error_handling",
+          "anchor": { "startLine": 75, "endLine": 75 },
+          "resolution": null
+        },
+        {
+          "question": "What contract do mapBookingToMutationInput / mapRecurringBookingToMutationInput impose on bookingInput?",
+          "affects": "section_map booking input assembly",
+          "anchor": { "startLine": 118, "endLine": 124 },
+          "resolution": null
+        },
+        {
+          "question": "Should callbacks differ when isPlatform is true and inputTimeSlot is provided (callbacks undefined means no onError)?",
+          "affects": "error_handling",
+          "anchor": { "startLine": 75, "endLine": 75 },
+          "resolution": null
+        }
+      ],
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "dispatches-normal-booking",
+          "scenario": "Given a non-instant, non-recurring event with a selected timeslot, booking dispatches the single-booking handler with mapped input including locationUrl and tracking.",
+          "given": ["event.data present", "storeTimeSlot set", "isInstantMeeting=false", "no recurringEvent"],
+          "when": "handleBookEvent()",
+          "then": "handleBooking called once with { ...mapBookingToMutationInput(bookingInput), locationUrl, tracking } and callbacks undefined",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins the default dispatch branch and input shaping contract."
+        },
+        {
+          "testId": "dispatches-recurring-booking",
+          "scenario": "Given a recurring event with a recurring event count and no rescheduleUid, the recurring booking handler is used.",
+          "given": ["event.data.recurringEvent.freq set", "recurringEventCount set", "rescheduleUid undefined"],
+          "when": "handleBookEvent()",
+          "then": "handleRecBooking called with mapRecurringBookingToMutationInput(bookingInput, recurringEventCount, tracking)",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Recurring bookings take a distinct array payload handler."
+        },
+        {
+          "testId": "reschedule-skips-recurring-handler",
+          "scenario": "Given a recurring event but an active rescheduleUid, booking falls through to the single-booking handler.",
+          "given": ["event.data.recurringEvent.freq set", "recurringEventCount set", "rescheduleUid set"],
+          "when": "handleBookEvent()",
+          "then": "handleBooking called, not handleRecBooking",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Reschedules must never create a recurring series."
+        },
+        {
+          "testId": "instant-meeting-uses-instant-handler",
+          "scenario": "Given isInstantMeeting is true in the store, the instant booking handler is invoked.",
+          "given": ["event.data present", "storeTimeSlot set", "isInstantMeeting=true"],
+          "when": "handleBookEvent()",
+          "then": "handleInstantBooking called with mapBookingToMutationInput(bookingInput)",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Instant meetings route to their own mutation."
+        },
+        {
+          "testId": "no-timeslot-no-op",
+          "scenario": "Given no timeslot in store and no inputTimeSlot argument, nothing is dispatched.",
+          "given": ["storeTimeSlot null", "inputTimeSlot undefined"],
+          "when": "handleBookEvent()",
+          "then": "neither handleBooking, handleInstantBooking nor handleRecBooking is called",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Booking without a timeslot is a silent no-op."
+        },
+        {
+          "testId": "input-timeslot-overrides-store",
+          "scenario": "Given an explicit inputTimeSlot argument, it takes precedence over the store's selectedTimeslot.",
+          "given": ["storeTimeSlot = 'T1'", "inputTimeSlot = 'T2'"],
+          "when": "handleBookEvent('T2')",
+          "then": "bookingInput.date is 'T2'",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Explicit argument wins over stored slot."
+        },
+        {
+          "testId": "missing-event-data-sets-global-error",
+          "scenario": "Given a timeslot but no event data, a global form error is set and no handler is called.",
+          "given": ["event undefined", "storeTimeSlot set"],
+          "when": "handleBookEvent()",
+          "then": "bookingForm.setError('globalError', { message: t('error_booking_event') }) called and no booking handler invoked",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Guards the theoretically-possible missing-event case."
+        },
+        {
+          "testId": "dynamic-event-duration-fallback",
+          "scenario": "Given a dynamic event with no selected duration, the default event length is used.",
+          "given": ["event.data.isDynamic=true", "duration=null"],
+          "when": "handleBookEvent()",
+          "then": "bookingInput.duration equals event.data.length",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Dynamic events default to base length."
+        },
+        {
+          "testId": "invalid-duration-falls-back",
+          "scenario": "Given a non-dynamic event whose selected duration is not in multipleDuration, duration falls back to event length.",
+          "given": ["event.data.isDynamic=false", "duration=90", "event.data.metadata.multipleDuration=[30,60]"],
+          "when": "handleBookEvent()",
+          "then": "bookingInput.duration equals event.data.length",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Only allowed durations are sent on the wire."
+        },
+        {
+          "testId": "form-values-cleared-after-booking",
+          "scenario": "After a successful dispatch, stored form values and form errors are cleared both before and after booking.",
+          "given": ["event.data present", "storeTimeSlot set"],
+          "when": "handleBookEvent()",
+          "then": "setFormValues({}) called twice and bookingForm.clearErrors() called twice",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Stale form values must not leak into the next booking."
+        },
+        {
+          "testId": "non-platform-timeslot-wires-error-handler",
+          "scenario": "Given an explicit inputTimeSlot on a non-platform deployment, dispatch carries an onError callback that toasts the translated error.",
+          "given": ["inputTimeSlot set", "isPlatform=false"],
+          "when": "handleBookEvent('slot')",
+          "then": "callbacks = { onError: handleError } passed to the booking handler",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Non-platform callers get surfaced error feedback."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": ["import block", "type Callbacks", "type UseHandleBookingProps", "useHandleBookEvent"],
+      "moduleLevelCode": "import { useSearchParams } from \"next/navigation\";\n\nimport { useIsPlatform } from \"@calcom/atoms/hooks/useIsPlatform\";\nimport { useBookerStoreContext } from \"@calcom/features/bookings/Booker/BookerStoreProvider\";\nimport { useBookerTime } from \"@calcom/features/bookings/Booker/components/hooks/useBookerTime\";\nimport type { UseBookingFormReturnType } from \"@calcom/features/bookings/Booker/components/hooks/useBookingForm\";\nimport { mapBookingToMutationInput, mapRecurringBookingToMutationInput } from \"@calcom/features/bookings/lib\";\nimport type { BookingCreateBody } from \"@calcom/features/bookings/lib/bookingCreateBodySchema\";\nimport type { BookerEvent } from \"@calcom/features/bookings/types\";\nimport { useLocale } from \"@calcom/lib/hooks/useLocale\";\nimport type { RoutingFormSearchParams } from \"@calcom/platform-types\";\nimport { showToast } from \"@calcom/ui/components/toast\";\n\nimport { getUtmTrackingParameters } from \"../../lib/getUtmTrackingParameters\";\nimport type { UseCreateBookingInput } from \"./useCreateBooking\";",
+      "exports": [
+        { "name": "useHandleBookEvent", "kind": "own", "fromSpec": null, "exportedAs": "useHandleBookEvent" }
+      ],
+      "importSymbolMap": [
+        { "symbol": "useSearchParams", "module": "next/navigation", "alias": null, "kind": "external" },
+        { "symbol": "useIsPlatform", "module": "@calcom/atoms/hooks/useIsPlatform", "alias": null, "kind": "internal" },
+        {
+          "symbol": "useBookerStoreContext",
+          "module": "@calcom/features/bookings/Booker/BookerStoreProvider",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "useBookerTime",
+          "module": "@calcom/features/bookings/Booker/components/hooks/useBookerTime",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "UseBookingFormReturnType",
+          "module": "@calcom/features/bookings/Booker/components/hooks/useBookingForm",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "mapBookingToMutationInput",
+          "module": "@calcom/features/bookings/lib",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "mapRecurringBookingToMutationInput",
+          "module": "@calcom/features/bookings/lib",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "BookingCreateBody",
+          "module": "@calcom/features/bookings/lib/bookingCreateBodySchema",
+          "alias": null,
+          "kind": "internal"
+        },
+        { "symbol": "BookerEvent", "module": "@calcom/features/bookings/types", "alias": null, "kind": "internal" },
+        { "symbol": "useLocale", "module": "@calcom/lib/hooks/useLocale", "alias": null, "kind": "internal" },
+        { "symbol": "RoutingFormSearchParams", "module": "@calcom/platform-types", "alias": null, "kind": "internal" },
+        { "symbol": "showToast", "module": "@calcom/ui/components/toast", "alias": null, "kind": "internal" },
+        {
+          "symbol": "getUtmTrackingParameters",
+          "module": "../../lib/getUtmTrackingParameters",
+          "alias": null,
+          "kind": "internal"
+        },
+        { "symbol": "UseCreateBookingInput", "module": "./useCreateBooking", "alias": null, "kind": "internal" }
+      ],
+      "fileConstants": [],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/platform/atoms/hooks/bookings/useHandleBookEvent.ts__Callbacks_1#type_alias:Callbacks",
+        "unitKind": "type_alias",
+        "name": "Callbacks",
+        "qualifiedName": "Callbacks",
+        "parentUnitId": null,
+        "startLine": 17,
+        "endLine": 17,
+        "isBehavioral": false,
+        "source": "type Callbacks = { onSuccess?: () => void; onError?: (err: any) => void };"
+      },
+      {
+        "unitId": "packages/platform/atoms/hooks/bookings/useHandleBookEvent.ts__UseHandleBookingProps_2#type_alias:UseHandleBookingProps",
+        "unitKind": "type_alias",
+        "name": "UseHandleBookingProps",
+        "qualifiedName": "UseHandleBookingProps",
+        "parentUnitId": null,
+        "startLine": 18,
+        "endLine": 34,
+        "isBehavioral": false,
+        "source": "type UseHandleBookingProps = {\n  bookingForm: UseBookingFormReturnType[\"bookingForm\"];\n  event?: {\n    data?: Pick<\n      BookerEvent,\n      \"id\" | \"isDynamic\" | \"metadata\" | \"recurringEvent\" | \"length\" | \"slug\" | \"schedulingType\"\n    > | null;\n  };\n  metadata: Record<string, string>;\n  hashedLink?: string | null;\n  handleBooking: (input: UseCreateBookingInput, callbacks?: Callbacks) => void;\n  handleInstantBooking: (input: BookingCreateBody, callbacks?: Callbacks) => void;\n  handleRecBooking: (input: BookingCreateBody[], callbacks?: Callbacks) => void;\n  locationUrl?: string;\n  routingFormSearchParams?: RoutingFormSearchParams;\n  isBookingDryRun?: boolean;\n};"
+      },
+      {
+        "unitId": "packages/platform/atoms/hooks/bookings/useHandleBookEvent.ts__useHandleBookEvent_3#function:useHandleBookEvent",
+        "unitKind": "function",
+        "name": "useHandleBookEvent",
+        "qualifiedName": "useHandleBookEvent",
+        "parentUnitId": null,
+        "startLine": 36,
+        "endLine": 137,
+        "isBehavioral": true,
+        "source": "export const useHandleBookEvent = ({\n  bookingForm,\n  event,\n  metadata,\n  hashedLink,\n  handleBooking,\n  handleInstantBooking,\n  handleRecBooking,\n  locationUrl,\n  routingFormSearchParams,\n  isBookingDryRun,\n}: UseHandleBookingProps) => {\n  const isPlatform = useIsPlatform();\n  const setFormValues = useBookerStoreContext((state) => state.setFormValues);\n  const storeTimeSlot = useBookerStoreContext((state) => state.selectedTimeslot);\n  const duration = useBookerStoreContext((state) => state.selectedDuration);\n  const { timezone } = useBookerTime();\n  const rescheduleUid = useBookerStoreContext((state) => state.rescheduleUid);\n  const rescheduledBy = useBookerStoreContext((state) => state.rescheduledBy);\n  const { t, i18n } = useLocale();\n  const username = useBookerStoreContext((state) => state.username);\n  const recurringEventCount = useBookerStoreContext((state) => state.recurringEventCount);\n  const bookingData = useBookerStoreContext((state) => state.bookingData);\n  const seatedEventData = useBookerStoreContext((state) => state.seatedEventData);\n  const isInstantMeeting = useBookerStoreContext((state) => state.isInstantMeeting);\n  const orgSlug = useBookerStoreContext((state) => state.org);\n  const teamMemberEmail = useBookerStoreContext((state) => state.teamMemberEmail);\n  const crmOwnerRecordType = useBookerStoreContext((state) => state.crmOwnerRecordType);\n  const crmAppSlug = useBookerStoreContext((state) => state.crmAppSlug);\n  const crmRecordId = useBookerStoreContext((state) => state.crmRecordId);\n  const handleError = (err: any) => {\n    const errorMessage = err?.message ? t(err.message) : t(\"can_you_try_again\");\n    showToast(errorMessage, \"error\");\n  };\n  const searchParams = useSearchParams();\n\n  const handleBookEvent = (inputTimeSlot?: string) => {\n    const values = bookingForm.getValues();\n    const timeslot = inputTimeSlot ?? storeTimeSlot;\n    const callbacks = inputTimeSlot && !isPlatform ? { onError: handleError } : undefined;\n    if (timeslot) {\n      // Clears form values stored in store, so old values won't stick around.\n      setFormValues({});\n      bookingForm.clearErrors();\n\n      // It shouldn't be possible that this method is fired without having event data,\n      // but since in theory (looking at the types) it is possible, we still handle that case.\n      if (!event?.data) {\n        bookingForm.setError(\"globalError\", { message: t(\"error_booking_event\") });\n        return;\n      }\n\n      // Ensures that duration is an allowed value, if not it defaults to the\n      // default event duration.\n      const validDuration = event.data.isDynamic\n        ? duration || event.data.length\n        : duration && event.data.metadata?.multipleDuration?.includes(duration)\n        ? duration\n        : event.data.length;\n\n      const bookingInput = {\n        values,\n        duration: validDuration,\n        event: event.data,\n        date: timeslot,\n        timeZone: timezone,\n        language: i18n.language,\n        rescheduleUid: rescheduleUid || undefined,\n        rescheduledBy: rescheduledBy || undefined,\n        bookingUid: (bookingData && bookingData.uid) || seatedEventData?.bookingUid || undefined,\n        username: username || \"\",\n        metadata: metadata,\n        hashedLink,\n        teamMemberEmail,\n        crmOwnerRecordType,\n        crmAppSlug,\n        crmRecordId,\n        orgSlug: orgSlug ? orgSlug : undefined,\n        routingFormSearchParams,\n        isDryRunProp: isBookingDryRun,\n      };\n\n      const tracking = getUtmTrackingParameters(searchParams);\n\n      if (isInstantMeeting) {\n        handleInstantBooking(mapBookingToMutationInput(bookingInput), callbacks);\n      } else if (event.data?.recurringEvent?.freq && recurringEventCount && !rescheduleUid) {\n        handleRecBooking(\n          mapRecurringBookingToMutationInput(bookingInput, recurringEventCount, tracking),\n          callbacks\n        );\n      } else {\n        handleBooking({ ...mapBookingToMutationInput(bookingInput), locationUrl, tracking }, callbacks);\n      }\n      // Clears form values stored in store, so old values won't stick around.\n      setFormValues({});\n      bookingForm.clearErrors();\n    }\n  };\n\n  return handleBookEvent;\n};"
+      },
+      {
+        "unitId": "packages/platform/atoms/hooks/bookings/useHandleBookEvent.ts__useHandleBookEvent.handleError_4#function:useHandleBookEvent.handleError",
+        "unitKind": "function",
+        "name": "handleError",
+        "qualifiedName": "useHandleBookEvent.handleError",
+        "parentUnitId": "packages/platform/atoms/hooks/bookings/useHandleBookEvent.ts__useHandleBookEvent_3#function:useHandleBookEvent",
+        "startLine": 66,
+        "endLine": 69,
+        "isBehavioral": true,
+        "source": "  const handleError = (err: any) => {\n    const errorMessage = err?.message ? t(err.message) : t(\"can_you_try_again\");\n    showToast(errorMessage, \"error\");\n  };"
+      },
+      {
+        "unitId": "packages/platform/atoms/hooks/bookings/useHandleBookEvent.ts__useHandleBookEvent.handleBookEvent_5#function:useHandleBookEvent.handleBookEvent",
+        "unitKind": "function",
+        "name": "handleBookEvent",
+        "qualifiedName": "useHandleBookEvent.handleBookEvent",
+        "parentUnitId": "packages/platform/atoms/hooks/bookings/useHandleBookEvent.ts__useHandleBookEvent_3#function:useHandleBookEvent",
+        "startLine": 72,
+        "endLine": 134,
+        "isBehavioral": true,
+        "source": "  const handleBookEvent = (inputTimeSlot?: string) => {\n    const values = bookingForm.getValues();\n    const timeslot = inputTimeSlot ?? storeTimeSlot;\n    const callbacks = inputTimeSlot && !isPlatform ? { onError: handleError } : undefined;\n    if (timeslot) {\n      // Clears form values stored in store, so old values won't stick around.\n      setFormValues({});\n      bookingForm.clearErrors();\n\n      // It shouldn't be possible that this method is fired without having event data,\n      // but since in theory (looking at the types) it is possible, we still handle that case.\n      if (!event?.data) {\n        bookingForm.setError(\"globalError\", { message: t(\"error_booking_event\") });\n        return;\n      }\n\n      // Ensures that duration is an allowed value, if not it defaults to the\n      // default event duration.\n      const validDuration = event.data.isDynamic\n        ? duration || event.data.length\n        : duration && event.data.metadata?.multipleDuration?.includes(duration)\n        ? duration\n        : event.data.length;\n\n      const bookingInput = {\n        values,\n        duration: validDuration,\n        event: event.data,\n        date: timeslot,\n        timeZone: timezone,\n        language: i18n.language,\n        rescheduleUid: rescheduleUid || undefined,\n        rescheduledBy: rescheduledBy || undefined,\n        bookingUid: (bookingData && bookingData.uid) || seatedEventData?.bookingUid || undefined,\n        username: username || \"\",\n        metadata: metadata,\n        hashedLink,\n        teamMemberEmail,\n        crmOwnerRecordType,\n        crmAppSlug,\n        crmRecordId,\n        orgSlug: orgSlug ? orgSlug : undefined,\n        routingFormSearchParams,\n        isDryRunProp: isBookingDryRun,\n      };\n\n      const tracking = getUtmTrackingParameters(searchParams);\n\n      if (isInstantMeeting) {\n        handleInstantBooking(mapBookingToMutationInput(bookingInput), callbacks);\n      } else if (event.data?.recurringEvent?.freq && recurringEventCount && !rescheduleUid) {\n        handleRecBooking(\n          mapRecurringBookingToMutationInput(bookingInput, recurringEventCount, tracking),\n          callbacks\n        );\n      } else {\n        handleBooking({ ...mapBookingToMutationInput(bookingInput), locationUrl, tracking }, callbacks);\n      }\n      // Clears form values stored in store, so old values won't stick around.\n      setFormValues({});\n      bookingForm.clearErrors();\n    }\n  };"
+      }
+    ]
+  },
+  "out": [
+    "packages/platform/types/index.ts",
+    "packages/platform/atoms/hooks/bookings/useCreateBooking.ts",
+    "packages/features/bookings/Booker/components/hooks/useBookerTime.ts",
+    "packages/features/bookings/lib/bookingCreateBodySchema.ts",
+    "packages/platform/atoms/lib/getUtmTrackingParameters.ts",
+    "packages/features/bookings/lib/index.ts",
+    "packages/features/bookings/types.ts",
+    "packages/platform/atoms/hooks/useIsPlatform.ts",
+    "packages/lib/hooks/useLocale.ts",
+    "packages/features/bookings/Booker/components/hooks/useBookingForm.ts",
+    "packages/features/bookings/Booker/BookerStoreProvider.tsx"
+  ],
+  "in": ["packages/platform/atoms/booker/BookerPlatformWrapper.tsx"],
+  "externals": ["next/navigation", "@calcom/ui/components/toast"],
+  "impact": { "seeds": 5, "callers": 0, "impactedFiles": [] }
+}

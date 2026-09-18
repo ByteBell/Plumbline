@@ -1,0 +1,71 @@
+{
+  "duration_api_ms": 84095,
+  "stop_reason": "end_turn",
+  "session_id": "d77e354a-39e0-4d34-b641-04463ac386ae",
+  "total_cost_usd": 0.682264,
+  "usage": {
+    "input_tokens": 14,
+    "cache_creation_input_tokens": 34987,
+    "cache_read_input_tokens": 354698,
+    "output_tokens": 6199,
+    "output_tokens_details": { "thinking_tokens": 2153 },
+    "server_tool_use": { "web_search_requests": 0, "web_fetch_requests": 0 },
+    "service_tier": "standard",
+    "cache_creation": { "ephemeral_1h_input_tokens": 34987, "ephemeral_5m_input_tokens": 0 },
+    "inference_geo": "not_available",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 2099,
+        "cache_read_input_tokens": 62754,
+        "cache_creation_input_tokens": 3177,
+        "cache_creation": { "ephemeral_5m_input_tokens": 0, "ephemeral_1h_input_tokens": 3177 },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-opus-5": {
+      "inputTokens": 14,
+      "outputTokens": 6199,
+      "cacheReadInputTokens": 354698,
+      "cacheCreationInputTokens": 34987,
+      "webSearchRequests": 0,
+      "costUSD": 0.682264,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "canonicalModel": "claude-opus-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": { "background": 0, "foreground": 0, "unset": 0 },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": { "parent": 0, "user": 0, "system": 0 },
+    "refused": { "depth_limit": 0, "concurrency_limit": 0, "budget": 0 },
+    "by_type": {}
+  },
+  "is_error": false,
+  "num_turns": 10,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Both files written.\n\n**Stage 2 report — `f66fffd13b0bb1828248bc89c687e23a7481a40a` / `claudecli_opus5_mcp_plumbline_rejection_selection_v4_s2`**\n\nGold file used: `gold.json` (no `golden.json` in this case dir). I read `ranked.json` in full before opening it.\n\nAnswer shape: **flat array of 4 paths** — single-repo form, the same shape `gold.json`'s `gold` list uses, so no flattening was needed. The scorer confirms `case_family: \"single-repo\"`. `ranked.json` is untouched.\n\n**Metrics** (all from `score_arm.py`; nothing hand-computed)\n\n| metric | value |\n|---|---|\n| hits / gold_total | 1 / 8 |\n| recall@10 | 0.125 |\n| recall@20 | 0.125 |\n| recall@full (@75, list cap) | 0.125 |\n| precision@5 | 0.200 |\n| MRR | 1.000 |\n| returned_before_cap | 4 |\n\nThe scorer does not emit `precision@10`, `precision@20`, `F1@20` or `F1_full_list`, so those cells are blank rather than filled by my own arithmetic. It also flags `degenerate_ks: [10, 20, 25, 50, 75]` — the emitted list has only 4 entries, so every k at or above 10 measures the same four paths.\n\n**found** (1)\n- `packages/features/ee/workflows/lib/service/EmailWorkflowService.ts` (rank 1)\n\n**missed_gold** (7)\n- `apps/api/v2/src/ee/bookings/2024-04-15/controllers/bookings.controller.ts`\n- `apps/api/v2/src/ee/bookings/2024-08-13/services/input.service.ts`\n- `packages/features/bookings/lib/service/RegularBookingService.ts`\n- `packages/features/ee/workflows/api/scheduleEmailReminders.ts`\n- `packages/features/ee/workflows/lib/types.ts`\n- `packages/features/tasker/tasks/sendWorkflowEmails.ts`\n- `packages/prisma/zod-utils.ts`\n\n**Surface verdict: NOT comparable.** Tool counts from `commands.log` (47 lines, no post-run marker) are `collateral_damage 21, stakeout 13, the_receipts 3, ToolSearch 3, shakedown 2, roll_call 1, blueprint 1, rap_sheet 1, manhunt 1, case_file 1` — my independent count matches the scorer's exactly, and the frozen `cost.json` self-report happened to agree too. The single reason: **warm prompt cache** (`cache_read=9652204`, `cache_creation=305523`), so the $9.05 figure is not on the same footing as cold runs. On every other axis it is clean — no filesystem or shell tool appears in the log (the run pulled the `Read` schema via ToolSearch at line 04 but never called it, and ToolSearch is not itself a surface violation), and `stakeout`, the tool the plumbline retriever is built around, was called 13 times, so the scorer's own `not_comparable` list is empty.\n\n**What the misses share.** The four emitted paths are all one layer: the workflow *sender's own implementation* under `packages/features/ee/workflows/lib` — the service, the scheduler, the orchestrator, the template. Every miss sits outside that layer, in one of two registers. Four are the **entry points that construct and hand off the payload** — the two API v2 booking surfaces, `RegularBookingService`, and the `scheduleEmailReminders` cron endpoint — i.e. the callers upstream of the sender rather than the sender. The other three are the **shared declaration and dispatch plumbing** the payload travels through: `workflows/lib/types.ts`, `prisma/zod-utils.ts`, and the tasker task `sendWorkflowEmails.ts`. Notably `sendWorkflowEmails.ts` and `scheduleEmailReminders.ts` both appear in the run's own `collateral_damage` seed list (seeds 19 and, via `case_file`, line 17) — they were reached and then not carried into the answer, so the failure register here is selection among reached files, not unreachability. The type/schema files are the register that neither the seeds nor the answer ever touched.",
+  "ttft_ms": 1467,
+  "type": "result",
+  "duration_ms": 85034,
+  "uuid": "ec3e08bc-9272-4af1-9c05-1960c08e18f5",
+  "ttft_stream_ms": 1012,
+  "time_to_request_ms": 18,
+  "queued_turn_count": 0
+}

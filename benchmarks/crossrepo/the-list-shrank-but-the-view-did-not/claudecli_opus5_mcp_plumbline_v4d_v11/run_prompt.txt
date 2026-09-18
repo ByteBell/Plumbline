@@ -1,0 +1,170 @@
+CROSS-REPOSITORY RETRIEVAL TASK — run the algorithm below, in order.
+
+CASE:      xrepo-v6-21-the-list-shrank-but-the-view-did-not-medium
+SURFACE:   the plumbline MCP server. No other MCP server, no network, no subagents,
+           no Read, Grep or Glob. Every path you name must have come back from a
+           plumbline call; reaching the answer by any other route voids the run.
+           ONE exception, and it is not a search route. When a plumbline result is
+           too large to return, it is written to a file and that path is handed to
+           you in the result. Read THAT file with Bash — cat or grep on the exact
+           path you were given — and use Bash for nothing else. It is your own
+           result, already paid for, and leaving it unread silently drops the call.
+           Bash may not touch the repositories, the case directory, or any path you
+           were not handed.
+ROSTER:    16 repositories, each pinned at exactly one commit. This is the whole
+           world for the task; do not use another revision or later history.
+
+  repo             commit                                     repo             commit
+  redux            3084fc33bb23ab4cab4796172eafe342da4e73d9   query            46d7f02f1c7b9fcd3255082cc7103e8bfa3dab76
+  redux-toolkit    b1c5130154c454ca8387f55da6122fcb507c560c   table            ce123bc6651bcbf188f3198627c6bb0b10588162
+  react-redux      ad5d1e0816d0cb1464b25cf2853f2a7d73433f5b   tldraw           5590d14d8edd4faab7dc1177b6e1adb28876fd23
+  reselect         950112a328f71d97d18fd543159d6fdefa432b38   redux-devtools   f4b4668c30ae08920c59a76cc4629c35c16ef0fa
+  react            1d4758e0f6aae560024b36ce07ed8a67b3f7d78f   router           3dee5b2e9453d01a3172c73426959007b290b3fc
+  jotai            5c4ca26b0db5571114be58393e17854a771f7790   primitives       58164e06ca67dff9a68dd375d858180cfdc8ec27
+  zustand          b57db4f86ef179285da216eeb291266da82c361c   zod              912f0f51b0ced654d0069741e7160834dca742ee
+  db               7f0fa36ff6d48b0494ed5f6a1223fd18c317e41f   xyflow           360f5b13e2bc6899ea06b4be1a49b068d86926cf
+
+PROBLEM (identifiers are deliberately withheld — searching these words will not
+find the answer):
+
+A reactive projection of a collection in one of these libraries is maintained in place: when the underlying collection changes, the projection's existing slots are overwritten one by one and new slots are appended. Nothing removes slots. So the projection is correct whenever the collection grows or stays the same size and wrong whenever it shrinks - the tail of the previous, longer collection is still there, still reactive, and still rendered, and shrinking by more than one at a time leaves more than one stale entry behind. The bug is structural rather than arithmetic: the update path was written as 'assign each new item to a slot' rather than 'make the projection equal to the new collection'. The contract is that a projection must converge on the source in both directions, and that removals are as much a part of an update as insertions. Elsewhere in the folder that symmetry is explicit: one library's incremental builder records additions and removals as it goes and can still yield the whole, and another renders its collection through a keyed pass that drops the elements whose keys are gone. Which files update a projection without shrinking it, and which own the converge-in-both-directions contract they have to be brought in line with?
+
+GOAL: name every file, in every repository above, that must change to satisfy that
+contract. The answer spans multiple repositories that do not import one another.
+
+
+================================ ALGORITHM ================================
+
+The PROBLEM above describes BEHAVIOUR and withholds every identifier. So the run
+has two jobs, in this order: turn the behaviour into names, then read the files
+those names point at. Searching harder is not one of the jobs.
+
+
+STEP 0 — GROUND THE RUN. Both calls are free; make them before anything else.
+  0.1  roll_call once. Confirm every repository you intend to answer from sits at
+       the commit pinned above. Missing or drifted -> STOP and say so plainly.
+       A drifted run is a failed run to relaunch, never an answer from memory.
+  0.2  rap_sheet once, no arguments. It says what each repository is FOR, in about
+       150 tokens each. You need it for STEP 2, where it decides which repositories
+       you search INSIDE.
+       RANK, NEVER EXCLUDE. A repository whose brief reads wrong can still hold the
+       other half of the contract.
+
+
+STEP 1 — WRITE THE OBLIGATION LEDGER. Before any search.
+  Split the PROBLEM into obligations and write them out:
+    - one for the code that VIOLATES the contract;
+    - one for EACH SEPARATE CLAUSE describing code that already gets it right.
+      "one library does X ... and another does Y" is TWO obligations, not one.
+  Give each an id and the behaviour phrase in the PROBLEM's own words:
+      OB-1 <violator behaviour>
+      OB-2 <first owner clause>
+      OB-3 <second owner clause>
+  An obligation is OPEN until you have READ a file that satisfies it.
+  A plausible answer does not close an obligation. Finding one library that does
+  the right thing does not close a clause about a different library.
+  You may not quietly drop one. If an obligation is still open when you emit, say
+  so and name it.
+
+
+STEP 2 — CLOSE EACH OBLIGATION BY SCOPED SEARCH. This is the whole run.
+  2.1  Take one OPEN obligation. From the rap_sheet briefs, list EVERY repository
+       whose subject matter could plausibly hold it. Be generous. Four or more is
+       normal, eight is not wasteful, and breadth here is close to free: the FIRST
+       scoped call into a repository this run has not queried yet is never rationed,
+       however many calls you have already spent. Re-querying a repository you have
+       already searched is what gets rationed. So the cheap move and the correct
+       move are the same one — go wide across repositories, not deep in one.
+
+       Do not try to guess which single repository is right before you start. The
+       PROBLEM's central noun — the "collection", the "projection", the thing kept
+       in sync — has several plausible readings, and picking one is how a run ends
+       inside one repository. Breadth settles it; cleverness does not.
+  2.2  stakeout that obligation's behaviour phrase ONCE PER LISTED REPOSITORY, with
+       knowledgeId SET to that repository and searchIn='both'.
+
+       A sweep with knowledgeId OMITTED DOES NOT SATISFY THIS, and the difference
+       decides runs. An org-wide search ranks whichever repository shares the most
+       vocabulary with your words and never reaches the others at all; the same
+       phrase scoped INTO a repository is answered from that repository's own
+       register, and returns what an org-wide sweep could not see. When a scoped
+       search is the only thing that would have found a file, an org-wide one
+       reports a clean absence instead.
+  2.3  Keep the phrase SHORT — a handful of content words. Padding it into a
+       sentence dilutes the score enough to drop real hits out of range entirely.
+  2.4  An obligation CLOSES only when you have opened a file and confirmed it
+       (STEP 4). A repository you have not scoped into is not evidence of absence.
+
+
+STEP 3 — EVERY NAME YOU LEARN GOES ORG-WIDE, ONCE.
+  3.1  When a search returns a function, class or exported symbol that matters,
+       manhunt {name} with knowledgeId OMITTED. One call, exact, every repository.
+  3.2  SIBLING PACKAGES ARE THE POINT. A repository that ships one capability as
+       several adapter packages — framework bindings, drivers, backends, engines —
+       implements the SAME name in each of them, and those packages do not import
+       one another, so no fold and no dependency walk will ever cross between them.
+       The org-wide exact-name sweep is the only thing that reaches them all.
+  3.3  When that sweep returns N siblings, EVERY ONE of them is a candidate. Do not
+       answer with the sibling that happened to rank in a text search. They differ
+       from each other — and the one that differs is usually the whole point.
+  3.4  A tool that refuses with a cap is not an error and not a server failure, and
+       it is never a reason to stop. The allowance is a share of the run that GROWS
+       as the run grows, so every call you spend elsewhere buys more of the refused
+       tool back. Three ways through a refusal, in order of preference:
+         - scope the call to a repository you have not queried yet; a first touch
+           is exempt and goes through regardless of what you have spent;
+         - spend the tools the refusal names — walking the edges of a file you have
+           already found reaches the type declaration, the barrel and the call site,
+           which no search can reach because they share no vocabulary with it;
+         - come back to the refused tool once the total has risen.
+       A refusal is a fact about what THIS run has already spent, never about the
+       codebase and never about whether your query was right.
+
+
+STEP 4 — READ BEFORE YOU JUDGE. Ruling a file OUT costs what ruling it IN costs.
+  4.1  case_file the file first. It returns every code unit with its declared
+       startLine-endLine. THEN the_receipts on that declared range. Ranges you
+       pick yourself are guesses, and a guessed window that happens to look
+       innocent is how a violating file gets cleared.
+  4.2  Never judge a file from a purpose, summary, signature, path, or from a
+       search that came back empty. Those fields were written by a model at index
+       time, and an empty search is a fact about your query, not about the file.
+  4.3  If you did not read it, it is UNDECIDED — and UNDECIDED files are REPORTED,
+       ranked below the files you read. Running out of calls is not a verdict.
+
+
+STEP 5 — EMIT
+  5.1  First, restate the ledger in plain text: for each OB, the file that closed
+       it, or the word OPEN. This is the last thing you write before the JSON.
+  5.2  Rank most likely first. Repo-relative paths only — no leading slash, no
+       repo-name prefix, e.g. packages/<package-name>/src/<SomeFile>.ts
+  5.3  Source files only: no tests, docs, examples, fixtures, benchmarks, build
+       output, dependency directories or generated API reports.
+  5.4  Every path must have been RETURNED by a call. A path completed from memory
+       or inferred from directory layout is not a result.
+  5.5  Pinpoints are optional and best effort, for files you actually READ. A
+       symbol or line range you did not read is a fabrication — omit the pinpoint
+       instead. Pinpoints never change WHICH files you name or their order.
+  5.6  Your FINAL message is the JSON array and nothing else. The ledger from 5.1
+       belongs in the message BEFORE it. No prose, no markdown fence, nothing
+       after it:
+
+[{"repo": "<repo>",
+  "files": ["<path>", "..."],
+  "pinpoints": [{"path": "<a path already in files>",
+                 "symbol": "<function/method/class, as the source spells it>",
+                 "lines": "<start-end>",
+                 "change": "<what has to change there, one line>"}]}, ...]
+
+       "files" MUST be a flat array of path strings in rank order — it is what is
+       scored, and an object inside it voids the run. "pinpoints" is separate and
+       optional; omit the key entirely where you pinned nothing down, and never
+       name a path there that is not already in "files".
+
+
+RUN CONDITIONS (the run is invalid if any fails)
+  R1  One fresh session. Do not resume or re-attempt a case already attempted.
+  R2  STEP 0 must pass before any search.
+  R3  The harness records the transcript, every call and the cost, and writes
+      ranked.json from your final message. You have no write tools — do not try
+      to create files. Your only job is the ranked answer.

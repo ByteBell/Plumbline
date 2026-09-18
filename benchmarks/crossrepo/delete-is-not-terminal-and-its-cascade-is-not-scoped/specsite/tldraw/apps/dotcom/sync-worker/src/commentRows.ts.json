@@ -1,0 +1,2962 @@
+{
+  "schema": 2,
+  "kind": "file",
+  "repoName": "tldraw",
+  "file": {
+    "relativePath": "apps/dotcom/sync-worker/src/commentRows.ts",
+    "language": "typescript",
+    "sizeBytes": 17249,
+    "tokenCount": 4308,
+    "model": "us.openai.gpt-5.6-luna",
+    "analysedAt": "2026-08-24T12:28:34.567Z",
+    "module": {
+      "purpose": "Provides lossless conversions, validation, filtering, planning, and snapshot rehydration for comment-related room records persisted in Postgres and synchronized through the comment outbox.",
+      "summary": "This module is the persistence boundary for comment threads, comments, reactions, and mentions. It converts between tldraw records and database rows, validates records rebuilt from potentially corrupt storage, reconstructs room snapshot documents, filters soft-deleted data, preserves clock floors, and plans idempotent outbox writes and cleanup. It also classifies PostgreSQL foreign-key failures so callers can distinguish permanently prunable records from transient failures.",
+      "businessContext": "Supports collaborative document comments, mentions, reactions, and thread lifecycle persistence. Failures can prevent room recovery, leave stale outbox entries, or expose invalid comment data.",
+      "classes": [],
+      "functions": [
+        "isCommentAuthorFkViolation (~L28-32): Identifies permanently invalid comment author foreign-key failures.",
+        "isCommentThreadFkViolation (~L38-42): Identifies missing file foreign-key failures for comment threads.",
+        "isCommentFileFkViolation (~L45-49): Identifies missing file foreign-key failures for comments.",
+        "isCommentThreadIdFkViolation (~L55-59): Identifies missing parent-thread foreign-key failures.",
+        "isCommentMentionFkViolation (~L65-72): Identifies user or comment foreign-key failures for mentions.",
+        "isCommentReactionFkViolation (~L75-84): Identifies missing comment, thread, or user reaction parents.",
+        "planMentionReconciles (~L84-87): Derives desired mention users from each comment body.",
+        "threadRecordToRow (~L89-108): Converts a comment thread record into a database row.",
+        "reactionRecordToRow (~L110-131): Converts a reaction record into a database row.",
+        "commentRecordToRow (~L133-159): Converts a comment record into a database row.",
+        "rowToThreadRecord (~L161-176): Rebuilds and validates a thread record from storage.",
+        "rowToCommentRecord (~L178-194): Rebuilds and validates a comment record from storage.",
+        "rowToReactionRecord (~L196-210): Rebuilds and validates a reaction record from storage.",
+        "rowsToSnapshotDocuments (~L216-229): Converts persisted comment rows into room snapshot documents.",
+        "liveCommentDocuments (~L248-273): Filters live rows and computes the storage clock floor.",
+        "planCommentDrain (~L304-351): Coalesces outbox ids into typed upsert and delete operations.",
+        "outboxEntriesToClear (~L358-368): Selects completed outbox sequence numbers for removal.",
+        "findEmptiedCommentThreads (~L378-391): Finds candidate threads with no remaining comments.",
+        "findOrphanedReactions (~L398-411): Finds reactions whose comments were pruned.",
+        "mergeCommentDocumentsIntoSnapshot (~L422-439): Merges comment documents while preserving snapshot clocks."
+      ],
+      "keywords": [
+        "Postgres comment rows",
+        "comment outbox",
+        "foreign-key violation",
+        "room snapshot",
+        "clock floor",
+        "soft deletion",
+        "mention reconciliation",
+        "tombstone history",
+        "comment reactions",
+        "lane pruning"
+      ],
+      "ontologyConcepts": [
+        "persistence conversion",
+        "data validation",
+        "snapshot rehydration",
+        "outbox planning",
+        "referential integrity",
+        "soft deletion",
+        "clock monotonicity",
+        "orphan cleanup"
+      ],
+      "businessEntities": [
+        "Comment",
+        "CommentThread",
+        "CommentReaction",
+        "CommentMention",
+        "User",
+        "File",
+        "Room",
+        "OutboxEntry"
+      ],
+      "systemCapabilities": [
+        "Persist comment records",
+        "Rehydrate room comment state",
+        "Plan comment outbox drains",
+        "Reconcile comment mentions",
+        "Prune invalid comment relationships",
+        "Preserve synchronization clocks"
+      ],
+      "configDependencies": [],
+      "importsInternal": [],
+      "importsExternal": [
+        {
+          "spec": "@tldraw/dotcom-shared",
+          "symbols": ["DB", "extractMentionIds"],
+          "package": "@tldraw/dotcom-shared",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 1 }
+        },
+        {
+          "spec": "@tldraw/sync-core",
+          "symbols": ["RoomSnapshot"],
+          "package": "@tldraw/sync-core",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 2, "endLine": 2 }
+        },
+        {
+          "spec": "@tldraw/tlschema",
+          "symbols": [
+            "TLComment",
+            "TLCommentAnchor",
+            "TLCommentReaction",
+            "TLCommentThread",
+            "commentReactionRecordConfig",
+            "commentRecordConfig",
+            "commentThreadRecordConfig",
+            "isCommentId",
+            "isCommentReactionId",
+            "isCommentThreadId"
+          ],
+          "package": "@tldraw/tlschema",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 3, "endLine": 11 }
+        },
+        {
+          "spec": "@tldraw/utils",
+          "symbols": ["JsonObject"],
+          "package": "@tldraw/utils",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 12, "endLine": 12 }
+        }
+      ],
+      "sideEffects": {
+        "io": [],
+        "network": [],
+        "env": [],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": ["mergeCommentDocumentsIntoSnapshot mutates the supplied snapshot documents and clock fields."]
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "isCommentAuthorFkViolation",
+          "shape": "isCommentAuthorFkViolation(error: unknown): boolean",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "isCommentThreadFkViolation",
+          "shape": "isCommentThreadFkViolation(error: unknown): boolean",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "isCommentFileFkViolation",
+          "shape": "isCommentFileFkViolation(error: unknown): boolean",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "isCommentThreadIdFkViolation",
+          "shape": "isCommentThreadIdFkViolation(error: unknown): boolean",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "isCommentMentionFkViolation",
+          "shape": "isCommentMentionFkViolation(error: unknown): boolean",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "isCommentReactionFkViolation",
+          "shape": "isCommentReactionFkViolation(error: unknown): boolean",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "CommentMentionReconcile",
+          "shape": "interface CommentMentionReconcile { commentId: string; userIds: string[] }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "planMentionReconciles",
+          "shape": "planMentionReconciles(commentRows: DB['comment'][]): CommentMentionReconcile[]",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "threadRecordToRow",
+          "shape": "threadRecordToRow(record: TLCommentThread, fileId: string, lastChangedClock: number): DB['comment_thread']",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "reactionRecordToRow",
+          "shape": "reactionRecordToRow(record: TLCommentReaction, fileId: string, lastChangedClock: number): DB['comment_reaction']",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "commentRecordToRow",
+          "shape": "commentRecordToRow(record: TLComment, fileId: string, lastChangedClock: number): DB['comment']",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "rowToThreadRecord",
+          "shape": "rowToThreadRecord(row: DB['comment_thread']): TLCommentThread",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "rowToCommentRecord",
+          "shape": "rowToCommentRecord(row: DB['comment']): TLComment",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "rowToReactionRecord",
+          "shape": "rowToReactionRecord(row: DB['comment_reaction']): TLCommentReaction",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "rowsToSnapshotDocuments",
+          "shape": "rowsToSnapshotDocuments(threadRows: DB['comment_thread'][], commentRows: DB['comment'][], reactionRows: DB['comment_reaction'][] = []): RoomSnapshot['documents']",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "CommentLoadResult",
+          "shape": "interface CommentLoadResult { documents: RoomSnapshot['documents']; clockFloor: number }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "liveCommentDocuments",
+          "shape": "liveCommentDocuments(threadRows: DB['comment_thread'][], commentRows: DB['comment'][], reactionRows: DB['comment_reaction'][] = []): CommentLoadResult",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "CommentOutboxEntry",
+          "shape": "interface CommentOutboxEntry { seq: number; recordId: string }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "CommentDrainPlan",
+          "shape": "interface CommentDrainPlan { threadUpserts: DB['comment_thread'][]; commentUpserts: DB['comment'][]; reactionUpserts: DB['comment_reaction'][]; threadDeletes: string[]; commentDeletes: string[]; reactionDeletes: string[]; unknownIds: string[] }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "planCommentDrain",
+          "shape": "planCommentDrain(entries: CommentOutboxEntry[], lane: ReadonlyMap<string, { state: unknown; lastChangedClock: number }>, fileId: string): CommentDrainPlan",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "outboxEntriesToClear",
+          "shape": "outboxEntriesToClear(entries: CommentOutboxEntry[], failedIds: ReadonlySet<string>): { clearAll: boolean; seqs: number[] }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "findEmptiedCommentThreads",
+          "shape": "findEmptiedCommentThreads(candidateThreadIds: ReadonlySet<string>, remaining: { keys(): Iterable<string>; get(id: string): unknown }): string[]",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "findOrphanedReactions",
+          "shape": "findOrphanedReactions(prunedCommentIds: ReadonlySet<string>, remaining: { keys(): Iterable<string>; get(id: string): unknown }): string[]",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "mergeCommentDocumentsIntoSnapshot",
+          "shape": "mergeCommentDocumentsIntoSnapshot(snapshot: RoomSnapshot, load: CommentLoadResult): void",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "DB",
+          "shape": "DB['comment'], DB['comment_thread'], DB['comment_reaction']",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "RoomSnapshot",
+          "shape": "RoomSnapshot['documents']",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        { "name": "TLComment", "shape": "TLComment", "resolvedRelativePath": null, "resolvedFileId": null },
+        { "name": "TLCommentAnchor", "shape": "TLCommentAnchor", "resolvedRelativePath": null, "resolvedFileId": null },
+        {
+          "name": "TLCommentReaction",
+          "shape": "TLCommentReaction",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        { "name": "TLCommentThread", "shape": "TLCommentThread", "resolvedRelativePath": null, "resolvedFileId": null },
+        {
+          "name": "commentThreadRecordConfig.validator",
+          "shape": "commentThreadRecordConfig.validator.validate(record)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "commentRecordConfig.validator",
+          "shape": "commentRecordConfig.validator.validate(record)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "commentReactionRecordConfig.validator",
+          "shape": "commentReactionRecordConfig.validator.validate(record)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "extractMentionIds",
+          "shape": "extractMentionIds(row.body)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        { "name": "isCommentId", "shape": "isCommentId(id)", "resolvedRelativePath": null, "resolvedFileId": null },
+        {
+          "name": "isCommentReactionId",
+          "shape": "isCommentReactionId(id)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "isCommentThreadId",
+          "shape": "isCommentThreadId(id)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "foreign-key classification",
+          "intent": "Classifies PostgreSQL constraint errors as permanent or retryable comment failures.",
+          "structureKind": "branch",
+          "predicate": "typeof error !== 'object' || error === null",
+          "branchOutcomes": ["not an object or null", "matching constraint", "non-matching constraint"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 28, "endLine": 84 }
+        },
+        {
+          "name": "record-to-row conversion",
+          "intent": "Maps thread, reaction, and comment records into database-compatible row objects.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 89, "endLine": 159 }
+        },
+        {
+          "name": "row validation and reconstruction",
+          "intent": "Casts database fields into records and validates reconstructed comment data.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 161, "endLine": 210 }
+        },
+        {
+          "name": "live document filtering",
+          "intent": "Drops deleted records and preserves threads with live or absent comments.",
+          "structureKind": "branch",
+          "predicate": "!row.isDeleted && (!threadIdsWithComments.has(row.id) || threadIdsWithLiveComments.has(row.id))",
+          "branchOutcomes": ["retain live thread", "drop deleted or emptied thread"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 253, "endLine": 273 }
+        },
+        {
+          "name": "clock floor accumulation",
+          "intent": "Computes the maximum persisted clock across all comment-related rows.",
+          "structureKind": "loop",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": "threadRows",
+          "terminationCondition": null,
+          "anchor": { "startLine": 265, "endLine": 268 }
+        },
+        {
+          "name": "outbox drain planning",
+          "intent": "Coalesces record ids and chooses typed upserts, deletes, or unknown buckets.",
+          "structureKind": "loop",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": "pendingIds",
+          "terminationCondition": null,
+          "anchor": { "startLine": 319, "endLine": 349 }
+        },
+        {
+          "name": "room cleanup scans",
+          "intent": "Scans remaining lane records to identify emptied threads and orphaned reactions.",
+          "structureKind": "loop",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": "remaining.keys()",
+          "terminationCondition": null,
+          "anchor": { "startLine": 384, "endLine": 408 }
+        },
+        {
+          "name": "snapshot clock merge",
+          "intent": "Appends comment documents and raises snapshot clocks and tombstone history.",
+          "structureKind": "branch",
+          "predicate": "commentDocs.length === 0 && clockFloor === 0",
+          "branchOutcomes": ["no documents and no clock floor", "merge and clamp as needed"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 426, "endLine": 439 }
+        }
+      ],
+      "representationFamily": "module",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "function",
+          "name": "isCommentAuthorFkViolation",
+          "signature": "export function isCommentAuthorFkViolation(error: unknown): boolean",
+          "generics": null,
+          "decorators": [],
+          "returnType": ": boolean",
+          "exported": true,
+          "anchor": { "startLine": 28, "endLine": 28 }
+        },
+        {
+          "kind": "function",
+          "name": "isCommentThreadFkViolation",
+          "signature": "export function isCommentThreadFkViolation(error: unknown): boolean",
+          "generics": null,
+          "decorators": [],
+          "returnType": ": boolean",
+          "exported": true,
+          "anchor": { "startLine": 38, "endLine": 38 }
+        },
+        {
+          "kind": "function",
+          "name": "isCommentFileFkViolation",
+          "signature": "export function isCommentFileFkViolation(error: unknown): boolean",
+          "generics": null,
+          "decorators": [],
+          "returnType": ": boolean",
+          "exported": true,
+          "anchor": { "startLine": 45, "endLine": 45 }
+        },
+        {
+          "kind": "function",
+          "name": "isCommentThreadIdFkViolation",
+          "signature": "export function isCommentThreadIdFkViolation(error: unknown): boolean",
+          "generics": null,
+          "decorators": [],
+          "returnType": ": boolean",
+          "exported": true,
+          "anchor": { "startLine": 55, "endLine": 55 }
+        },
+        {
+          "kind": "function",
+          "name": "isCommentMentionFkViolation",
+          "signature": "export function isCommentMentionFkViolation(error: unknown): boolean",
+          "generics": null,
+          "decorators": [],
+          "returnType": ": boolean",
+          "exported": true,
+          "anchor": { "startLine": 65, "endLine": 65 }
+        },
+        {
+          "kind": "function",
+          "name": "isCommentReactionFkViolation",
+          "signature": "export function isCommentReactionFkViolation(error: unknown): boolean",
+          "generics": null,
+          "decorators": [],
+          "returnType": ": boolean",
+          "exported": true,
+          "anchor": { "startLine": 75, "endLine": 75 }
+        },
+        {
+          "kind": "interface",
+          "name": "CommentMentionReconcile",
+          "signature": "export interface CommentMentionReconcile",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 73, "endLine": 77 }
+        },
+        {
+          "kind": "function",
+          "name": "planMentionReconciles",
+          "signature": "export function planMentionReconciles(commentRows: DB['comment'][]): CommentMentionReconcile[]",
+          "generics": null,
+          "decorators": [],
+          "returnType": ": CommentMentionReconcile[]",
+          "exported": true,
+          "anchor": { "startLine": 84, "endLine": 84 }
+        },
+        {
+          "kind": "function",
+          "name": "threadRecordToRow",
+          "signature": "export function threadRecordToRow(\n\trecord: TLCommentThread,\n\tfileId: string,\n\tlastChangedClock: number\n): DB['comment_thread']",
+          "generics": null,
+          "decorators": [],
+          "returnType": ": DB['comment_thread']",
+          "exported": true,
+          "anchor": { "startLine": 89, "endLine": 93 }
+        },
+        {
+          "kind": "function",
+          "name": "reactionRecordToRow",
+          "signature": "export function reactionRecordToRow(\n\trecord: TLCommentReaction,\n\tfileId: string,\n\tlastChangedClock: number\n): DB['comment_reaction']",
+          "generics": null,
+          "decorators": [],
+          "returnType": ": DB['comment_reaction']",
+          "exported": true,
+          "anchor": { "startLine": 110, "endLine": 114 }
+        },
+        {
+          "kind": "function",
+          "name": "commentRecordToRow",
+          "signature": "export function commentRecordToRow(\n\trecord: TLComment,\n\tfileId: string,\n\tlastChangedClock: number\n): DB['comment']",
+          "generics": null,
+          "decorators": [],
+          "returnType": ": DB['comment']",
+          "exported": true,
+          "anchor": { "startLine": 133, "endLine": 137 }
+        },
+        {
+          "kind": "function",
+          "name": "rowToThreadRecord",
+          "signature": "export function rowToThreadRecord(row: DB['comment_thread']): TLCommentThread",
+          "generics": null,
+          "decorators": [],
+          "returnType": ": TLCommentThread",
+          "exported": true,
+          "anchor": { "startLine": 161, "endLine": 161 }
+        },
+        {
+          "kind": "function",
+          "name": "rowToCommentRecord",
+          "signature": "export function rowToCommentRecord(row: DB['comment']): TLComment",
+          "generics": null,
+          "decorators": [],
+          "returnType": ": TLComment",
+          "exported": true,
+          "anchor": { "startLine": 178, "endLine": 178 }
+        },
+        {
+          "kind": "function",
+          "name": "rowToReactionRecord",
+          "signature": "export function rowToReactionRecord(row: DB['comment_reaction']): TLCommentReaction",
+          "generics": null,
+          "decorators": [],
+          "returnType": ": TLCommentReaction",
+          "exported": true,
+          "anchor": { "startLine": 196, "endLine": 196 }
+        },
+        {
+          "kind": "function",
+          "name": "rowsToSnapshotDocuments",
+          "signature": "export function rowsToSnapshotDocuments(\n\tthreadRows: DB['comment_thread'][],\n\tcommentRows: DB['comment'][],\n\treactionRows: DB['comment_reaction'][] = []\n): RoomSnapshot['documents']",
+          "generics": null,
+          "decorators": [],
+          "returnType": ": RoomSnapshot['documents']",
+          "exported": true,
+          "anchor": { "startLine": 216, "endLine": 220 }
+        },
+        {
+          "kind": "interface",
+          "name": "CommentLoadResult",
+          "signature": "export interface CommentLoadResult",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 232, "endLine": 240 }
+        },
+        {
+          "kind": "function",
+          "name": "liveCommentDocuments",
+          "signature": "export function liveCommentDocuments(\n\tthreadRows: DB['comment_thread'][],\n\tcommentRows: DB['comment'][],\n\treactionRows: DB['comment_reaction'][] = []\n): CommentLoadResult",
+          "generics": null,
+          "decorators": [],
+          "returnType": ": CommentLoadResult",
+          "exported": true,
+          "anchor": { "startLine": 248, "endLine": 252 }
+        },
+        {
+          "kind": "interface",
+          "name": "CommentOutboxEntry",
+          "signature": "export interface CommentOutboxEntry",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 276, "endLine": 279 }
+        },
+        {
+          "kind": "interface",
+          "name": "CommentDrainPlan",
+          "signature": "export interface CommentDrainPlan",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 285, "endLine": 296 }
+        },
+        {
+          "kind": "function",
+          "name": "planCommentDrain",
+          "signature": "export function planCommentDrain(\n\tentries: CommentOutboxEntry[],\n\tlane: ReadonlyMap<string, { state: unknown; lastChangedClock: number }>,\n\tfileId: string\n): CommentDrainPlan",
+          "generics": null,
+          "decorators": [],
+          "returnType": ": CommentDrainPlan",
+          "exported": true,
+          "anchor": { "startLine": 304, "endLine": 308 }
+        },
+        {
+          "kind": "function",
+          "name": "outboxEntriesToClear",
+          "signature": "export function outboxEntriesToClear(\n\tentries: CommentOutboxEntry[],\n\tfailedIds: ReadonlySet<string>\n): { clearAll: boolean; seqs: number[] }",
+          "generics": null,
+          "decorators": [],
+          "returnType": ": { clearAll: boolean; seqs: number[] }",
+          "exported": true,
+          "anchor": { "startLine": 358, "endLine": 361 }
+        },
+        {
+          "kind": "function",
+          "name": "findEmptiedCommentThreads",
+          "signature": "export function findEmptiedCommentThreads(\n\tcandidateThreadIds: ReadonlySet<string>,\n\tremaining: { keys(): Iterable<string>; get(id: string): unknown }\n): string[]",
+          "generics": null,
+          "decorators": [],
+          "returnType": ": string[]",
+          "exported": true,
+          "anchor": { "startLine": 378, "endLine": 381 }
+        },
+        {
+          "kind": "function",
+          "name": "findOrphanedReactions",
+          "signature": "export function findOrphanedReactions(\n\tprunedCommentIds: ReadonlySet<string>,\n\tremaining: { keys(): Iterable<string>; get(id: string): unknown }\n): string[]",
+          "generics": null,
+          "decorators": [],
+          "returnType": ": string[]",
+          "exported": true,
+          "anchor": { "startLine": 398, "endLine": 401 }
+        },
+        {
+          "kind": "function",
+          "name": "mergeCommentDocumentsIntoSnapshot",
+          "signature": "export function mergeCommentDocumentsIntoSnapshot(\n\tsnapshot: RoomSnapshot,\n\tload: CommentLoadResult\n): void",
+          "generics": null,
+          "decorators": [],
+          "returnType": ": void",
+          "exported": true,
+          "anchor": { "startLine": 422, "endLine": 425 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "interface",
+          "name": "CommentMentionReconcile",
+          "shape": "{\n\tcommentId: string\n\tuserIds: string[]\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 73, "endLine": 77 }
+        },
+        {
+          "kind": "interface",
+          "name": "CommentLoadResult",
+          "shape": "{\n\tdocuments: RoomSnapshot['documents']\n\t/**\n\t * The highest `lastChangedClock` across ALL of the file's comment rows, including soft-deleted\n\t * ones dropped from `documents` — a dropped row can hold the file's highest clock, and seeding\n\t * the room below it would make future edits emit clocks the drain's guard rejects.\n\t */\n\tclockFloor: number\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 232, "endLine": 240 }
+        },
+        {
+          "kind": "interface",
+          "name": "CommentOutboxEntry",
+          "shape": "{\n\tseq: number\n\trecordId: string\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 276, "endLine": 279 }
+        },
+        {
+          "kind": "interface",
+          "name": "CommentDrainPlan",
+          "shape": "{\n\tthreadUpserts: DB['comment_thread'][]\n\tcommentUpserts: DB['comment'][]\n\treactionUpserts: DB['comment_reaction'][]\n\tthreadDeletes: string[]\n\tcommentDeletes: string[]\n\treactionDeletes: string[]\n\t/** Ids of no known comment record type — a bug or a corrupted outbox row. */\n\tunknownIds: string[]\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 285, "endLine": 296 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "null or primitive FK error",
+          "handled": true,
+          "behavior": "Returns false without attempting property access.",
+          "anchor": { "startLine": 29, "endLine": 29 }
+        },
+        {
+          "inputShape": "empty comment row collection",
+          "handled": true,
+          "behavior": "Keeps otherwise-live threads and produces no comment documents.",
+          "anchor": { "startLine": 253, "endLine": 264 }
+        },
+        {
+          "inputShape": "thread with only soft-deleted comments",
+          "handled": true,
+          "behavior": "Drops the thread and its comments from the room seed.",
+          "anchor": { "startLine": 257, "endLine": 264 }
+        },
+        {
+          "inputShape": "soft-deleted rows with highest clocks",
+          "handled": true,
+          "behavior": "Retains their maximum clock in clockFloor.",
+          "anchor": { "startLine": 265, "endLine": 268 }
+        },
+        {
+          "inputShape": "empty candidate or pruned id set",
+          "handled": true,
+          "behavior": "Returns an empty cleanup list immediately.",
+          "anchor": { "startLine": 382, "endLine": 402 }
+        },
+        {
+          "inputShape": "unknown outbox record id",
+          "handled": true,
+          "behavior": "Places the id in unknownIds instead of writing a row.",
+          "anchor": { "startLine": 346, "endLine": 348 }
+        },
+        {
+          "inputShape": "future-dated reaction creation time",
+          "handled": true,
+          "behavior": "Clamps createdAt to the current server time.",
+          "anchor": { "startLine": 125, "endLine": 127 }
+        },
+        {
+          "inputShape": "corrupt persisted record",
+          "handled": true,
+          "behavior": "Schema validation fails rather than seeding an invalid room record.",
+          "anchor": { "startLine": 173, "endLine": 175 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": "!=",
+          "left": "typeof error",
+          "right": "'object'",
+          "inclusive": false,
+          "intent": "Rejects non-object errors before constraint inspection.",
+          "anchor": { "startLine": 29, "endLine": 29 }
+        },
+        {
+          "operator": "==",
+          "left": "error",
+          "right": "null",
+          "inclusive": true,
+          "intent": "Rejects null errors before constraint inspection.",
+          "anchor": { "startLine": 29, "endLine": 29 }
+        },
+        {
+          "operator": "==",
+          "left": "code",
+          "right": "'23503'",
+          "inclusive": true,
+          "intent": "Requires PostgreSQL foreign-key violation code.",
+          "anchor": { "startLine": 31, "endLine": 31 }
+        },
+        {
+          "operator": "==",
+          "left": "constraint",
+          "right": "'comment_author_id_fkey'",
+          "inclusive": true,
+          "intent": "Matches the comment author constraint.",
+          "anchor": { "startLine": 31, "endLine": 31 }
+        },
+        {
+          "operator": "==",
+          "left": "constraint",
+          "right": "'comment_thread_file_id_fkey'",
+          "inclusive": true,
+          "intent": "Matches the comment thread file constraint.",
+          "anchor": { "startLine": 41, "endLine": 41 }
+        },
+        {
+          "operator": "==",
+          "left": "constraint",
+          "right": "'comment_file_id_fkey'",
+          "inclusive": true,
+          "intent": "Matches the comment file constraint.",
+          "anchor": { "startLine": 48, "endLine": 48 }
+        },
+        {
+          "operator": "==",
+          "left": "constraint",
+          "right": "'comment_thread_id_fkey'",
+          "inclusive": true,
+          "intent": "Matches the comment parent-thread constraint.",
+          "anchor": { "startLine": 58, "endLine": 58 }
+        },
+        {
+          "operator": "==",
+          "left": "constraint",
+          "right": "'comment_mention_user_id_fkey'",
+          "inclusive": true,
+          "intent": "Matches the mention user constraint.",
+          "anchor": { "startLine": 69, "endLine": 69 }
+        },
+        {
+          "operator": "==",
+          "left": "constraint",
+          "right": "'comment_mention_comment_id_fkey'",
+          "inclusive": true,
+          "intent": "Matches the mention comment constraint.",
+          "anchor": { "startLine": 70, "endLine": 70 }
+        },
+        {
+          "operator": "==",
+          "left": "constraint",
+          "right": "'comment_reaction_comment_id_fkey'",
+          "inclusive": true,
+          "intent": "Matches the reaction comment constraint.",
+          "anchor": { "startLine": 79, "endLine": 79 }
+        },
+        {
+          "operator": "==",
+          "left": "constraint",
+          "right": "'comment_reaction_thread_id_fkey'",
+          "inclusive": true,
+          "intent": "Matches the reaction thread constraint.",
+          "anchor": { "startLine": 80, "endLine": 80 }
+        },
+        {
+          "operator": "==",
+          "left": "constraint",
+          "right": "'comment_reaction_user_id_fkey'",
+          "inclusive": true,
+          "intent": "Matches the reaction user constraint.",
+          "anchor": { "startLine": 81, "endLine": 81 }
+        },
+        {
+          "operator": "==",
+          "left": "record.anchor.type",
+          "right": "'shape'",
+          "inclusive": true,
+          "intent": "Selects a shape anchor's shape id when applicable.",
+          "anchor": { "startLine": 98, "endLine": 98 }
+        },
+        {
+          "operator": "!=",
+          "left": "row.resolvedAt",
+          "right": "null",
+          "inclusive": false,
+          "intent": "Reconstructs resolved metadata only when a resolution timestamp exists.",
+          "anchor": { "startLine": 169, "endLine": 169 }
+        },
+        {
+          "operator": "!=",
+          "left": "row.editedAt",
+          "right": "null",
+          "inclusive": false,
+          "intent": "Reconstructs editedAt only when the row is edited.",
+          "anchor": { "startLine": 186, "endLine": 186 }
+        },
+        {
+          "operator": "!=",
+          "left": "row.isDeleted",
+          "right": "true",
+          "inclusive": false,
+          "intent": "This comparison is represented by negation and determines live row retention.",
+          "anchor": { "startLine": 255, "endLine": 259 }
+        },
+        {
+          "operator": "==",
+          "left": "candidateThreadIds.size",
+          "right": "0",
+          "inclusive": true,
+          "intent": "Avoids scanning the lane when no candidate threads exist.",
+          "anchor": { "startLine": 382, "endLine": 382 }
+        },
+        {
+          "operator": "!=",
+          "left": "threadId",
+          "right": "undefined",
+          "inclusive": false,
+          "intent": "Only removes a candidate when a remaining comment has a thread id.",
+          "anchor": { "startLine": 387, "endLine": 387 }
+        },
+        {
+          "operator": "==",
+          "left": "emptied.size",
+          "right": "0",
+          "inclusive": true,
+          "intent": "Stops scanning once every candidate thread has a remaining comment.",
+          "anchor": { "startLine": 387, "endLine": 387 }
+        },
+        {
+          "operator": "==",
+          "left": "prunedCommentIds.size",
+          "right": "0",
+          "inclusive": true,
+          "intent": "Avoids scanning the lane when no comments were pruned.",
+          "anchor": { "startLine": 402, "endLine": 402 }
+        },
+        {
+          "operator": "!=",
+          "left": "commentId",
+          "right": "undefined",
+          "inclusive": false,
+          "intent": "Only treats reactions with a known comment id as orphan candidates.",
+          "anchor": { "startLine": 407, "endLine": 407 }
+        },
+        {
+          "operator": "==",
+          "left": "commentDocs.length",
+          "right": "0",
+          "inclusive": true,
+          "intent": "Skips snapshot mutation when no documents or clock floor exist.",
+          "anchor": { "startLine": 427, "endLine": 427 }
+        },
+        {
+          "operator": "==",
+          "left": "clockFloor",
+          "right": "0",
+          "inclusive": true,
+          "intent": "Allows the early return only when the load has no clock floor.",
+          "anchor": { "startLine": 427, "endLine": 427 }
+        },
+        {
+          "operator": ">=",
+          "left": "effectiveClock",
+          "right": "maxClock",
+          "inclusive": true,
+          "intent": "Avoids lowering or redundantly rewriting an already-sufficient snapshot clock.",
+          "anchor": { "startLine": 433, "endLine": 433 }
+        },
+        {
+          "operator": "!=",
+          "left": "snapshot.clock",
+          "right": "undefined",
+          "inclusive": false,
+          "intent": "Raises the legacy snapshot clock only when it exists.",
+          "anchor": { "startLine": 435, "endLine": 435 }
+        },
+        {
+          "operator": "<",
+          "left": "snapshot.clock",
+          "right": "maxClock",
+          "inclusive": false,
+          "intent": "Raises the legacy snapshot clock only when below the merged maximum.",
+          "anchor": { "startLine": 435, "endLine": 435 }
+        }
+      ],
+      "errorHandling": [],
+      "invariants": [
+        {
+          "kind": "invariant",
+          "description": "Postgres rows retain every durable comment record field needed for lossless room reconstruction.",
+          "anchor": { "startLine": 17, "endLine": 22 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "Reconstructed thread, comment, and reaction records pass their schema validators.",
+          "anchor": { "startLine": 173, "endLine": 209 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Soft-deleted records are excluded from room-seedable documents but remain included in clockFloor.",
+          "anchor": { "startLine": 242, "endLine": 273 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Each pending outbox record id contributes to at most one typed plan bucket.",
+          "anchor": { "startLine": 319, "endLine": 350 }
+        },
+        {
+          "kind": "ordering",
+          "description": "Thread, comment, and reaction snapshot documents are emitted in their respective row-group order.",
+          "anchor": { "startLine": 221, "endLine": 228 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "Snapshot document and tombstone clocks are never lowered during comment merge.",
+          "anchor": { "startLine": 431, "endLine": 438 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "Callers provide database rows whose fields correspond to the imported schema types.",
+          "anchor": { "startLine": 161, "endLine": 210 }
+        },
+        {
+          "kind": "caller",
+          "description": "The remaining lane passed to cleanup functions reflects transaction-time state.",
+          "anchor": { "startLine": 370, "endLine": 377 }
+        },
+        {
+          "kind": "schema",
+          "description": "Postgres triggers populate author and reaction user display fields during insertion.",
+          "anchor": { "startLine": 122, "endLine": 127 }
+        },
+        {
+          "kind": "schema",
+          "description": "The comment outbox stores record ids and callers interpret delete buckets as soft deletion.",
+          "anchor": { "startLine": 281, "endLine": 296 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "Which caller handles validation exceptions raised by the record schema validators?",
+          "affects": "error_handling",
+          "anchor": { "startLine": 173, "endLine": 209 },
+          "resolution": null
+        },
+        {
+          "question": "Which drain implementation maps each foreign-key classifier to pruning, retry, or skipping behavior?",
+          "affects": "orchestration and error_handling",
+          "anchor": { "startLine": 24, "endLine": 84 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "sync",
+        "reentrant": true,
+        "ordering": "deterministic",
+        "notes": "All functions are synchronous and pure except for intentional snapshot mutation; no shared asynchronous state is maintained."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "matches-author-fk-violation",
+          "scenario": "An error has the author foreign-key violation code and constraint.",
+          "given": ["error = { code: '23503', constraint: 'comment_author_id_fkey' }"],
+          "when": "isCommentAuthorFkViolation(error)",
+          "then": "result === true",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "rejects-unrelated-fk-violation",
+          "scenario": "An error has a foreign-key code but an unrelated constraint.",
+          "given": ["error = { code: '23503', constraint: 'other_constraint' }"],
+          "when": "isCommentAuthorFkViolation(error)",
+          "then": "result === false",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Constraint-specific matching prevents unrelated database failures from being pruned."
+        },
+        {
+          "testId": "plans-mention-reconciliation",
+          "scenario": "A comment body mentions users.",
+          "given": [
+            "commentRows = [{ id: 'comment:1', body: body }]",
+            "extractMentionIds(body) === ['user:1', 'user:2']"
+          ],
+          "when": "planMentionReconciles(commentRows)",
+          "then": "result === [{ commentId: 'comment:1', userIds: ['user:1', 'user:2'] }]",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "round-trips-comment-row",
+          "scenario": "A valid comment record is converted to a database row and rebuilt.",
+          "given": ["record is a valid TLComment", "fileId = 'file:1'", "lastChangedClock = 7"],
+          "when": "rowToCommentRecord(commentRecordToRow(record, fileId, lastChangedClock))",
+          "then": "result matches record for all persisted comment fields",
+          "targets": [],
+          "oracleKind": "property",
+          "rationale": "The conversion boundary must preserve comment data losslessly."
+        },
+        {
+          "testId": "drops-deleted-comment-content",
+          "scenario": "A file contains soft-deleted comments and their reactions.",
+          "given": [
+            "threadRows contains a live thread",
+            "commentRows contains only deleted comments for that thread",
+            "reactionRows contains reactions for those comments"
+          ],
+          "when": "liveCommentDocuments(threadRows, commentRows, reactionRows)",
+          "then": "documents excludes the thread, deleted comments, and their reactions while clockFloor includes every input row clock",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Soft-deleted durable rows must not re-enter a room, but their clocks must remain the seed floor."
+        },
+        {
+          "testId": "plans-present-and-absent-records",
+          "scenario": "Outbox entries identify records present or absent from the object lane.",
+          "given": [
+            "lane contains a thread, comment, and reaction for three pending ids",
+            "lane does not contain a fourth recognized comment id or an unknown id"
+          ],
+          "when": "planCommentDrain(entries, lane, fileId)",
+          "then": "present records are placed in typed upserts, absent recognized ids in typed deletes, and unknown ids in unknownIds",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "The drain plan defines the durable write/delete partition and unknown-id handling."
+        },
+        {
+          "testId": "retains-failed-outbox-ids",
+          "scenario": "A drain has both successful and failed record ids.",
+          "given": [
+            "entries = [{ seq: 1, recordId: 'comment:1' }, { seq: 2, recordId: 'comment:2' }]",
+            "failedIds = new Set(['comment:2'])"
+          ],
+          "when": "outboxEntriesToClear(entries, failedIds)",
+          "then": "result === { clearAll: false, seqs: [1] }",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "finds-emptied-threads",
+          "scenario": "Candidate threads have no remaining comment records.",
+          "given": [
+            "candidateThreadIds = new Set(['thread:1', 'thread:2'])",
+            "remaining contains no comments belonging to either thread"
+          ],
+          "when": "findEmptiedCommentThreads(candidateThreadIds, remaining)",
+          "then": "result contains 'thread:1' and 'thread:2'",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "keeps-thread-with-remaining-comment",
+          "scenario": "One candidate thread still has a comment in the transaction-time lane.",
+          "given": [
+            "candidateThreadIds = new Set(['thread:1'])",
+            "remaining contains a valid comment whose threadId is 'thread:1'"
+          ],
+          "when": "findEmptiedCommentThreads(candidateThreadIds, remaining)",
+          "then": "result === []",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "finds-orphaned-reactions",
+          "scenario": "The remaining lane contains reactions pointing to pruned comments.",
+          "given": [
+            "prunedCommentIds = new Set(['comment:1'])",
+            "remaining contains a reaction whose commentId is 'comment:1'"
+          ],
+          "when": "findOrphanedReactions(prunedCommentIds, remaining)",
+          "then": "result contains the reaction id",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "clamps-snapshot-clock-floor",
+          "scenario": "Loaded comment documents have a clock floor newer than the existing snapshot.",
+          "given": ["snapshot.documentClock = 3", "snapshot.clock = 3", "load.clockFloor = 8"],
+          "when": "mergeCommentDocumentsIntoSnapshot(snapshot, load)",
+          "then": "snapshot.documentClock === 8, snapshot.clock === 8, and snapshot.tombstoneHistoryStartsAtClock === 8",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Seeding below durable comment clocks can cause future edits to be rejected and requires full resynchronization."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "import declarations",
+        "foreign-key violation classifiers",
+        "mention reconciliation type and planner",
+        "record-to-row converters",
+        "row-to-record validators",
+        "snapshot document reconstruction",
+        "load result type and live-document filtering",
+        "outbox entry and drain-plan types",
+        "outbox drain planner",
+        "outbox clearing planner",
+        "emptied-thread cleanup",
+        "orphaned-reaction cleanup",
+        "snapshot merge"
+      ],
+      "moduleLevelCode": "import { DB, extractMentionIds } from '@tldraw/dotcom-shared'\nimport { RoomSnapshot } from '@tldraw/sync-core'\nimport {\n\tTLComment,\n\tTLCommentAnchor,\n\tTLCommentReaction,\n\tTLCommentThread,\n\tcommentReactionRecordConfig,\n\tcommentRecordConfig,\n\tcommentThreadRecordConfig,\n\tisCommentId,\n\tisCommentReactionId,\n\tisCommentThreadId,\n} from '@tldraw/tlschema'\nimport { JsonObject } from '@tldraw/utils'",
+      "exports": [
+        { "name": "isCommentAuthorFkViolation", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "isCommentThreadFkViolation", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "isCommentFileFkViolation", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "isCommentThreadIdFkViolation", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "isCommentMentionFkViolation", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "isCommentReactionFkViolation", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "CommentMentionReconcile", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "planMentionReconciles", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "threadRecordToRow", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "reactionRecordToRow", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "commentRecordToRow", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "rowToThreadRecord", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "rowToCommentRecord", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "rowToReactionRecord", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "rowsToSnapshotDocuments", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "CommentLoadResult", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "liveCommentDocuments", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "CommentOutboxEntry", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "CommentDrainPlan", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "planCommentDrain", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "outboxEntriesToClear", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "findEmptiedCommentThreads", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "findOrphanedReactions", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "mergeCommentDocumentsIntoSnapshot", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "DB", "module": "@tldraw/dotcom-shared", "alias": null, "kind": "external" },
+        { "symbol": "extractMentionIds", "module": "@tldraw/dotcom-shared", "alias": null, "kind": "external" },
+        { "symbol": "RoomSnapshot", "module": "@tldraw/sync-core", "alias": null, "kind": "external" },
+        { "symbol": "TLComment", "module": "@tldraw/tlschema", "alias": null, "kind": "external" },
+        { "symbol": "TLCommentAnchor", "module": "@tldraw/tlschema", "alias": null, "kind": "external" },
+        { "symbol": "TLCommentReaction", "module": "@tldraw/tlschema", "alias": null, "kind": "external" },
+        { "symbol": "TLCommentThread", "module": "@tldraw/tlschema", "alias": null, "kind": "external" },
+        { "symbol": "commentReactionRecordConfig", "module": "@tldraw/tlschema", "alias": null, "kind": "external" },
+        { "symbol": "commentRecordConfig", "module": "@tldraw/tlschema", "alias": null, "kind": "external" },
+        { "symbol": "commentThreadRecordConfig", "module": "@tldraw/tlschema", "alias": null, "kind": "external" },
+        { "symbol": "isCommentId", "module": "@tldraw/tlschema", "alias": null, "kind": "external" },
+        { "symbol": "isCommentReactionId", "module": "@tldraw/tlschema", "alias": null, "kind": "external" },
+        { "symbol": "isCommentThreadId", "module": "@tldraw/tlschema", "alias": null, "kind": "external" },
+        { "symbol": "JsonObject", "module": "@tldraw/utils", "alias": null, "kind": "external" }
+      ],
+      "fileConstants": [],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "apps/dotcom/sync-worker/src/commentRows.ts__isCommentAuthorFkViolation#function:isCommentAuthorFkViolation",
+        "unitKind": "function",
+        "name": "isCommentAuthorFkViolation",
+        "qualifiedName": "isCommentAuthorFkViolation",
+        "parentUnitId": null,
+        "startLine": 28,
+        "endLine": 32,
+        "isBehavioral": true,
+        "source": "export function isCommentAuthorFkViolation(error: unknown): boolean {\n\tif (typeof error !== 'object' || error === null) return false\n\tconst { code, constraint } = error as { code?: unknown; constraint?: unknown }\n\treturn code === '23503' && constraint === 'comment_author_id_fkey'\n}",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/commentRows.ts__isCommentAuthorFkViolation#function:isCommentAuthorFkViolation",
+          "fileId": "apps/dotcom/sync-worker/src/commentRows.ts__isCommentAuthorFkViolation",
+          "unitKind": "function",
+          "name": "isCommentAuthorFkViolation",
+          "qualifiedName": "isCommentAuthorFkViolation",
+          "parentUnitId": null,
+          "startLine": 28,
+          "endLine": 32,
+          "signature": "export function isCommentAuthorFkViolation(error: unknown): boolean",
+          "parameters": [
+            { "name": "error", "type": "unknown", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "boolean",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["The input may be any JavaScript or TypeScript value."],
+          "postconditions": [
+            "Returns true only when the input is a non-null object whose code is exactly \"23503\" and whose constraint is exactly \"comment_author_id_fkey\".",
+            "Returns false for all other inputs."
+          ],
+          "invariants": [
+            "The input value is not mutated.",
+            "The function does not perform external I/O or publish events."
+          ],
+          "edgeCases": [
+            "A primitive value or null returns false.",
+            "An object missing code or constraint returns false.",
+            "An object with the matching foreign-key violation code but a different constraint returns false.",
+            "An object with the matching constraint but a different code returns false."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Returns false for non-object, null, or non-matching input.",
+            "returnsOnError": "false"
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Determines whether an unknown value is specifically a PostgreSQL foreign-key violation for the comment author constraint. Returns true only when both the database error code and constraint name exactly match the expected values.",
+          "specLiterals": [
+            {
+              "kind": "error-message",
+              "value": "23503",
+              "role": "PostgreSQL foreign-key violation code that must match."
+            },
+            {
+              "kind": "error-message",
+              "value": "comment_author_id_fkey",
+              "role": "Database constraint name that identifies the comment-author foreign-key violation."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Call isCommentAuthorFkViolation with the object.",
+              "then": "The result is true.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Call isCommentAuthorFkViolation with the object.",
+              "then": "The result is false.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Call isCommentAuthorFkViolation with the value.",
+              "then": "The result is false and no exception is raised.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "a3bf29ff5f88c33eec7c4e6318179d51f7148f95d609604c359e791cc2a724f9"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/commentRows.ts__isCommentThreadFkViolation#function:isCommentThreadFkViolation",
+        "unitKind": "function",
+        "name": "isCommentThreadFkViolation",
+        "qualifiedName": "isCommentThreadFkViolation",
+        "parentUnitId": null,
+        "startLine": 38,
+        "endLine": 42,
+        "isBehavioral": true,
+        "source": "export function isCommentThreadFkViolation(error: unknown): boolean {\n\tif (typeof error !== 'object' || error === null) return false\n\tconst { code, constraint } = error as { code?: unknown; constraint?: unknown }\n\treturn code === '23503' && constraint === 'comment_thread_file_id_fkey'\n}",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/commentRows.ts__isCommentThreadFkViolation#function:isCommentThreadFkViolation",
+          "fileId": "apps/dotcom/sync-worker/src/commentRows.ts__isCommentThreadFkViolation",
+          "unitKind": "function",
+          "name": "isCommentThreadFkViolation",
+          "qualifiedName": "isCommentThreadFkViolation",
+          "parentUnitId": null,
+          "startLine": 38,
+          "endLine": 42,
+          "signature": "export function isCommentThreadFkViolation(error: unknown): boolean",
+          "parameters": [
+            { "name": "error", "type": "unknown", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "boolean",
+          "decorators": [],
+          "modifiersApplied": ["export"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [
+            "Returns true exactly when the input is a non-null object with code equal to '23503' and constraint equal to 'comment_thread_file_id_fkey'.",
+            "Returns false for all other inputs."
+          ],
+          "invariants": ["The input value is not mutated.", "The function produces a boolean result."],
+          "edgeCases": [
+            "Primitive values, null, and undefined return false.",
+            "A non-null object with both matching properties returns true.",
+            "Objects with a non-matching code or constraint return false.",
+            "Objects missing either property return false."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Returns false for null, primitives, and objects that do not contain the exact expected code and constraint.",
+            "returnsOnError": "false"
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Determines whether an unknown error represents the specific foreign-key violation for a comment thread file reference.",
+          "specLiterals": [
+            {
+              "kind": "error-message",
+              "value": "23503",
+              "role": "Exact database error code required for a foreign-key violation."
+            },
+            {
+              "kind": "error-message",
+              "value": "comment_thread_file_id_fkey",
+              "role": "Exact database constraint name identifying the comment thread file foreign-key violation."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "isCommentThreadFkViolation is called with that object.",
+              "then": "The result is true.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "isCommentThreadFkViolation is called with that object.",
+              "then": "The result is false.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "isCommentThreadFkViolation is called with the value.",
+              "then": "The result is false and no error is raised.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "1005c98ce2524156dea0dbf899d02025a64b3f2e007299b0ade14a62f3818265"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/commentRows.ts__isCommentFileFkViolation#function:isCommentFileFkViolation",
+        "unitKind": "function",
+        "name": "isCommentFileFkViolation",
+        "qualifiedName": "isCommentFileFkViolation",
+        "parentUnitId": null,
+        "startLine": 45,
+        "endLine": 49,
+        "isBehavioral": true,
+        "source": "export function isCommentFileFkViolation(error: unknown): boolean {\n\tif (typeof error !== 'object' || error === null) return false\n\tconst { code, constraint } = error as { code?: unknown; constraint?: unknown }\n\treturn code === '23503' && constraint === 'comment_file_id_fkey'\n}",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/commentRows.ts__isCommentFileFkViolation#function:isCommentFileFkViolation",
+          "fileId": "apps/dotcom/sync-worker/src/commentRows.ts__isCommentFileFkViolation",
+          "unitKind": "function",
+          "name": "isCommentFileFkViolation",
+          "qualifiedName": "isCommentFileFkViolation",
+          "parentUnitId": null,
+          "startLine": 45,
+          "endLine": 49,
+          "signature": "export function isCommentFileFkViolation(error: unknown): boolean",
+          "parameters": [
+            { "name": "error", "type": "unknown", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "boolean",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [
+            "Returns a boolean.",
+            "Returns true only when error is a non-null object with code equal to '23503' and constraint equal to 'comment_file_id_fkey'."
+          ],
+          "invariants": [
+            "Does not mutate the supplied value or external state.",
+            "Non-object and null inputs always produce false."
+          ],
+          "edgeCases": [
+            "A null value or a non-object value returns false.",
+            "An object missing code or constraint returns false.",
+            "An object with code '23503' and constraint 'comment_file_id_fkey' returns true.",
+            "An object with either a different code or a different constraint returns false."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Returns false for null, non-object, or non-matching values.",
+            "returnsOnError": "false"
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Determines whether an unknown error is specifically a foreign-key violation for the comment file relationship. Returns true only when both the database error code and constraint name match the expected values.",
+          "specLiterals": [
+            {
+              "kind": "error-message",
+              "value": "23503",
+              "role": "Database foreign-key violation code that must match."
+            },
+            {
+              "kind": "error-message",
+              "value": "comment_file_id_fkey",
+              "role": "Database constraint name identifying the comment-file foreign-key violation."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "5f8279651acab7e0e312dd39231520ce8127a9cffc172df0dd00ce87f4ca088a"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/commentRows.ts__isCommentThreadIdFkViolation#function:isCommentThreadIdFkViolation",
+        "unitKind": "function",
+        "name": "isCommentThreadIdFkViolation",
+        "qualifiedName": "isCommentThreadIdFkViolation",
+        "parentUnitId": null,
+        "startLine": 55,
+        "endLine": 59,
+        "isBehavioral": true,
+        "source": " * The caller only prunes when the threadId is also absent from the room's lane.\n */\nexport function isCommentThreadIdFkViolation(error: unknown): boolean {\n\tif (typeof error !== 'object' || error === null) return false\n\tconst { code, constraint } = error as { code?: unknown; constraint?: unknown }",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/commentRows.ts__isCommentThreadIdFkViolation#function:isCommentThreadIdFkViolation",
+          "fileId": "apps/dotcom/sync-worker/src/commentRows.ts__isCommentThreadIdFkViolation",
+          "unitKind": "function",
+          "name": "isCommentThreadIdFkViolation",
+          "qualifiedName": "isCommentThreadIdFkViolation",
+          "parentUnitId": null,
+          "startLine": 55,
+          "endLine": 59,
+          "signature": "export function isCommentThreadIdFkViolation(error: unknown): boolean",
+          "parameters": [
+            { "name": "error", "type": "unknown", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "boolean",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": ["Returns a boolean.", "Returns false when error is not a non-null object."],
+          "invariants": ["The input error is not mutated."],
+          "edgeCases": [
+            "A primitive value, including undefined, is not classified as a violation and returns false.",
+            "A null value is not classified as a violation and returns false.",
+            "A non-null object is inspected through its code and constraint properties."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Non-object and null inputs return false.",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Determines whether an unknown error represents a comment thread-ID foreign-key violation. Non-object or null inputs are classified as not being this violation.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "isCommentThreadIdFkViolation(error) is called",
+              "then": "The result is false and no exception is thrown.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "897e6026d933caa000e075888a73b6aeee45a403d9e20d6d5226aaed04eb0429"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/commentRows.ts__isCommentMentionFkViolation#function:isCommentMentionFkViolation",
+        "unitKind": "function",
+        "name": "isCommentMentionFkViolation",
+        "qualifiedName": "isCommentMentionFkViolation",
+        "parentUnitId": null,
+        "startLine": 65,
+        "endLine": 72,
+        "isBehavioral": true,
+        "source": " * comment was deleted between its upsert and the mention write. The caller skips the row.\n */\nexport function isCommentMentionFkViolation(error: unknown): boolean {\n\tif (typeof error !== 'object' || error === null) return false\n\tconst { code, constraint } = error as { code?: unknown; constraint?: unknown }\n\treturn (\n\t\tcode === '23503' &&\n\t\t(constraint === 'comment_mention_user_id_fkey' ||",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/commentRows.ts__isCommentMentionFkViolation#function:isCommentMentionFkViolation",
+          "fileId": "apps/dotcom/sync-worker/src/commentRows.ts__isCommentMentionFkViolation",
+          "unitKind": "function",
+          "name": "isCommentMentionFkViolation",
+          "qualifiedName": "isCommentMentionFkViolation",
+          "parentUnitId": null,
+          "startLine": 65,
+          "endLine": 72,
+          "signature": "export function isCommentMentionFkViolation(error: unknown): boolean",
+          "parameters": [
+            { "name": "error", "type": "unknown", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "boolean",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["The input may be any JavaScript value."],
+          "postconditions": [
+            "Returns a boolean.",
+            "Returns true only for the recognized comment-mention foreign-key violation shape."
+          ],
+          "invariants": [
+            "Non-object and null inputs return false.",
+            "The error must have PostgreSQL code 23503 and a recognized comment-mention foreign-key constraint."
+          ],
+          "edgeCases": [
+            "A primitive input returns false.",
+            "A null input returns false.",
+            "An object with a non-matching code returns false.",
+            "An object with an unrecognized constraint returns false."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Returns false for non-object, null, or non-matching error values.",
+            "returnsOnError": "false"
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Determines whether an unknown error represents the PostgreSQL foreign-key violation produced when writing a comment mention for a deleted or otherwise missing related record.",
+          "specLiterals": [
+            {
+              "kind": "error-message",
+              "value": "23503",
+              "role": "PostgreSQL foreign-key violation code required for a positive match."
+            },
+            {
+              "kind": "error-message",
+              "value": "comment_mention_user_id_fkey",
+              "role": "Recognized comment-mention foreign-key constraint."
+            },
+            {
+              "kind": "error-message",
+              "value": "comment_mention_comment_id_fkey",
+              "role": "Recognized comment-mention foreign-key constraint."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The object is passed to isCommentMentionFkViolation.",
+              "then": "The function returns true.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The object is passed to isCommentMentionFkViolation.",
+              "then": "The function returns false.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The value is passed to isCommentMentionFkViolation.",
+              "then": "The function returns false.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "35a5d641d03bafd832744e5c0b4046aa4436bd23a35073bcdd963c04164ee839"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/commentRows.ts__isCommentReactionFkViolation#function:isCommentReactionFkViolation",
+        "unitKind": "function",
+        "name": "isCommentReactionFkViolation",
+        "qualifiedName": "isCommentReactionFkViolation",
+        "parentUnitId": null,
+        "startLine": 75,
+        "endLine": 84,
+        "isBehavioral": true,
+        "source": "}\n\n/**\n * A reaction's comment, thread, or user row is gone, cascading the reaction rows with it. The\n * caller prunes.\n */\nexport function isCommentReactionFkViolation(error: unknown): boolean {\n\tif (typeof error !== 'object' || error === null) return false\n\tconst { code, constraint } = error as { code?: unknown; constraint?: unknown }\n\treturn (",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/commentRows.ts__isCommentReactionFkViolation#function:isCommentReactionFkViolation",
+          "fileId": "apps/dotcom/sync-worker/src/commentRows.ts__isCommentReactionFkViolation",
+          "unitKind": "function",
+          "name": "isCommentReactionFkViolation",
+          "qualifiedName": "isCommentReactionFkViolation",
+          "parentUnitId": null,
+          "startLine": 75,
+          "endLine": 84,
+          "signature": "export function isCommentReactionFkViolation(error: unknown): boolean",
+          "parameters": [
+            { "name": "error", "type": "unknown", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "boolean",
+          "decorators": [],
+          "modifiersApplied": ["export"],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": ["Returns a boolean classification of the supplied error."],
+          "invariants": ["Non-object and null inputs return false without throwing."],
+          "edgeCases": [
+            "When error is null, returns false.",
+            "When error is a non-null primitive, returns false.",
+            "When error is an object, classification is based on its code and constraint properties."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Returns false for null or non-object input.",
+            "returnsOnError": "false"
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Determines whether an unknown error represents a foreign-key violation caused by a missing comment, thread, or user row associated with a reaction. The caller uses the result to decide whether reaction rows should be pruned.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Call isCommentReactionFkViolation(error)",
+              "then": "The function returns false and does not throw.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Call isCommentReactionFkViolation(error)",
+              "then": "The function returns false and does not throw.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "ffe9172211fe57b6cdf5e57da6ca83930c4f1a0f189b910a4f92e9e1a6c7615b"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/commentRows.ts__planMentionReconciles#function:planMentionReconciles",
+        "unitKind": "function",
+        "name": "planMentionReconciles",
+        "qualifiedName": "planMentionReconciles",
+        "parentUnitId": null,
+        "startLine": 84,
+        "endLine": 87,
+        "isBehavioral": true,
+        "source": "\treturn (\n\t\tcode === '23503' &&\n\t\t(constraint === 'comment_reaction_comment_id_fkey' ||\n\t\t\tconstraint === 'comment_reaction_thread_id_fkey' ||",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/commentRows.ts__planMentionReconciles#function:planMentionReconciles",
+          "fileId": "apps/dotcom/sync-worker/src/commentRows.ts__planMentionReconciles",
+          "unitKind": "function",
+          "name": "planMentionReconciles",
+          "qualifiedName": "planMentionReconciles",
+          "parentUnitId": null,
+          "startLine": 84,
+          "endLine": 87,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Plans reconciliation work for comment mentions. The function's detailed inputs, outputs, and side effects are not recoverable from the provided unit source fragment.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "b2a95dd98a45a4eb13e50db30d0f10beba48d7a5b5ca4c65e79ee56449f99550"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/commentRows.ts__threadRecordToRow#function:threadRecordToRow",
+        "unitKind": "function",
+        "name": "threadRecordToRow",
+        "qualifiedName": "threadRecordToRow",
+        "parentUnitId": null,
+        "startLine": 89,
+        "endLine": 108,
+        "isBehavioral": true,
+        "source": "\t)\n}\n\n/** One comment's desired `comment_mention` rows: the full set its body currently mentions. */\nexport interface CommentMentionReconcile {\n\tcommentId: string\n\tuserIds: string[]\n}\n\n/**\n * The desired end state of `comment_mention` for a drain's upserted comments. The caller\n * reconciles Postgres to this (delete rows not in the set, insert the rest with ON CONFLICT DO\n * NOTHING), so an at-least-once replay is a no-op rather than WAL churn for Zero.\n */\nexport function planMentionReconciles(commentRows: DB['comment'][]): CommentMentionReconcile[] {\n\treturn commentRows.map((row) => ({\n\t\tcommentId: row.id,\n\t\tuserIds: extractMentionIds(row.body),\n\t}))\n}",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/commentRows.ts__threadRecordToRow#function:threadRecordToRow",
+          "fileId": "apps/dotcom/sync-worker/src/commentRows.ts__threadRecordToRow",
+          "unitKind": "function",
+          "name": "threadRecordToRow",
+          "qualifiedName": "threadRecordToRow",
+          "parentUnitId": null,
+          "startLine": 89,
+          "endLine": 108,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Converts a comment-thread record into the database row representation expected by the synchronization workflow.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "2a4028233976f51aa44481cd159ac908aa41f865aef2bd594aa9d5fbcdff41ca"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/commentRows.ts__reactionRecordToRow#function:reactionRecordToRow",
+        "unitKind": "function",
+        "name": "reactionRecordToRow",
+        "qualifiedName": "reactionRecordToRow",
+        "parentUnitId": null,
+        "startLine": 110,
+        "endLine": 131,
+        "isBehavioral": true,
+        "source": "export function threadRecordToRow(\n\trecord: TLCommentThread,\n\tfileId: string,\n\tlastChangedClock: number\n): DB['comment_thread'] {\n\treturn {\n\t\tid: record.id,\n\t\tfileId,\n\t\tpageId: record.pageId,\n\t\tanchor: record.anchor,\n\t\tshapeId: record.anchor.type === 'shape' ? record.anchor.shapeId : null,\n\t\tresolvedAt: record.resolved?.at ?? null,\n\t\tresolvedBy: record.resolved?.by ?? null,\n\t\tisDeleted: record.isDeleted,\n\t\tcreatedBy: record.createdBy,\n\t\tcreatedAt: record.createdAt,\n\t\tmeta: record.meta,\n\t\tlastChangedClock,\n\t}\n}\n\nexport function reactionRecordToRow(",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/commentRows.ts__reactionRecordToRow#function:reactionRecordToRow",
+          "fileId": "apps/dotcom/sync-worker/src/commentRows.ts__reactionRecordToRow",
+          "unitKind": "function",
+          "name": "reactionRecordToRow",
+          "qualifiedName": "reactionRecordToRow",
+          "parentUnitId": null,
+          "startLine": 110,
+          "endLine": 131,
+          "signature": "export function reactionRecordToRow(record: TLCommentReaction, fileId: string, lastChangedClock: number): DB['comment_reaction']",
+          "parameters": [
+            {
+              "name": "record",
+              "type": "TLCommentReaction",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            { "name": "fileId", "type": "string", "default": null, "optional": false, "variadic": false, "order": 1 },
+            {
+              "name": "lastChangedClock",
+              "type": "number",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            }
+          ],
+          "returnType": "DB['comment_reaction']",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "record is a valid TLCommentReaction.",
+            "fileId is a string identifying the owning file.",
+            "lastChangedClock is a number."
+          ],
+          "postconditions": [
+            "Returns a DB['comment_reaction'] row representing the supplied reaction.",
+            "The returned row is associated with the supplied fileId and lastChangedClock."
+          ],
+          "invariants": [
+            "Reaction data is transferred to the database row without changing its semantic values.",
+            "The function does not mutate the input record."
+          ],
+          "edgeCases": [
+            "A reaction with otherwise valid record fields is converted directly to a database row.",
+            "No special fallback or normalization behavior is specified for boundary values of fileId or lastChangedClock."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["TLCommentReaction", "DB['comment_reaction']"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Returns an object conforming to the DB['comment_reaction'] row shape.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Converts a TLCommentReaction record into the corresponding database comment-reaction row, associating it with the supplied file and change clock.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "1f56a5302180ee2dbdb870e9bc32b96768c58eed12f95fa175fe0b7c4d4dec15"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/commentRows.ts__commentRecordToRow#function:commentRecordToRow",
+        "unitKind": "function",
+        "name": "commentRecordToRow",
+        "qualifiedName": "commentRecordToRow",
+        "parentUnitId": null,
+        "startLine": 133,
+        "endLine": 159,
+        "isBehavioral": true,
+        "source": "\tfileId: string,\n\tlastChangedClock: number\n): DB['comment_reaction'] {\n\treturn {\n\t\tid: record.id,\n\t\tfileId,\n\t\tcommentId: record.commentId,\n\t\tthreadId: record.threadId,\n\t\tpageId: record.pageId,\n\t\tuserId: record.userId,\n\t\t// stamped by Postgres (set_comment_reaction_user_name_trigger); value here is ignored\n\t\tuserName: '',\n\t\temoji: record.emoji,\n\t\t// client-dated; clamp so it can't outrun the server-clamped comment_read.readAt watermark,\n\t\t// which would make a \"reacted to your comment\" notification impossible to mark read\n\t\tcreatedAt: Math.min(record.createdAt, Date.now()),\n\t\tmeta: record.meta,\n\t\tlastChangedClock,\n\t}\n}\n\nexport function commentRecordToRow(\n\trecord: TLComment,\n\tfileId: string,\n\tlastChangedClock: number\n): DB['comment'] {\n\treturn {",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/commentRows.ts__commentRecordToRow#function:commentRecordToRow",
+          "fileId": "apps/dotcom/sync-worker/src/commentRows.ts__commentRecordToRow",
+          "unitKind": "function",
+          "name": "commentRecordToRow",
+          "qualifiedName": "commentRecordToRow",
+          "parentUnitId": null,
+          "startLine": 133,
+          "endLine": 159,
+          "signature": "export function commentRecordToRow(record: TLComment, fileId: string, lastChangedClock: number): DB['comment']",
+          "parameters": [
+            {
+              "name": "record",
+              "type": "TLComment",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            { "name": "fileId", "type": "string", "default": null, "optional": false, "variadic": false, "order": 1 },
+            {
+              "name": "lastChangedClock",
+              "type": "number",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            }
+          ],
+          "returnType": "DB['comment']",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "record is a TLComment-compatible comment record.",
+            "fileId is the file identifier to associate with the row.",
+            "lastChangedClock is the change-clock value to store on the row."
+          ],
+          "postconditions": [
+            "Returns a value conforming to DB['comment'].",
+            "The returned row represents the supplied comment record and includes the supplied fileId and lastChangedClock values."
+          ],
+          "invariants": [
+            "The function performs a deterministic record-to-row conversion for the supplied inputs.",
+            "The input record is not mutated."
+          ],
+          "edgeCases": [
+            "A comment record containing optional or nullable fields is converted according to the database comment-row shape.",
+            "Boundary numeric values for lastChangedClock are passed through as part of the row metadata; no additional validation is specified."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["TLComment", "DB['comment']"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Converts a TLComment record into the database comment-row shape, associating it with the supplied file and change clock.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "1e6faf2595a5f353fe54823958c8c840d024dbfa4ae9d90ccfcfebc704b87134"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/commentRows.ts__rowToThreadRecord#function:rowToThreadRecord",
+        "unitKind": "function",
+        "name": "rowToThreadRecord",
+        "qualifiedName": "rowToThreadRecord",
+        "parentUnitId": null,
+        "startLine": 161,
+        "endLine": 176,
+        "isBehavioral": true,
+        "source": "\t\tfileId,\n\t\tthreadId: record.threadId,\n\t\tpageId: record.pageId,\n\t\tauthorId: record.authorId,\n\t\t// placeholders — a Postgres trigger stamps the real values on insert (migration 040)\n\t\tauthorName: '',\n\t\tauthorColor: '',\n\t\tauthorAvatar: '',\n\t\t// TLRichText's content is unknown[], not structurally a zero ReadonlyJSONValue\n\t\tbody: record.body as DB['comment']['body'],\n\t\t// client-dated placeholder — a Postgres trigger re-stamps it with server arrival time on\n\t\t// insert (migration 046), and the upsert's conflict branch never writes this column\n\t\tcreatedAt: record.createdAt,\n\t\teditedAt: record.editedAt,\n\t\tisDeleted: record.isDeleted,\n\t\tupdatedAt: record.editedAt ?? record.createdAt,",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/commentRows.ts__rowToThreadRecord#function:rowToThreadRecord",
+          "fileId": "apps/dotcom/sync-worker/src/commentRows.ts__rowToThreadRecord",
+          "unitKind": "function",
+          "name": "rowToThreadRecord",
+          "qualifiedName": "rowToThreadRecord",
+          "parentUnitId": null,
+          "startLine": 161,
+          "endLine": 176,
+          "signature": null,
+          "parameters": [
+            { "name": "fileId", "type": null, "default": null, "optional": false, "variadic": false, "order": 0 },
+            { "name": "record", "type": null, "default": null, "optional": false, "variadic": false, "order": 1 }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The record provides the fields used by the conversion: threadId, pageId, authorId, body, createdAt, editedAt, and isDeleted.",
+            "fileId is available as the file identifier for the resulting record."
+          ],
+          "postconditions": [
+            "The resulting record contains the supplied fileId, threadId, pageId, authorId, body, createdAt, editedAt, and isDeleted values.",
+            "The resulting authorName, authorColor, and authorAvatar fields are empty strings.",
+            "updatedAt equals editedAt when editedAt is non-nullish; otherwise updatedAt equals createdAt."
+          ],
+          "invariants": [
+            "The input body is preserved without runtime transformation.",
+            "The conversion does not mutate the input record.",
+            "The conversion is deterministic for the same fileId and record values."
+          ],
+          "edgeCases": [
+            "When editedAt is nullish, updatedAt falls back to createdAt.",
+            "When editedAt is present, updatedAt uses editedAt rather than createdAt.",
+            "The author profile fields remain empty placeholders even when no profile information is available."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["DB['comment']['body']"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Converts a persisted comment-related row into a thread record while preserving its identifiers, authorship, content, deletion state, and timestamps. It supplies empty author profile placeholders and derives the update timestamp from the edit or creation timestamp.",
+          "specLiterals": [
+            {
+              "kind": "format-string",
+              "value": "",
+              "role": "Placeholder value emitted for authorName until the Postgres trigger stamps the persisted author value."
+            },
+            {
+              "kind": "format-string",
+              "value": "",
+              "role": "Placeholder value emitted for authorColor until the Postgres trigger stamps the persisted author value."
+            },
+            {
+              "kind": "format-string",
+              "value": "",
+              "role": "Placeholder value emitted for authorAvatar until the Postgres trigger stamps the persisted author value."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "rowToThreadRecord is called with a file identifier.",
+              "then": "The returned record preserves the mapped identifiers, body, creation time, edit time, and deletion state; has empty author profile fields; and sets updatedAt to editedAt.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "rowToThreadRecord is called.",
+              "then": "The returned record sets updatedAt to createdAt.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "8cd24f889032046315f98be31e78ff63876458dff2c3b97e4849b8fe0832e6b3"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/commentRows.ts__rowToCommentRecord#function:rowToCommentRecord",
+        "unitKind": "function",
+        "name": "rowToCommentRecord",
+        "qualifiedName": "rowToCommentRecord",
+        "parentUnitId": null,
+        "startLine": 178,
+        "endLine": 194,
+        "isBehavioral": true,
+        "source": "\t\tlastChangedClock,\n\t}\n}\n\nexport function rowToThreadRecord(row: DB['comment_thread']): TLCommentThread {\n\tconst record: TLCommentThread = {\n\t\tid: row.id as TLCommentThread['id'],\n\t\ttypeName: 'comment-thread',\n\t\tpageId: row.pageId as TLCommentThread['pageId'],\n\t\tanchor: row.anchor as TLCommentAnchor,\n\t\tcreatedBy: row.createdBy,\n\t\tcreatedAt: Number(row.createdAt),\n\t\tresolved: row.resolvedAt != null ? { at: Number(row.resolvedAt), by: row.resolvedBy! } : null,\n\t\tisDeleted: row.isDeleted,\n\t\tmeta: (row.meta ?? {}) as JsonObject,\n\t}\n\t// The fields above are raw casts, so validate: a corrupt row should fail the room open rather",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/commentRows.ts__rowToCommentRecord#function:rowToCommentRecord",
+          "fileId": "apps/dotcom/sync-worker/src/commentRows.ts__rowToCommentRecord",
+          "unitKind": "function",
+          "name": "rowToCommentRecord",
+          "qualifiedName": "rowToCommentRecord",
+          "parentUnitId": null,
+          "startLine": 178,
+          "endLine": 194,
+          "signature": "export function rowToCommentRecord(row: DB['comment']): TLComment",
+          "parameters": [
+            {
+              "name": "row",
+              "type": "DB['comment']",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "TLComment",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["The input is a database comment row compatible with DB['comment']."],
+          "postconditions": [
+            "Returns a TLComment record representing the database row.",
+            "The returned record conforms to the TLComment shape."
+          ],
+          "invariants": [
+            "Database values requiring numeric representation are represented as numbers in the returned record.",
+            "The returned record identifies itself as a comment record."
+          ],
+          "edgeCases": [
+            "Nullable database fields are represented according to the TLComment record contract.",
+            "Corrupt or schema-incompatible row data fails validation rather than returning an invalid comment record."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["Record validation error for corrupt or schema-incompatible row data"],
+            "reverts": [],
+            "onInvalidInput": "Validation fails and the function does not return a comment record.",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["DB['comment']", "TLComment"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Converts a database comment row into a validated TLComment record for use by the synchronization layer. Invalid or corrupt row data does not produce a normal record.",
+          "specLiterals": [
+            {
+              "kind": "enum-value",
+              "value": "comment",
+              "role": "The record type discriminator for the returned TLComment."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "38c40268fb8098eda267de861779220ebe388b5e703ffedc3d427b156adc055d"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/commentRows.ts__rowToReactionRecord#function:rowToReactionRecord",
+        "unitKind": "function",
+        "name": "rowToReactionRecord",
+        "qualifiedName": "rowToReactionRecord",
+        "parentUnitId": null,
+        "startLine": 196,
+        "endLine": 210,
+        "isBehavioral": true,
+        "source": "\treturn commentThreadRecordConfig.validator.validate(record) as TLCommentThread\n}\n\nexport function rowToCommentRecord(row: DB['comment']): TLComment {\n\tconst record: TLComment = {\n\t\tid: row.id as TLComment['id'],\n\t\ttypeName: 'comment',\n\t\tthreadId: row.threadId as TLComment['threadId'],\n\t\tpageId: row.pageId as TLComment['pageId'],\n\t\tauthorId: row.authorId,\n\t\tcreatedAt: Number(row.createdAt),\n\t\teditedAt: row.editedAt != null ? Number(row.editedAt) : null,\n\t\tbody: row.body as TLComment['body'],\n\t\tisDeleted: row.isDeleted,\n\t\tmeta: (row.meta ?? {}) as JsonObject,",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/commentRows.ts__rowToReactionRecord#function:rowToReactionRecord",
+          "fileId": "apps/dotcom/sync-worker/src/commentRows.ts__rowToReactionRecord",
+          "unitKind": "function",
+          "name": "rowToReactionRecord",
+          "qualifiedName": "rowToReactionRecord",
+          "parentUnitId": null,
+          "startLine": 196,
+          "endLine": 210,
+          "signature": "export function rowToReactionRecord(row: DB['comment_reaction']): TLCommentReaction",
+          "parameters": [
+            {
+              "name": "row",
+              "type": "DB['comment_reaction']",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "TLCommentReaction",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The input row conforms to the DB['comment_reaction'] shape.",
+            "Fields required by TLCommentReaction are present and contain values acceptable to the record validator."
+          ],
+          "postconditions": [
+            "Returns a TLCommentReaction record with typeName set to 'comment_reaction'.",
+            "The persisted timestamp is represented as a number.",
+            "The returned record passes commentReactionRecordConfig.validator.validate."
+          ],
+          "invariants": [
+            "The row's identity and reaction fields are preserved in the returned record.",
+            "The returned record conforms to the TLCommentReaction schema."
+          ],
+          "edgeCases": [
+            "Numeric timestamp values are normalized to JavaScript numbers.",
+            "Malformed or schema-invalid rows are rejected by the record validator rather than returned as a valid TLCommentReaction."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [
+              "The validation error produced by commentReactionRecordConfig.validator.validate for an invalid record"
+            ],
+            "reverts": [],
+            "onInvalidInput": "Validation fails and the function does not return a TLCommentReaction.",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            {
+              "name": "commentReactionRecordConfig.validator.validate",
+              "source": "commentReactionRecordConfig",
+              "kind": "internal"
+            }
+          ],
+          "symbolReferences": ["DB['comment_reaction']", "TLCommentReaction", "commentReactionRecordConfig"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Converts a database comment-reaction row into a validated TLCommentReaction record, preserving identifiers and reaction data while normalizing persisted timestamps.",
+          "specLiterals": [
+            {
+              "kind": "enum-value",
+              "value": "comment_reaction",
+              "role": "Discriminator identifying the returned record as a comment-reaction record."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "rowToReactionRecord(row) is called.",
+              "then": "It returns a TLCommentReaction whose typeName is 'comment_reaction' and whose timestamp is a number.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "rowToReactionRecord(row) is called.",
+              "then": "The record validator rejects the converted value and no valid TLCommentReaction is returned.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "1d52e69bb14b9610eba78abf532d6f191b271c4c71acfd5dc96ee40e7f27c000"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/commentRows.ts__rowsToSnapshotDocuments#function:rowsToSnapshotDocuments",
+        "unitKind": "function",
+        "name": "rowsToSnapshotDocuments",
+        "qualifiedName": "rowsToSnapshotDocuments",
+        "parentUnitId": null,
+        "startLine": 216,
+        "endLine": 229,
+        "isBehavioral": true,
+        "source": "\nexport function rowToReactionRecord(row: DB['comment_reaction']): TLCommentReaction {\n\tconst record: TLCommentReaction = {\n\t\tid: row.id as TLCommentReaction['id'],\n\t\ttypeName: 'comment-reaction',\n\t\tcommentId: row.commentId as TLCommentReaction['commentId'],\n\t\tthreadId: row.threadId as TLCommentReaction['threadId'],\n\t\tpageId: row.pageId as TLCommentReaction['pageId'],\n\t\tuserId: row.userId,\n\t\temoji: row.emoji,\n\t\tcreatedAt: Number(row.createdAt),\n\t\tmeta: (row.meta ?? {}) as JsonObject,\n\t}\n\t// See rowToCommentRecord.",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/commentRows.ts__rowsToSnapshotDocuments#function:rowsToSnapshotDocuments",
+          "fileId": "apps/dotcom/sync-worker/src/commentRows.ts__rowsToSnapshotDocuments",
+          "unitKind": "function",
+          "name": "rowsToSnapshotDocuments",
+          "qualifiedName": "rowsToSnapshotDocuments",
+          "parentUnitId": null,
+          "startLine": 216,
+          "endLine": 229,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "The source body and signature for rowsToSnapshotDocuments are not present in the supplied unit context, so no behavioral guarantees beyond its exported function identity can be verified.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "33708e0cca491a0ba701ceafe88b5219f80159e9eb279692a0bfa37ee1c8435c"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/commentRows.ts__liveCommentDocuments#function:liveCommentDocuments",
+        "unitKind": "function",
+        "name": "liveCommentDocuments",
+        "qualifiedName": "liveCommentDocuments",
+        "parentUnitId": null,
+        "startLine": 248,
+        "endLine": 273,
+        "isBehavioral": true,
+        "source": "\t\t\tstate: rowToCommentRecord(row),\n\t\t\tlastChangedClock: Number(row.lastChangedClock),\n\t\t})),\n\t\t...reactionRows.map((row) => ({\n\t\t\tstate: rowToReactionRecord(row),\n\t\t\tlastChangedClock: Number(row.lastChangedClock),\n\t\t})),\n\t]\n}\n\n/** The room-seedable subset of a file's comment rows; see {@link liveCommentDocuments}. */\nexport interface CommentLoadResult {\n\tdocuments: RoomSnapshot['documents']\n\t/**\n\t * The highest `lastChangedClock` across ALL of the file's comment rows, including soft-deleted\n\t * ones dropped from `documents` — a dropped row can hold the file's highest clock, and seeding\n\t * the room below it would make future edits emit clocks the drain's guard rejects.\n\t */\n\tclockFloor: number\n}\n\n/**\n * Build the room-seedable comment documents from a file's Postgres rows. Soft-deleted records stay\n * in Postgres for recovery and Zero-side filtering but never re-enter a room.\n *\n * A live thread whose comments are all soft-deleted is dropped too — the durable backstop for the",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/commentRows.ts__liveCommentDocuments#function:liveCommentDocuments",
+          "fileId": "apps/dotcom/sync-worker/src/commentRows.ts__liveCommentDocuments",
+          "unitKind": "function",
+          "name": "liveCommentDocuments",
+          "qualifiedName": "liveCommentDocuments",
+          "parentUnitId": null,
+          "startLine": 248,
+          "endLine": 273,
+          "signature": null,
+          "parameters": [],
+          "returnType": "CommentLoadResult",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["The supplied rows represent comment data belonging to one file."],
+          "postconditions": [
+            "The returned documents contain only live, room-seedable comment records.",
+            "A live thread whose comments are all soft-deleted is omitted.",
+            "clockFloor is the highest lastChangedClock across all supplied comment rows, including rows omitted from documents."
+          ],
+          "invariants": [
+            "Soft-deleted PostgreSQL records do not re-enter the room snapshot.",
+            "clockFloor is not reduced by filtering records from documents."
+          ],
+          "edgeCases": [
+            "When all comment records are soft-deleted, documents is empty and clockFloor still reflects the highest lastChangedClock among those records.",
+            "When a live thread has no live comments because all of its comments are soft-deleted, the thread is omitted.",
+            "When live rows exist, the returned documents are derived from the corresponding thread, comment, and reaction row representations."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            {
+              "name": "rowsToSnapshotDocuments",
+              "source": "local function in apps/dotcom/sync-worker/src/commentRows.ts",
+              "kind": "internal"
+            }
+          ],
+          "symbolReferences": ["CommentLoadResult", "RoomSnapshot"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Builds room-seedable comment documents from a file's PostgreSQL comment rows. Soft-deleted records are excluded from the documents while the highest change clock across all rows is retained as the clock floor.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "liveCommentDocuments is called.",
+              "then": "Those records are absent from documents, while clockFloor equals the highest clock including the soft-deleted records.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "liveCommentDocuments is called.",
+              "then": "The thread is absent from documents.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "1c89367e16d08504234265df61496db4514f0a44d4b3a21a03bed32500d8d482"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/commentRows.ts__planCommentDrain#function:planCommentDrain",
+        "unitKind": "function",
+        "name": "planCommentDrain",
+        "qualifiedName": "planCommentDrain",
+        "parentUnitId": null,
+        "startLine": 304,
+        "endLine": 351,
+        "isBehavioral": true,
+        "source": "\t}\n}\n\n/** A row of the DO's `comment_outbox` table: a monotonic sequence number and the touched record id. */\nexport interface CommentOutboxEntry {\n\tseq: number\n\trecordId: string\n}\n\n/**\n * Postgres writes grouped by table and operation. The delete buckets carry lane-absent ids, and\n * \"delete\" means stamping `isDeleted` — the drain never hard-deletes comment-lane rows.\n */\nexport interface CommentDrainPlan {\n\tthreadUpserts: DB['comment_thread'][]\n\tcommentUpserts: DB['comment'][]\n\treactionUpserts: DB['comment_reaction'][]\n\tthreadDeletes: string[]\n\tcommentDeletes: string[]\n\treactionDeletes: string[]\n\t/** Ids of no known comment record type — a bug or a corrupted outbox row. */\n\tunknownIds: string[]\n}\n\n/**\n * The pure planning half of the comment outbox drain (see drainCommentOutbox). The outbox stores\n * only ids; upsert-vs-delete is decided by presence in the object `lane` at plan time, so multiple\n * entries for one record coalesce into a single write and a create-then-prune nets out to a delete.\n */\nexport function planCommentDrain(\n\tentries: CommentOutboxEntry[],\n\tlane: ReadonlyMap<string, { state: unknown; lastChangedClock: number }>,\n\tfileId: string\n): CommentDrainPlan {\n\tconst plan: CommentDrainPlan = {\n\t\tthreadUpserts: [],\n\t\tcommentUpserts: [],\n\t\treactionUpserts: [],\n\t\tthreadDeletes: [],\n\t\tcommentDeletes: [],\n\t\treactionDeletes: [],\n\t\tunknownIds: [],\n\t}\n\tconst pendingIds = new Set(entries.map((e) => e.recordId))\n\tfor (const id of pendingIds) {\n\t\tconst doc = lane.get(id)\n\t\tif (isCommentThreadId(id)) {\n\t\t\tif (doc) {",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/commentRows.ts__planCommentDrain#function:planCommentDrain",
+          "fileId": "apps/dotcom/sync-worker/src/commentRows.ts__planCommentDrain",
+          "unitKind": "function",
+          "name": "planCommentDrain",
+          "qualifiedName": "planCommentDrain",
+          "parentUnitId": null,
+          "startLine": 304,
+          "endLine": 351,
+          "signature": "export function planCommentDrain(\n\tentries: CommentOutboxEntry[],\n\tlane: ReadonlyMap<string, { state: unknown; lastChangedClock: number }>,\n\tfileId: string\n): CommentDrainPlan",
+          "parameters": [
+            {
+              "name": "entries",
+              "type": "CommentOutboxEntry[]",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "lane",
+              "type": "ReadonlyMap<string, { state: unknown; lastChangedClock: number }>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            { "name": "fileId", "type": "string", "default": null, "optional": false, "variadic": false, "order": 2 }
+          ],
+          "returnType": "CommentDrainPlan",
+          "decorators": [],
+          "modifiersApplied": ["export"],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "entries contains outbox entries with string recordId values.",
+            "lane maps record IDs to records containing state and lastChangedClock when those records are present.",
+            "fileId identifies the file associated with the planned comment records."
+          ],
+          "postconditions": [
+            "Each distinct recordId from entries contributes to at most one planned operation.",
+            "Records present in lane are placed into the appropriate typed upsert bucket.",
+            "Absent recognized record IDs are placed into the appropriate typed delete bucket.",
+            "IDs that do not identify a known comment record type are placed in unknownIds.",
+            "The returned plan contains all seven CommentDrainPlan buckets, initialized as arrays."
+          ],
+          "invariants": [
+            "Planning is pure and does not mutate entries, lane, or the records stored in lane.",
+            "The plan never hard-deletes comment-lane rows; delete buckets contain IDs for isDeleted stamping.",
+            "Repeated outbox entries for the same recordId are coalesced before planning."
+          ],
+          "edgeCases": [
+            "An empty entries array returns an empty plan.",
+            "Multiple entries with the same recordId produce no more than one planned write.",
+            "A recognized record ID absent from lane is planned as a delete rather than an upsert.",
+            "A record ID that matches no known comment record type is added to unknownIds.",
+            "A recognized record present in lane is converted into an upsert for its record type."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "isCommentThreadId", "source": "commentRows.ts", "kind": "internal" },
+            { "name": "threadRecordToRow", "source": "commentRows.ts", "kind": "internal" },
+            { "name": "commentRecordToRow", "source": "commentRows.ts", "kind": "internal" },
+            { "name": "reactionRecordToRow", "source": "commentRows.ts", "kind": "internal" }
+          ],
+          "symbolReferences": ["CommentOutboxEntry", "CommentDrainPlan", "DB"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Plans the comment-lane database writes represented by outbox entries. It coalesces repeated record IDs, emits upserts for records present in the lane, emits tombstone deletes for absent recognized records, and reports unrecognized IDs.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "98f12b09ee3b39d46edd633262dfcdd59f3f4e5110e505e33c3ac87c9248c9ce"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/commentRows.ts__outboxEntriesToClear#function:outboxEntriesToClear",
+        "unitKind": "function",
+        "name": "outboxEntriesToClear",
+        "qualifiedName": "outboxEntriesToClear",
+        "parentUnitId": null,
+        "startLine": 358,
+        "endLine": 368,
+        "isBehavioral": true,
+        "source": "\t\t} else if (isCommentReactionId(id)) {\n\t\t\tif (doc) {\n\t\t\t\tplan.reactionUpserts.push(\n\t\t\t\t\treactionRecordToRow(doc.state as TLCommentReaction, fileId, doc.lastChangedClock)\n\t\t\t\t)\n\t\t\t} else {\n\t\t\t\tplan.reactionDeletes.push(id)\n\t\t\t}\n\t\t} else if (isCommentId(id)) {\n\t\t\tif (doc) {\n\t\t\t\tplan.commentUpserts.push(",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/commentRows.ts__outboxEntriesToClear#function:outboxEntriesToClear",
+          "fileId": "apps/dotcom/sync-worker/src/commentRows.ts__outboxEntriesToClear",
+          "unitKind": "function",
+          "name": "outboxEntriesToClear",
+          "qualifiedName": "outboxEntriesToClear",
+          "parentUnitId": null,
+          "startLine": 358,
+          "endLine": 368,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Determines which outbox entries can be cleared after comment-related synchronization processing.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "d627cd8ab36dafa152f7f64c693722126a7557d98bc42f380053861225760b84"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/commentRows.ts__findEmptiedCommentThreads#function:findEmptiedCommentThreads",
+        "unitKind": "function",
+        "name": "findEmptiedCommentThreads",
+        "qualifiedName": "findEmptiedCommentThreads",
+        "parentUnitId": null,
+        "startLine": 378,
+        "endLine": 391,
+        "isBehavioral": true,
+        "source": "\treturn plan\n}\n\n/**\n * Which outbox entries a finished drain may delete. `failedIds` stay queued for the next drain;\n * everything else clears. `clearAll` is the fast path when nothing failed.\n */\nexport function outboxEntriesToClear(\n\tentries: CommentOutboxEntry[],\n\tfailedIds: ReadonlySet<string>\n): { clearAll: boolean; seqs: number[] } {\n\tif (failedIds.size === 0) {\n\t\treturn { clearAll: true, seqs: [] }\n\t}",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/commentRows.ts__findEmptiedCommentThreads#function:findEmptiedCommentThreads",
+          "fileId": "apps/dotcom/sync-worker/src/commentRows.ts__findEmptiedCommentThreads",
+          "unitKind": "function",
+          "name": "findEmptiedCommentThreads",
+          "qualifiedName": "findEmptiedCommentThreads",
+          "parentUnitId": null,
+          "startLine": 378,
+          "endLine": 391,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Identifies comment threads that have become empty so they can be handled by the comment synchronization workflow.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "772ac8635beff4334bace957578d5ac728cd8a9c3d84248b65912d612daaf36d"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/commentRows.ts__findOrphanedReactions#function:findOrphanedReactions",
+        "unitKind": "function",
+        "name": "findOrphanedReactions",
+        "qualifiedName": "findOrphanedReactions",
+        "parentUnitId": null,
+        "startLine": 398,
+        "endLine": 411,
+        "isBehavioral": true,
+        "source": "/**\n * Of the just-pruned comments' threads, which no longer have any comments. Callers delete those\n * threads in the same transaction: an emptied thread never renders, and no client may delete a\n * thread it didn't create, so the ordinary \"delete the last comment\" path needs this prune.\n *\n * `remaining` must be transaction-time, not an earlier lane snapshot — a reply committed in\n * between has to keep its thread alive.\n */\nexport function findEmptiedCommentThreads(\n\tcandidateThreadIds: ReadonlySet<string>,\n\tremaining: { keys(): Iterable<string>; get(id: string): unknown }\n): string[] {\n\tif (candidateThreadIds.size === 0) return []\n\tconst emptied = new Set(candidateThreadIds)",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/commentRows.ts__findOrphanedReactions#function:findOrphanedReactions",
+          "fileId": "apps/dotcom/sync-worker/src/commentRows.ts__findOrphanedReactions",
+          "unitKind": "function",
+          "name": "findOrphanedReactions",
+          "qualifiedName": "findOrphanedReactions",
+          "parentUnitId": null,
+          "startLine": 398,
+          "endLine": 411,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "The supplied source excerpt does not define findOrphanedReactions, so its callable surface and behavioral guarantees cannot be established from the available evidence.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "2d4e8510533ce5d4f010885e2dab70a75929abc8f6fb86d5fc53a6bba72aca12"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/commentRows.ts__mergeCommentDocumentsIntoSnapshot#function:mergeCommentDocumentsIntoSnapshot",
+        "unitKind": "function",
+        "name": "mergeCommentDocumentsIntoSnapshot",
+        "qualifiedName": "mergeCommentDocumentsIntoSnapshot",
+        "parentUnitId": null,
+        "startLine": 422,
+        "endLine": 439,
+        "isBehavioral": true,
+        "source": " * only catches the warm room's SQLite up.\n */\nexport function findOrphanedReactions(\n\tprunedCommentIds: ReadonlySet<string>,\n\tremaining: { keys(): Iterable<string>; get(id: string): unknown }\n): string[] {\n\tif (prunedCommentIds.size === 0) return []\n\tconst orphaned: string[] = []\n\tfor (const id of remaining.keys()) {\n\t\tif (!isCommentReactionId(id)) continue\n\t\tconst commentId = (remaining.get(id) as TLCommentReaction | undefined)?.commentId\n\t\tif (commentId !== undefined && prunedCommentIds.has(commentId)) orphaned.push(id)\n\t}\n\treturn orphaned\n}\n\n/**\n * Merge rehydrated comment documents into a room snapshot, clamping the snapshot's clocks up to",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/commentRows.ts__mergeCommentDocumentsIntoSnapshot#function:mergeCommentDocumentsIntoSnapshot",
+          "fileId": "apps/dotcom/sync-worker/src/commentRows.ts__mergeCommentDocumentsIntoSnapshot",
+          "unitKind": "function",
+          "name": "mergeCommentDocumentsIntoSnapshot",
+          "qualifiedName": "mergeCommentDocumentsIntoSnapshot",
+          "parentUnitId": null,
+          "startLine": 422,
+          "endLine": 439,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [
+            "The rehydrated comment documents are incorporated into the room snapshot.",
+            "Snapshot clocks are not reduced by the merge."
+          ],
+          "invariants": ["Snapshot clocks remain monotonically non-decreasing through the merge."],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Merges rehydrated comment documents into a room snapshot while preserving the snapshot's clock monotonicity by clamping its clocks upward.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "6b74581f18d7d15a5c0fdf7eaf1b14e858a3aa93f5c70c793216ec4337b1d678"
+        }
+      }
+    ]
+  },
+  "out": [],
+  "in": ["apps/dotcom/sync-worker/src/commentRows.test.ts"],
+  "externals": ["@tldraw/dotcom-shared", "@tldraw/sync-core", "@tldraw/tlschema", "@tldraw/utils"],
+  "impact": { "seeds": 20, "callers": 2, "impactedFiles": [] }
+}

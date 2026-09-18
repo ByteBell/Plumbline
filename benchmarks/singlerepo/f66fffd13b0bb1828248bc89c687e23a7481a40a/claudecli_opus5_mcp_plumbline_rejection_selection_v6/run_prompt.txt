@@ -1,0 +1,173 @@
+You are performing an information-retrieval task against a codebase.
+
+REPOSITORY:  calcom/cal.com
+COMMIT:      f66fffd13b0bb1828248bc89c687e23a7481a40a
+CHECKOUT:    cal.com.processed/f66fffd13b0bb1828248bc89c687e23a7481a40a/repo
+PATHS:       repo-relative, exactly as they exist at COMMIT. No leading slash.
+
+--- GATE ROSTER ---
+cal.com f66fffd13b0bb1828248bc89c687e23a7481a40a cal.com.processed/f66fffd13b0bb1828248bc89c687e23a7481a40a/repo
+--- END GATE ROSTER ---
+
+QUERY (symptom-level bug report):
+On our hosted platform the vendor's own name and logo still appear in the messages that automations send out, even for customers whose plan removes it. The setting is read from the wrong place when an automation runs, so what an attendee receives does not match what the same customer sees on the page they book from.
+
+TASK: name every file that must change to fix this. Run the algorithm in order.
+SURFACE: plumbline MCP tools only. No filesystem, shell, or web.
+
+=============================== ALGORITHM ===============================
+
+ASSERT = must hold, checked against CALLS MADE. Repair the state, then continue.
+DO     = make exactly this call.
+YOURS  = your judgement; the steps fix the shape, not the content.
+
+A change set is spread across REGISTERS — the different vocabularies the same
+behaviour is written in. The question arrives in ONE of them. Measured on this
+server, one search per register: the register as asked returned 2 of 11 gold
+files, the payload register 4, the cross-cutting register 1, and every
+collateral_damage edge lens 0. The three that scored SHARE NO HIT, and the union
+was 7 of 11. STEP 2 is therefore the step that decides the run, and no amount of
+re-phrasing or tracing inside one register substitutes for it.
+
+REGISTERS, and the tool that reaches each:
+  ENFORCEMENT  where the rule is checked or applied. The register the QUERY is
+               already written in.                              -> stakeout
+  PAYLOAD      what BUILDS the value being enforced: the client store, the
+               form-to-payload mapper, the request-body schema, the input DTO,
+               the server-side input transform. It holds NO import edge to the
+               enforcement point in either direction, so NO collateral_damage
+               lens reaches it.                                 -> stakeout, own words
+  CONTRACT     the versioned or dated published API surface, where one exists.
+                                                                -> stakeout + pathContains
+  CROSSCUTTING logging, PII, telemetry, i18n, templating — named in the QUERY,
+               living nowhere near the feature.                 -> stakeout
+
+---- STATE ----
+REG[]       { name, phrase, hits[] }        one per register, built at STEP 1
+SEEN        every path any call returned. Append, never prune.
+TRACED      { path, lenses } — one entry per collateral_damage call you issued
+            and read. A row in another call's output is NOT a trace.
+CONFIRMED   { path, role VIOLATOR|OWNER|EVIDENCE, why } — files READ at STEP 4
+RULED_OUT   files READ and excluded against verbatim source. Not reading ≠ ruling.
+CANDIDATES  SEEN − CONFIRMED − RULED_OUT.
+
+---- STEP 0 — GROUND. Three calls, then stop. ----
+0.1  DO roll_call. ASSERT: the GATE ROSTER repo appears. Take knowledgeId
+     VERBATIM. ON FAIL -> STOP and say so; never answer from memory.
+     A pin older than lastIndexedCommit is NOT drift.
+0.2  DO pass commitHash = the pin on EVERY later call. Omitting it answers at
+     the wrong snapshot and returns a clean absence, not an error.
+0.3  DO blueprint(knowledgeId, commitHash) -> the module map: every module, its
+     role, its root, what it depends on.
+0.4  DO kingpin(knowledgeId, commitHash) -> the files this repo's import graph
+     converges on, by PageRank. These are where a wrongly-read value is most
+     likely read from. Nothing else exposes this tier.
+     MULTI-REPO ONLY (roster > 1): DO rap_sheet() first, no arguments — one
+     brief per repo. Read every brief, then run 0.3/0.4 per repo you keep, and
+     read knowledgeId as "the repo" everywhere below.
+
+---- STEP 1 — BUILD REG[]. Before any search. ----
+1.1  Write one entry per register above. phrase = that register's OWN
+     vocabulary, a few content words — NOT the QUERY re-worded.
+     YOURS: the payload register's words are the hardest and the highest
+     paying. Ask what object carries this value before anything enforces it,
+     and name THAT.
+1.2  ASSERT: |REG[]| == 4, and no two phrases share a content word.
+     ON FAIL -> you have written the same register twice. Re-word.
+
+---- STEP 2 — SEARCH EACH REGISTER. This step decides the run. ----
+FOR EACH r IN REG[]:
+2.1  DO stakeout(query = r.phrase, knowledgeId, commitHash, searchIn='both')
+2.2  IF the result is dominated by type declarations or barrels — generic type
+     names outscore the files you want and crowd them off the page — RE-CALL
+     with pathContains narrowed by a module root from 0.3. That is a ranking
+     defect, NOT an absent register.
+2.3  r.hits = what it returned; SEEN += those paths.
+2.4  ASSERT on exit: every r has been searched, and no r was skipped because
+     another r answered it. A register with zero hits after 2.2 is recorded as
+     empty; it is not assumed absent.
+
+---- STEP 3 — TRACE. Both directions, then the two gaps no lens covers. ----
+3.1  DO collateral_damage(relativePath = <a top hit>, knowledgeId, commitHash)
+     with ALL SEVEN lenses on the first call per seed — imports, dependencies,
+     packages, types, keywords, contracts, surfaces. Each reads a DIFFERENT
+     edge, so an empty lens proves only that one signal is absent.
+     READ `direction` on every row. Six lenses walk DOWNSTREAM (what breaks if
+     the seed changes); `dependencies` walks UPSTREAM (what the seed READS) and
+     the upstream half usually has to carry the change first.
+     TRACED += {path, lenses}; SEEN += returns.
+3.2  Seed 3.1 from EVERY register's top hit and from the kingpin hubs that
+     0.4 ranked — not from one file. Every path a single trace reaches is a
+     neighbour of that one file.
+3.3  FOR A TYPE OR INTERFACE: re-call lens=['types'] on a FOLLOW-UP. Type
+     consumers never CALL anything, so `imports`, `packages` and `contracts`
+     are blind to them.
+3.4  GAP 1 — an import that LEAVES the repo resolves to a package, not a file,
+     and no lens returns it. DO cross_repo_lookup(package or symbol) to land it.
+3.5  GAP 2 — a chain that BUILDS the seed's input without importing it is
+     unreachable by every lens. It is reached only by STEP 2's payload search.
+     If that register came back empty, return to 2.1 with different words
+     before you emit.
+3.6  For a symbol you have a NAME for but no file: DO manhunt(name) — it
+     returns the declaring file, and covers interface/type/enum declarations,
+     which are not CodeUnits and which case_file therefore cannot show you.
+3.7  ON REFUSAL (a budget cap, not an error and never a fact about your query):
+     spend the tool the refusal names, or call into something not yet queried;
+     a first touch is exempt. Then return to the refused tool.
+
+---- STEP 4 — GROUND. Analysis prose is a lead, never evidence. ----
+4.1  DO case_file(path) -> every code unit with its DECLARED startLine-endLine.
+4.2  DO the_receipts on THAT DECLARED RANGE. A range you pick yourself is a
+     guess, and a guessed window that looks innocent clears a violating file.
+     For a file with NO code units — a pure type, schema or re-export file —
+     read the file's own lines instead; it still counts as impacted.
+4.3  Never judge from purpose, summary, signature, path, or an empty search.
+     Those prose fields were written by a model at index time, and an empty
+     search is a fact about your query, not about the file.
+4.4  CLASSIFY into CONFIRMED:
+       VIOLATOR  reads the value from the wrong place, or passes it on
+       OWNER     defines, resolves or persists the value — the contract
+       EVIDENCE  grounded a verdict about another file
+4.5  ASSERT: |CONFIRMED| >= 5, or == |SEEN| if SEEN is smaller.
+4.6  Ruling a file out requires verbatim source. Running out of calls is not a
+     verdict — an unread file stays a CANDIDATE and is still emitted.
+
+---- STEP 5 — EMIT. Computed from state. ----
+5.1  answer = CONFIRMED (most likely first), then CANDIDATES. LIST_CAP = 75.
+     Truncate only from the bottom. Prefer files that DEFINE, ENFORCE or
+     VIOLATE the contract over files that merely mention it.
+5.2  ASSERT: |answer| == min(|CONFIRMED| + |CANDIDATES|, LIST_CAP).
+     A wrong path ranked 20th costs almost nothing; a right one omitted is lost
+     outright. When unsure, rank it LOWER — never omit it.
+5.3  ASSERT: every path was RETURNED BY A CALL. Never completed from memory or
+     inferred from directory layout.
+5.4  ASSERT: every path cited in "contract" or "defect_location" is in answer.
+5.5  Source files only: no tests, docs, examples, fixtures, benchmarks, build
+     output, dependency directories, generated reports.
+5.6  Your FINAL message is the JSON object below and NOTHING ELSE. "answer" is
+     FIRST so it cannot be confused with any other array in the object.
+
+{
+  "answer":   ["<path>", "..."],
+  "contract": "<the rule the defect breaks, phrased so it applies to every file named>",
+  "defect_location": {"repo": "calcom/cal.com",
+                      "summary": "<where and why, citing <path>:<lines> per claim>"},
+  "registers": [{"name": "ENFORCEMENT|PAYLOAD|CONTRACT|CROSSCUTTING",
+                 "phrase": "<the words you searched>", "hits": 0}],
+  "traces":   ["<each relativePath you passed to collateral_damage>"],
+  "counts":   {"seen": 0, "confirmed": 0, "ruled_out": 0, "candidates": 0}
+}
+
+"answer" is the ranked list and is what is scored: flat, most likely first, max
+LIST_CAP, repo-relative. "registers" must hold all four with the words you
+actually searched and how many hits each returned — a register with 0 hits is a
+finding, not an omission. "traces" is copied from the calls you issued, not
+re-derived; it is checked against the transcript.
+
+RUN CONDITIONS (the run is invalid if any fails)
+R1  One fresh session. Caching within this run is fine; inheriting an earlier
+    session's is not. Do not resume, reuse, or re-attempt a case.
+R2  STEP 0 must pass before any search. A missing index is a failed run to be
+    relaunched after indexing, not an empty answer.
+R3  The harness records the transcript, every call and the cost, and writes
+    ranked.json from your final message. You have no write tools.

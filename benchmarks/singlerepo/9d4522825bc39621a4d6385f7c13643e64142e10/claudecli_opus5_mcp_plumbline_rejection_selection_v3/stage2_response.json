@@ -1,0 +1,71 @@
+{
+  "duration_api_ms": 124307,
+  "stop_reason": "end_turn",
+  "session_id": "b5a207aa-5a61-48af-9582-6f44f6369699",
+  "total_cost_usd": 1.115875,
+  "usage": {
+    "input_tokens": 24,
+    "cache_creation_input_tokens": 54905,
+    "cache_read_input_tokens": 668210,
+    "output_tokens": 9304,
+    "output_tokens_details": { "thinking_tokens": 3585 },
+    "server_tool_use": { "web_search_requests": 0, "web_fetch_requests": 0 },
+    "service_tier": "standard",
+    "cache_creation": { "ephemeral_1h_input_tokens": 54905, "ephemeral_5m_input_tokens": 0 },
+    "inference_geo": "not_available",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 1308,
+        "cache_read_input_tokens": 70509,
+        "cache_creation_input_tokens": 1593,
+        "cache_creation": { "ephemeral_5m_input_tokens": 0, "ephemeral_1h_input_tokens": 1593 },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-opus-5": {
+      "inputTokens": 24,
+      "outputTokens": 9304,
+      "cacheReadInputTokens": 668210,
+      "cacheCreationInputTokens": 54905,
+      "webSearchRequests": 0,
+      "costUSD": 1.115875,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "canonicalModel": "claude-opus-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": { "background": 0, "foreground": 0, "unset": 0 },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": { "parent": 0, "user": 0, "system": 0 },
+    "refused": { "depth_limit": 0, "concurrency_limit": 0, "budget": 0 },
+    "by_type": {}
+  },
+  "is_error": false,
+  "num_turns": 12,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Scoring complete. Both files written.\n\n**Gold file:** `gold.json` (7 gold paths; `golden.json` does not exist for this case). I read `ranked.json` in full before opening it.\n\n**Shape:** `ranked.json` is a **flat array** of 75 paths — the single-repo form, the same shape `gold.json` uses. No flattening was needed; the scorer reports `case_family: single-repo`.\n\n**Metrics** — `score_arm.py cal.com.processed/9d45228…e10 claudecli_opus5_mcp_plumbline_rejection_selection_v3`, exit 0:\n\n| metric | value |\n|---|---|\n| hits / gold_total | 4 / 7 |\n| recall@10 | 0.143 |\n| recall@20 | 0.286 |\n| recall@25 | 0.286 |\n| recall@50 | 0.429 |\n| recall@75 (full) | 0.571 |\n| precision@5 | 0.200 |\n| MRR | 0.500 |\n\nThe scorer does not emit precision@10, precision@20, F1@20 or F1_full_list — those fields are absent from its output, and per the rules I have not hand-computed substitutes. What it does record: the four hits land at ranks 2, 12, 44 and 53 of 75.\n\n**found**\n- `apps/web/server/lib/[user]/getServerSideProps.ts` (rank 2)\n- `apps/web/lib/team/[slug]/[type]/getServerSideProps.tsx` (rank 12)\n- `packages/features/eventtypes/lib/defaultEvents.ts` (rank 44)\n- `packages/features/profile/repositories/ProfileRepository.ts` (rank 53)\n\n**missed_gold**\n- `apps/web/lib/apps/routing-forms/[...pages]/getServerSidePropsRoutingLink.ts`\n- `apps/web/lib/booking.ts`\n- `apps/web/modules/bookings/views/bookings-single-view.getServerSideProps.tsx`\n\n**Surface verdict: NOT comparable.** One reason: prompt caching was warm — `cache_read=7804651`, `cache_creation=278041` from `raw_response.json`, so the $8.16 figure cannot be set beside cold-cache runs in the series. On every other count the surface is clean: my own count off `commands.log` (48 numbered calls) reproduces the scorer's table exactly — collateral_damage 21, stakeout 9, the_receipts 8, blueprint 3, manhunt 3, roll_call 1, rap_sheet 1, case_file 1, ToolSearch 1 — no filesystem or shell tool appears, every plumbline tool used is inside the `--allowedTools` whitelist in `run_plumbline_arm.sh` (all 21 plumbline tools plus Write), and the retriever's search tool was exercised (stakeout ×9). Note that `score_arm.py` itself reported `comparable: true`; its surface block does not apply the cache criterion. I kept its verdict under `scorer_reported` in `result.json` and set the top-level block from the log and usage data.\n\n**What the misses share:** all three are page-entry server-side loaders on booking surfaces *other* than the public `[user]` / `[type]` event pages — the routing-forms link handler, the shared `apps/web/lib/booking.ts` data loader, and the booking-confirmation page's `getServerSideProps`. The run's fold saturated the branding/theme render layer (getBrandColours, useTheme, useCalcomTheme, use-brand-colors, the embed and email theme paths) and the public event-type loaders it reached from there, and it did surface the confirmation page's *view* at rank 72 while never reaching that view's sibling `getServerSideProps` file. The gold that escaped sits one layer up from where the graph walk lived: sibling data-fetch entry points that consume the branding fields rather than compute them.",
+  "ttft_ms": 3122,
+  "type": "result",
+  "duration_ms": 125316,
+  "uuid": "91e3d817-5fcd-4828-93c4-4027bfff612e",
+  "ttft_stream_ms": 2612,
+  "time_to_request_ms": 18,
+  "queued_turn_count": 0
+}

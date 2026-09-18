@@ -1,0 +1,1538 @@
+{
+  "schema": 1,
+  "kind": "file",
+  "repoName": "redux-toolkit",
+  "commitHash": "b1c5130154c454ca8387f55da6122fcb507c560c",
+  "generatedAt": "2026-08-01T22:01:37.770Z",
+  "file": {
+    "relativePath": "packages/toolkit/src/query/fetchBaseQuery.ts",
+    "language": "typescript",
+    "sizeBytes": 12089,
+    "tokenCount": 2859,
+    "model": "tencent/hy3",
+    "analysedAt": "2026-08-01T17:04:21.062Z",
+    "module": {
+      "purpose": "Provides fetchBaseQuery, a lightweight factory returning an RTK Query BaseQueryFn that wraps fetch, normalizes request args, handles headers, JSON bodies, query params, timeouts, and maps errors to a discriminated union.",
+      "summary": "This module implements a minimal wrapper around the global fetch API for Redux Toolkit Query. It exports a factory that returns an async base query function accepting either a URL string or a structured args object. The wrapper prepares headers via a user callback, strips undefined fields, decides JSON serialisation based on body type and content-type predicates, appends query params, merges a base URL, and enforces timeouts through abort signals. It克隆 requests and responses to safely read bodies, and translates network, timeout, and parsing failures into a tagged FetchBaseQueryError shape while delegating status validation to a configurable predicate.",
+      "businessContext": "Powers data fetching for RTK Query consumers. Failure breaks all API communication, causing app data layers to error or hang.",
+      "classes": [],
+      "functions": [
+        "defaultFetchFn (~L41): Pass-through wrapper calling global fetch",
+        "defaultValidateStatus (~L43-44): Returns true for HTTP 200-299 status",
+        "defaultIsJsonContentType (~L46-47): Tests headers for json content-type",
+        "stripUndefined (~L98-107): Recursively removes undefined values from plain object",
+        "isJsonifiable (~L110-114): Determines if body can be JSON stringified",
+        "fetchBaseQuery (~L190-375): Factory returning RTK Query base query function",
+        "handleResponse (~L356-374): Resolves response body per responseHandler"
+      ],
+      "keywords": [
+        "fetchBaseQuery",
+        "RTK Query",
+        "BaseQueryFn",
+        "timeout signal",
+        "responseHandler",
+        "prepareHeaders",
+        "FetchBaseQueryError",
+        "JSON stringify",
+        "query params",
+        "headers"
+      ],
+      "ontologyConcepts": [
+        "HTTP client wrapper",
+        "base query",
+        "error discrimination",
+        "request normalization",
+        "timeout"
+      ],
+      "businessEntities": ["Request", "Response", "Headers", "FetchArgs", "BaseQueryApi"],
+      "systemCapabilities": [
+        "Perform HTTP requests",
+        "Normalize request config",
+        "Serialize JSON bodies",
+        "Handle request timeouts",
+        "Map fetch errors"
+      ],
+      "configDependencies": [],
+      "importsInternal": [
+        {
+          "spec": "./utils",
+          "symbols": ["joinUrls"],
+          "anchor": { "startLine": 1, "endLine": 1 },
+          "resolvedRelativePath": "packages/toolkit/src/query/utils/index.ts",
+          "resolvedFileId": "packages/toolkit/src/query/utils/index.ts",
+          "resolvedHint": "packages/toolkit/src/query/utils.ts"
+        },
+        {
+          "spec": "./core/rtkImports",
+          "symbols": ["isPlainObject"],
+          "anchor": { "startLine": 2, "endLine": 2 },
+          "resolvedRelativePath": "packages/toolkit/src/query/core/rtkImports.ts",
+          "resolvedFileId": "packages/toolkit/src/query/core/rtkImports.ts",
+          "resolvedHint": "packages/toolkit/src/query/core/rtkImports.ts"
+        },
+        {
+          "spec": "./baseQueryTypes",
+          "symbols": ["BaseQueryApi", "BaseQueryFn"],
+          "anchor": { "startLine": 3, "endLine": 3 },
+          "resolvedRelativePath": "packages/toolkit/src/query/baseQueryTypes.ts",
+          "resolvedFileId": "packages/toolkit/src/query/baseQueryTypes.ts",
+          "resolvedHint": "packages/toolkit/src/query/baseQueryTypes.ts"
+        },
+        {
+          "spec": "./tsHelpers",
+          "symbols": ["MaybePromise", "Override"],
+          "anchor": { "startLine": 4, "endLine": 4 },
+          "resolvedRelativePath": "packages/toolkit/src/query/tsHelpers.ts",
+          "resolvedFileId": "packages/toolkit/src/query/tsHelpers.ts",
+          "resolvedHint": "packages/toolkit/src/query/tsHelpers.ts"
+        },
+        {
+          "spec": "./utils/signals",
+          "symbols": ["anySignal", "timeoutSignal"],
+          "anchor": { "startLine": 5, "endLine": 5 },
+          "resolvedRelativePath": "packages/toolkit/src/query/utils/signals.ts",
+          "resolvedFileId": "packages/toolkit/src/query/utils/signals.ts",
+          "resolvedHint": "packages/toolkit/src/query/utils/signals.ts"
+        }
+      ],
+      "importsExternal": [],
+      "sideEffects": {
+        "io": [
+          "Issues HTTP requests via fetchFn",
+          "Clones Request and Response objects",
+          "Reads response body text via response.text()"
+        ],
+        "network": ["Performs outbound fetch to provided URL"],
+        "env": [],
+        "fs": [],
+        "process": ["Warns to console if fetch undefined in SSR"],
+        "mutationOfArg": [
+          "Strips undefined from headers object copy",
+          "Mutates config.headers content-type/accept",
+          "Stringifies config.body when jsonifiable"
+        ]
+      },
+      "integrationSurface": [
+        {
+          "kind": "http",
+          "role": "consumes",
+          "address": "dynamic (baseUrl + url)",
+          "payloadRef": "FetchArgs",
+          "rawKind": null
+        }
+      ],
+      "contractsProvided": [
+        {
+          "name": "ResponseHandler",
+          "shape": "export type ResponseHandler = 'content-type' | 'json' | 'text' | ((response: Response) => Promise<any>)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "FetchArgs",
+          "shape": "export interface FetchArgs extends CustomRequestInit { url: string; params?: Record<string, any>; body?: any; responseHandler?: ResponseHandler; validateStatus?: (response: Response, body: any) => boolean; timeout?: number }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "FetchBaseQueryError",
+          "shape": "export type FetchBaseQueryError = { status: number; data: unknown } | { status: 'FETCH_ERROR'; data?: undefined; error: string } | { status: 'PARSING_ERROR'; originalStatus: number; data: string; error: string } | { status: 'TIMEOUT_ERROR'; data?: undefined; error: string } | { status: 'CUSTOM_ERROR'; data?: unknown; error: string }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "FetchBaseQueryArgs",
+          "shape": "export type FetchBaseQueryArgs = { baseUrl?: string; prepareHeaders?: (headers: Headers, api: Pick<BaseQueryApi, 'getState' | 'extra' | 'endpoint' | 'type' | 'forced'> & { arg: string | FetchArgs; extraOptions: unknown }) => MaybePromise<Headers | void>; fetchFn?: (input: RequestInfo, init?: RequestInit | undefined) => Promise<Response>; paramsSerializer?: (params: Record<string, any>) => string; isJsonContentType?: (headers: Headers) => boolean; jsonContentType?: string; jsonReplacer?: (this: any, key: string, value: any) => any } & RequestInit & Pick<FetchArgs, 'responseHandler' | 'validateStatus' | 'timeout'>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "FetchBaseQueryMeta",
+          "shape": "export type FetchBaseQueryMeta = { request: Request; response?: Response }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "fetchBaseQuery",
+          "shape": "export function fetchBaseQuery({ baseUrl, prepareHeaders, fetchFn, paramsSerializer, isJsonContentType, jsonContentType, jsonReplacer, timeout, responseHandler, validateStatus, ...baseFetchOptions }: FetchBaseQueryArgs = {}): BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError, {}, FetchBaseQueryMeta>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "joinUrls",
+          "shape": "function from './utils'",
+          "resolvedRelativePath": "packages/toolkit/src/query/utils/index.ts",
+          "resolvedFileId": "packages/toolkit/src/query/utils/index.ts"
+        },
+        {
+          "name": "isPlainObject",
+          "shape": "function from './core/rtkImports'",
+          "resolvedRelativePath": "packages/toolkit/src/query/core/rtkImports.ts",
+          "resolvedFileId": "packages/toolkit/src/query/core/rtkImports.ts"
+        },
+        {
+          "name": "BaseQueryApi",
+          "shape": "type from './baseQueryTypes'",
+          "resolvedRelativePath": "packages/toolkit/src/query/baseQueryTypes.ts",
+          "resolvedFileId": "packages/toolkit/src/query/baseQueryTypes.ts"
+        },
+        {
+          "name": "BaseQueryFn",
+          "shape": "type from './baseQueryTypes'",
+          "resolvedRelativePath": "packages/toolkit/src/query/baseQueryTypes.ts",
+          "resolvedFileId": "packages/toolkit/src/query/baseQueryTypes.ts"
+        },
+        {
+          "name": "MaybePromise",
+          "shape": "type from './tsHelpers'",
+          "resolvedRelativePath": "packages/toolkit/src/query/tsHelpers.ts",
+          "resolvedFileId": "packages/toolkit/src/query/tsHelpers.ts"
+        },
+        {
+          "name": "Override",
+          "shape": "type from './tsHelpers'",
+          "resolvedRelativePath": "packages/toolkit/src/query/tsHelpers.ts",
+          "resolvedFileId": "packages/toolkit/src/query/tsHelpers.ts"
+        },
+        {
+          "name": "anySignal",
+          "shape": "function from './utils/signals'",
+          "resolvedRelativePath": "packages/toolkit/src/query/utils/signals.ts",
+          "resolvedFileId": "packages/toolkit/src/query/utils/signals.ts"
+        },
+        {
+          "name": "timeoutSignal",
+          "shape": "function from './utils/signals'",
+          "resolvedRelativePath": "packages/toolkit/src/query/utils/signals.ts",
+          "resolvedFileId": "packages/toolkit/src/query/utils/signals.ts"
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "arg normalization",
+          "intent": "Destructure arg into url, headers, params, handlers",
+          "structureKind": "branch",
+          "predicate": "typeof arg == 'string'",
+          "branchOutcomes": ["string arg", "object arg"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 217, "endLine": 225 }
+        },
+        {
+          "name": "header preparation",
+          "intent": "Build headers and call prepareHeaders",
+          "structureKind": "async",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 235, "endLine": 245 }
+        },
+        {
+          "name": "body serialization",
+          "intent": "Set content-type and JSON.stringify body if needed",
+          "structureKind": "branch",
+          "predicate": "config.body != null && !bodyIsJsonifiable && typeof config.body !== 'string'",
+          "branchOutcomes": ["delete content-type", "keep content-type"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 251, "endLine": 265 }
+        },
+        {
+          "name": "param appending",
+          "intent": "Append query string to url",
+          "structureKind": "branch",
+          "predicate": "if (params)",
+          "branchOutcomes": ["serialize params", "skip"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 277, "endLine": 283 }
+        },
+        {
+          "name": "fetch and error catch",
+          "intent": "Await fetchFn and catch network/timeout errors",
+          "structureKind": "try",
+          "predicate": null,
+          "branchOutcomes": ["success", "catch"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 291, "endLine": 308 }
+        },
+        {
+          "name": "response parsing",
+          "intent": "Parse response concurrently with text read",
+          "structureKind": "try",
+          "predicate": null,
+          "branchOutcomes": ["success", "catch parsing"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 313, "endLine": 340 }
+        },
+        {
+          "name": "status validation",
+          "intent": "Return data or error based on validateStatus",
+          "structureKind": "branch",
+          "predicate": "validateStatus(response, resultData)",
+          "branchOutcomes": ["data", "error"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 342, "endLine": 353 }
+        }
+      ],
+      "representationFamily": "function-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "type_alias",
+          "name": "ResponseHandler",
+          "signature": "export type ResponseHandler =\n  | 'content-type'\n  | 'json'\n  | 'text'\n  | ((response: Response) => Promise<any>)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 7, "endLine": 11 }
+        },
+        {
+          "kind": "interface",
+          "name": "FetchArgs",
+          "signature": "export interface FetchArgs extends CustomRequestInit {\n  url: string\n  params?: Record<string, any>\n  body?: any\n  responseHandler?: ResponseHandler\n  validateStatus?: (response: Response, body: any) => boolean\n  /**\n   * A number in milliseconds that represents that maximum time a request can take before timing out.\n   */\n  timeout?: number\n}",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 24, "endLine": 34 }
+        },
+        {
+          "kind": "type_alias",
+          "name": "FetchBaseQueryError",
+          "signature": "export type FetchBaseQueryError =\n  | {\n      status: number\n      data: unknown\n    }\n  | {\n      status: 'FETCH_ERROR'\n      data?: undefined\n      error: string\n    }\n  | {\n      status: 'PARSING_ERROR'\n      originalStatus: number\n      data: string\n      error: string\n    }\n  | {\n      status: 'TIMEOUT_ERROR'\n      data?: undefined\n      error: string\n    }\n  | {\n      status: 'CUSTOM_ERROR'\n      data?: unknown\n      error: string\n    }",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 49, "endLine": 96 }
+        },
+        {
+          "kind": "type_alias",
+          "name": "FetchBaseQueryArgs",
+          "signature": "export type FetchBaseQueryArgs = {\n  baseUrl?: string\n  prepareHeaders?: (\n    headers: Headers,\n    api: Pick<\n      BaseQueryApi,\n      'getState' | 'extra' | 'endpoint' | 'type' | 'forced'\n    > & { arg: string | FetchArgs; extraOptions: unknown },\n  ) => MaybePromise<Headers | void>\n  fetchFn?: (\n    input: RequestInfo,\n    init?: RequestInit | undefined,\n  ) => Promise<Response>\n  paramsSerializer?: (params: Record<string, any>) => string\n  isJsonContentType?: (headers: Headers) => boolean\n  jsonContentType?: string\n  jsonReplacer?: (this: any, key: string, value: any) => any\n} & RequestInit &\n  Pick<FetchArgs, 'responseHandler' | 'validateStatus' | 'timeout'>",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 116, "endLine": 149 }
+        },
+        {
+          "kind": "type_alias",
+          "name": "FetchBaseQueryMeta",
+          "signature": "export type FetchBaseQueryMeta = { request: Request; response?: Response }",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 151, "endLine": 151 }
+        },
+        {
+          "kind": "function",
+          "name": "fetchBaseQuery",
+          "signature": "export function fetchBaseQuery({\n  baseUrl,\n  prepareHeaders = (x) => x,\n  fetchFn = defaultFetchFn,\n  paramsSerializer,\n  isJsonContentType = defaultIsJsonContentType,\n  jsonContentType = 'application/json',\n  jsonReplacer,\n  timeout: defaultTimeout,\n  responseHandler: globalResponseHandler,\n  validateStatus: globalValidateStatus,\n  ...baseFetchOptions\n}: FetchBaseQueryArgs = {}): BaseQueryFn<\n  string | FetchArgs,\n  unknown,\n  FetchBaseQueryError,\n  {},\n  FetchBaseQueryMeta\n>",
+          "generics": null,
+          "decorators": [],
+          "returnType": "BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError, {}, FetchBaseQueryMeta>",
+          "exported": true,
+          "anchor": { "startLine": 190, "endLine": 375 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "alias",
+          "name": "ResponseHandler",
+          "shape": "| 'content-type'\n  | 'json'\n  | 'text'\n  | ((response: Response) => Promise<any>)",
+          "discriminant": null,
+          "anchor": { "startLine": 7, "endLine": 11 }
+        },
+        {
+          "kind": "interface",
+          "name": "FetchArgs",
+          "shape": "extends CustomRequestInit {\n  url: string\n  params?: Record<string, any>\n  body?: any\n  responseHandler?: ResponseHandler\n  validateStatus?: (response: Response, body: any) => boolean\n  timeout?: number\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 24, "endLine": 34 }
+        },
+        {
+          "kind": "alias",
+          "name": "FetchBaseQueryError",
+          "shape": "| {\n      status: number\n      data: unknown\n    }\n  | {\n      status: 'FETCH_ERROR'\n      data?: undefined\n      error: string\n    }\n  | {\n      status: 'PARSING_ERROR'\n      originalStatus: number\n      data: string\n      error: string\n    }\n  | {\n      status: 'TIMEOUT_ERROR'\n      data?: undefined\n      error: string\n    }\n  | {\n      status: 'CUSTOM_ERROR'\n      data?: unknown\n      error: string\n    }",
+          "discriminant": "status",
+          "anchor": { "startLine": 49, "endLine": 96 }
+        },
+        {
+          "kind": "alias",
+          "name": "FetchBaseQueryArgs",
+          "shape": "{\n  baseUrl?: string\n  prepareHeaders?: (\n    headers: Headers,\n    api: Pick<\n      BaseQueryApi,\n      'getState' | 'extra' | 'endpoint' | 'type' | 'forced'\n    > & { arg: string | FetchArgs; extraOptions: unknown },\n  ) => MaybePromise<Headers | void>\n  fetchFn?: (\n    input: RequestInfo,\n    init?: RequestInit | undefined,\n  ) => Promise<Response>\n  paramsSerializer?: (params: Record<string, any>) => string\n  isJsonContentType?: (headers: Headers) => boolean\n  jsonContentType?: string\n  jsonReplacer?: (this: any, key: string, value: any) => any\n} & RequestInit &\n  Pick<FetchArgs, 'responseHandler' | 'validateStatus' | 'timeout'>",
+          "discriminant": null,
+          "anchor": { "startLine": 116, "endLine": 149 }
+        },
+        {
+          "kind": "alias",
+          "name": "FetchBaseQueryMeta",
+          "shape": "{ request: Request; response?: Response }",
+          "discriminant": null,
+          "anchor": { "startLine": 151, "endLine": 151 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "arg is string",
+          "handled": true,
+          "behavior": "Wrapped as { url: arg }",
+          "anchor": { "startLine": 217, "endLine": 225 }
+        },
+        {
+          "inputShape": "body is FormData/ArrayBuffer/Blob",
+          "handled": true,
+          "behavior": "content-type deleted, browser sets it",
+          "anchor": { "startLine": 251, "endLine": 257 }
+        },
+        {
+          "inputShape": "empty JSON response text",
+          "handled": true,
+          "behavior": "handleResponse returns null for json",
+          "anchor": { "startLine": 368, "endLine": 371 }
+        },
+        {
+          "inputShape": "fetch undefined in SSR",
+          "handled": true,
+          "behavior": "console.warn advisory, continues",
+          "anchor": { "startLine": 209, "endLine": 213 }
+        },
+        {
+          "inputShape": "timeout via AbortSignal",
+          "handled": true,
+          "behavior": "Caught as TIMEOUT_ERROR if TimeoutError",
+          "anchor": { "startLine": 294, "endLine": 308 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": ">=",
+          "left": "response.status",
+          "right": "200",
+          "inclusive": true,
+          "intent": "Lower bound for valid status",
+          "anchor": { "startLine": 44, "endLine": 44 }
+        },
+        {
+          "operator": "<=",
+          "left": "response.status",
+          "right": "299",
+          "inclusive": true,
+          "intent": "Upper bound for valid status",
+          "anchor": { "startLine": 44, "endLine": 44 }
+        },
+        {
+          "operator": "==",
+          "left": "typeof arg",
+          "right": "'string'",
+          "inclusive": true,
+          "intent": "Detect string arg form",
+          "anchor": { "startLine": 217, "endLine": 217 }
+        },
+        {
+          "operator": "!=",
+          "left": "config.body",
+          "right": "null",
+          "inclusive": false,
+          "intent": "Check body present before content-type delete",
+          "anchor": { "startLine": 251, "endLine": 251 }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": null,
+          "caught": "fetchFn exception",
+          "action": "Map to FETCH_ERROR or TIMEOUT_ERROR based on error name",
+          "fallback": "{ error: { status: 'FETCH_ERROR'|'TIMEOUT_ERROR', error: String(e) }, meta }",
+          "anchor": { "startLine": 292, "endLine": 308 }
+        },
+        {
+          "thrown": null,
+          "caught": "response handling/parsing exception",
+          "action": "Map to PARSING_ERROR with response text",
+          "fallback": "{ error: { status: 'PARSING_ERROR', originalStatus, data: responseText, error: String(e) }, meta }",
+          "anchor": { "startLine": 315, "endLine": 340 }
+        },
+        {
+          "thrown": null,
+          "caught": "validateStatus false",
+          "action": "Return error with HTTP status and data",
+          "fallback": "{ error: { status: response.status, data: resultData }, meta }",
+          "anchor": { "startLine": 342, "endLine": 353 }
+        }
+      ],
+      "invariants": [
+        {
+          "kind": "invariant",
+          "description": "meta.request is always a clone of the issued Request",
+          "anchor": { "startLine": 287, "endLine": 289 }
+        },
+        {
+          "kind": "invariant",
+          "description": "responseClone is used for text reading to avoid consuming stream",
+          "anchor": { "startLine": 309, "endLine": 311 }
+        },
+        {
+          "kind": "non-null",
+          "description": "headers is always a Headers instance after preparation",
+          "anchor": { "startLine": 235, "endLine": 235 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "env",
+          "description": "Global fetch exists in browser; SSR must supply fetchFn",
+          "anchor": { "startLine": 209, "endLine": 213 }
+        },
+        {
+          "kind": "caller",
+          "description": "prepareHeaders may return Headers or void; void keeps original",
+          "anchor": { "startLine": 236, "endLine": 245 }
+        },
+        {
+          "kind": "platform",
+          "description": "DOMException available for timeout detection in some environments",
+          "anchor": { "startLine": 298, "endLine": 301 }
+        }
+      ],
+      "ambiguities": [],
+      "concurrencyModel": {
+        "kind": "async",
+        "reentrant": true,
+        "ordering": "deterministic",
+        "notes": "Each call creates fresh Request/Response clones; no shared mutable state across calls"
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "returns-data-on-2xx",
+          "scenario": "When fetch returns 200 with json body, base query returns data",
+          "given": [
+            "fetchFn mock returns Response with status 200 and json body {ok:true}",
+            "baseQuery = fetchBaseQuery()"
+          ],
+          "when": "baseQuery('/x', api, undefined)",
+          "then": "result has data = {ok:true} and no error",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "success path returns parsed json"
+        },
+        {
+          "testId": "returns-error-on-non-2xx",
+          "scenario": "When fetch returns 500, base query returns error with status 500",
+          "given": ["fetchFn mock returns Response status 500 body 'err'"],
+          "when": "baseQuery('/x', api)",
+          "then": "result has error.status === 500 and error.data === 'err'",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "fetch-error-returns-fetch-error",
+          "scenario": "When fetchFn throws, returns FETCH_ERROR",
+          "given": ["fetchFn throws new Error('network')"],
+          "when": "baseQuery('/x', api)",
+          "then": "result.error.status === 'FETCH_ERROR' and error string includes 'network'",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "timeout-error-returns-timeout",
+          "scenario": "When fetchFn throws TimeoutError and timeout set, returns TIMEOUT_ERROR",
+          "given": ["fetchFn throws DOMException('TimeoutError')", "fetchBaseQuery({timeout: 100})"],
+          "when": "baseQuery('/x', api)",
+          "then": "result.error.status === 'TIMEOUT_ERROR'",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "parsing-error-on-invalid-json",
+          "scenario": "When response is json handler but invalid json, returns PARSING_ERROR",
+          "given": ["fetchFn returns Response status 200 with body 'not json'", "responseHandler default json"],
+          "when": "baseQuery('/x', api)",
+          "then": "result.error.status === 'PARSING_ERROR'",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "prepare-headers-injects-auth",
+          "scenario": "prepareHeaders can set authorization header",
+          "given": [
+            "fetchBaseQuery({baseUrl:'/', prepareHeaders: (h) => { h.set('authorization','Bearer x'); return h; }})",
+            "fetchFn captures request"
+          ],
+          "when": "baseQuery('/x', api)",
+          "then": "request.headers has authorization Bearer x",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "params-serialized-into-query",
+          "scenario": "params are appended to url",
+          "given": ["fetchBaseQuery({baseUrl:'/'})", "fetchFn captures request"],
+          "when": "baseQuery({url:'/x', params:{a:1}}, api)",
+          "then": "request.url ends with '/x?a=1'",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "json-body-stringified",
+          "scenario": "jsonifiable body is stringified and content-type set",
+          "given": ["fetchBaseQuery()", "fetchFn captures request"],
+          "when": "baseQuery({url:'/x', body:{a:1}}, api)",
+          "then": "request.headers content-type is application/json and request.body is JSON string",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "non-json-body-deletes-content-type",
+          "scenario": "non-jsonifiable body removes content-type",
+          "given": ["fetchBaseQuery()", "fetchFn captures request"],
+          "when": "baseQuery({url:'/x', body: new FormData(), headers: {'content-type':'application/json'}}, api)",
+          "then": "request.headers does not have content-type",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "timeout-creates-signal",
+          "scenario": "timeout option merges signals",
+          "given": ["fetchBaseQuery({timeout: 500})", "api.signal = AbortSignal"],
+          "when": "baseQuery('/x', api)",
+          "then": "config.signal is composite signal from anySignal",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "ensures timeout abort works"
+        },
+        {
+          "testId": "response-handler-function-used",
+          "scenario": "custom responseHandler function called",
+          "given": ["fetchBaseQuery({responseHandler: async (res) => 'custom'})"],
+          "when": "baseQuery('/x', api)",
+          "then": "result.data === 'custom'",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "import statements",
+        "export type ResponseHandler",
+        "type CustomRequestInit",
+        "export interface FetchArgs",
+        "const defaultFetchFn",
+        "const defaultValidateStatus",
+        "const defaultIsJsonContentType",
+        "export type FetchBaseQueryError",
+        "function stripUndefined",
+        "const isJsonifiable",
+        "export type FetchBaseQueryArgs",
+        "export type FetchBaseQueryMeta",
+        "export function fetchBaseQuery"
+      ],
+      "moduleLevelCode": "import { joinUrls } from './utils'\nimport { isPlainObject } from './core/rtkImports'\nimport type { BaseQueryApi, BaseQueryFn } from './baseQueryTypes'\nimport type { MaybePromise, Override } from './tsHelpers'\nimport { anySignal, timeoutSignal } from './utils/signals'",
+      "exports": [
+        { "name": "ResponseHandler", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "FetchArgs", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "FetchBaseQueryError", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "FetchBaseQueryArgs", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "FetchBaseQueryMeta", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "fetchBaseQuery", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "joinUrls", "module": "./utils", "alias": null, "kind": "internal" },
+        { "symbol": "isPlainObject", "module": "./core/rtkImports", "alias": null, "kind": "internal" },
+        { "symbol": "BaseQueryApi", "module": "./baseQueryTypes", "alias": null, "kind": "internal" },
+        { "symbol": "BaseQueryFn", "module": "./baseQueryTypes", "alias": null, "kind": "internal" },
+        { "symbol": "MaybePromise", "module": "./tsHelpers", "alias": null, "kind": "internal" },
+        { "symbol": "Override", "module": "./tsHelpers", "alias": null, "kind": "internal" },
+        { "symbol": "anySignal", "module": "./utils/signals", "alias": null, "kind": "internal" },
+        { "symbol": "timeoutSignal", "module": "./utils/signals", "alias": null, "kind": "internal" }
+      ],
+      "fileConstants": [
+        { "name": "defaultFetchFn", "value": "(...args) => fetch(...args)", "kind": "arrow function" },
+        {
+          "name": "defaultValidateStatus",
+          "value": "(response: Response) => response.status >= 200 && response.status <= 299",
+          "kind": "arrow function"
+        },
+        {
+          "name": "defaultIsJsonContentType",
+          "value": "(headers: Headers) => /ion\\/(vnd\\.api\\+)?json/.test(headers.get('content-type') || '')",
+          "kind": "arrow function"
+        },
+        { "name": "jsonContentType default", "value": "'application/json'", "kind": "string" }
+      ],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/toolkit/src/query/fetchBaseQuery.ts__defaultFetchFn#function:defaultFetchFn",
+        "unitKind": "function",
+        "name": "defaultFetchFn",
+        "qualifiedName": "defaultFetchFn",
+        "parentUnitId": null,
+        "startLine": 41,
+        "endLine": 41,
+        "isBehavioral": true,
+        "source": "const defaultFetchFn: typeof fetch = (...args) => fetch(...args)",
+        "detail": {
+          "unitId": "packages/toolkit/src/query/fetchBaseQuery.ts__defaultFetchFn#function:defaultFetchFn",
+          "fileId": "packages/toolkit/src/query/fetchBaseQuery.ts__defaultFetchFn",
+          "unitKind": "function",
+          "name": "defaultFetchFn",
+          "qualifiedName": "defaultFetchFn",
+          "parentUnitId": null,
+          "startLine": 41,
+          "endLine": 41,
+          "signature": "const defaultFetchFn: typeof fetch = (...args) => fetch(...args)",
+          "parameters": [
+            {
+              "name": "args",
+              "type": "Parameters<typeof fetch>",
+              "default": null,
+              "optional": false,
+              "variadic": true,
+              "order": 0
+            }
+          ],
+          "returnType": "Promise<Response>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["The global fetch function must be available in the execution environment."],
+          "postconditions": [
+            "Returns the same Promise<Response> that the global fetch would return for the given arguments."
+          ],
+          "invariants": [],
+          "edgeCases": [
+            "Valid fetch arguments: forwards all arguments to fetch and resolves with the Response.",
+            "Invalid arguments (e.g. malformed URL): rejects with the same TypeError that fetch throws.",
+            "Network errors: rejects with the same TypeError that fetch produces on network failure."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["TypeError"],
+            "reverts": [],
+            "onInvalidInput": "Rejection propagates as the same TypeError that fetch throws for the given arguments.",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "fetch", "source": "global", "kind": "external" }],
+          "symbolReferences": ["fetch"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "A pass-through wrapper around the global fetch function that forwards all arguments and returns the fetched Response promise, enabling callers to inject a custom fetch implementation.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "69c381722fd89903f09324e07a07a0b7ee28e9bfe83e47b7c4f34c10dd60d4a3"
+        }
+      },
+      {
+        "unitId": "packages/toolkit/src/query/fetchBaseQuery.ts__defaultValidateStatus#function:defaultValidateStatus",
+        "unitKind": "function",
+        "name": "defaultValidateStatus",
+        "qualifiedName": "defaultValidateStatus",
+        "parentUnitId": null,
+        "startLine": 43,
+        "endLine": 44,
+        "isBehavioral": true,
+        "source": "const defaultValidateStatus = (response: Response) =>\n  response.status >= 200 && response.status <= 299",
+        "detail": {
+          "unitId": "packages/toolkit/src/query/fetchBaseQuery.ts__defaultValidateStatus#function:defaultValidateStatus",
+          "fileId": "packages/toolkit/src/query/fetchBaseQuery.ts__defaultValidateStatus",
+          "unitKind": "function",
+          "name": "defaultValidateStatus",
+          "qualifiedName": "defaultValidateStatus",
+          "parentUnitId": null,
+          "startLine": 43,
+          "endLine": 44,
+          "signature": "(response: Response) => response.status >= 200 && response.status <= 299",
+          "parameters": [
+            {
+              "name": "response",
+              "type": "Response",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "boolean",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "pure",
+          "visibility": "pub",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["A valid Response object with a numeric `status` property must be provided."],
+          "postconditions": [
+            "Returns `true` if `response.status` is between 200 and 299 inclusive; returns `false` otherwise."
+          ],
+          "invariants": [
+            "The status code is evaluated against the inclusive range 200–299, matching standard HTTP success semantics."
+          ],
+          "edgeCases": [
+            "Status code 200 returns `true`.",
+            "Status code 299 returns `true`.",
+            "Status code 199 returns `false`.",
+            "Status code 300 returns `false`.",
+            "Status code 0 (e.g. opaque response) returns `false`.",
+            "Status code 404 returns `false`.",
+            "Status code 500 returns `false`.",
+            "Status code 204 (No Content) returns `true`.",
+            "Status code 301 (Redirect) returns `false`."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "If `response` is null or undefined, the function will throw a TypeError when accessing `.status`.",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["Response"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Determines whether an HTTP response should be considered successful by checking if its status code falls within the standard 2xx success range.",
+          "specLiterals": [
+            {
+              "kind": "magic-number",
+              "value": "200",
+              "role": "Lower bound of the accepted success status code range (inclusive)."
+            },
+            {
+              "kind": "magic-number",
+              "value": "299",
+              "role": "Upper bound of the accepted success status code range (inclusive)."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "defaultValidateStatus is called with the response",
+              "then": "Returns true because 200 is within the 200-299 range",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "defaultValidateStatus is called with the response",
+              "then": "Returns false because 404 is outside the 200-299 range",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "defaultValidateStatus is called with the response",
+              "then": "Returns true because 299 is within the inclusive 200-299 range",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "17bcb375c38363ed764de5eecb61b46fe77adab616037d4c0ccc26bc222df952"
+        }
+      },
+      {
+        "unitId": "packages/toolkit/src/query/fetchBaseQuery.ts__defaultIsJsonContentType#function:defaultIsJsonContentType",
+        "unitKind": "function",
+        "name": "defaultIsJsonContentType",
+        "qualifiedName": "defaultIsJsonContentType",
+        "parentUnitId": null,
+        "startLine": 46,
+        "endLine": 47,
+        "isBehavioral": true,
+        "source": "const defaultIsJsonContentType = (headers: Headers) =>\n  /*applicat*/ /ion\\/(vnd\\.api\\+)?json/.test(headers.get('content-type') || '')",
+        "detail": {
+          "unitId": "packages/toolkit/src/query/fetchBaseQuery.ts__defaultIsJsonContentType#function:defaultIsJsonContentType",
+          "fileId": "packages/toolkit/src/query/fetchBaseQuery.ts__defaultIsJsonContentType",
+          "unitKind": "function",
+          "name": "defaultIsJsonContentType",
+          "qualifiedName": "defaultIsJsonContentType",
+          "parentUnitId": null,
+          "startLine": 46,
+          "endLine": 47,
+          "signature": "const defaultIsJsonContentType = (headers: Headers) => boolean",
+          "parameters": [
+            { "name": "headers", "type": "Headers", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "boolean",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "pure",
+          "visibility": "internal",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "`headers` must be a valid `Headers` instance exposing a `get` method that accepts a string and returns `string | null`."
+          ],
+          "postconditions": [
+            "Returns `true` when the Content-Type header value matches a JSON MIME-type pattern; returns `false` otherwise. The `headers` object is not mutated."
+          ],
+          "invariants": [
+            "The function is referentially transparent: the return value depends solely on `headers.get('content-type')` and never mutates `headers` or any external state."
+          ],
+          "edgeCases": [
+            "Content-Type absent: `headers.get('content-type')` returns `null`, which falls back to `''`; the regex does not match an empty string, so the result is `false`.",
+            "Charset suffix: `application/json; charset=utf-8` still matches because the regex searches within the full header value (no anchoring at end).",
+            "Vendor-prefixed JSON: `application/vnd.api+json` matches via the optional `(vnd\\.api\\+)?` group, yielding `true`.",
+            "Non-JSON types: `text/html` or `application/xml` do not contain the `ion/json` or `ion/vnd.api+json` pattern, so the result is `false`."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "headers.get", "source": "Headers", "kind": "internal" }],
+          "symbolReferences": ["Headers"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Given a Headers object, tests its Content-Type header against a JSON MIME-type regex and returns a boolean indicating whether the response body should be treated as JSON, with no side effects.",
+          "specLiterals": [
+            {
+              "kind": "regex",
+              "value": "/ion\\/(vnd\\.api\\+)?json/",
+              "role": "Tests the Content-Type header value to identify JSON media types, including the vendor-prefixed `application/vnd.api+json` subtype."
+            },
+            {
+              "kind": "format-string",
+              "value": "content-type",
+              "role": "Header name passed to headers.get() to retrieve the response content type for inspection."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "defaultIsJsonContentType(headers) is called",
+              "then": "returns true",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "defaultIsJsonContentType(headers) is called",
+              "then": "returns false",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "defaultIsJsonContentType(headers) is called",
+              "then": "returns true",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "5fe033aa9488ad8409f92f6e2f9760a2e8c01c4d97d0ea7455085a4fbdb48c4a"
+        }
+      },
+      {
+        "unitId": "packages/toolkit/src/query/fetchBaseQuery.ts__stripUndefined#function:stripUndefined",
+        "unitKind": "function",
+        "name": "stripUndefined",
+        "qualifiedName": "stripUndefined",
+        "parentUnitId": null,
+        "startLine": 98,
+        "endLine": 107,
+        "isBehavioral": true,
+        "source": "function stripUndefined(obj: any) {\n  if (!isPlainObject(obj)) {\n    return obj\n  }\n  const copy: Record<string, any> = { ...obj }\n  for (const [k, v] of Object.entries(copy)) {\n    if (v === undefined) delete copy[k]\n  }\n  return copy\n}",
+        "detail": {
+          "unitId": "packages/toolkit/src/query/fetchBaseQuery.ts__stripUndefined#function:stripUndefined",
+          "fileId": "packages/toolkit/src/query/fetchBaseQuery.ts__stripUndefined",
+          "unitKind": "function",
+          "name": "stripUndefined",
+          "qualifiedName": "stripUndefined",
+          "parentUnitId": null,
+          "startLine": 98,
+          "endLine": 107,
+          "signature": "function stripUndefined(obj: any)",
+          "parameters": [
+            { "name": "obj", "type": "any", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "any",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "view",
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["obj is any value; no precondition required."],
+          "postconditions": [
+            "If obj is not a plain object, the returned value is identical to the input (referentially equal).",
+            "If obj is a plain object, the returned value is a shallow copy of obj with all own enumerable properties whose value is exactly undefined removed.",
+            "The input object is never mutated."
+          ],
+          "invariants": [
+            "The returned value's type matches the input shape; no property keys other than those with undefined values are removed."
+          ],
+          "edgeCases": [
+            "Non-object input (e.g. null, number, string, array): returned as-is without copying.",
+            "Plain object with no undefined properties: returned as a shallow copy containing all original entries.",
+            "Plain object with nested undefined values: only top-level undefined properties are removed; nested objects are copied by reference.",
+            "Plain object with all undefined values: returned as an empty object {}.",
+            "Plain object with undefined values that are not own enumerable properties (e.g. inherited): not affected."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": ["Creates a new shallow copy of the input object; does not mutate the original."],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "isPlainObject", "source": "packages/toolkit/src/query/fetchBaseQuery.ts", "kind": "internal" }
+          ],
+          "symbolReferences": ["isPlainObject"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Removes own enumerable properties whose value is undefined from a shallow copy of a plain object, returning the object unchanged if it is not a plain object. Guarantees callers receive a value with no undefined properties without mutating the input.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "2ef455eae560c93648459b84296ee7d528b798fbec327fa8905888b5da9e26a6"
+        }
+      },
+      {
+        "unitId": "packages/toolkit/src/query/fetchBaseQuery.ts__isJsonifiable#function:isJsonifiable",
+        "unitKind": "function",
+        "name": "isJsonifiable",
+        "qualifiedName": "isJsonifiable",
+        "parentUnitId": null,
+        "startLine": 110,
+        "endLine": 114,
+        "isBehavioral": true,
+        "source": "const isJsonifiable = (body: any) =>\n  typeof body === 'object' &&\n  (isPlainObject(body) ||\n    Array.isArray(body) ||\n    typeof body.toJSON === 'function')",
+        "detail": {
+          "unitId": "packages/toolkit/src/query/fetchBaseQuery.ts__isJsonifiable#function:isJsonifiable",
+          "fileId": "packages/toolkit/src/query/fetchBaseQuery.ts__isJsonifiable",
+          "unitKind": "function",
+          "name": "isJsonifiable",
+          "qualifiedName": "isJsonifiable",
+          "parentUnitId": null,
+          "startLine": 110,
+          "endLine": 114,
+          "signature": "(body: any) => boolean",
+          "parameters": [
+            { "name": "body", "type": "any", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "boolean",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "pure",
+          "visibility": "private",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [
+            "Returns true only when body is typeof 'object' and is a plain object, an array, or has a callable toJSON method."
+          ],
+          "invariants": [],
+          "edgeCases": [
+            "null: typeof null === 'object' is true, but accessing null.toJSON throws TypeError before the result can be returned.",
+            "undefined: typeof undefined === 'object' is false, returns false without throwing.",
+            "Empty plain object {} or empty array []: isPlainObject / Array.isArray returns true, returns true.",
+            "Primitives (number, string, boolean): typeof check fails, returns false.",
+            "Date instances: typeof body.toJSON === 'function' is true, returns true.",
+            "RegExp, Map, Set instances: no toJSON, isPlainObject and Array.isArray false, returns false."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["TypeError"],
+            "reverts": [],
+            "onInvalidInput": "Returns false for non-object primitives; throws TypeError when body is null due to property access on null.",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "isPlainObject", "source": null, "kind": "external" },
+            { "name": "Array.isArray", "source": null, "kind": "external" }
+          ],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Determines whether a body value is JSON-serializable by checking if it is a plain object, an array, or an object exposing a callable toJSON method.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "isJsonifiable({ a: 1 }) is called",
+              "then": "returns true",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "isJsonifiable([1, 2, 3]) is called",
+              "then": "returns true",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "isJsonifiable(42) is called",
+              "then": "returns false",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "3aeedc2e09aa863dd67a3bb6a1102d669bbb3a06714e01671b940b84162ba4eb"
+        }
+      },
+      {
+        "unitId": "packages/toolkit/src/query/fetchBaseQuery.ts__fetchBaseQuery#function:fetchBaseQuery",
+        "unitKind": "function",
+        "name": "fetchBaseQuery",
+        "qualifiedName": "fetchBaseQuery",
+        "parentUnitId": null,
+        "startLine": 190,
+        "endLine": 375,
+        "isBehavioral": true,
+        "source": " * An optional predicate function to determine if `JSON.stringify()` should be called on the `body` arg of `FetchArgs`\n *\n * @param {string} jsonContentType Used when automatically setting the content-type header for a request with a jsonifiable body that does not have an explicit content-type header. Defaults to `application/json`.\n *\n * @param {(this: any, key: string, value: any) => any} jsonReplacer Custom replacer function used when calling `JSON.stringify()`.\n *\n * @param {number} timeout\n * A number in milliseconds that represents the maximum time a request can take before timing out.\n */\n\nexport function fetchBaseQuery({\n  baseUrl,\n  prepareHeaders = (x) => x,\n  fetchFn = defaultFetchFn,\n  paramsSerializer,\n  isJsonContentType = defaultIsJsonContentType,\n  jsonContentType = 'application/json',\n  jsonReplacer,\n  timeout: defaultTimeout,\n  responseHandler: globalResponseHandler,\n  validateStatus: globalValidateStatus,\n  ...baseFetchOptions\n}: FetchBaseQueryArgs = {}): BaseQueryFn<\n  string | FetchArgs,\n  unknown,\n  FetchBaseQueryError,\n  {},\n  FetchBaseQueryMeta\n> {\n  if (typeof fetch === 'undefined' && fetchFn === defaultFetchFn) {\n    console.warn(\n      'Warning: `fetch` is not available. Please supply a custom `fetchFn` property to use `fetchBaseQuery` on SSR environments.',\n    )\n  }\n  return async (arg, api, extraOptions) => {\n    const { getState, extra, endpoint, forced, type } = api\n    let meta: FetchBaseQueryMeta | undefined\n    let {\n      url,\n      headers = new Headers(baseFetchOptions.headers),\n      params = undefined,\n      responseHandler = globalResponseHandler ?? ('json' as const),\n      validateStatus = globalValidateStatus ?? defaultValidateStatus,\n      timeout = defaultTimeout,\n      ...rest\n    } = typeof arg == 'string' ? { url: arg } : arg\n\n    let config: RequestInit = {\n      ...baseFetchOptions,\n      signal: timeout\n        ? anySignal(api.signal, timeoutSignal(timeout))\n        : api.signal,\n      ...rest,\n    }\n\n    headers = new Headers(stripUndefined(headers))\n    config.headers =\n      (await prepareHeaders(headers, {\n        getState,\n        arg,\n        extra,\n        endpoint,\n        forced,\n        type,\n        extraOptions,\n      })) || headers\n\n    const bodyIsJsonifiable = isJsonifiable(config.body)\n\n    // Remove content-type for non-jsonifiable bodies to let the browser set it automatically\n    // Exception: keep content-type for string bodies as they might be intentional (text/plain, text/html, etc.)\n    if (\n      config.body != null &&\n      !bodyIsJsonifiable &&\n      typeof config.body !== 'string'\n    ) {\n      config.headers.delete('content-type')\n    }\n\n    if (!config.headers.has('content-type') && bodyIsJsonifiable) {\n      config.headers.set('content-type', jsonContentType)\n    }\n\n    if (bodyIsJsonifiable && isJsonContentType(config.headers)) {\n      config.body = JSON.stringify(config.body, jsonReplacer)\n    }\n\n    // Set Accept header based on responseHandler if not already set\n    if (!config.headers.has('accept')) {\n      if (responseHandler === 'json') {\n        config.headers.set('accept', 'application/json')\n      } else if (responseHandler === 'text') {\n        config.headers.set('accept', 'text/plain, text/html, */*')\n      }\n      // For 'content-type' responseHandler, don't set Accept (let server decide)\n    }\n\n    if (params) {\n      const divider = ~url.indexOf('?') ? '&' : '?'\n      const query = paramsSerializer\n        ? paramsSerializer(params)\n        : new URLSearchParams(stripUndefined(params))\n      url += divider + query\n    }\n\n    url = joinUrls(baseUrl, url)\n\n    const request = new Request(url, config)\n    const requestClone = new Request(url, config)\n    meta = { request: requestClone }\n\n    let response\n    try {\n      response = await fetchFn(request)\n    } catch (e) {\n      return {\n        error: {\n          status:\n            (e instanceof Error ||\n              (typeof DOMException !== 'undefined' &&\n                e instanceof DOMException)) &&\n            e.name === 'TimeoutError'\n              ? 'TIMEOUT_ERROR'\n              : 'FETCH_ERROR',\n          error: String(e),\n        },\n        meta,\n      }\n    }\n    const responseClone = response.clone()\n\n    meta.response = responseClone\n\n    let resultData: any\n    let responseText: string = ''\n    try {\n      let handleResponseError\n      await Promise.all([\n        handleResponse(response, responseHandler).then(\n          (r) => (resultData = r),\n          (e) => (handleResponseError = e),\n        ),\n        // see https://github.com/node-fetch/node-fetch/issues/665#issuecomment-538995182\n        // we *have* to \"use up\" both streams at the same time or they will stop running in node-fetch scenarios\n        responseClone.text().then(\n          (r) => (responseText = r),\n          () => {},\n        ),\n      ])\n      if (handleResponseError) throw handleResponseError\n    } catch (e) {\n      return {\n        error: {\n          status: 'PARSING_ERROR',\n          originalStatus: response.status,\n          data: responseText,\n          error: String(e),\n        },\n        meta,\n      }\n    }\n\n    return validateStatus(response, resultData)\n      ? {\n          data: resultData,\n          meta,\n        }\n      : {\n          error: {\n            status: response.status,\n            data: resultData,\n          },\n          meta,\n        }\n  }\n\n  async function handleResponse(\n    response: Response,\n    responseHandler: ResponseHandler,\n  ) {\n    if (typeof responseHandler === 'function') {\n      return responseHandler(response)\n    }\n\n    if (responseHandler === 'content-type') {\n      responseHandler = isJsonContentType(response.headers) ? 'json' : 'text'",
+        "detail": {
+          "unitId": "packages/toolkit/src/query/fetchBaseQuery.ts__fetchBaseQuery#function:fetchBaseQuery",
+          "fileId": "packages/toolkit/src/query/fetchBaseQuery.ts__fetchBaseQuery",
+          "unitKind": "function",
+          "name": "fetchBaseQuery",
+          "qualifiedName": "fetchBaseQuery",
+          "parentUnitId": null,
+          "startLine": 190,
+          "endLine": 375,
+          "signature": "export function fetchBaseQuery({ baseUrl, prepareHeaders = (x) => x, fetchFn = defaultFetchFn, paramsSerializer, isJsonContentType = defaultIsJsonContentType, jsonContentType = 'application/json', jsonReplacer, timeout: defaultTimeout, responseHandler: globalResponseHandler, validateStatus: globalValidateStatus, ...baseFetchOptions }: FetchBaseQueryArgs = {}): BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError, {}, FetchBaseQueryMeta>",
+          "parameters": [
+            { "name": "baseUrl", "type": "string", "default": null, "optional": true, "variadic": false, "order": 0 },
+            {
+              "name": "prepareHeaders",
+              "type": "(headers: Headers, options: { getState: () => any; arg: string | FetchArgs; extra: any; endpoint: string; forced: boolean; type: string; extraOptions: any }) => Headers | Promise<Headers>",
+              "default": "(x) => x",
+              "optional": true,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "fetchFn",
+              "type": "(request: Request) => Promise<Response>",
+              "default": "defaultFetchFn",
+              "optional": true,
+              "variadic": false,
+              "order": 2
+            },
+            {
+              "name": "paramsSerializer",
+              "type": "(params: Record<string, any>) => string",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 3
+            },
+            {
+              "name": "isJsonContentType",
+              "type": "(headers: Headers) => boolean",
+              "default": "defaultIsJsonContentType",
+              "optional": true,
+              "variadic": false,
+              "order": 4
+            },
+            {
+              "name": "jsonContentType",
+              "type": "string",
+              "default": "'application/json'",
+              "optional": true,
+              "variadic": false,
+              "order": 5
+            },
+            {
+              "name": "jsonReplacer",
+              "type": "((this: any, key: string, value: any) => any) | undefined",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 6
+            },
+            { "name": "timeout", "type": "number", "default": null, "optional": true, "variadic": false, "order": 7 },
+            {
+              "name": "responseHandler",
+              "type": "ResponseHandler",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 8
+            },
+            {
+              "name": "validateStatus",
+              "type": "(response: Response, data: any) => boolean",
+              "default": "defaultValidateStatus",
+              "optional": true,
+              "variadic": false,
+              "order": 9
+            },
+            {
+              "name": "baseFetchOptions",
+              "type": "Omit<FetchBaseQueryArgs, 'baseUrl' | 'prepareHeaders' | 'fetchFn' | 'paramsSerializer' | 'isJsonContentType' | 'jsonContentType' | 'jsonReplacer' | 'timeout' | 'responseHandler' | 'validateStatus'>",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 10
+            }
+          ],
+          "returnType": "BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError, {}, FetchBaseQueryMeta>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "pure",
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "A `fetch` implementation must be available in the runtime environment, or a custom `fetchFn` must be provided.",
+            "When using default fetch functionality on non-browser environments, a custom `fetchFn` must be supplied.",
+            "The `baseUrl` (if provided) must be a valid URL string.",
+            "`prepareHeaders` must return a `Headers` object or a promise resolving to one.",
+            "`validateStatus` must return a boolean indicating whether the response is considered successful.",
+            "`responseHandler` must be either a function accepting a `Response` or one of 'json', 'text', 'content-type'."
+          ],
+          "postconditions": [
+            "Returns a `BaseQueryFn` that accepts a URL string or `FetchArgs` object and yields a promise resolving to a result containing `data`, `error`, and/or `meta`.",
+            "Response data is parsed according to `responseHandler` (JSON, text, or content-type-based).",
+            "If `validateStatus` returns false, the result contains an error field instead of `data`.",
+            "Request and response metadata (including cloned Request and Response objects) is attached to the result via `meta`.",
+            "Headers are automatically set with appropriate content-type and accept values based on body type and response handler.",
+            "Timeouts are handled via an AbortSignal constructed from `timeoutSignal`.",
+            "Query parameters are serialized and appended to the URL, using '?' or '&' as appropriate."
+          ],
+          "invariants": [
+            "Either a native `fetch` or a custom `fetchFn` is used to make the request.",
+            "The original request and response objects are preserved in the returned `meta`.",
+            "Content-type header is deleted for non-jsonifiable, non-string bodies and set automatically for jsonifiable bodies."
+          ],
+          "edgeCases": [
+            "If `fetch` is undefined and no custom `fetchFn` is provided, a warning is logged but execution may still proceed (likely failing at request time).",
+            "When `arg` is a string, it is treated as the URL.",
+            "When `arg` is a `FetchArgs` object, its properties override global defaults.",
+            "If `params` is provided, it is serialized and appended to the URL with correct divider.",
+            "If `jsonReplacer` is provided, it is used in `JSON.stringify` for jsonifiable bodies.",
+            "An empty `params` results in no query string appended.",
+            "If the response cannot be parsed (e.g., invalid JSON), a `PARSING_ERROR` is returned with original status and raw text.",
+            "If the fetch call itself fails (network error, timeout), a `FETCH_ERROR` or `TIMEOUT_ERROR` is returned.",
+            "If `responseHandler` is 'content-type', the handler dynamically selects between JSON and text based on response headers.",
+            "If `prepareHeaders` returns a falsy value, the existing headers are used.",
+            "String bodies retain their original content-type header if explicitly set."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Returns an error object with status 'FETCH_ERROR', 'TIMEOUT_ERROR', or 'PARSING_ERROR' depending on the failure point.",
+            "returnsOnError": "{ error: { status: 'FETCH_ERROR' | 'TIMEOUT_ERROR' | 'PARSING_ERROR' | number, data?: any, error: string, originalStatus?: number }, meta?: FetchBaseQueryMeta }"
+          },
+          "stateMutations": [
+            "Mutates the `config.headers` object by deleting or setting content-type and accept headers.",
+            "May modify `config.body` by serializing it via `JSON.stringify`.",
+            "Appends query parameters to the `url` string.",
+            "Creates new `Request` and `Response` objects internally."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "defaultFetchFn", "source": "same-file", "kind": "internal" },
+            { "name": "defaultIsJsonContentType", "source": "same-file", "kind": "internal" },
+            { "name": "defaultValidateStatus", "source": "same-file", "kind": "internal" },
+            { "name": "stripUndefined", "source": "same-file", "kind": "internal" },
+            { "name": "isJsonifiable", "source": "same-file", "kind": "internal" },
+            { "name": "anySignal", "source": "external", "kind": "external" },
+            { "name": "timeoutSignal", "source": "external", "kind": "external" },
+            { "name": "joinUrls", "source": "external", "kind": "external" },
+            { "name": "handleResponse", "source": "same-file", "kind": "internal" }
+          ],
+          "symbolReferences": [
+            "FetchBaseQueryArgs",
+            "BaseQueryFn",
+            "FetchBaseQueryError",
+            "FetchBaseQueryMeta",
+            "FetchArgs",
+            "ResponseHandler",
+            "Headers",
+            "Request",
+            "RequestInit",
+            "Response",
+            "AbortSignal",
+            "DOMException"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Configures a base query function for RTK Query that performs HTTP requests using the Fetch API, applying configurable headers, serialization, timeouts, and response validation.",
+          "specLiterals": [
+            {
+              "kind": "string",
+              "value": "'application/json'",
+              "role": "Default content-type sent for jsonifiable request bodies."
+            },
+            {
+              "kind": "string",
+              "value": "'TIMEOUT_ERROR'",
+              "role": "Error status returned when a timeout occurs during fetch."
+            },
+            { "kind": "string", "value": "'FETCH_ERROR'", "role": "Error status returned for general fetch failures." },
+            {
+              "kind": "string",
+              "value": "'PARSING_ERROR'",
+              "role": "Error status returned when response parsing fails."
+            },
+            {
+              "kind": "string",
+              "value": "'Warning: `fetch` is not available. Please supply a custom `fetchFn` property to use `fetchBaseQuery` on SSR environments.'",
+              "role": "Warning message logged when fetch is unavailable."
+            },
+            {
+              "kind": "string",
+              "value": "'?&'",
+              "role": "Query string separator used when appending params to URL with or without existing query."
+            }
+          ],
+          "declaredConstants": [
+            { "name": "jsonContentType", "value": "'application/json'", "kind": "default-parameter" },
+            { "name": "defaultTimeout", "value": "undefined", "kind": "default-parameter" },
+            { "name": "globalResponseHandler", "value": "undefined", "kind": "default-parameter" },
+            { "name": "globalValidateStatus", "value": "undefined", "kind": "default-parameter" }
+          ],
+          "specTests": [],
+          "semanticFingerprint": "4520abdef1cbe0c556ce80185ad1a3feda4b57736969336aa9c7b22eb4e15891"
+        }
+      },
+      {
+        "unitId": "packages/toolkit/src/query/fetchBaseQuery.ts__fetchBaseQuery.handleResponse#function:fetchBaseQuery.handleResponse",
+        "unitKind": "function",
+        "name": "handleResponse",
+        "qualifiedName": "fetchBaseQuery.handleResponse",
+        "parentUnitId": "packages/toolkit/src/query/fetchBaseQuery.ts__fetchBaseQuery#function:fetchBaseQuery",
+        "startLine": 356,
+        "endLine": 374,
+        "isBehavioral": true,
+        "source": "        }\n      : {\n          error: {\n            status: response.status,\n            data: resultData,\n          },\n          meta,\n        }\n  }\n\n  async function handleResponse(\n    response: Response,\n    responseHandler: ResponseHandler,\n  ) {\n    if (typeof responseHandler === 'function') {\n      return responseHandler(response)\n    }\n\n    if (responseHandler === 'content-type') {",
+        "detail": {
+          "unitId": "packages/toolkit/src/query/fetchBaseQuery.ts__fetchBaseQuery.handleResponse#function:fetchBaseQuery.handleResponse",
+          "fileId": "packages/toolkit/src/query/fetchBaseQuery.ts__fetchBaseQuery.handleResponse",
+          "unitKind": "function",
+          "name": "handleResponse",
+          "qualifiedName": "fetchBaseQuery.handleResponse",
+          "parentUnitId": "packages/toolkit/src/query/fetchBaseQuery.ts__fetchBaseQuery#function:fetchBaseQuery",
+          "startLine": 356,
+          "endLine": 374,
+          "signature": "async function handleResponse(response: Response, responseHandler: ResponseHandler)",
+          "parameters": [
+            {
+              "name": "response",
+              "type": "Response",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "responseHandler",
+              "type": "ResponseHandler",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "response is a Response instance",
+            "responseHandler is either a function or the string 'content-type'"
+          ],
+          "postconditions": [
+            "If responseHandler is a function, returns the result of responseHandler(response)",
+            "If responseHandler is 'content-type', returns a normalized payload (observed error shape includes status and data)"
+          ],
+          "invariants": [],
+          "edgeCases": [
+            "responseHandler is a function -> direct delegation",
+            "responseHandler === 'content-type' -> content-type branch taken"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": "{ error: { status: response.status, data: resultData }, meta }"
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "responseHandler", "source": null, "kind": "internal" }],
+          "symbolReferences": ["Response", "ResponseHandler"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Processes a fetch Response using the provided responseHandler, delegating to a custom function or applying content-type based default parsing, and normalizes error responses with status and data.",
+          "specLiterals": [
+            {
+              "kind": "enum-value",
+              "value": "content-type",
+              "role": "discriminant for responseHandler default parsing"
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "handleResponse(response, responseHandler) is invoked",
+              "then": "returns the result of calling responseHandler(response)",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "499a7f6f18ef9a055031cf12a22a60596dc5922f00ebbfae114f38f7a9e16c6f"
+        }
+      }
+    ]
+  },
+  "out": [
+    "packages/toolkit/src/query/tsHelpers.ts",
+    "packages/toolkit/src/query/baseQueryTypes.ts",
+    "packages/toolkit/src/query/utils/index.ts",
+    "packages/toolkit/src/query/core/rtkImports.ts",
+    "packages/toolkit/src/query/utils/signals.ts"
+  ],
+  "in": ["packages/toolkit/src/query/index.ts", "packages/toolkit/src/query/retry.ts"],
+  "externals": [],
+  "impact": { "seeds": 7, "callers": 1, "impactedFiles": [] }
+}

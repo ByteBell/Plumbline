@@ -26,7 +26,7 @@ import sys
 
 CASE = "xrepo-v6-22-a-failure-is-not-an-answer-medium"
 BENCH = "/Users/sauravverma/programs/benchmarks/react-ecosystem"
-CDIR = f"{BENCH}/cross-repo/hard-a-failure-is-not-an-answer"
+CDIR = f"{BENCH}/cross-repo/medium-a-failure-is-not-an-answer"
 ARM_NAME = "claudecli_opus5_mcp_plumbline"
 ARM = f"{CDIR}/{ARM_NAME}"
 CAP = 75
@@ -286,7 +286,7 @@ def main():
             "This run had prompt caching ON (cache_read=1,874,501), so its CLI "
             "cost is a cached price. Sibling arms on other cases were run both "
             "ways, so cost columns are only comparable within a caching mode. "
-            "Re-run with DISABLE_PROMPT_CACHING=1 for a like-for-like cost "
+            "Re-run with caching off for a like-for-like cost "
             "number; the ranked answer does not change."),
         "cache_clean_note": (
             "cache_clean means no cache was inherited from an earlier session, "

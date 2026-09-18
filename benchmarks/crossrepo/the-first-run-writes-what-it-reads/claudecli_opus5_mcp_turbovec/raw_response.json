@@ -1,0 +1,84 @@
+{
+  "duration_api_ms": 483775,
+  "stop_reason": "end_turn",
+  "session_id": "924162c8-d635-4650-bdf8-647edde23784",
+  "total_cost_usd": 4.230162,
+  "usage": {
+    "input_tokens": 40,
+    "cache_creation_input_tokens": 208922,
+    "cache_read_input_tokens": 2483866,
+    "output_tokens": 35831,
+    "output_tokens_details": { "thinking_tokens": 31426 },
+    "server_tool_use": { "web_search_requests": 0, "web_fetch_requests": 0 },
+    "service_tier": "standard",
+    "cache_creation": { "ephemeral_1h_input_tokens": 208922, "ephemeral_5m_input_tokens": 0 },
+    "inference_geo": "not_available",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 2561,
+        "cache_read_input_tokens": 223656,
+        "cache_creation_input_tokens": 9585,
+        "cache_creation": { "ephemeral_5m_input_tokens": 0, "ephemeral_1h_input_tokens": 9585 },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 2894,
+      "outputTokens": 28,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.003034,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "claude-haiku-4-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    },
+    "claude-opus-5": {
+      "inputTokens": 40,
+      "outputTokens": 35831,
+      "cacheReadInputTokens": 2483866,
+      "cacheCreationInputTokens": 208922,
+      "webSearchRequests": 0,
+      "costUSD": 4.227128,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "canonicalModel": "claude-opus-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": { "background": 0, "foreground": 0, "unset": 0 },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": { "parent": 0, "user": 0, "system": 0 },
+    "refused": { "depth_limit": 0, "concurrency_limit": 0, "budget": 0 },
+    "by_type": {}
+  },
+  "is_error": false,
+  "num_turns": 31,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "I've traced the defect and the contract. Summary before the ranked list:\n\n**Symptom** — `tldraw/packages/state/src/lib/EffectScheduler.ts`: `execute()` records `lastReactedEpoch` *before* `runEffect` but only commits it *after*, and the first run is entered outside any reaction phase (`react()` → `attach()` → `scheduleEffect()` → `execute()` directly). So an atom written during the first run goes through `atomDidChange` → `flushChanges` with `globalIsReacting === false`, and `maybeScheduleEffect` sees `parents.length > 0` with `haveParentsChanged()` true, re-entering `execute()` mid-capture; the inner run's `stopCapturingParents()` installs a dependency set over the outer one's. On later runs the same write is deferred to the cleanup pass (`globalIsReacting`), which is the run-atomicity rule being violated.\n\n**Contract owners** — `transactions.ts` (reaction-phase deferral + `Reaction update depth limit exceeded`), `capture.ts` (collection frames), `Atom.ts`/`helpers.ts`/`Computed.ts`; `@tldraw/store`'s `atomic()` (outermost-batch flush, `Maximum store update depth exceeded`); React's nested-update counter and render-phase-update attribution; TanStack DB's transaction-scoped scheduler and reentrance guards; jotai's sync-phase write/read marking with flush at the outermost write; TanStack Query's nested-batch counter with outermost flush.\n\n[{\"repo\": \"tldraw\", \"files\": [\"packages/state/src/lib/EffectScheduler.ts\", \"packages/state/src/lib/transactions.ts\", \"packages/state/src/lib/capture.ts\", \"packages/state/src/lib/Atom.ts\", \"packages/state/src/lib/helpers.ts\", \"packages/state/src/lib/Computed.ts\", \"packages/store/src/lib/Store.ts\"]}, {\"repo\": \"react\", \"files\": [\"packages/react-reconciler/src/ReactFiberWorkLoop.js\", \"packages/react-reconciler/src/ReactFiberHooks.js\", \"packages/react-reconciler/src/ReactFiberClassUpdateQueue.js\"]}, {\"repo\": \"db\", \"files\": [\"packages/db/src/scheduler.ts\", \"packages/db/src/query/effect.ts\", \"packages/db/src/query/live/collection-config-builder.ts\", \"packages/db/src/transactions.ts\"]}, {\"repo\": \"jotai\", \"files\": [\"src/vanilla/internals.ts\", \"src/vanilla/store.ts\"]}, {\"repo\": \"query\", \"files\": [\"packages/query-core/src/notifyManager.ts\"]}]",
+  "ttft_ms": 2291,
+  "type": "result",
+  "duration_ms": 483695,
+  "uuid": "1dd03082-ffb7-4288-b3f5-84473830837d",
+  "ttft_stream_ms": 1729,
+  "time_to_request_ms": 19,
+  "queued_turn_count": 0
+}

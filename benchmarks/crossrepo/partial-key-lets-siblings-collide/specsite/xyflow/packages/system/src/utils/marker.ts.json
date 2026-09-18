@@ -1,0 +1,635 @@
+{
+  "schema": 1,
+  "kind": "file",
+  "repoName": "xyflow",
+  "commitHash": "360f5b13e2bc6899ea06b4be1a49b068d86926cf",
+  "generatedAt": "2026-08-03T07:44:04.757Z",
+  "file": {
+    "relativePath": "packages/system/src/utils/marker.ts",
+    "language": "typescript",
+    "sizeBytes": 1318,
+    "tokenCount": 332,
+    "model": "openai/gpt-5.6-luna",
+    "analysedAt": "2026-08-03T07:37:25.075Z",
+    "module": {
+      "purpose": "Provides utilities for deriving stable edge marker identifiers and collecting deduplicated marker properties for graph rendering.",
+      "summary": "This module normalizes marker definitions into deterministic identifiers by handling absent, string, and object markers. It also scans edge endpoints, applies default marker settings, deduplicates object markers, preserves marker colors with fallback defaults, and returns marker properties sorted by identifier.",
+      "businessContext": "Supports visual graph edge rendering by managing reusable start and end markers. Failures could produce missing, duplicated, or inconsistently ordered edge marker definitions.",
+      "classes": [],
+      "functions": [
+        "getMarkerId (~L3-19): Builds stable identifiers from string or object marker definitions.",
+        "createMarkerIds (~L21-51): Collects, deduplicates, and sorts marker properties for edges."
+      ],
+      "keywords": [
+        "edge markers",
+        "marker identifiers",
+        "graph rendering",
+        "marker deduplication",
+        "default marker",
+        "locale sorting"
+      ],
+      "ontologyConcepts": [
+        "identity",
+        "deduplication",
+        "normalization",
+        "deterministic ordering",
+        "fallback resolution"
+      ],
+      "businessEntities": ["Edge", "Marker", "MarkerProperties"],
+      "systemCapabilities": [
+        "Generate stable marker identifiers",
+        "Resolve default edge markers",
+        "Deduplicate marker definitions",
+        "Sort marker properties deterministically"
+      ],
+      "configDependencies": [],
+      "importsInternal": [
+        {
+          "spec": "../types",
+          "symbols": ["EdgeBase", "EdgeMarker", "EdgeMarkerType", "MarkerProps"],
+          "anchor": { "startLine": 1, "endLine": 1 },
+          "resolvedRelativePath": "packages/system/src/types/index.ts",
+          "resolvedFileId": "packages/system/src/types/index.ts",
+          "resolvedHint": "packages/system/src/types.ts"
+        }
+      ],
+      "importsExternal": [],
+      "sideEffects": { "io": [], "network": [], "env": [], "fs": [], "process": [], "mutationOfArg": [] },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "getMarkerId",
+          "shape": "getMarkerId(marker: EdgeMarkerType | undefined, id?: string | null): string",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "createMarkerIds",
+          "shape": "createMarkerIds(edges: EdgeBase[], { id, defaultColor, defaultMarkerStart, defaultMarkerEnd }: { id?: string | null; defaultColor?: string | null; defaultMarkerStart?: EdgeMarkerType; defaultMarkerEnd?: EdgeMarkerType })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "EdgeBase",
+          "shape": "EdgeBase[]",
+          "resolvedRelativePath": "packages/system/src/types/index.ts",
+          "resolvedFileId": "packages/system/src/types/index.ts"
+        },
+        {
+          "name": "EdgeMarker",
+          "shape": "EdgeMarker",
+          "resolvedRelativePath": "packages/system/src/types/index.ts",
+          "resolvedFileId": "packages/system/src/types/index.ts"
+        },
+        {
+          "name": "EdgeMarkerType",
+          "shape": "EdgeMarkerType | undefined",
+          "resolvedRelativePath": "packages/system/src/types/index.ts",
+          "resolvedFileId": "packages/system/src/types/index.ts"
+        },
+        {
+          "name": "MarkerProps",
+          "shape": "MarkerProps[]",
+          "resolvedRelativePath": "packages/system/src/types/index.ts",
+          "resolvedFileId": "packages/system/src/types/index.ts"
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "marker absence handling",
+          "intent": "Returns an empty identifier when no marker is supplied.",
+          "structureKind": "branch",
+          "predicate": "!marker",
+          "branchOutcomes": ["absent marker returns empty string", "present marker continues"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 4, "endLine": 6 }
+        },
+        {
+          "name": "string marker handling",
+          "intent": "Uses string markers directly as their identifiers.",
+          "structureKind": "branch",
+          "predicate": "typeof marker === 'string'",
+          "branchOutcomes": ["string marker returns unchanged", "object marker continues"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 8, "endLine": 10 }
+        },
+        {
+          "name": "object marker normalization",
+          "intent": "Builds identifiers from an optional prefix and sorted marker properties.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 12, "endLine": 19 }
+        },
+        {
+          "name": "edge marker traversal",
+          "intent": "Processes start and end markers for every edge.",
+          "structureKind": "loop",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": "[edge.markerStart || defaultMarkerStart, edge.markerEnd || defaultMarkerEnd]",
+          "terminationCondition": null,
+          "anchor": { "startLine": 36, "endLine": 48 }
+        },
+        {
+          "name": "object marker filtering",
+          "intent": "Processes only object markers after resolving edge defaults.",
+          "structureKind": "branch",
+          "predicate": "marker && typeof marker === 'object'",
+          "branchOutcomes": ["object marker is processed", "other marker shape is skipped"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 39, "endLine": 45 }
+        },
+        {
+          "name": "marker deduplication",
+          "intent": "Adds marker properties only when their identifier has not appeared.",
+          "structureKind": "branch",
+          "predicate": "!ids.has(markerId)",
+          "branchOutcomes": ["new identifier is added", "existing identifier is skipped"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 41, "endLine": 44 }
+        },
+        {
+          "name": "result ordering",
+          "intent": "Sorts collected marker properties lexicographically by identifier.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 47, "endLine": 50 }
+        }
+      ],
+      "representationFamily": "function-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "function",
+          "name": "getMarkerId",
+          "signature": "export function getMarkerId(marker: EdgeMarkerType | undefined, id?: string | null): string",
+          "generics": null,
+          "decorators": [],
+          "returnType": "string",
+          "exported": true,
+          "anchor": { "startLine": 3, "endLine": 3 }
+        },
+        {
+          "kind": "function",
+          "name": "createMarkerIds",
+          "signature": "export function createMarkerIds(\n  edges: EdgeBase[],\n  {\n    id,\n    defaultColor,\n    defaultMarkerStart,\n    defaultMarkerEnd,\n  }: {\n    id?: string | null;\n    defaultColor?: string | null;\n    defaultMarkerStart?: EdgeMarkerType;\n    defaultMarkerEnd?: EdgeMarkerType;\n  }\n)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 21, "endLine": 33 }
+        }
+      ],
+      "typeShapes": [],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "undefined marker",
+          "handled": true,
+          "behavior": "Returns an empty string from the identifier utility and contributes no marker properties during collection.",
+          "anchor": { "startLine": 4, "endLine": 6 }
+        },
+        {
+          "inputShape": "string marker",
+          "handled": true,
+          "behavior": "Returns the marker string unchanged as its identifier.",
+          "anchor": { "startLine": 8, "endLine": 10 }
+        },
+        {
+          "inputShape": "null or empty identifier prefix",
+          "handled": true,
+          "behavior": "Omits the prefix when id is falsy and serializes only marker properties.",
+          "anchor": { "startLine": 12, "endLine": 12 }
+        },
+        {
+          "inputShape": "duplicate object markers",
+          "handled": true,
+          "behavior": "Keeps only the first marker properties associated with each generated identifier.",
+          "anchor": { "startLine": 41, "endLine": 44 }
+        },
+        {
+          "inputShape": "empty edge collection",
+          "handled": true,
+          "behavior": "Returns an empty sorted marker-properties array.",
+          "anchor": { "startLine": 34, "endLine": 50 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": "==",
+          "left": "typeof marker",
+          "right": "'string'",
+          "inclusive": false,
+          "intent": "Distinguishes string marker identifiers from object marker definitions.",
+          "anchor": { "startLine": 8, "endLine": 9 }
+        },
+        {
+          "operator": "==",
+          "left": "typeof marker",
+          "right": "'object'",
+          "inclusive": false,
+          "intent": "Restricts collection to object marker definitions.",
+          "anchor": { "startLine": 39, "endLine": 39 }
+        }
+      ],
+      "errorHandling": [],
+      "invariants": [
+        {
+          "kind": "postcondition",
+          "description": "Absent markers produce an empty string identifier.",
+          "anchor": { "startLine": 4, "endLine": 6 }
+        },
+        {
+          "kind": "ordering",
+          "description": "Object marker keys are sorted before identifier serialization.",
+          "anchor": { "startLine": 14, "endLine": 17 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Each marker identifier appears at most once in the returned collection.",
+          "anchor": { "startLine": 41, "endLine": 44 }
+        },
+        {
+          "kind": "ordering",
+          "description": "Returned marker properties are sorted by their identifiers.",
+          "anchor": { "startLine": 49, "endLine": 50 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "schema",
+          "description": "Object marker properties are valid EdgeMarker values and can be represented through string interpolation.",
+          "anchor": { "startLine": 14, "endLine": 17 }
+        },
+        {
+          "kind": "caller",
+          "description": "Edge marker defaults are supplied in the expected EdgeMarkerType-compatible shape.",
+          "anchor": { "startLine": 21, "endLine": 33 }
+        }
+      ],
+      "ambiguities": [],
+      "concurrencyModel": {
+        "kind": "sync",
+        "reentrant": true,
+        "ordering": "deterministic",
+        "notes": "Functions use only local collections and deterministic key and identifier sorting; they perform no asynchronous or shared-state operations."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "returns-empty-id-for-missing-marker",
+          "scenario": "A missing marker is passed to getMarkerId.",
+          "given": ["marker = undefined"],
+          "when": "getMarkerId(marker)",
+          "then": "result === ''",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "returns-string-marker-as-id",
+          "scenario": "A string marker is passed to getMarkerId.",
+          "given": ["marker = 'arrow'"],
+          "when": "getMarkerId(marker)",
+          "then": "result === 'arrow'",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "canonicalizes-object-marker-keys",
+          "scenario": "Equivalent marker objects have their keys supplied in different insertion orders.",
+          "given": ["first = { color: 'red', width: 2 }", "second = { width: 2, color: 'red' }"],
+          "when": "getMarkerId(first) === getMarkerId(second)",
+          "then": "result === true",
+          "targets": [],
+          "oracleKind": "invariant-check",
+          "rationale": "Sorted marker keys make object IDs independent of property insertion order."
+        },
+        {
+          "testId": "prefixes-object-marker-id",
+          "scenario": "An object marker is supplied with an element identifier.",
+          "given": ["marker = { color: 'red' }", "id = 'edge-1'"],
+          "when": "getMarkerId(marker, id)",
+          "then": "result === 'edge-1__color=red'",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "deduplicates-and-sorts-marker-definitions",
+          "scenario": "Edges reference repeated marker objects and distinct marker objects.",
+          "given": [
+            "edges = [{ markerStart: { color: 'red' } }, { markerEnd: { color: 'red' } }, { markerStart: { color: 'blue' } }]"
+          ],
+          "when": "createMarkerIds(edges, {})",
+          "then": "result contains one entry for each unique object marker and is sorted by id",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Marker definitions are globally deduplicated and returned in deterministic ID order."
+        },
+        {
+          "testId": "uses-default-markers-and-color",
+          "scenario": "An edge lacks marker-specific values but defaults are provided.",
+          "given": [
+            "edges = [{ markerStart: undefined, markerEnd: undefined }]",
+            "defaultMarkerStart = { type: 'arrow' }",
+            "defaultColor = 'gray'"
+          ],
+          "when": "createMarkerIds(edges, { defaultMarkerStart, defaultColor })",
+          "then": "result contains the default marker with color 'gray'",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": ["type-only import from ../types", "getMarkerId function", "createMarkerIds function"],
+      "moduleLevelCode": "import type { EdgeBase, EdgeMarker, EdgeMarkerType, MarkerProps } from '../types';",
+      "exports": [
+        { "name": "getMarkerId", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "createMarkerIds", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "EdgeBase", "module": "../types", "alias": null, "kind": "internal" },
+        { "symbol": "EdgeMarker", "module": "../types", "alias": null, "kind": "internal" },
+        { "symbol": "EdgeMarkerType", "module": "../types", "alias": null, "kind": "internal" },
+        { "symbol": "MarkerProps", "module": "../types", "alias": null, "kind": "internal" }
+      ],
+      "fileConstants": [],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/system/src/utils/marker.ts__getMarkerId#function:getMarkerId",
+        "unitKind": "function",
+        "name": "getMarkerId",
+        "qualifiedName": "getMarkerId",
+        "parentUnitId": null,
+        "startLine": 3,
+        "endLine": 19,
+        "isBehavioral": true,
+        "source": "export function getMarkerId(marker: EdgeMarkerType | undefined, id?: string | null): string {\n  if (!marker) {\n    return '';\n  }\n\n  if (typeof marker === 'string') {\n    return marker;\n  }\n\n  const idPrefix = id ? `${id}__` : '';\n\n  return `${idPrefix}${Object.keys(marker)\n    .sort()\n    .map((key) => `${key}=${marker[key as keyof EdgeMarker]}`)\n    .join('&')}`;\n}\n",
+        "detail": {
+          "unitId": "packages/system/src/utils/marker.ts__getMarkerId#function:getMarkerId",
+          "fileId": "packages/system/src/utils/marker.ts__getMarkerId",
+          "unitKind": "function",
+          "name": "getMarkerId",
+          "qualifiedName": "getMarkerId",
+          "parentUnitId": null,
+          "startLine": 3,
+          "endLine": 19,
+          "signature": "export function getMarkerId(marker: EdgeMarkerType | undefined, id?: string | null): string",
+          "parameters": [
+            {
+              "name": "marker",
+              "type": "EdgeMarkerType | undefined",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            { "name": "id", "type": "string | null", "default": null, "optional": true, "variadic": false, "order": 1 }
+          ],
+          "returnType": "string",
+          "decorators": [],
+          "modifiersApplied": ["export"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["marker is undefined, a string, or an object compatible with EdgeMarkerType."],
+          "postconditions": [
+            "Returns a string.",
+            "Returns an empty string when marker is absent.",
+            "For a string marker, returns the marker unchanged.",
+            "For an object marker, serializes its own enumerable keys in sorted order as key=value pairs joined by ampersands.",
+            "For an object marker and a truthy id, prefixes the serialization with id followed by two underscores."
+          ],
+          "invariants": [
+            "Object marker key ordering in the result is lexicographic according to JavaScript's Array.sort behavior.",
+            "The id prefix is omitted when id is undefined, null, or otherwise falsy."
+          ],
+          "edgeCases": [
+            "An undefined marker returns an empty string regardless of id.",
+            "A string marker returns unchanged, and id does not affect the result.",
+            "An empty object produces an empty string, or id followed by two underscores when id is truthy.",
+            "Object keys are sorted before serialization, so insertion order does not determine the output."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "Object.keys", "source": null, "kind": "internal" }],
+          "symbolReferences": ["EdgeMarkerType", "EdgeMarker"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "For object markers: [optional id + \"__\"] followed by sorted own enumerable keys serialized as key=value and joined with \"&\". String markers pass through unchanged.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Returns a stable marker identifier from a marker value. String markers are returned unchanged, while object markers are serialized from sorted keys and may be prefixed by a truthy id.",
+          "specLiterals": [
+            { "kind": "format-string", "value": "", "role": "Returned when marker is absent." },
+            {
+              "kind": "format-string",
+              "value": "__",
+              "role": "Separates a truthy id prefix from an object marker serialization."
+            },
+            { "kind": "format-string", "value": "=", "role": "Separates each serialized marker key from its value." },
+            { "kind": "format-string", "value": "&", "role": "Separates serialized marker entries." }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "getMarkerId(marker, id) is called",
+              "then": "The result is the empty string.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "getMarkerId(marker, id) is called",
+              "then": "The result is \"node-1__a=1&b=2\".",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "getMarkerId(marker, id) is called",
+              "then": "The result is \"arrow\".",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "e25e6a41b6aa1436ef76949dbcc1e08832aad872d48c7a517694ccd0d32932c8"
+        }
+      },
+      {
+        "unitId": "packages/system/src/utils/marker.ts__createMarkerIds#function:createMarkerIds",
+        "unitKind": "function",
+        "name": "createMarkerIds",
+        "qualifiedName": "createMarkerIds",
+        "parentUnitId": null,
+        "startLine": 21,
+        "endLine": 51,
+        "isBehavioral": true,
+        "source": "  edges: EdgeBase[],\n  {\n    id,\n    defaultColor,\n    defaultMarkerStart,\n    defaultMarkerEnd,\n  }: {\n    id?: string | null;\n    defaultColor?: string | null;\n    defaultMarkerStart?: EdgeMarkerType;\n    defaultMarkerEnd?: EdgeMarkerType;\n  }\n) {\n  const ids = new Set<string>();\n\n  return edges\n    .reduce<MarkerProps[]>((markers, edge) => {\n      [edge.markerStart || defaultMarkerStart, edge.markerEnd || defaultMarkerEnd].forEach((marker) => {\n        if (marker && typeof marker === 'object') {\n          const markerId = getMarkerId(marker, id);\n          if (!ids.has(markerId)) {\n            markers.push({ id: markerId, color: marker.color || defaultColor, ...marker });\n            ids.add(markerId);\n          }\n        }\n      });\n\n      return markers;\n    }, [])\n    .sort((a, b) => a.id.localeCompare(b.id));\n}",
+        "detail": {
+          "unitId": "packages/system/src/utils/marker.ts__createMarkerIds#function:createMarkerIds",
+          "fileId": "packages/system/src/utils/marker.ts__createMarkerIds",
+          "unitKind": "function",
+          "name": "createMarkerIds",
+          "qualifiedName": "createMarkerIds",
+          "parentUnitId": null,
+          "startLine": 21,
+          "endLine": 51,
+          "signature": "createMarkerIds(edges: EdgeBase[], { id, defaultColor, defaultMarkerStart, defaultMarkerEnd }: { id?: string | null; defaultColor?: string | null; defaultMarkerStart?: EdgeMarkerType; defaultMarkerEnd?: EdgeMarkerType }): MarkerProps[]",
+          "parameters": [
+            {
+              "name": "edges",
+              "type": "EdgeBase[]",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "{ id, defaultColor, defaultMarkerStart, defaultMarkerEnd }",
+              "type": "{ id?: string | null; defaultColor?: string | null; defaultMarkerStart?: EdgeMarkerType; defaultMarkerEnd?: EdgeMarkerType }",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "MarkerProps[]",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The edges argument is an array of EdgeBase values.",
+            "The options argument is an object whose marker defaults conform to the declared EdgeMarkerType and color/id types."
+          ],
+          "postconditions": [
+            "Returns an array containing at most one entry for each generated marker ID.",
+            "Each accepted marker contributes a MarkerProps object containing the marker data and generated marker ID unless those fields are overridden by the marker object spread.",
+            "The returned array is sorted by marker ID using localeCompare."
+          ],
+          "invariants": [
+            "A marker ID is added to the result only once during processing.",
+            "Each edge contributes its start marker before its end marker.",
+            "Only truthy marker values that are objects are processed."
+          ],
+          "edgeCases": [
+            "An empty edges array returns an empty array.",
+            "A missing or falsy edge marker uses the corresponding default marker; if both are falsy, no marker is added.",
+            "Non-object or falsy marker values are ignored.",
+            "Markers producing the same generated marker ID are deduplicated, retaining the first encountered result before final sorting.",
+            "A marker color is initially selected from marker.color or defaultColor, while properties supplied by the marker object can override the constructed id and color during object spreading."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "getMarkerId", "source": "packages/system/src/utils/marker.ts", "kind": "internal" },
+            { "name": "Set.has", "source": null, "kind": "internal" },
+            { "name": "Set.add", "source": null, "kind": "internal" },
+            { "name": "Array.prototype.reduce", "source": null, "kind": "internal" },
+            { "name": "Array.prototype.sort", "source": null, "kind": "internal" },
+            { "name": "String.prototype.localeCompare", "source": null, "kind": "internal" }
+          ],
+          "symbolReferences": ["EdgeBase", "EdgeMarkerType", "MarkerProps", "getMarkerId"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Builds a sorted collection of unique marker property objects from edge start and end markers, applying configured marker fallbacks and default color values.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "createMarkerIds is called",
+              "then": "the result is an empty array",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "createMarkerIds is called",
+              "then": "the result contains only the first encountered entry for that marker ID",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "createMarkerIds is called",
+              "then": "the returned entries are ordered by their IDs according to localeCompare",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "1b44f78027e2e4b1ef48aef9d3ef2c6618869ea38c895eceba6b172b40d11990"
+        }
+      }
+    ]
+  },
+  "out": ["packages/system/src/types/index.ts"],
+  "in": ["packages/system/src/utils/index.ts"],
+  "externals": [],
+  "impact": { "seeds": 2, "callers": 1, "impactedFiles": [] }
+}

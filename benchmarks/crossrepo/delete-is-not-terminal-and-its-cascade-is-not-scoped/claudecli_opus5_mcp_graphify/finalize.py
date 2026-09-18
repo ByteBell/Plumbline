@@ -258,7 +258,7 @@ def main():
             "Every sibling cross-repo graphify arm ran with prompt caching OFF "
             "(cache_read=0, paying full input price: $13.68-$24.30 per case). This "
             "run had caching ON, so its $3.73 is a cached price and must NOT be put "
-            "in the same column as theirs. Re-run with DISABLE_PROMPT_CACHING=1 if a "
+            "in the same column as theirs. Re-run with caching off if a "
             "like-for-like cost number is needed; the ranked answer does not change."),
         "cache_clean_note": (
             "cache_clean means no cache was inherited from an earlier session, "

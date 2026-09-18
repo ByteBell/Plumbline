@@ -1,0 +1,1552 @@
+{
+  "schema": 1,
+  "kind": "file",
+  "repoName": "db",
+  "commitHash": "7f0fa36ff6d48b0494ed5f6a1223fd18c317e41f",
+  "generatedAt": "2026-07-18T07:32:21.777Z",
+  "file": {
+    "relativePath": "packages/offline-transactions/src/outbox/OutboxManager.ts",
+    "language": "typescript",
+    "sizeBytes": 4230,
+    "tokenCount": 1058,
+    "model": "poolside/laguna-xs-2.1",
+    "analysedAt": "2026-07-17T15:59:57.646Z",
+    "module": {
+      "purpose": "Defines OutboxManager class for managing offline transaction storage and retrieval using a storage adapter with telemetry integration.",
+      "summary": "The OutboxManager provides a complete CRUD interface for offline transactions, wrapping a StorageAdapter with serialization via TransactionSerializer. All operations are instrumented with telemetry spans via withSpan. It supports adding, getting, updating, removing, and querying transactions by ID or by associated keys, with proper error handling for deserialization failures and missing transactions.",
+      "businessContext": "Manages offline transactions for later synchronization, ensuring data integrity when network connectivity is absent. Critical for applications requiring guaranteed delivery of mutations in offline-first scenarios.",
+      "classes": [
+        "OutboxManager (~L6-142): Manages offline transaction storage and retrieval with serialization support"
+      ],
+      "functions": [
+        "getStorageKey (~L19-21): Constructs storage key from transaction ID with prefix",
+        "add (~L23-37): Serializes and stores a transaction",
+        "get (~L39-59): Retrieves and deserializes a transaction by ID",
+        "getAll (~L61-91): Retrieves all transactions sorted by creation time",
+        "getByKeys (~L93-100): Filters transactions by their associated keys",
+        "update (~L102-115): Updates an existing transaction with partial data",
+        "remove (~L117-122): Deletes a transaction by ID",
+        "removeMany (~L124-128): Batch deletion of transactions by IDs",
+        "clear (~L130-135): Deletes all stored transactions",
+        "count (~L138-141): Returns count of stored transactions"
+      ],
+      "keywords": [
+        "offline transactions",
+        "outbox pattern",
+        "transaction serialization",
+        "storage adapter",
+        "telemetry spans"
+      ],
+      "ontologyConcepts": [
+        "outbox pattern",
+        "transaction management",
+        "serialization",
+        "storage abstraction",
+        "telemetry instrumentation"
+      ],
+      "businessEntities": ["OfflineTransaction"],
+      "systemCapabilities": [
+        "store offline transactions",
+        "retrieve offline transactions by ID or keys",
+        "update and delete transactions",
+        "batch operations",
+        "telemetry-traced operations"
+      ],
+      "configDependencies": [],
+      "importsInternal": [
+        {
+          "spec": "../telemetry/tracer",
+          "symbols": ["withSpan"],
+          "anchor": { "startLine": 1, "endLine": 1 },
+          "resolvedRelativePath": "packages/offline-transactions/src/telemetry/tracer.ts",
+          "resolvedFileId": "packages/offline-transactions/src/telemetry/tracer.ts",
+          "resolvedHint": "packages/offline-transactions/src/telemetry/tracer.ts"
+        },
+        {
+          "spec": "./TransactionSerializer",
+          "symbols": ["TransactionSerializer"],
+          "anchor": { "startLine": 2, "endLine": 2 },
+          "resolvedRelativePath": "packages/offline-transactions/src/outbox/TransactionSerializer.ts",
+          "resolvedFileId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts",
+          "resolvedHint": "packages/offline-transactions/src/outbox/TransactionSerializer.ts"
+        },
+        {
+          "spec": "../types",
+          "symbols": ["OfflineTransaction", "StorageAdapter"],
+          "anchor": { "startLine": 3, "endLine": 3 },
+          "resolvedRelativePath": "packages/offline-transactions/src/types.ts",
+          "resolvedFileId": "packages/offline-transactions/src/types.ts",
+          "resolvedHint": "packages/offline-transactions/src/types.ts"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "@tanstack/db",
+          "symbols": ["Collection"],
+          "package": "@tanstack/db",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 4, "endLine": 4 }
+        }
+      ],
+      "sideEffects": {
+        "io": [],
+        "network": [],
+        "env": ["console.warn on deserialization failures (lines 54, 79-82)"],
+        "fs": ["storage.set, storage.get, storage.delete, storage.keys operations via StorageAdapter"],
+        "process": [],
+        "mutationOfArg": []
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "OutboxManager.add",
+          "shape": "(transaction: OfflineTransaction): Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "OutboxManager.get",
+          "shape": "(id: string): Promise<OfflineTransaction | null>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "OutboxManager.getAll",
+          "shape": "(): Promise<Array<OfflineTransaction>>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "OutboxManager.getByKeys",
+          "shape": "(keys: Array<string>): Promise<Array<OfflineTransaction>>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "OutboxManager.update",
+          "shape": "(id: string, updates: Partial<OfflineTransaction>): Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "OutboxManager.remove",
+          "shape": "(id: string): Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "OutboxManager.removeMany",
+          "shape": "(ids: Array<string>): Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "OutboxManager.clear",
+          "shape": "(): Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "OutboxManager.count",
+          "shape": "(): Promise<number>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "OfflineTransaction",
+          "shape": "type from '../types'",
+          "resolvedRelativePath": "packages/offline-transactions/src/types.ts",
+          "resolvedFileId": "packages/offline-transactions/src/types.ts"
+        },
+        {
+          "name": "StorageAdapter",
+          "shape": "type from '../types'",
+          "resolvedRelativePath": "packages/offline-transactions/src/types.ts",
+          "resolvedFileId": "packages/offline-transactions/src/types.ts"
+        },
+        {
+          "name": "TransactionSerializer",
+          "shape": "class from './TransactionSerializer'",
+          "resolvedRelativePath": "packages/offline-transactions/src/outbox/TransactionSerializer.ts",
+          "resolvedFileId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts"
+        },
+        {
+          "name": "Collection",
+          "shape": "type from '@tanstack/db'",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "constructor",
+          "intent": "initialize storage and serializer dependencies",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 11, "endLine": 17 }
+        },
+        {
+          "name": "add",
+          "intent": "serialize and persist a transaction with telemetry",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 23, "endLine": 37 }
+        },
+        {
+          "name": "get",
+          "intent": "retrieve and deserialize a transaction by ID with error handling",
+          "structureKind": "branch",
+          "predicate": "!data",
+          "branchOutcomes": ["return null (not_found)", "try deserialize"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 39, "endLine": 59 }
+        },
+        {
+          "name": "getAll",
+          "intent": "retrieve all transactions sorted by creation time",
+          "structureKind": "sequence",
+          "predicate": "key.startsWith(this.keyPrefix)",
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 61, "endLine": 91 }
+        },
+        {
+          "name": "getAll_filter_loop",
+          "intent": "iterate over transaction keys to collect valid transactions",
+          "structureKind": "loop",
+          "predicate": "for (const key of transactionKeys)",
+          "branchOutcomes": [],
+          "bounds": "transactionKeys.length iterations",
+          "terminationCondition": "key iteration complete",
+          "anchor": { "startLine": 72, "endLine": 85 }
+        },
+        {
+          "name": "getByKeys",
+          "intent": "filter transactions by matching keys using Set lookup",
+          "structureKind": "sequence",
+          "predicate": "transaction.keys.some((key) => keySet.has(key))",
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 93, "endLine": 100 }
+        },
+        {
+          "name": "update",
+          "intent": "merge updates into existing transaction or throw error",
+          "structureKind": "branch",
+          "predicate": "!existing",
+          "branchOutcomes": ["throw Error (not found)", "add updated transaction"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 102, "endLine": 115 }
+        },
+        {
+          "name": "removeMany",
+          "intent": "batch delete transactions in parallel",
+          "structureKind": "async",
+          "predicate": "Promise.all",
+          "branchOutcomes": [],
+          "bounds": "ids.length parallel operations",
+          "terminationCondition": "all removals complete",
+          "anchor": { "startLine": 124, "endLine": 128 }
+        },
+        {
+          "name": "clear",
+          "intent": "delete all transactions matching key prefix",
+          "structureKind": "async",
+          "predicate": "key.startsWith(this.keyPrefix)",
+          "branchOutcomes": [],
+          "bounds": "transactionKeys.length parallel deletions",
+          "terminationCondition": "all deletions complete",
+          "anchor": { "startLine": 130, "endLine": 135 }
+        },
+        {
+          "name": "count",
+          "intent": "return count of transactions by prefix filter",
+          "structureKind": "sequence",
+          "predicate": "key.startsWith(this.keyPrefix)",
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 138, "endLine": 141 }
+        }
+      ],
+      "representationFamily": "class-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "class",
+          "name": "OutboxManager",
+          "signature": "export class OutboxManager",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 6, "endLine": 142 }
+        },
+        {
+          "kind": "method",
+          "name": "constructor",
+          "signature": "constructor(storage: StorageAdapter, collections: Record<string, Collection<any, any, any, any, any>>)",
+          "generics": null,
+          "decorators": [],
+          "returnType": "void",
+          "exported": false,
+          "anchor": { "startLine": 11, "endLine": 17 }
+        },
+        {
+          "kind": "method",
+          "name": "add",
+          "signature": "async add(transaction: OfflineTransaction): Promise<void>",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Promise<void>",
+          "exported": true,
+          "anchor": { "startLine": 23, "endLine": 37 }
+        },
+        {
+          "kind": "method",
+          "name": "get",
+          "signature": "async get(id: string): Promise<OfflineTransaction | null>",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Promise<OfflineTransaction | null>",
+          "exported": true,
+          "anchor": { "startLine": 39, "endLine": 59 }
+        },
+        {
+          "kind": "method",
+          "name": "getAll",
+          "signature": "async getAll(): Promise<Array<OfflineTransaction>>",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Promise<Array<OfflineTransaction>>",
+          "exported": true,
+          "anchor": { "startLine": 61, "endLine": 91 }
+        },
+        {
+          "kind": "method",
+          "name": "getByKeys",
+          "signature": "async getByKeys(keys: Array<string>): Promise<Array<OfflineTransaction>>",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Promise<Array<OfflineTransaction>>",
+          "exported": true,
+          "anchor": { "startLine": 93, "endLine": 100 }
+        },
+        {
+          "kind": "method",
+          "name": "update",
+          "signature": "async update(id: string, updates: Partial<OfflineTransaction>): Promise<void>",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Promise<void>",
+          "exported": true,
+          "anchor": { "startLine": 102, "endLine": 115 }
+        },
+        {
+          "kind": "method",
+          "name": "remove",
+          "signature": "async remove(id: string): Promise<void>",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Promise<void>",
+          "exported": true,
+          "anchor": { "startLine": 117, "endLine": 122 }
+        },
+        {
+          "kind": "method",
+          "name": "removeMany",
+          "signature": "async removeMany(ids: Array<string>): Promise<void>",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Promise<void>",
+          "exported": true,
+          "anchor": { "startLine": 124, "endLine": 128 }
+        },
+        {
+          "kind": "method",
+          "name": "clear",
+          "signature": "async clear(): Promise<void>",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Promise<void>",
+          "exported": true,
+          "anchor": { "startLine": 130, "endLine": 135 }
+        },
+        {
+          "kind": "method",
+          "name": "count",
+          "signature": "async count(): Promise<number>",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Promise<number>",
+          "exported": true,
+          "anchor": { "startLine": 138, "endLine": 141 }
+        }
+      ],
+      "typeShapes": [],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "get() with non-existent ID",
+          "handled": true,
+          "behavior": "Returns null and sets span attribute 'result' to 'not_found'",
+          "anchor": { "startLine": 44, "endLine": 47 }
+        },
+        {
+          "inputShape": "get() with corrupted serialized data",
+          "handled": true,
+          "behavior": "Logs warning, returns null, sets span attribute 'result' to 'deserialize_error'",
+          "anchor": { "startLine": 49, "endLine": 57 }
+        },
+        {
+          "inputShape": "update() with non-existent ID",
+          "handled": true,
+          "behavior": "Throws Error with message 'Transaction ${id} not found'",
+          "anchor": { "startLine": 108, "endLine": 110 }
+        },
+        {
+          "inputShape": "getAll() with empty storage",
+          "handled": true,
+          "behavior": "Returns empty array sorted (no-op)",
+          "anchor": { "startLine": 70, "endLine": 90 }
+        },
+        {
+          "inputShape": "getAll() with partially corrupted data",
+          "handled": true,
+          "behavior": "Skips corrupted entries, logs warning, returns valid transactions",
+          "anchor": { "startLine": 75, "endLine": 84 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": "==",
+          "left": "this.keyPrefix",
+          "right": "`tx:`",
+          "inclusive": true,
+          "intent": "Storage key prefix for all transactions",
+          "anchor": { "startLine": 9, "endLine": 9 }
+        },
+        {
+          "operator": "==",
+          "left": "key",
+          "right": "this.keyPrefix",
+          "inclusive": true,
+          "intent": "Filter storage keys by transaction prefix",
+          "anchor": { "startLine": 65, "endLine": 66 }
+        },
+        {
+          "operator": "==",
+          "left": "key",
+          "right": "this.keyPrefix",
+          "inclusive": true,
+          "intent": "Filter keys for clear operation",
+          "anchor": { "startLine": 132, "endLine": 132 }
+        },
+        {
+          "operator": "==",
+          "left": "key",
+          "right": "this.keyPrefix",
+          "inclusive": true,
+          "intent": "Filter keys for count operation",
+          "anchor": { "startLine": 139, "endLine": 139 }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": "Error('Transaction ${id} not found')",
+          "caught": null,
+          "action": "propagate to caller",
+          "fallback": null,
+          "anchor": { "startLine": 109, "endLine": 110 }
+        },
+        {
+          "thrown": "any (deserialization failure)",
+          "caught": "catch block",
+          "action": "console.warn and return null",
+          "fallback": "null",
+          "anchor": { "startLine": 53, "endLine": 57 }
+        },
+        {
+          "thrown": "any (deserialization failure in getAll)",
+          "caught": "catch block",
+          "action": "console.warn and skip entry",
+          "fallback": "skip corrupted entry",
+          "anchor": { "startLine": 78, "endLine": 83 }
+        }
+      ],
+      "invariants": [
+        {
+          "kind": "postcondition",
+          "description": "add() always persists serialized transaction if storage.set succeeds",
+          "anchor": { "startLine": 32, "endLine": 35 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "get() returns null for missing or unparseable transactions",
+          "anchor": { "startLine": 47, "endLine": 57 }
+        },
+        {
+          "kind": "invariant",
+          "description": "All stored transactions use 'tx:' prefix for key identification",
+          "anchor": { "startLine": 9, "endLine": 9 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "getAll() returns transactions sorted by createdAt ascending",
+          "anchor": { "startLine": 87, "endLine": 89 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "env",
+          "description": "StorageAdapter methods (get, set, delete, keys) return Promises",
+          "anchor": { "startLine": 1, "endLine": 4 }
+        },
+        {
+          "kind": "caller",
+          "description": "Callers should handle errors from add/remove/update operations",
+          "anchor": { "startLine": 23, "endLine": 37 }
+        },
+        {
+          "kind": "platform",
+          "description": "console.warn is available for logging warnings",
+          "anchor": { "startLine": 54, "endLine": 54 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "What specific error is thrown by storage adapter on failure?",
+          "affects": "error_handling",
+          "anchor": { "startLine": 32, "endLine": 35 },
+          "resolution": null
+        },
+        {
+          "question": "What is the expected behavior of TransactionSerializer on invalid data?",
+          "affects": "edge_cases",
+          "anchor": { "startLine": 50, "endLine": 50 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "async",
+        "reentrant": true,
+        "ordering": "deterministic",
+        "notes": "All methods are async. Promise.all used for parallelism in removeMany and clear. StorageAdapter implementation determines actual concurrency guarantees."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [],
+      "language": "typescript",
+      "moduleLayout": ["import statements", "OutboxManager class definition"],
+      "moduleLevelCode": null,
+      "exports": [{ "name": "OutboxManager", "kind": "own", "fromSpec": null, "exportedAs": null }],
+      "importSymbolMap": [
+        { "symbol": "withSpan", "module": "../telemetry/tracer", "alias": null, "kind": "internal" },
+        { "symbol": "TransactionSerializer", "module": "./TransactionSerializer", "alias": null, "kind": "internal" },
+        { "symbol": "OfflineTransaction", "module": "../types", "alias": null, "kind": "internal" },
+        { "symbol": "StorageAdapter", "module": "../types", "alias": null, "kind": "internal" },
+        { "symbol": "Collection", "module": "@tanstack/db", "alias": null, "kind": "external" }
+      ],
+      "fileConstants": [],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager#class:OutboxManager",
+        "unitKind": "class",
+        "name": "OutboxManager",
+        "qualifiedName": "OutboxManager",
+        "parentUnitId": null,
+        "startLine": 6,
+        "endLine": 142,
+        "isBehavioral": true,
+        "source": "export class OutboxManager {\n  private storage: StorageAdapter\n  private serializer: TransactionSerializer\n  private keyPrefix = `tx:`\n\n  constructor(\n    storage: StorageAdapter,\n\n    collections: Record<string, Collection<any, any, any, any, any>>,\n  ) {\n    this.storage = storage\n    this.serializer = new TransactionSerializer(collections)\n  }\n\n  private getStorageKey(id: string): string {\n    return `${this.keyPrefix}${id}`\n  }\n\n  async add(transaction: OfflineTransaction): Promise<void> {\n    return withSpan(\n      `outbox.add`,\n      {\n        'transaction.id': transaction.id,\n        'transaction.mutationFnName': transaction.mutationFnName,\n        'transaction.keyCount': transaction.keys.length,\n      },\n      async () => {\n        const key = this.getStorageKey(transaction.id)\n        const serialized = this.serializer.serialize(transaction)\n        await this.storage.set(key, serialized)\n      },\n    )\n  }\n\n  async get(id: string): Promise<OfflineTransaction | null> {\n    return withSpan(`outbox.get`, { 'transaction.id': id }, async (span) => {\n      const key = this.getStorageKey(id)\n      const data = await this.storage.get(key)\n\n      if (!data) {\n        span.setAttribute(`result`, `not_found`)\n        return null\n      }\n\n      try {\n        const transaction = this.serializer.deserialize(data)\n        span.setAttribute(`result`, `found`)\n        return transaction\n      } catch (error) {\n        console.warn(`Failed to deserialize transaction ${id}:`, error)\n        span.setAttribute(`result`, `deserialize_error`)\n        return null\n      }\n    })\n  }\n\n  async getAll(): Promise<Array<OfflineTransaction>> {\n    return withSpan(`outbox.getAll`, {}, async (span) => {\n      const keys = await this.storage.keys()\n      const transactionKeys = keys.filter((key) =>\n        key.startsWith(this.keyPrefix),\n      )\n\n      span.setAttribute(`transactionCount`, transactionKeys.length)\n\n      const transactions: Array<OfflineTransaction> = []\n\n      for (const key of transactionKeys) {\n        const data = await this.storage.get(key)\n        if (data) {\n          try {\n            const transaction = this.serializer.deserialize(data)\n            transactions.push(transaction)\n          } catch (error) {\n            console.warn(\n              `Failed to deserialize transaction from key ${key}:`,\n              error,\n            )\n          }\n        }\n      }\n\n      return transactions.sort(\n        (a, b) => a.createdAt.getTime() - b.createdAt.getTime(),\n      )\n    })\n  }\n\n  async getByKeys(keys: Array<string>): Promise<Array<OfflineTransaction>> {\n    const allTransactions = await this.getAll()\n    const keySet = new Set(keys)\n\n    return allTransactions.filter((transaction) =>\n      transaction.keys.some((key) => keySet.has(key)),\n    )\n  }\n\n  async update(\n    id: string,\n    updates: Partial<OfflineTransaction>,\n  ): Promise<void> {\n    return withSpan(`outbox.update`, { 'transaction.id': id }, async () => {\n      const existing = await this.get(id)\n      if (!existing) {\n        throw new Error(`Transaction ${id} not found`)\n      }\n\n      const updated = { ...existing, ...updates }\n      await this.add(updated)\n    })\n  }\n\n  async remove(id: string): Promise<void> {\n    return withSpan(`outbox.remove`, { 'transaction.id': id }, async () => {\n      const key = this.getStorageKey(id)\n      await this.storage.delete(key)\n    })\n  }\n\n  async removeMany(ids: Array<string>): Promise<void> {\n    return withSpan(`outbox.removeMany`, { count: ids.length }, async () => {\n      await Promise.all(ids.map((id) => this.remove(id)))\n    })\n  }\n\n  async clear(): Promise<void> {\n    const keys = await this.storage.keys()\n    const transactionKeys = keys.filter((key) => key.startsWith(this.keyPrefix))\n\n    await Promise.all(transactionKeys.map((key) => this.storage.delete(key)))\n  }\n\n  async count(): Promise<number> {\n    const keys = await this.storage.keys()\n    return keys.filter((key) => key.startsWith(this.keyPrefix)).length\n  }\n}",
+        "detail": {
+          "unitId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager#class:OutboxManager",
+          "fileId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager",
+          "unitKind": "class",
+          "name": "OutboxManager",
+          "qualifiedName": "OutboxManager",
+          "parentUnitId": null,
+          "startLine": 6,
+          "endLine": 142,
+          "signature": "class OutboxManager",
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": ["exported"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["StorageAdapter", "TransactionSerializer", "OfflineTransaction", "Collection"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [
+            {
+              "name": "storage",
+              "kind": "property",
+              "type": "StorageAdapter",
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "serializer",
+              "kind": "property",
+              "type": "TransactionSerializer",
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "keyPrefix",
+              "kind": "property",
+              "type": "string",
+              "default": "'tx:'",
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "constructor",
+              "kind": "constructor",
+              "type": null,
+              "default": null,
+              "visibility": null,
+              "static": false
+            },
+            { "name": "add", "kind": "method", "type": null, "default": null, "visibility": null, "static": false },
+            { "name": "get", "kind": "method", "type": null, "default": null, "visibility": null, "static": false },
+            { "name": "getAll", "kind": "method", "type": null, "default": null, "visibility": null, "static": false },
+            {
+              "name": "getByKeys",
+              "kind": "method",
+              "type": null,
+              "default": null,
+              "visibility": null,
+              "static": false
+            },
+            { "name": "update", "kind": "method", "type": null, "default": null, "visibility": null, "static": false },
+            { "name": "remove", "kind": "method", "type": null, "default": null, "visibility": null, "static": false },
+            {
+              "name": "removeMany",
+              "kind": "method",
+              "type": null,
+              "default": null,
+              "visibility": null,
+              "static": false
+            },
+            { "name": "clear", "kind": "method", "type": null, "default": null, "visibility": null, "static": false },
+            { "name": "count", "kind": "method", "type": null, "default": null, "visibility": null, "static": false }
+          ],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Manages an offline transaction outbox, providing CRUD and batch operations for OfflineTransaction objects backed by a StorageAdapter. Ensures serialization/deserialization and key-based storage with a fixed prefix.",
+          "specLiterals": [
+            { "kind": "format-string", "value": "tx:${id}", "role": "Storage key format for transaction persistence" }
+          ],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "1c18297b1da893a6960ca392271f97a44fc25d9b7cb96e5da2521a406c1ba157"
+        }
+      },
+      {
+        "unitId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager.constructor#method:OutboxManager.constructor",
+        "unitKind": "method",
+        "name": "constructor",
+        "qualifiedName": "OutboxManager.constructor",
+        "parentUnitId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager#class:OutboxManager",
+        "startLine": 11,
+        "endLine": 17,
+        "isBehavioral": true,
+        "source": "  constructor(\n    storage: StorageAdapter,\n\n    collections: Record<string, Collection<any, any, any, any, any>>,\n  ) {\n    this.storage = storage\n    this.serializer = new TransactionSerializer(collections)",
+        "detail": {
+          "unitId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager.constructor#method:OutboxManager.constructor",
+          "fileId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager.constructor",
+          "unitKind": "method",
+          "name": "constructor",
+          "qualifiedName": "OutboxManager.constructor",
+          "parentUnitId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager#class:OutboxManager",
+          "startLine": 11,
+          "endLine": 17,
+          "signature": "constructor(storage: StorageAdapter, collections: Record<string, Collection<any, any, any, any, any>>)",
+          "parameters": [
+            {
+              "name": "storage",
+              "type": "StorageAdapter",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "collections",
+              "type": "Record<string, Collection<any, any, any, any, any>>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The 'storage' argument must be a valid implementation of the StorageAdapter interface.",
+            "The 'collections' argument must be a non-null record mapping collection names to Collection instances."
+          ],
+          "postconditions": [
+            "The instance property 'storage' is set to the provided storage adapter.",
+            "The instance property 'serializer' is initialized as a new TransactionSerializer using the provided collections."
+          ],
+          "invariants": [],
+          "edgeCases": [
+            "If 'collections' is an empty record, the serializer is initialized with no collections.",
+            "No validation or transformation is performed on the input arguments."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": ["Instance property 'storage' is assigned.", "Instance property 'serializer' is assigned."],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "TransactionSerializer", "source": null, "kind": "internal" }],
+          "symbolReferences": ["StorageAdapter", "Collection", "TransactionSerializer"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Initializes an OutboxManager instance with the provided storage adapter and a map of collections, creating an internal TransactionSerializer.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "6fb06ea64c9193a50a64f9bba2947c1e837c1e5ea0cff2343e1e5198eebc81ee"
+        }
+      },
+      {
+        "unitId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager.add#method:OutboxManager.add",
+        "unitKind": "method",
+        "name": "add",
+        "qualifiedName": "OutboxManager.add",
+        "parentUnitId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager#class:OutboxManager",
+        "startLine": 23,
+        "endLine": 37,
+        "isBehavioral": true,
+        "source": "\n  async add(transaction: OfflineTransaction): Promise<void> {\n    return withSpan(\n      `outbox.add`,\n      {\n        'transaction.id': transaction.id,\n        'transaction.mutationFnName': transaction.mutationFnName,\n        'transaction.keyCount': transaction.keys.length,\n      },\n      async () => {\n        const key = this.getStorageKey(transaction.id)\n        const serialized = this.serializer.serialize(transaction)\n        await this.storage.set(key, serialized)\n      },\n    )",
+        "detail": {
+          "unitId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager.add#method:OutboxManager.add",
+          "fileId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager.add",
+          "unitKind": "method",
+          "name": "add",
+          "qualifiedName": "OutboxManager.add",
+          "parentUnitId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager#class:OutboxManager",
+          "startLine": 23,
+          "endLine": 37,
+          "signature": "async add(transaction: OfflineTransaction): Promise<void>",
+          "parameters": [
+            {
+              "name": "transaction",
+              "type": "OfflineTransaction",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "Promise<void>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "transaction must be a valid OfflineTransaction with a non-null id, mutationFnName, and keys array"
+          ],
+          "postconditions": [
+            "the serialized transaction is stored in this.storage under the key produced by getStorageKey(transaction.id)"
+          ],
+          "invariants": [],
+          "edgeCases": [
+            "if the serializer or storage layer throws, the error propagates to the caller unchanged",
+            "if a transaction with the same id already exists in storage, it is overwritten (storage.set semantics)"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "error propagates from serializer.serialize or storage.set",
+            "returnsOnError": null
+          },
+          "stateMutations": ["this.storage — writes a serialized entry keyed by getStorageKey(transaction.id)"],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "withSpan", "source": "imported tracing utility", "kind": "internal" },
+            { "name": "getStorageKey", "source": "OutboxManager", "kind": "internal" },
+            { "name": "serialize", "source": "this.serializer", "kind": "internal" },
+            { "name": "set", "source": "this.storage", "kind": "internal" }
+          ],
+          "symbolReferences": ["OfflineTransaction"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Serializes an OfflineTransaction and persists it into the outbox storage under a key derived from the transaction's id, wrapped in an OpenTelemetry span for observability.",
+          "specLiterals": [
+            {
+              "kind": "format-string",
+              "value": "outbox.add",
+              "role": "span name for tracing — callers and observability tools depend on this exact string"
+            },
+            { "kind": "enum-value", "value": "transaction.id", "role": "span attribute key emitted for tracing" },
+            {
+              "kind": "enum-value",
+              "value": "transaction.mutationFnName",
+              "role": "span attribute key emitted for tracing"
+            },
+            { "kind": "enum-value", "value": "transaction.keyCount", "role": "span attribute key emitted for tracing" }
+          ],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "5895c7da9222dd90bf0e1f3bc81deafe413f93245ca1bc2994ac6588fd6392b5"
+        }
+      },
+      {
+        "unitId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager.get#method:OutboxManager.get",
+        "unitKind": "method",
+        "name": "get",
+        "qualifiedName": "OutboxManager.get",
+        "parentUnitId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager#class:OutboxManager",
+        "startLine": 39,
+        "endLine": 59,
+        "isBehavioral": true,
+        "source": "\n  async get(id: string): Promise<OfflineTransaction | null> {\n    return withSpan(`outbox.get`, { 'transaction.id': id }, async (span) => {\n      const key = this.getStorageKey(id)\n      const data = await this.storage.get(key)\n\n      if (!data) {\n        span.setAttribute(`result`, `not_found`)\n        return null\n      }\n\n      try {\n        const transaction = this.serializer.deserialize(data)\n        span.setAttribute(`result`, `found`)\n        return transaction\n      } catch (error) {\n        console.warn(`Failed to deserialize transaction ${id}:`, error)\n        span.setAttribute(`result`, `deserialize_error`)\n        return null\n      }\n    })",
+        "detail": {
+          "unitId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager.get#method:OutboxManager.get",
+          "fileId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager.get",
+          "unitKind": "method",
+          "name": "get",
+          "qualifiedName": "OutboxManager.get",
+          "parentUnitId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager#class:OutboxManager",
+          "startLine": 39,
+          "endLine": 59,
+          "signature": "async get(id: string): Promise<OfflineTransaction | null>",
+          "parameters": [
+            { "name": "id", "type": "string", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "Promise<OfflineTransaction | null>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["The provided id must be a non-null string."],
+          "postconditions": [
+            "Returns the deserialized OfflineTransaction if the key exists and deserialization succeeds. Returns null if the key is not found or deserialization fails."
+          ],
+          "invariants": [],
+          "edgeCases": [
+            "If the storage key is not found, the span attribute 'result' is set to 'not_found' and null is returned.",
+            "If the stored data cannot be deserialized, a warning is logged, the span attribute 'result' is set to 'deserialize_error', and null is returned."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "getStorageKey", "source": "OutboxManager", "kind": "internal" },
+            { "name": "storage.get", "source": null, "kind": "internal" },
+            { "name": "serializer.deserialize", "source": null, "kind": "internal" },
+            { "name": "withSpan", "source": null, "kind": "external" }
+          ],
+          "symbolReferences": ["OfflineTransaction", "console"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Retrieves and deserializes an offline transaction by its ID, returning null if not found or deserialization fails. Emits a tracing span with the transaction ID and operation outcome.",
+          "specLiterals": [
+            { "kind": "magic-number", "value": "outbox.get", "role": "Span name for tracing this operation." },
+            { "kind": "magic-number", "value": "transaction.id", "role": "Span attribute key for the transaction ID." },
+            { "kind": "magic-number", "value": "result", "role": "Span attribute key for the operation outcome." },
+            { "kind": "magic-number", "value": "not_found", "role": "Span attribute value when the key is missing." },
+            {
+              "kind": "magic-number",
+              "value": "found",
+              "role": "Span attribute value when the transaction is found and deserialized."
+            },
+            {
+              "kind": "magic-number",
+              "value": "deserialize_error",
+              "role": "Span attribute value when deserialization fails."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "6934caef33e416221e4c0731caf72e459b70156348ad82ce5a8260bf3e97305b"
+        }
+      },
+      {
+        "unitId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager.getAll#method:OutboxManager.getAll",
+        "unitKind": "method",
+        "name": "getAll",
+        "qualifiedName": "OutboxManager.getAll",
+        "parentUnitId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager#class:OutboxManager",
+        "startLine": 61,
+        "endLine": 91,
+        "isBehavioral": true,
+        "source": "\n  async getAll(): Promise<Array<OfflineTransaction>> {\n    return withSpan(`outbox.getAll`, {}, async (span) => {\n      const keys = await this.storage.keys()\n      const transactionKeys = keys.filter((key) =>\n        key.startsWith(this.keyPrefix),\n      )\n\n      span.setAttribute(`transactionCount`, transactionKeys.length)\n\n      const transactions: Array<OfflineTransaction> = []\n\n      for (const key of transactionKeys) {\n        const data = await this.storage.get(key)\n        if (data) {\n          try {\n            const transaction = this.serializer.deserialize(data)\n            transactions.push(transaction)\n          } catch (error) {\n            console.warn(\n              `Failed to deserialize transaction from key ${key}:`,\n              error,\n            )\n          }\n        }\n      }\n\n      return transactions.sort(\n        (a, b) => a.createdAt.getTime() - b.createdAt.getTime(),\n      )\n    })",
+        "detail": {
+          "unitId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager.getAll#method:OutboxManager.getAll",
+          "fileId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager.getAll",
+          "unitKind": "method",
+          "name": "getAll",
+          "qualifiedName": "OutboxManager.getAll",
+          "parentUnitId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager#class:OutboxManager",
+          "startLine": 61,
+          "endLine": 91,
+          "signature": "async getAll(): Promise<Array<OfflineTransaction>>",
+          "parameters": [],
+          "returnType": "Promise<Array<OfflineTransaction>>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "view",
+          "visibility": "public",
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "this.storage is accessible and implements keys() and get()",
+            "this.keyPrefix is set and non-empty",
+            "this.serializer is set and implements deserialize()"
+          ],
+          "postconditions": [
+            "Returns an array of OfflineTransaction objects sorted ascending by createdAt.getTime()",
+            "Every returned element was successfully deserialized from storage",
+            "Entries whose data is falsy or whose deserialization throws are excluded from the result"
+          ],
+          "invariants": [
+            "The returned array is always sorted by createdAt ascending (earliest first)",
+            "The returned array contains only successfully deserialized OfflineTransaction instances"
+          ],
+          "edgeCases": [
+            "Storage contains no keys matching keyPrefix: returns empty array",
+            "All keys match keyPrefix but storage.get returns falsy for every key: returns empty array",
+            "A key's data throws during deserialization: that entry is skipped, console.warn is called, remaining entries are still returned",
+            "Only one matching transaction exists: returns a single-element array",
+            "No keys exist at all: returns empty array"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": "Deserialization errors for individual entries are caught and logged via console.warn; the entry is skipped. The method itself does not throw."
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "withSpan", "source": "tracing/observability utility", "kind": "internal" },
+            { "name": "this.storage.keys", "source": "OutboxManager.storage", "kind": "internal" },
+            { "name": "this.storage.get", "source": "OutboxManager.storage", "kind": "internal" },
+            { "name": "this.serializer.deserialize", "source": "OutboxManager.serializer", "kind": "internal" }
+          ],
+          "symbolReferences": ["OfflineTransaction"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Retrieves all offline transactions stored under the instance's key prefix from storage, deserializes each, and returns them sorted ascending by createdAt timestamp. Failed desigrations are skipped with a warning.",
+          "specLiterals": [
+            {
+              "kind": "format-string",
+              "value": "outbox.getAll",
+              "role": "Span name passed to withSpan for tracing/observability; callers may depend on this string for metrics or log correlation"
+            },
+            {
+              "kind": "format-string",
+              "value": "transactionCount",
+              "role": "Span attribute key set on the tracing span to report the number of matching transaction keys"
+            },
+            {
+              "kind": "format-string",
+              "value": "Failed to deserialize transaction from key ${key}:",
+              "role": "Console warning message emitted when deserialization of an individual entry fails; pattern used for log-level filtering and debugging"
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "getAll() is called",
+              "then": "Returns [txA, txB] sorted ascending by createdAt",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "getAll() is called",
+              "then": "The failed entry is excluded from the result, console.warn is invoked, and any other valid entries are still returned",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "getAll() is called",
+              "then": "Returns an empty array",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "718a296955f90ccb7b9dce921abf0e28e7711030a73c3b66c303ebab8cb37e7a"
+        }
+      },
+      {
+        "unitId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager.getByKeys#method:OutboxManager.getByKeys",
+        "unitKind": "method",
+        "name": "getByKeys",
+        "qualifiedName": "OutboxManager.getByKeys",
+        "parentUnitId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager#class:OutboxManager",
+        "startLine": 93,
+        "endLine": 100,
+        "isBehavioral": true,
+        "source": "\n  async getByKeys(keys: Array<string>): Promise<Array<OfflineTransaction>> {\n    const allTransactions = await this.getAll()\n    const keySet = new Set(keys)\n\n    return allTransactions.filter((transaction) =>\n      transaction.keys.some((key) => keySet.has(key)),\n    )",
+        "detail": {
+          "unitId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager.getByKeys#method:OutboxManager.getByKeys",
+          "fileId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager.getByKeys",
+          "unitKind": "method",
+          "name": "getByKeys",
+          "qualifiedName": "OutboxManager.getByKeys",
+          "parentUnitId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager#class:OutboxManager",
+          "startLine": 93,
+          "endLine": 100,
+          "signature": "async getByKeys(keys: Array<string>): Promise<Array<OfflineTransaction>>",
+          "parameters": [
+            {
+              "name": "keys",
+              "type": "Array<string>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "Promise<Array<OfflineTransaction>>",
+          "decorators": [],
+          "modifiersApplied": ["async"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["The keys parameter must be a non-null array of strings."],
+          "postconditions": [
+            "The returned array contains only transactions with at least one key matching any key in the input array."
+          ],
+          "invariants": [],
+          "edgeCases": [
+            "Empty keys array returns an empty array.",
+            "Keys not present in any transaction return an empty array.",
+            "Duplicate keys in input are deduplicated via Set.",
+            "Transactions with multiple keys are included if any key matches."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "getAll", "source": "this", "kind": "internal" }],
+          "symbolReferences": ["OfflineTransaction"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Retrieves all offline transactions and returns those whose keys intersect with the provided keys array.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "getByKeys(['a', 'c'])",
+              "then": "returns an array containing both transactions",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "getByKeys(['x'])",
+              "then": "returns an empty array",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "getByKeys([])",
+              "then": "returns an empty array",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "abeba7a106b3692bede4e00a059a6b386b4bd4698170afefd619a13150f79dc8"
+        }
+      },
+      {
+        "unitId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager.update#method:OutboxManager.update",
+        "unitKind": "method",
+        "name": "update",
+        "qualifiedName": "OutboxManager.update",
+        "parentUnitId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager#class:OutboxManager",
+        "startLine": 102,
+        "endLine": 115,
+        "isBehavioral": true,
+        "source": "\n  async update(\n    id: string,\n    updates: Partial<OfflineTransaction>,\n  ): Promise<void> {\n    return withSpan(`outbox.update`, { 'transaction.id': id }, async () => {\n      const existing = await this.get(id)\n      if (!existing) {\n        throw new Error(`Transaction ${id} not found`)\n      }\n\n      const updated = { ...existing, ...updates }\n      await this.add(updated)\n    })",
+        "detail": {
+          "unitId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager.update#method:OutboxManager.update",
+          "fileId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager.update",
+          "unitKind": "method",
+          "name": "update",
+          "qualifiedName": "OutboxManager.update",
+          "parentUnitId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager#class:OutboxManager",
+          "startLine": 102,
+          "endLine": 115,
+          "signature": "async update(id: string, updates: Partial<OfflineTransaction>): Promise<void>",
+          "parameters": [
+            { "name": "id", "type": "string", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "updates",
+              "type": "Partial<OfflineTransaction>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "Promise<void>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["Transaction with given id must exist in the outbox."],
+          "postconditions": ["The transaction in the outbox is updated with the merged properties from updates."],
+          "invariants": [],
+          "edgeCases": [
+            "If the transaction with the given id does not exist, the method throws an Error.",
+            "If updates is an empty object, the transaction remains unchanged.",
+            "If updates contains keys not present in the original transaction, they are added."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": ["Error"], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": ["The outbox storage is mutated by updating the transaction with the given id."],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "get", "source": "OutboxManager", "kind": "internal" },
+            { "name": "add", "source": "OutboxManager", "kind": "internal" },
+            { "name": "withSpan", "source": null, "kind": "external" }
+          ],
+          "symbolReferences": ["OfflineTransaction"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Updates an existing offline transaction by ID with the provided partial updates. Throws if the transaction is not found.",
+          "specLiterals": [
+            {
+              "kind": "format-string",
+              "value": "Transaction ${id} not found",
+              "role": "Error message thrown when the transaction is not found."
+            },
+            { "kind": "string", "value": "outbox.update", "role": "Tracing span name for the update operation." }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "update('1', {b: 2}) is called",
+              "then": "The transaction with id '1' in the outbox now has properties {a: 1, b: 2}",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "update('999', {a: 1}) is called",
+              "then": "An Error is thrown with message containing 'Transaction 999 not found'",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "update('1', {}) is called",
+              "then": "The transaction with id '1' in the outbox remains {a: 1}",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "9c562452958e0d8a11dd75e56203b5129491094d843cc0bb056d32fcfc4c744e"
+        }
+      },
+      {
+        "unitId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager.remove#method:OutboxManager.remove",
+        "unitKind": "method",
+        "name": "remove",
+        "qualifiedName": "OutboxManager.remove",
+        "parentUnitId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager#class:OutboxManager",
+        "startLine": 117,
+        "endLine": 122,
+        "isBehavioral": true,
+        "source": "\n  async remove(id: string): Promise<void> {\n    return withSpan(`outbox.remove`, { 'transaction.id': id }, async () => {\n      const key = this.getStorageKey(id)\n      await this.storage.delete(key)\n    })",
+        "detail": {
+          "unitId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager.remove#method:OutboxManager.remove",
+          "fileId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager.remove",
+          "unitKind": "method",
+          "name": "remove",
+          "qualifiedName": "OutboxManager.remove",
+          "parentUnitId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager#class:OutboxManager",
+          "startLine": 117,
+          "endLine": 122,
+          "signature": "async remove(id: string): Promise<void>",
+          "parameters": [
+            { "name": "id", "type": "string", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "Promise<void>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["id must be a non-empty string identifying a transaction in the outbox"],
+          "postconditions": ["The storage key derived from id is deleted from this.storage", "Returns void on success"],
+          "invariants": [],
+          "edgeCases": [
+            "If the id does not correspond to an existing entry, storage.delete is still called (no existence check; idempotent delete)"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": ["this.storage — a key derived from id is deleted"],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "withSpan", "source": "tracing utility (imported)", "kind": "internal" },
+            { "name": "this.getStorageKey", "source": "OutboxManager", "kind": "internal" },
+            { "name": "this.storage.delete", "source": "this.storage (persistence layer)", "kind": "external" }
+          ],
+          "symbolReferences": ["withSpan", "this.storage"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Removes a single outbox transaction from persistent storage by its id. The operation is wrapped in a tracing span keyed by the transaction id.",
+          "specLiterals": [
+            {
+              "kind": "magic-number",
+              "value": "outbox.remove",
+              "role": "Span name string passed to withSpan for tracing identification"
+            },
+            {
+              "kind": "magic-number",
+              "value": "transaction.id",
+              "role": "Span attribute key used to tag the trace span with the transaction id"
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "ee85027d65519a6b34402517f412227a55e35c5359b73298bf7704fec4653c56"
+        }
+      },
+      {
+        "unitId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager.removeMany#method:OutboxManager.removeMany",
+        "unitKind": "method",
+        "name": "removeMany",
+        "qualifiedName": "OutboxManager.removeMany",
+        "parentUnitId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager#class:OutboxManager",
+        "startLine": 124,
+        "endLine": 128,
+        "isBehavioral": true,
+        "source": "\n  async removeMany(ids: Array<string>): Promise<void> {\n    return withSpan(`outbox.removeMany`, { count: ids.length }, async () => {\n      await Promise.all(ids.map((id) => this.remove(id)))\n    })",
+        "detail": {
+          "unitId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager.removeMany#method:OutboxManager.removeMany",
+          "fileId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager.removeMany",
+          "unitKind": "method",
+          "name": "removeMany",
+          "qualifiedName": "OutboxManager.removeMany",
+          "parentUnitId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager#class:OutboxManager",
+          "startLine": 124,
+          "endLine": 128,
+          "signature": "async removeMany(ids: Array<string>): Promise<void>",
+          "parameters": [
+            {
+              "name": "ids",
+              "type": "Array<string>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "Promise<void>",
+          "decorators": [],
+          "modifiersApplied": ["async"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The ids parameter must be a non-null array of strings.",
+            "The outbox manager must be in a valid, initialized state."
+          ],
+          "postconditions": [
+            "Upon successful resolution, all entries corresponding to the provided IDs are removed from the outbox.",
+            "The method resolves to void without error if all removals succeed."
+          ],
+          "invariants": [],
+          "edgeCases": [
+            "When ids is an empty array, no removal actions occur and the method resolves immediately.",
+            "If ids contains duplicate IDs, remove is called multiple times for the same ID, which should be idempotent.",
+            "If any id does not exist or remove fails for an ID, the operation rejects with an error based on the remove implementation."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["Error from withSpan or any failed remove call"],
+            "reverts": [],
+            "onInvalidInput": "Throws a TypeError or similar if ids is not an iterable array or contains non-string values.",
+            "returnsOnError": "The returned promise is rejected with the error."
+          },
+          "stateMutations": ["The outbox storage is mutated by removing entries for each ID in the ids array."],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "remove", "source": "this", "kind": "internal" },
+            { "name": "withSpan", "source": "external", "kind": "external" }
+          ],
+          "symbolReferences": ["withSpan"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "This method removes all outbox entries with the specified string IDs by delegating to the remove method for each ID in parallel, ensuring batch deletion.",
+          "specLiterals": [
+            {
+              "kind": "string",
+              "value": "outbox.removeMany",
+              "role": "Span name for distributed tracing and monitoring instrumentation."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "2c591c4592afd453466ffdcb2f17a95a89f52aedbf412624c34bc3b0e7b88264"
+        }
+      },
+      {
+        "unitId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager.clear#method:OutboxManager.clear",
+        "unitKind": "method",
+        "name": "clear",
+        "qualifiedName": "OutboxManager.clear",
+        "parentUnitId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager#class:OutboxManager",
+        "startLine": 130,
+        "endLine": 135,
+        "isBehavioral": true,
+        "source": "\n  async clear(): Promise<void> {\n    const keys = await this.storage.keys()\n    const transactionKeys = keys.filter((key) => key.startsWith(this.keyPrefix))\n\n    await Promise.all(transactionKeys.map((key) => this.storage.delete(key)))",
+        "detail": {
+          "unitId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager.clear#method:OutboxManager.clear",
+          "fileId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager.clear",
+          "unitKind": "method",
+          "name": "clear",
+          "qualifiedName": "OutboxManager.clear",
+          "parentUnitId": "packages/offline-transactions/src/outbox/OutboxManager.ts__OutboxManager#class:OutboxManager",
+          "startLine": 130,
+          "endLine": 135,
+          "signature": "async clear(): Promise<void>",
+          "parameters": [],
+          "returnType": "Promise<void>",
+          "decorators": [],
+          "modifiersApplied": ["async"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": ["All keys in storage prefixed with keyPrefix are deleted"],
+          "invariants": [],
+          "edgeCases": [
+            "If no keys match the prefix, no deletions occur and the method completes successfully.",
+            "If the underlying storage is empty, the method completes successfully."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": ["Underlying storage via delete operations"],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "keys", "source": "this.storage", "kind": "external" },
+            { "name": "delete", "source": "this.storage", "kind": "external" }
+          ],
+          "symbolReferences": ["this.storage", "this.keyPrefix"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Asynchronously removes all keys from the underlying storage that start with the instance's designated key prefix, effectively clearing the outbox.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "b382842ded83ec76c159ca7472dc7d38b34da5e3474595ab24c4aa8d24fe0545"
+        }
+      }
+    ]
+  },
+  "out": [
+    "packages/offline-transactions/src/types.ts",
+    "packages/offline-transactions/src/outbox/TransactionSerializer.ts",
+    "packages/offline-transactions/src/telemetry/tracer.ts"
+  ],
+  "in": [
+    "packages/offline-transactions/src/index.ts",
+    "packages/offline-transactions/src/executor/TransactionExecutor.ts",
+    "packages/offline-transactions/src/OfflineExecutor.ts"
+  ],
+  "externals": ["@tanstack/db"],
+  "impact": { "seeds": 10, "callers": 0, "impactedFiles": [] }
+}
