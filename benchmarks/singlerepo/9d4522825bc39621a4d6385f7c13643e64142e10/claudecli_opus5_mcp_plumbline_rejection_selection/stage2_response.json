@@ -1,0 +1,71 @@
+{
+  "duration_api_ms": 72498,
+  "stop_reason": "end_turn",
+  "session_id": "579a2a03-477c-4174-9a40-b650ff92a463",
+  "total_cost_usd": 0.8852875,
+  "usage": {
+    "input_tokens": 22,
+    "cache_creation_input_tokens": 47863,
+    "cache_read_input_tokens": 567795,
+    "output_tokens": 4906,
+    "output_tokens_details": { "thinking_tokens": 1007 },
+    "server_tool_use": { "web_search_requests": 0, "web_fetch_requests": 0 },
+    "service_tier": "standard",
+    "cache_creation": { "ephemeral_1h_input_tokens": 47863, "ephemeral_5m_input_tokens": 0 },
+    "inference_geo": "not_available",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 1310,
+        "cache_read_input_tokens": 64187,
+        "cache_creation_input_tokens": 895,
+        "cache_creation": { "ephemeral_5m_input_tokens": 0, "ephemeral_1h_input_tokens": 895 },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-opus-5": {
+      "inputTokens": 22,
+      "outputTokens": 4906,
+      "cacheReadInputTokens": 567795,
+      "cacheCreationInputTokens": 47863,
+      "webSearchRequests": 0,
+      "costUSD": 0.8852875,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "canonicalModel": "claude-opus-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": { "background": 0, "foreground": 0, "unset": 0 },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": { "parent": 0, "user": 0, "system": 0 },
+    "refused": { "depth_limit": 0, "concurrency_limit": 0, "budget": 0 },
+    "by_type": {}
+  },
+  "is_error": false,
+  "num_turns": 11,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Scoring complete.\n\n**Provenance.** I read `ranked.json` first, before opening any gold. Gold file used: `gold.json` (not `golden.json` — only the former exists). The answer is a **flat array of 58 paths** — single-repo shape, matching gold's flat `gold` list, so no flattening was needed. `ranked.json` was not modified.\n\n**Metrics** (from `score_arm.py`, unedited):\n\n| metric | value |\n|---|---|\n| hits / gold_total | 3 / 7 |\n| recall@10 | 0.286 |\n| recall@20 | 0.286 |\n| recall@25 | 0.286 |\n| recall@50 | 0.429 |\n| recall@75 (full list) | 0.429 |\n| precision@5 | 0.200 |\n| MRR | 0.500 |\n\nThe scorer does not emit precision@10, precision@20, F1@20 or F1_full_list — they are absent from its output, and I have not hand-computed them, since hand-computed metrics are not comparable with the rest of the series. `degenerate_ks: [75]` (list is 58 long, below the 75 cap).\n\n**found** (3):\n- `apps/web/server/lib/[user]/getServerSideProps.ts` (rank 2)\n- `apps/web/lib/team/[slug]/[type]/getServerSideProps.tsx` (rank 9)\n- `packages/features/eventtypes/lib/defaultEvents.ts` (rank 44)\n\n**missed_gold** (4):\n- `apps/web/lib/apps/routing-forms/[...pages]/getServerSidePropsRoutingLink.ts`\n- `apps/web/lib/booking.ts`\n- `apps/web/modules/bookings/views/bookings-single-view.getServerSideProps.tsx`\n- `packages/features/profile/repositories/ProfileRepository.ts`\n\n**Surface verdict: NOT comparable.** One reason only: prompt caching was enabled and warm — `cache_read=1418919`, `cache_creation=118904`, so the $2.34 figure is not comparable to cold runs. The tool surface itself is clean: `commands.log` shows 27 calls, all plumbline MCP tools plus a single `ToolSearch` (schema loading, exempt), with no filesystem or shell tool anywhere, and `stakeout` — the retriever's own search tool — called 12 times. The log-derived counts agree exactly with `cost.json`'s self-report (stakeout 12, the_receipts 7, collateral_damage 3, manhunt 2, blueprint 1, roll_call 1), so no self-report discrepancy. Note the scorer's own surface block carried `not_comparable: []`; I preserved it as `scorer_surface` and wrote the derived block over `surface`, since the scorer has no view of the cost file.\n\n**What the misses share.** All four live one layer behind the booking-page render path the run explored. The run committed to the *public event / brand-colour* register — `getPublicEvent`, `use-brand-colors`, `useCalcomTheme`, `getBrand`, the org-appearance settings — and mapped that neighbourhood densely, taking 44 of its 58 slots from theme, branding and embed surfaces. The gold instead sits in the *profile-resolution* register: `ProfileRepository`, and the three other entry points that call the same shared profile helper — the routing-forms link, the shared `lib/booking.ts`, and the booking-confirmation server props. The two hits above rank 10 are exactly the entry points whose route names match the question's personal-vs-team framing; the three surfaces that consume the same profile lookup under *unrelated* names (a routing form, a booking confirmation page, a generic `booking.ts`) were never in the register the run searched, and the repository they share was never surfaced — the run reached `UserRepository` and `TeamRepository` but not `ProfileRepository`, the one the fix actually changed.",
+  "ttft_ms": 1671,
+  "type": "result",
+  "duration_ms": 73516,
+  "uuid": "bb51fb91-86fb-42d1-bb93-e85aff8b9297",
+  "ttft_stream_ms": 1230,
+  "time_to_request_ms": 20,
+  "queued_turn_count": 0
+}

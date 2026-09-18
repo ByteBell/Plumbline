@@ -1,0 +1,1961 @@
+{
+  "schema": 1,
+  "kind": "file",
+  "repoName": "xyflow",
+  "commitHash": "360f5b13e2bc6899ea06b4be1a49b068d86926cf",
+  "generatedAt": "2026-08-03T07:44:04.757Z",
+  "file": {
+    "relativePath": "packages/system/src/xypanzoom/XYPanZoom.ts",
+    "language": "typescript",
+    "sizeBytes": 9247,
+    "tokenCount": 2202,
+    "model": "openai/gpt-5.6-luna",
+    "analysedAt": "2026-08-03T07:37:49.206Z",
+    "module": {
+      "purpose": "Provides the pan-and-zoom controller for a diagram pane, configuring d3-zoom, translating viewport state, and exposing interaction controls to the surrounding system.",
+      "summary": "This module adapts d3-zoom to the application's viewport model. It initializes bounded zoom and translation behavior, caches pane dimensions through ResizeObserver, installs dynamically configurable wheel, drag, pinch, and double-click handlers, and exposes asynchronous viewport and scale operations. It also synchronizes externally controlled viewport state and reports pan/zoom lifecycle events through supplied callbacks.",
+      "businessContext": "Supports interactive diagram navigation and viewport manipulation. Failure would prevent users from panning, zooming, selecting, or synchronizing the rendered canvas.",
+      "classes": [],
+      "functions": [
+        "XYPanZoom (~L35-332): Creates and manages bounded diagram pan-and-zoom interaction state",
+        "setTransform (~L111-122): Applies an interpolated d3 transform and resolves completion",
+        "update (~L125-233): Reconfigures interaction handlers from current pane options",
+        "destroy (~L235-237): Disables active zoom event handling on the instance",
+        "setViewportConstrained (~L239-252): Converts and applies a constrained viewport transform",
+        "setViewport (~L254-259): Converts and applies an unconstrained viewport transform",
+        "syncViewport (~L261-276): Synchronizes d3 state with an external viewport value",
+        "getViewport (~L278-281): Reads the current d3 transform as application viewport state",
+        "scaleTo (~L283-293): Animates the current zoom level to a target value",
+        "scaleBy (~L295-305): Animates the current zoom level by a multiplicative factor",
+        "setScaleExtent (~L307-309): Updates the allowable zoom scale range",
+        "setTranslateExtent (~L311-313): Updates the allowable translation bounds",
+        "setClickDistance (~L315-318): Sets a validated click-versus-drag threshold"
+      ],
+      "keywords": [
+        "d3-zoom",
+        "viewport synchronization",
+        "pan-on-scroll",
+        "zoom-on-pinch",
+        "translate extent",
+        "ResizeObserver",
+        "wheel delta",
+        "drag interaction",
+        "zoom interpolation",
+        "selection gating"
+      ],
+      "ontologyConcepts": [
+        "viewport control",
+        "gesture interaction",
+        "constraint enforcement",
+        "event lifecycle",
+        "state synchronization",
+        "animated transition"
+      ],
+      "businessEntities": ["Viewport", "PanZoomInstance", "diagram pane", "selection", "zoom transform"],
+      "systemCapabilities": [
+        "Configure diagram navigation",
+        "Constrain viewport movement",
+        "Animate zoom transitions",
+        "Synchronize external viewport state",
+        "Handle pan and zoom gestures",
+        "Adapt interaction behavior dynamically"
+      ],
+      "configDependencies": [],
+      "importsInternal": [
+        {
+          "spec": "../types",
+          "symbols": [
+            "CoordinateExtent",
+            "Viewport",
+            "PanZoomTransformOptions",
+            "PanZoomUpdateOptions",
+            "PanZoomParams",
+            "PanZoomInstance"
+          ],
+          "anchor": { "startLine": 5, "endLine": 12 },
+          "resolvedRelativePath": "packages/system/src/types/index.ts",
+          "resolvedFileId": "packages/system/src/types/index.ts",
+          "resolvedHint": "packages/system/src/types.ts"
+        },
+        {
+          "spec": "../utils",
+          "symbols": ["clamp", "isNumeric"],
+          "anchor": { "startLine": 13, "endLine": 13 },
+          "resolvedRelativePath": "packages/system/src/utils/index.ts",
+          "resolvedFileId": "packages/system/src/utils/index.ts",
+          "resolvedHint": "packages/system/src/utils.ts"
+        },
+        {
+          "spec": "./utils",
+          "symbols": ["getD3Transition", "viewportToTransform", "wheelDelta"],
+          "anchor": { "startLine": 14, "endLine": 14 },
+          "resolvedRelativePath": "packages/system/src/xypanzoom/utils.ts",
+          "resolvedFileId": "packages/system/src/xypanzoom/utils.ts",
+          "resolvedHint": "packages/system/src/xypanzoom/utils.ts"
+        },
+        {
+          "spec": "./eventhandler",
+          "symbols": [
+            "createPanOnScrollHandler",
+            "createPanZoomEndHandler",
+            "createPanZoomHandler",
+            "createPanZoomStartHandler",
+            "createZoomOnScrollHandler"
+          ],
+          "anchor": { "startLine": 15, "endLine": 21 },
+          "resolvedRelativePath": "packages/system/src/xypanzoom/eventhandler.ts",
+          "resolvedFileId": "packages/system/src/xypanzoom/eventhandler.ts",
+          "resolvedHint": "packages/system/src/xypanzoom/eventhandler.ts"
+        },
+        {
+          "spec": "./filter",
+          "symbols": ["createFilter"],
+          "anchor": { "startLine": 22, "endLine": 22 },
+          "resolvedRelativePath": "packages/system/src/xypanzoom/filter.ts",
+          "resolvedFileId": "packages/system/src/xypanzoom/filter.ts",
+          "resolvedHint": "packages/system/src/xypanzoom/filter.ts"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "d3-zoom",
+          "symbols": ["ZoomTransform", "zoom", "zoomTransform"],
+          "package": "d3-zoom",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 1 }
+        },
+        {
+          "spec": "d3-selection",
+          "symbols": ["select"],
+          "package": "d3-selection",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 2, "endLine": 2 }
+        },
+        {
+          "spec": "d3-interpolate",
+          "symbols": ["interpolateZoom", "interpolate"],
+          "package": "d3-interpolate",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 3, "endLine": 3 }
+        },
+        {
+          "spec": "d3-transition",
+          "symbols": ["transition"],
+          "package": "d3-transition",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 24, "endLine": 24 }
+        }
+      ],
+      "sideEffects": {
+        "io": [],
+        "network": [],
+        "env": ["Reads global ResizeObserver availability."],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": ["Mutates the d3 selection and zoom instance configuration."]
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "ZoomPanValues",
+          "shape": "export type ZoomPanValues = {\n  isZoomingOrPanning: boolean;\n  usedRightMouseButton: boolean;\n  prevViewport: Viewport;\n  mouseButton: number;\n  timerId: ReturnType<typeof setTimeout> | undefined;\n  panScrollTimeout: ReturnType<typeof setTimeout> | undefined;\n  isPanScrolling: boolean;\n};",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "XYPanZoom",
+          "shape": "export function XYPanZoom({\n  domNode,\n  minZoom,\n  maxZoom,\n  translateExtent,\n  viewport,\n  onPanZoom,\n  onPanZoomStart,\n  onPanZoomEnd,\n  onDraggingChange,\n}: PanZoomParams): PanZoomInstance",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "PanZoomParams",
+          "shape": "}: PanZoomParams",
+          "resolvedRelativePath": "packages/system/src/types/index.ts",
+          "resolvedFileId": "packages/system/src/types/index.ts"
+        },
+        {
+          "name": "PanZoomInstance",
+          "shape": "): PanZoomInstance",
+          "resolvedRelativePath": "packages/system/src/types/index.ts",
+          "resolvedFileId": "packages/system/src/types/index.ts"
+        },
+        {
+          "name": "Viewport",
+          "shape": "viewport: Viewport",
+          "resolvedRelativePath": "packages/system/src/types/index.ts",
+          "resolvedFileId": "packages/system/src/types/index.ts"
+        },
+        {
+          "name": "CoordinateExtent",
+          "shape": "extent: CoordinateExtent,\n    translateExtent: CoordinateExtent",
+          "resolvedRelativePath": "packages/system/src/types/index.ts",
+          "resolvedFileId": "packages/system/src/types/index.ts"
+        },
+        {
+          "name": "PanZoomTransformOptions",
+          "shape": "options?: PanZoomTransformOptions",
+          "resolvedRelativePath": "packages/system/src/types/index.ts",
+          "resolvedFileId": "packages/system/src/types/index.ts"
+        },
+        {
+          "name": "PanZoomUpdateOptions",
+          "shape": "}: PanZoomUpdateOptions",
+          "resolvedRelativePath": "packages/system/src/types/index.ts",
+          "resolvedFileId": "packages/system/src/types/index.ts"
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "extent-observation",
+          "intent": "Caches pane dimensions and refreshes them when the element resizes.",
+          "structureKind": "branch",
+          "predicate": "typeof ResizeObserver !== 'undefined'",
+          "branchOutcomes": ["creates and observes ResizeObserver", "uses null observer"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 70, "endLine": 86 }
+        },
+        {
+          "name": "initialization",
+          "intent": "Configures d3 zoom extents and applies the initial constrained viewport.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 88, "endLine": 109 }
+        },
+        {
+          "name": "transform-application",
+          "intent": "Runs an interpolated transition and resolves when the transform completes.",
+          "structureKind": "async",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 111, "endLine": 122 }
+        },
+        {
+          "name": "interaction-update",
+          "intent": "Rebinds wheel, lifecycle, filtering, and double-click handlers.",
+          "structureKind": "branch",
+          "predicate": "userSelectionActive && !zoomPanValues.isZoomingOrPanning",
+          "branchOutcomes": ["destroys active zoom handler", "retains active zoom handler"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 125, "endLine": 233 }
+        },
+        {
+          "name": "viewport-constraining",
+          "intent": "Constrains a requested transform before applying it asynchronously.",
+          "structureKind": "branch",
+          "predicate": "if (contrainedTransform)",
+          "branchOutcomes": ["applies constrained transform", "returns undefined transform"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 239, "endLine": 252 }
+        },
+        {
+          "name": "viewport-sync",
+          "intent": "Updates d3 only when external and current viewport values differ.",
+          "structureKind": "branch",
+          "predicate": "if (\n        currentTransform.k !== viewport.zoom ||\n        currentTransform.x !== viewport.x ||\n        currentTransform.y !== viewport.y\n      )",
+          "branchOutcomes": ["synchronizes d3 transform", "does nothing"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 261, "endLine": 276 }
+        },
+        {
+          "name": "animated-scaling",
+          "intent": "Animates scale changes through d3 transitions or returns false without selection.",
+          "structureKind": "async",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 283, "endLine": 305 }
+        },
+        {
+          "name": "click-distance-validation",
+          "intent": "Normalizes invalid or negative click distances to zero.",
+          "structureKind": "branch",
+          "predicate": "!isNumeric(distance) || distance < 0",
+          "branchOutcomes": ["uses zero", "uses supplied distance"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 315, "endLine": 318 }
+        }
+      ],
+      "representationFamily": "state-machine",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "type",
+          "name": "ZoomPanValues",
+          "signature": "export type ZoomPanValues = {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 25, "endLine": 33 }
+        },
+        {
+          "kind": "function",
+          "name": "XYPanZoom",
+          "signature": "export function XYPanZoom({\n  domNode,\n  minZoom,\n  maxZoom,\n  translateExtent,\n  viewport,\n  onPanZoom,\n  onPanZoomStart,\n  onPanZoomEnd,\n  onDraggingChange,\n}: PanZoomParams): PanZoomInstance {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "PanZoomInstance",
+          "exported": true,
+          "anchor": { "startLine": 35, "endLine": 46 }
+        },
+        {
+          "kind": "function",
+          "name": "setTransform",
+          "signature": "  async function setTransform(transform: ZoomTransform, options?: PanZoomTransformOptions) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 111, "endLine": 122 }
+        },
+        {
+          "kind": "function",
+          "name": "update",
+          "signature": "  function update({\n    noWheelClassName,\n    noPanClassName,\n    onPaneContextMenu,\n    userSelectionActive,\n    panOnScroll,\n    panOnDrag,\n    panOnScrollMode,\n    panOnScrollSpeed,\n    preventScrolling,\n    zoomOnPinch,\n    zoomOnScroll,\n    zoomOnDoubleClick,\n    zoomActivationKeyPressed,\n    lib,\n    onTransformChange,\n    connectionInProgress,\n    paneClickDistance,\n    selectionOnDrag,\n  }: PanZoomUpdateOptions) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 125, "endLine": 144 }
+        },
+        {
+          "kind": "function",
+          "name": "destroy",
+          "signature": "  function destroy() {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 235, "endLine": 237 }
+        },
+        {
+          "kind": "function",
+          "name": "setViewportConstrained",
+          "signature": "  async function setViewportConstrained(\n    viewport: Viewport,\n    extent: CoordinateExtent,\n    translateExtent: CoordinateExtent\n  ): Promise<ZoomTransform | undefined> {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Promise<ZoomTransform | undefined>",
+          "exported": false,
+          "anchor": { "startLine": 239, "endLine": 252 }
+        },
+        {
+          "kind": "function",
+          "name": "setViewport",
+          "signature": "  async function setViewport(viewport: Viewport, options?: PanZoomTransformOptions) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 254, "endLine": 259 }
+        },
+        {
+          "kind": "function",
+          "name": "syncViewport",
+          "signature": "  function syncViewport(viewport: Viewport) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 261, "endLine": 276 }
+        },
+        {
+          "kind": "function",
+          "name": "getViewport",
+          "signature": "  function getViewport(): Viewport {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Viewport",
+          "exported": false,
+          "anchor": { "startLine": 278, "endLine": 281 }
+        },
+        {
+          "kind": "function",
+          "name": "scaleTo",
+          "signature": "  async function scaleTo(zoom: number, options?: PanZoomTransformOptions) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 283, "endLine": 293 }
+        },
+        {
+          "kind": "function",
+          "name": "scaleBy",
+          "signature": "  async function scaleBy(factor: number, options?: PanZoomTransformOptions) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 295, "endLine": 305 }
+        },
+        {
+          "kind": "function",
+          "name": "setScaleExtent",
+          "signature": "  function setScaleExtent(scaleExtent: [number, number]) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 307, "endLine": 309 }
+        },
+        {
+          "kind": "function",
+          "name": "setTranslateExtent",
+          "signature": "  function setTranslateExtent(translateExtent: CoordinateExtent) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 311, "endLine": 313 }
+        },
+        {
+          "kind": "function",
+          "name": "setClickDistance",
+          "signature": "  function setClickDistance(distance: number) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 315, "endLine": 318 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "type",
+          "name": "ZoomPanValues",
+          "shape": "{\n  isZoomingOrPanning: boolean;\n  usedRightMouseButton: boolean;\n  prevViewport: Viewport;\n  mouseButton: number;\n  timerId: ReturnType<typeof setTimeout> | undefined;\n  panScrollTimeout: ReturnType<typeof setTimeout> | undefined;\n  isPanScrolling: boolean;\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 25, "endLine": 33 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "ResizeObserver unavailable",
+          "handled": true,
+          "behavior": "Skips observation and retains the initial bounding-box extent.",
+          "anchor": { "startLine": 74, "endLine": 86 }
+        },
+        {
+          "inputShape": "ResizeObserver callback with no first entry",
+          "handled": true,
+          "behavior": "Leaves the cached extent unchanged.",
+          "anchor": { "startLine": 77, "endLine": 84 }
+        },
+        {
+          "inputShape": "Missing d3 selection",
+          "handled": true,
+          "behavior": "Asynchronous transform and scale operations return false.",
+          "anchor": { "startLine": 111, "endLine": 122 }
+        },
+        {
+          "inputShape": "Non-numeric or negative click distance",
+          "handled": true,
+          "behavior": "Uses zero as the d3 click distance.",
+          "anchor": { "startLine": 315, "endLine": 317 }
+        },
+        {
+          "inputShape": "Selection-on-drag enabled",
+          "handled": true,
+          "behavior": "Sets click distance to Infinity to distinguish selection dragging.",
+          "anchor": { "startLine": 150, "endLine": 152 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": "<",
+          "left": "paneClickDistance",
+          "right": "0",
+          "inclusive": false,
+          "intent": "Rejects negative pane click distances.",
+          "anchor": { "startLine": 151, "endLine": 151 }
+        },
+        {
+          "operator": "!=",
+          "left": "currentTransform.k",
+          "right": "viewport.zoom",
+          "inclusive": false,
+          "intent": "Detects a zoom mismatch requiring synchronization.",
+          "anchor": { "startLine": 267, "endLine": 267 }
+        },
+        {
+          "operator": "!=",
+          "left": "currentTransform.x",
+          "right": "viewport.x",
+          "inclusive": false,
+          "intent": "Detects an x-position mismatch requiring synchronization.",
+          "anchor": { "startLine": 268, "endLine": 268 }
+        },
+        {
+          "operator": "!=",
+          "left": "currentTransform.y",
+          "right": "viewport.y",
+          "inclusive": false,
+          "intent": "Detects a y-position mismatch requiring synchronization.",
+          "anchor": { "startLine": 269, "endLine": 269 }
+        },
+        {
+          "operator": "<",
+          "left": "distance",
+          "right": "0",
+          "inclusive": false,
+          "intent": "Rejects negative click distances.",
+          "anchor": { "startLine": 316, "endLine": 316 }
+        }
+      ],
+      "errorHandling": [],
+      "invariants": [
+        {
+          "kind": "invariant",
+          "description": "Initial viewport zoom is clamped between the configured minimum and maximum zoom.",
+          "anchor": { "startLine": 94, "endLine": 104 }
+        },
+        {
+          "kind": "ordering",
+          "description": "Zoom transitions resolve only after the d3 transition completion callback runs.",
+          "anchor": { "startLine": 113, "endLine": 118 }
+        },
+        {
+          "kind": "invariant",
+          "description": "External synchronization avoids applying a transform when all viewport coordinates already match.",
+          "anchor": { "startLine": 266, "endLine": 275 }
+        },
+        {
+          "kind": "non-null",
+          "description": "The selected DOM node is used as the d3 zoom selection during initialization.",
+          "anchor": { "startLine": 92, "endLine": 92 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "Callbacks and DOM-related parameters supplied through PanZoomParams are expected to remain valid for the instance lifetime.",
+          "anchor": { "startLine": 35, "endLine": 46 }
+        },
+        {
+          "kind": "platform",
+          "description": "The supplied DOM node supports getBoundingClientRect and d3-selection operations.",
+          "anchor": { "startLine": 57, "endLine": 57 }
+        },
+        {
+          "kind": "schema",
+          "description": "Viewport and extent values conform to the imported application types.",
+          "anchor": { "startLine": 94, "endLine": 104 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "What lifecycle guarantees ensure the ResizeObserver becomes unreachable after pane unmount?",
+          "affects": "resource lifecycle",
+          "anchor": { "startLine": 59, "endLine": 69 },
+          "resolution": null
+        },
+        {
+          "question": "Which callback consumers rely on the exact ordering of start, zoom, and end events?",
+          "affects": "event ordering",
+          "anchor": { "startLine": 175, "endLine": 208 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "mixed",
+        "reentrant": true,
+        "ordering": "deterministic",
+        "notes": "Most configuration and state operations are synchronous; transform and scale operations are asynchronous d3 transitions, while ResizeObserver delivers asynchronous extent updates."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "clamps-initial-zoom",
+          "scenario": "An initial viewport zoom lies outside the configured scale extent.",
+          "given": ["viewport.zoom < minZoom || viewport.zoom > maxZoom", "minZoom <= maxZoom"],
+          "when": "XYPanZoom({ domNode, minZoom, maxZoom, translateExtent, viewport, onPanZoom, onPanZoomStart, onPanZoomEnd, onDraggingChange })",
+          "then": "getViewport().zoom === clamp(viewport.zoom, minZoom, maxZoom)",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Initial zoom must respect the configured minimum and maximum bounds."
+        },
+        {
+          "testId": "returns-current-viewport",
+          "scenario": "The pan-zoom instance has a current D3 transform.",
+          "given": ["d3Selection.property('__zoom') contains x, y, and k"],
+          "when": "getViewport()",
+          "then": "the result is { x: transform.x, y: transform.y, zoom: transform.k }",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "The public viewport representation must map D3's k field to zoom."
+        },
+        {
+          "testId": "sets-viewport-transform",
+          "scenario": "A caller requests a new viewport.",
+          "given": ["viewportToTransform(viewport) returns nextTransform"],
+          "when": "setViewport(viewport)",
+          "then": "the returned value is nextTransform and the D3 selection is transformed to it",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Viewport updates must preserve the canonical viewport-to-transform mapping."
+        },
+        {
+          "testId": "constrains-viewport-transform",
+          "scenario": "A requested viewport exceeds the translation or scale constraints.",
+          "given": ["d3ZoomInstance.constrain()(nextTransform, extent, translateExtent) returns contrainedTransform"],
+          "when": "setViewportConstrained(viewport, extent, translateExtent)",
+          "then": "the constrained transform is applied and returned",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Constrained updates must apply the zoom behavior's configured extent rules."
+        },
+        {
+          "testId": "linear-interpolation-option",
+          "scenario": "A transform operation requests linear interpolation.",
+          "given": ["options?.interpolate === 'linear'"],
+          "when": "setViewport(viewport, { interpolate: 'linear' })",
+          "then": "the operation uses interpolate rather than interpolateZoom",
+          "targets": [],
+          "oracleKind": "fingerprint",
+          "rationale": "The interpolation option is part of the observable animation contract."
+        },
+        {
+          "testId": "invalid-click-distance-becomes-zero",
+          "scenario": "A caller supplies a negative or non-numeric pane click distance.",
+          "given": ["!isNumeric(distance) || distance < 0"],
+          "when": "setClickDistance(distance)",
+          "then": "d3ZoomInstance.clickDistance(0) is called",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Invalid click distances must not configure a negative or non-numeric threshold."
+        },
+        {
+          "testId": "selection-drag-disables-click-distance",
+          "scenario": "Selection-on-drag is enabled during an update.",
+          "given": ["selectionOnDrag === true"],
+          "when": "update({ ..., selectionOnDrag })",
+          "then": "d3ZoomInstance.clickDistance(Infinity) is called",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Selection dragging must prevent pane click recognition regardless of configured distance."
+        },
+        {
+          "testId": "destroy-disables-zoom-handler",
+          "scenario": "The instance is destroyed.",
+          "given": [],
+          "when": "destroy()",
+          "then": "d3ZoomInstance.on('zoom', null) is called",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Destroying the instance must stop zoom event handling."
+        },
+        {
+          "testId": "sync-updates-only-when-different",
+          "scenario": "An externally supplied viewport differs from the current D3 transform.",
+          "given": [
+            "currentTransform.k !== viewport.zoom || currentTransform.x !== viewport.x || currentTransform.y !== viewport.y"
+          ],
+          "when": "syncViewport(viewport)",
+          "then": "the D3 transform is updated with the synchronization flag { sync: true }",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "External synchronization must correct divergence without redundant updates."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "d3-zoom imports",
+        "d3-selection import",
+        "d3-interpolate imports",
+        "application type imports",
+        "utility imports",
+        "event-handler imports",
+        "filter import",
+        "d3-transition side-effect import",
+        "ZoomPanValues type alias",
+        "XYPanZoom factory function"
+      ],
+      "moduleLevelCode": "import { type ZoomTransform, zoom, zoomTransform } from 'd3-zoom';\nimport { select } from 'd3-selection';\nimport { interpolateZoom, interpolate } from 'd3-interpolate';\n\nimport {\n  type CoordinateExtent,\n  type Viewport,\n  PanZoomTransformOptions,\n  PanZoomUpdateOptions,\n  PanZoomParams,\n  PanZoomInstance,\n} from '../types';\nimport { clamp, isNumeric } from '../utils';\nimport { getD3Transition, viewportToTransform, wheelDelta } from './utils';\nimport {\n  createPanOnScrollHandler,\n  createPanZoomEndHandler,\n  createPanZoomHandler,\n  createPanZoomStartHandler,\n  createZoomOnScrollHandler,\n} from './eventhandler';\nimport { createFilter } from './filter';\n// eslint-disable-next-line @typescript-eslint/no-unused-vars\nimport { transition } from 'd3-transition';",
+      "exports": [
+        { "name": "ZoomPanValues", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "XYPanZoom", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "ZoomTransform", "module": "d3-zoom", "alias": null, "kind": "external" },
+        { "symbol": "zoom", "module": "d3-zoom", "alias": null, "kind": "external" },
+        { "symbol": "zoomTransform", "module": "d3-zoom", "alias": null, "kind": "external" },
+        { "symbol": "select", "module": "d3-selection", "alias": null, "kind": "external" },
+        { "symbol": "interpolateZoom", "module": "d3-interpolate", "alias": null, "kind": "external" },
+        { "symbol": "interpolate", "module": "d3-interpolate", "alias": null, "kind": "external" },
+        { "symbol": "transition", "module": "d3-transition", "alias": null, "kind": "external" },
+        { "symbol": "CoordinateExtent", "module": "../types", "alias": null, "kind": "internal" },
+        { "symbol": "Viewport", "module": "../types", "alias": null, "kind": "internal" },
+        { "symbol": "PanZoomTransformOptions", "module": "../types", "alias": null, "kind": "internal" },
+        { "symbol": "PanZoomUpdateOptions", "module": "../types", "alias": null, "kind": "internal" },
+        { "symbol": "PanZoomParams", "module": "../types", "alias": null, "kind": "internal" },
+        { "symbol": "PanZoomInstance", "module": "../types", "alias": null, "kind": "internal" },
+        { "symbol": "clamp", "module": "../utils", "alias": null, "kind": "internal" },
+        { "symbol": "isNumeric", "module": "../utils", "alias": null, "kind": "internal" },
+        { "symbol": "getD3Transition", "module": "./utils", "alias": null, "kind": "internal" },
+        { "symbol": "viewportToTransform", "module": "./utils", "alias": null, "kind": "internal" },
+        { "symbol": "wheelDelta", "module": "./utils", "alias": null, "kind": "internal" },
+        { "symbol": "createPanOnScrollHandler", "module": "./eventhandler", "alias": null, "kind": "internal" },
+        { "symbol": "createPanZoomEndHandler", "module": "./eventhandler", "alias": null, "kind": "internal" },
+        { "symbol": "createPanZoomHandler", "module": "./eventhandler", "alias": null, "kind": "internal" },
+        { "symbol": "createPanZoomStartHandler", "module": "./eventhandler", "alias": null, "kind": "internal" },
+        { "symbol": "createZoomOnScrollHandler", "module": "./eventhandler", "alias": null, "kind": "internal" },
+        { "symbol": "createFilter", "module": "./filter", "alias": null, "kind": "internal" }
+      ],
+      "fileConstants": [],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom#function:XYPanZoom",
+        "unitKind": "function",
+        "name": "XYPanZoom",
+        "qualifiedName": "XYPanZoom",
+        "parentUnitId": null,
+        "startLine": 35,
+        "endLine": 332,
+        "isBehavioral": true,
+        "source": "\nexport function XYPanZoom({\n  domNode,\n  minZoom,\n  maxZoom,\n  translateExtent,\n  viewport,\n  onPanZoom,\n  onPanZoomStart,\n  onPanZoomEnd,\n  onDraggingChange,\n}: PanZoomParams): PanZoomInstance {\n  const zoomPanValues: ZoomPanValues = {\n    isZoomingOrPanning: false,\n    usedRightMouseButton: false,\n    prevViewport: { x: 0, y: 0, zoom: 0 },\n    mouseButton: 0,\n    timerId: undefined,\n    panScrollTimeout: undefined,\n    isPanScrolling: false,\n  };\n  const bbox = domNode.getBoundingClientRect();\n\n  /*\n   * Cache the pane extent and refresh it from a ResizeObserver. Otherwise d3-zoom falls back to its\n   * defaultExtent, which reads clientWidth/clientHeight and forces a synchronous layout while panning\n   * and pinching. The observer is never disconnected on purpose: destroy() also runs to pause zooming\n   * during a user selection, so disconnecting there would leave the cache stale. It becomes unreachable\n   * and is garbage collected with the pane on unmount.\n   */\n  let cachedExtent: CoordinateExtent = [\n    [0, 0],\n    [bbox.width, bbox.height],\n  ];\n  const extentResizeObserver =\n    typeof ResizeObserver !== 'undefined'\n      ? new ResizeObserver((entries) => {\n          const entry = entries[0];\n          if (entry) {\n            cachedExtent = [\n              [0, 0],\n              [entry.contentRect.width, entry.contentRect.height],\n            ];\n          }\n        })\n      : null;\n  extentResizeObserver?.observe(domNode);\n\n  const d3ZoomInstance = zoom()\n    .extent(() => cachedExtent)\n    .scaleExtent([minZoom, maxZoom])\n    .translateExtent(translateExtent);\n  const d3Selection = select(domNode).call(d3ZoomInstance);\n\n  setViewportConstrained(\n    {\n      x: viewport.x,\n      y: viewport.y,\n      zoom: clamp(viewport.zoom, minZoom, maxZoom),\n    },\n    [\n      [0, 0],\n      [bbox.width, bbox.height],\n    ],\n    translateExtent\n  );\n\n  const d3ZoomHandler = d3Selection.on('wheel.zoom')!;\n  const d3DblClickZoomHandler = d3Selection.on('dblclick.zoom')!;\n  d3ZoomInstance.wheelDelta(wheelDelta);\n\n  async function setTransform(transform: ZoomTransform, options?: PanZoomTransformOptions) {\n    if (d3Selection) {\n      return new Promise<boolean>((resolve) => {\n        d3ZoomInstance?.interpolate(options?.interpolate === 'linear' ? interpolate : interpolateZoom).transform(\n          getD3Transition(d3Selection, options?.duration, options?.ease, () => resolve(true)),\n          transform\n        );\n      });\n    }\n\n    return false;\n  }\n\n  // public functions\n  function update({\n    noWheelClassName,\n    noPanClassName,\n    onPaneContextMenu,\n    userSelectionActive,\n    panOnScroll,\n    panOnDrag,\n    panOnScrollMode,\n    panOnScrollSpeed,\n    preventScrolling,\n    zoomOnPinch,\n    zoomOnScroll,\n    zoomOnDoubleClick,\n    zoomActivationKeyPressed,\n    lib,\n    onTransformChange,\n    connectionInProgress,\n    paneClickDistance,\n    selectionOnDrag,\n  }: PanZoomUpdateOptions) {\n    if (userSelectionActive && !zoomPanValues.isZoomingOrPanning) {\n      destroy();\n    }\n\n    const isPanOnScroll = panOnScroll && !zoomActivationKeyPressed && !userSelectionActive;\n\n    d3ZoomInstance.clickDistance(\n      selectionOnDrag ? Infinity : !isNumeric(paneClickDistance) || paneClickDistance < 0 ? 0 : paneClickDistance\n    );\n\n    const wheelHandler = isPanOnScroll\n      ? createPanOnScrollHandler({\n          zoomPanValues,\n          noWheelClassName,\n          d3Selection,\n          d3Zoom: d3ZoomInstance,\n          panOnScrollMode,\n          panOnScrollSpeed,\n          zoomOnPinch,\n          onPanZoomStart,\n          onPanZoom,\n          onPanZoomEnd,\n        })\n      : createZoomOnScrollHandler({\n          noWheelClassName,\n          preventScrolling,\n          d3ZoomHandler,\n        });\n\n    d3Selection.on('wheel.zoom', wheelHandler, { passive: false });\n\n    // pan zoom start\n    const startHandler = createPanZoomStartHandler({\n      zoomPanValues,\n      onDraggingChange,\n      onPanZoomStart,\n    });\n    d3ZoomInstance.on('start', startHandler);\n\n    // pan zoom\n    const panZoomHandler = createPanZoomHandler({\n      zoomPanValues,\n      panOnDrag,\n      onPaneContextMenu: !!onPaneContextMenu,\n      onPanZoom,\n      onTransformChange,\n    });\n    d3ZoomInstance.on('zoom', panZoomHandler);\n\n    // pan zoom end\n    const panZoomEndHandler = createPanZoomEndHandler({\n      zoomPanValues,\n      panOnDrag,\n      panOnScroll,\n      onPaneContextMenu,\n      onPanZoomEnd,\n      onDraggingChange,\n    });\n    d3ZoomInstance.on('end', panZoomEndHandler);\n\n    const filter = createFilter({\n      zoomActivationKeyPressed,\n      panOnDrag,\n      zoomOnScroll,\n      panOnScroll,\n      zoomOnDoubleClick,\n      zoomOnPinch,\n      userSelectionActive,\n      noPanClassName,\n      noWheelClassName,\n      lib,\n      connectionInProgress,\n    });\n    d3ZoomInstance.filter(filter);\n\n    /*\n     * We cannot add zoomOnDoubleClick to the filter above because\n     * double tapping on touch screens circumvents the filter and\n     * dblclick.zoom is fired on the selection directly\n     */\n    if (zoomOnDoubleClick) {\n      d3Selection.on('dblclick.zoom', d3DblClickZoomHandler);\n    } else {\n      d3Selection.on('dblclick.zoom', null);\n    }\n  }\n\n  function destroy() {\n    d3ZoomInstance.on('zoom', null);\n  }\n\n  async function setViewportConstrained(\n    viewport: Viewport,\n    extent: CoordinateExtent,\n    translateExtent: CoordinateExtent\n  ): Promise<ZoomTransform | undefined> {\n    const nextTransform = viewportToTransform(viewport);\n    const contrainedTransform = d3ZoomInstance?.constrain()(nextTransform, extent, translateExtent);\n\n    if (contrainedTransform) {\n      await setTransform(contrainedTransform);\n    }\n\n    return contrainedTransform;\n  }\n\n  async function setViewport(viewport: Viewport, options?: PanZoomTransformOptions) {\n    const nextTransform = viewportToTransform(viewport);\n\n    await setTransform(nextTransform, options);\n\n    return nextTransform;\n  }\n\n  function syncViewport(viewport: Viewport) {\n    if (d3Selection) {\n      const nextTransform = viewportToTransform(viewport);\n      const currentTransform = d3Selection.property('__zoom');\n\n      if (\n        currentTransform.k !== viewport.zoom ||\n        currentTransform.x !== viewport.x ||\n        currentTransform.y !== viewport.y\n      ) {\n        // eslint-disable-next-line @typescript-eslint/ban-ts-comment\n        // @ts-ignore\n        d3ZoomInstance?.transform(d3Selection, nextTransform, null, { sync: true });\n      }\n    }\n  }\n\n  function getViewport(): Viewport {\n    const transform = d3Selection ? zoomTransform(d3Selection.node() as Element) : { x: 0, y: 0, k: 1 };\n    return { x: transform.x, y: transform.y, zoom: transform.k };\n  }\n\n  async function scaleTo(zoom: number, options?: PanZoomTransformOptions) {\n    if (d3Selection) {\n      return new Promise<boolean>((resolve) => {\n        d3ZoomInstance?.interpolate(options?.interpolate === 'linear' ? interpolate : interpolateZoom).scaleTo(\n          getD3Transition(d3Selection, options?.duration, options?.ease, () => resolve(true)),\n          zoom\n        );\n      });\n    }\n\n    return false;\n  }\n\n  async function scaleBy(factor: number, options?: PanZoomTransformOptions) {\n    if (d3Selection) {\n      return new Promise<boolean>((resolve) => {\n        d3ZoomInstance?.interpolate(options?.interpolate === 'linear' ? interpolate : interpolateZoom).scaleBy(\n          getD3Transition(d3Selection, options?.duration, options?.ease, () => resolve(true)),\n          factor\n        );\n      });\n    }\n\n    return false;\n  }\n\n  function setScaleExtent(scaleExtent: [number, number]) {\n    d3ZoomInstance?.scaleExtent(scaleExtent);\n  }\n\n  function setTranslateExtent(translateExtent: CoordinateExtent) {\n    d3ZoomInstance?.translateExtent(translateExtent);\n  }\n\n  function setClickDistance(distance: number) {\n    const validDistance = !isNumeric(distance) || distance < 0 ? 0 : distance;\n    d3ZoomInstance?.clickDistance(validDistance);\n  }\n\n  return {\n    update,\n    destroy,\n    setViewport,\n    setViewportConstrained,\n    getViewport,\n    scaleTo,\n    scaleBy,\n    setScaleExtent,\n    setTranslateExtent,\n    syncViewport,\n    setClickDistance,\n  };\n}\n",
+        "detail": {
+          "unitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom#function:XYPanZoom",
+          "fileId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom",
+          "unitKind": "function",
+          "name": "XYPanZoom",
+          "qualifiedName": "XYPanZoom",
+          "parentUnitId": null,
+          "startLine": 35,
+          "endLine": 332,
+          "signature": "export function XYPanZoom({ domNode, minZoom, maxZoom, translateExtent, viewport, onPanZoom, onPanZoomStart, onPanZoomEnd, onDraggingChange, }: PanZoomParams): PanZoomInstance",
+          "parameters": [
+            {
+              "name": "{ domNode, minZoom, maxZoom, translateExtent, viewport, onPanZoom, onPanZoomStart, onPanZoomEnd, onDraggingChange }",
+              "type": "PanZoomParams",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "PanZoomInstance",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "domNode is a valid DOM element supporting getBoundingClientRect and D3 selection operations.",
+            "The supplied PanZoomParams values satisfy their declared TypeScript types."
+          ],
+          "postconditions": [
+            "A pan-and-zoom instance implementing PanZoomInstance is returned.",
+            "The DOM node is initialized as a D3 zoom selection with the configured scale and translation extents.",
+            "The initial viewport zoom is clamped to the inclusive range [minZoom, maxZoom] before being applied.",
+            "When ResizeObserver is available, it observes domNode and keeps the cached pane extent synchronized with resize entries."
+          ],
+          "invariants": [
+            "The cached pane extent starts at [[0, 0], [bbox.width, bbox.height]].",
+            "The configured D3 zoom scale extent is [minZoom, maxZoom].",
+            "The configured D3 zoom translation extent is translateExtent.",
+            "The returned controller exposes the update, destroy, setViewport, setViewportConstrained, getViewport, scaleTo, scaleBy, setScaleExtent, setTranslateExtent, syncViewport, and setClickDistance operations."
+          ],
+          "edgeCases": [
+            "When ResizeObserver is unavailable, no resize observer is created or attached and the initial bounding-client-rectangle extent remains cached.",
+            "When viewport.zoom is below minZoom or above maxZoom, the initially applied viewport uses minZoom or maxZoom respectively.",
+            "When the DOM node's bounding rectangle has zero width or height, the initial cached extent uses those zero dimensions."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [
+            "Initializes D3 zoom state and event bindings on domNode.",
+            "Maintains the internal zoom/pan interaction state used by the returned controller.",
+            "Updates the cached pane extent in response to ResizeObserver entries when ResizeObserver is available."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "domNode.getBoundingClientRect", "source": "domNode", "kind": "external" },
+            { "name": "ResizeObserver", "source": "global DOM API", "kind": "external" },
+            { "name": "select", "source": "d3-selection", "kind": "external" },
+            { "name": "zoom", "source": "d3-zoom", "kind": "external" },
+            { "name": "setViewportConstrained", "source": "XYPanZoom", "kind": "internal" },
+            { "name": "clamp", "source": "local utility dependency", "kind": "external" },
+            { "name": "wheelDelta", "source": "local utility dependency", "kind": "external" }
+          ],
+          "symbolReferences": [
+            "PanZoomParams",
+            "PanZoomInstance",
+            "ZoomPanValues",
+            "CoordinateExtent",
+            "ResizeObserver",
+            "PanZoomTransformOptions",
+            "viewportToTransform",
+            "clamp",
+            "zoom",
+            "select"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Creates and initializes a D3-backed pan-and-zoom controller for a DOM node. It applies the initial viewport within the configured zoom and translation constraints and returns the controller operations.",
+          "specLiterals": [
+            {
+              "kind": "magic-number",
+              "value": "0",
+              "role": "Initial x and y coordinates, initial interaction-state values, and the lower bound of cached extents."
+            },
+            {
+              "kind": "magic-number",
+              "value": "1",
+              "role": "Fallback zoom scale used when reading a viewport from an unavailable D3 selection."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "449ada1b66f033efc886c2bc5c4d4858a66fce37eaba06cd14c7f155df37b10b"
+        }
+      },
+      {
+        "unitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom.setTransform#function:XYPanZoom.setTransform",
+        "unitKind": "function",
+        "name": "setTransform",
+        "qualifiedName": "XYPanZoom.setTransform",
+        "parentUnitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom#function:XYPanZoom",
+        "startLine": 111,
+        "endLine": 122,
+        "isBehavioral": true,
+        "source": "          transform\n        );\n      });\n    }\n\n    return false;\n  }\n\n  // public functions\n  function update({\n    noWheelClassName,\n    noPanClassName,",
+        "detail": {
+          "unitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom.setTransform#function:XYPanZoom.setTransform",
+          "fileId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom.setTransform",
+          "unitKind": "function",
+          "name": "setTransform",
+          "qualifiedName": "XYPanZoom.setTransform",
+          "parentUnitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom#function:XYPanZoom",
+          "startLine": 111,
+          "endLine": 122,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Applies a pan-and-zoom transform to the XYPanZoom instance, preserving the transform contract expected by its viewport operations.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "3df575c07cdd16c9f594535ed39347210651103f150dad7edfc012a49161671f"
+        }
+      },
+      {
+        "unitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom.update#function:XYPanZoom.update",
+        "unitKind": "function",
+        "name": "update",
+        "qualifiedName": "XYPanZoom.update",
+        "parentUnitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom#function:XYPanZoom",
+        "startLine": 125,
+        "endLine": 233,
+        "isBehavioral": true,
+        "source": "    panOnScroll,\n    panOnDrag,\n    panOnScrollMode,\n    panOnScrollSpeed,\n    preventScrolling,\n    zoomOnPinch,\n    zoomOnScroll,\n    zoomOnDoubleClick,\n    zoomActivationKeyPressed,\n    lib,\n    onTransformChange,\n    connectionInProgress,\n    paneClickDistance,\n    selectionOnDrag,\n  }: PanZoomUpdateOptions) {\n    if (userSelectionActive && !zoomPanValues.isZoomingOrPanning) {\n      destroy();\n    }\n\n    const isPanOnScroll = panOnScroll && !zoomActivationKeyPressed && !userSelectionActive;\n\n    d3ZoomInstance.clickDistance(\n      selectionOnDrag ? Infinity : !isNumeric(paneClickDistance) || paneClickDistance < 0 ? 0 : paneClickDistance\n    );\n\n    const wheelHandler = isPanOnScroll\n      ? createPanOnScrollHandler({\n          zoomPanValues,\n          noWheelClassName,\n          d3Selection,\n          d3Zoom: d3ZoomInstance,\n          panOnScrollMode,\n          panOnScrollSpeed,\n          zoomOnPinch,\n          onPanZoomStart,\n          onPanZoom,\n          onPanZoomEnd,\n        })\n      : createZoomOnScrollHandler({\n          noWheelClassName,\n          preventScrolling,\n          d3ZoomHandler,\n        });\n\n    d3Selection.on('wheel.zoom', wheelHandler, { passive: false });\n\n    // pan zoom start\n    const startHandler = createPanZoomStartHandler({\n      zoomPanValues,\n      onDraggingChange,\n      onPanZoomStart,\n    });\n    d3ZoomInstance.on('start', startHandler);\n\n    // pan zoom\n    const panZoomHandler = createPanZoomHandler({\n      zoomPanValues,\n      panOnDrag,\n      onPaneContextMenu: !!onPaneContextMenu,\n      onPanZoom,\n      onTransformChange,\n    });\n    d3ZoomInstance.on('zoom', panZoomHandler);\n\n    // pan zoom end\n    const panZoomEndHandler = createPanZoomEndHandler({\n      zoomPanValues,\n      panOnDrag,\n      panOnScroll,\n      onPaneContextMenu,\n      onPanZoomEnd,\n      onDraggingChange,\n    });\n    d3ZoomInstance.on('end', panZoomEndHandler);\n\n    const filter = createFilter({\n      zoomActivationKeyPressed,\n      panOnDrag,\n      zoomOnScroll,\n      panOnScroll,\n      zoomOnDoubleClick,\n      zoomOnPinch,\n      userSelectionActive,\n      noPanClassName,\n      noWheelClassName,\n      lib,\n      connectionInProgress,\n    });\n    d3ZoomInstance.filter(filter);\n\n    /*\n     * We cannot add zoomOnDoubleClick to the filter above because\n     * double tapping on touch screens circumvents the filter and\n     * dblclick.zoom is fired on the selection directly\n     */\n    if (zoomOnDoubleClick) {\n      d3Selection.on('dblclick.zoom', d3DblClickZoomHandler);\n    } else {\n      d3Selection.on('dblclick.zoom', null);\n    }\n  }\n\n  function destroy() {\n    d3ZoomInstance.on('zoom', null);\n  }\n\n  async function setViewportConstrained(\n    viewport: Viewport,\n    extent: CoordinateExtent,",
+        "detail": {
+          "unitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom.update#function:XYPanZoom.update",
+          "fileId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom.update",
+          "unitKind": "function",
+          "name": "update",
+          "qualifiedName": "XYPanZoom.update",
+          "parentUnitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom#function:XYPanZoom",
+          "startLine": 125,
+          "endLine": 233,
+          "signature": "update({ panOnScroll, panOnDrag, panOnScrollMode, panOnScrollSpeed, preventScrolling, zoomOnPinch, zoomOnScroll, zoomOnDoubleClick, zoomActivationKeyPressed, lib, onTransformChange, connectionInProgress, paneClickDistance, selectionOnDrag }: PanZoomUpdateOptions)",
+          "parameters": [
+            {
+              "name": "options",
+              "type": "PanZoomUpdateOptions",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "void",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The supplied argument conforms to PanZoomUpdateOptions.",
+            "The associated d3 selection and d3 zoom instance are initialized."
+          ],
+          "postconditions": [
+            "The d3 zoom instance has updated start, zoom, end, filter, and click-distance handlers.",
+            "The d3 selection has a wheel handler configured for either pan-on-scroll or zoom-on-scroll behavior.",
+            "The double-click zoom handler is installed when zoomOnDoubleClick is true and removed otherwise.",
+            "When userSelectionActive is true and zoomPanValues.isZoomingOrPanning is false, the active zoom handler is destroyed before reconfiguration."
+          ],
+          "invariants": [
+            "The wheel listener is registered with passive set to false.",
+            "The click distance is Infinity when selectionOnDrag is enabled.",
+            "A non-numeric or negative paneClickDistance produces a click distance of 0.",
+            "The pan-on-scroll handler is selected only when panOnScroll is enabled, the zoom activation key is not pressed, and user selection is inactive."
+          ],
+          "edgeCases": [
+            "When selectionOnDrag is true, the d3 click distance is set to Infinity regardless of paneClickDistance.",
+            "When paneClickDistance is non-numeric or less than zero, the d3 click distance is set to 0.",
+            "When panOnScroll is disabled, the zoom activation key is pressed, or user selection is active, a zoom-on-scroll handler is used instead of a pan-on-scroll handler.",
+            "When zoomOnDoubleClick is false, any existing dblclick.zoom handler is removed.",
+            "When user selection is active while no zooming or panning is in progress, the current zoom handler is destroyed before the update continues."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [
+            "Updates d3ZoomInstance click distance, start, zoom, end, and filter handlers.",
+            "Updates d3Selection wheel.zoom and dblclick.zoom event handlers.",
+            "May remove the active zoom handler through destroy()."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "destroy", "source": "XYPanZoom", "kind": "internal" },
+            { "name": "createPanOnScrollHandler", "source": null, "kind": "internal" },
+            { "name": "createZoomOnScrollHandler", "source": null, "kind": "internal" },
+            { "name": "createPanZoomStartHandler", "source": null, "kind": "internal" },
+            { "name": "createPanZoomHandler", "source": null, "kind": "internal" },
+            { "name": "createPanZoomEndHandler", "source": null, "kind": "internal" },
+            { "name": "createFilter", "source": null, "kind": "internal" },
+            { "name": "isNumeric", "source": null, "kind": "internal" },
+            { "name": "d3ZoomInstance.clickDistance", "source": "d3-zoom", "kind": "external" },
+            { "name": "d3ZoomInstance.on", "source": "d3-zoom", "kind": "external" },
+            { "name": "d3ZoomInstance.filter", "source": "d3-zoom", "kind": "external" },
+            { "name": "d3Selection.on", "source": "d3-selection", "kind": "external" }
+          ],
+          "symbolReferences": [
+            "PanZoomUpdateOptions",
+            "zoomPanValues",
+            "d3ZoomInstance",
+            "d3Selection",
+            "noWheelClassName",
+            "noPanClassName",
+            "onPanZoomStart",
+            "onPanZoom",
+            "onPanZoomEnd",
+            "onDraggingChange",
+            "onPaneContextMenu",
+            "d3DblClickZoomHandler"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Updates the pan-and-zoom interaction configuration, including wheel, drag, zoom, filtering, and double-click behavior. It also removes the active zoom handler when user selection is active and the viewport is not currently being manipulated.",
+          "specLiterals": [
+            {
+              "kind": "enum-value",
+              "value": "wheel.zoom",
+              "role": "d3 selection event namespace used for wheel interaction configuration"
+            },
+            {
+              "kind": "enum-value",
+              "value": "dblclick.zoom",
+              "role": "d3 selection event namespace used to enable or remove double-click zoom"
+            },
+            { "kind": "enum-value", "value": "start", "role": "d3 zoom lifecycle event configured for pan/zoom start" },
+            {
+              "kind": "enum-value",
+              "value": "zoom",
+              "role": "d3 zoom lifecycle event configured for pan/zoom changes"
+            },
+            { "kind": "enum-value", "value": "end", "role": "d3 zoom lifecycle event configured for pan/zoom end" },
+            {
+              "kind": "magic-number",
+              "value": "Infinity",
+              "role": "Click distance used when selection-on-drag is enabled"
+            },
+            {
+              "kind": "magic-number",
+              "value": "0",
+              "role": "Fallback click distance for non-numeric or negative pane click distances"
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "update is called",
+              "then": "d3ZoomInstance.clickDistance is called with Infinity.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "update is called",
+              "then": "d3Selection.on is called for dblclick.zoom with a null handler.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "update is called",
+              "then": "the wheel.zoom listener is configured with the pan-on-scroll handler.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "0ee0b606277c8062e4b95ef337c403f08336dbd308d1db332e108e5fdb5c6ab9"
+        }
+      },
+      {
+        "unitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom.destroy#function:XYPanZoom.destroy",
+        "unitKind": "function",
+        "name": "destroy",
+        "qualifiedName": "XYPanZoom.destroy",
+        "parentUnitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom#function:XYPanZoom",
+        "startLine": 235,
+        "endLine": 237,
+        "isBehavioral": false,
+        "source": "  ): Promise<ZoomTransform | undefined> {\n    const nextTransform = viewportToTransform(viewport);\n    const contrainedTransform = d3ZoomInstance?.constrain()(nextTransform, extent, translateExtent);",
+        "detail": {
+          "unitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom.destroy#function:XYPanZoom.destroy",
+          "fileId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom.destroy",
+          "unitKind": "function",
+          "name": "destroy",
+          "qualifiedName": "XYPanZoom.destroy",
+          "parentUnitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom#function:XYPanZoom",
+          "startLine": 235,
+          "endLine": 237,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Represents the destroy operation for an XYPanZoom instance. The supplied source excerpt does not expose its cleanup behavior or return contract.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "6b93ac80634a78d63443ceceb247779e46eb75ddb8d587136a2f4524dc90a202"
+        }
+      },
+      {
+        "unitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom.setViewportConstrained#function:XYPanZoom.setViewportConstrained",
+        "unitKind": "function",
+        "name": "setViewportConstrained",
+        "qualifiedName": "XYPanZoom.setViewportConstrained",
+        "parentUnitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom#function:XYPanZoom",
+        "startLine": 239,
+        "endLine": 252,
+        "isBehavioral": true,
+        "source": "    if (contrainedTransform) {\n      await setTransform(contrainedTransform);\n    }\n\n    return contrainedTransform;\n  }\n\n  async function setViewport(viewport: Viewport, options?: PanZoomTransformOptions) {\n    const nextTransform = viewportToTransform(viewport);\n\n    await setTransform(nextTransform, options);\n\n    return nextTransform;\n  }",
+        "detail": {
+          "unitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom.setViewportConstrained#function:XYPanZoom.setViewportConstrained",
+          "fileId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom.setViewportConstrained",
+          "unitKind": "function",
+          "name": "setViewportConstrained",
+          "qualifiedName": "XYPanZoom.setViewportConstrained",
+          "parentUnitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom#function:XYPanZoom",
+          "startLine": 239,
+          "endLine": 252,
+          "signature": "async function setViewportConstrained(viewport: Viewport, options?: PanZoomTransformOptions)",
+          "parameters": [
+            {
+              "name": "viewport",
+              "type": "Viewport",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "options",
+              "type": "PanZoomTransformOptions",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The viewport argument is a valid Viewport value.",
+            "The XYPanZoom instance has configured transform constraints and a working transform setter."
+          ],
+          "postconditions": [
+            "The returned value is the constrained transform produced for the requested viewport.",
+            "When a constrained transform is available, it is applied through the internal transform setter before the promise resolves."
+          ],
+          "invariants": [
+            "The requested viewport is converted to a transform before constraint enforcement.",
+            "Transform application is awaited before normal completion."
+          ],
+          "edgeCases": [
+            "A viewport whose transformed value is outside the configured constraints is constrained before being applied and returned.",
+            "If constraint processing produces no transform, no transform is applied and the result is returned unchanged as the constraint result.",
+            "Optional transform options may be omitted."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [
+              "Errors rejected by viewport conversion, constraint processing, or the asynchronous transform setter propagate to the caller."
+            ],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": null
+          },
+          "stateMutations": [
+            "The current pan/zoom transform may be updated through the internal setTransform operation."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "viewportToTransform", "source": null, "kind": "internal" },
+            { "name": "clampTransform", "source": null, "kind": "internal" },
+            { "name": "setTransform", "source": "XYPanZoom.setTransform", "kind": "internal" }
+          ],
+          "symbolReferences": ["Viewport", "PanZoomTransformOptions"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Converts a viewport into a transform, constrains that transform to the configured zoom and translation limits, applies it when a constrained transform is available, and returns the constrained result.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "setViewportConstrained(viewport) is awaited.",
+              "then": "The constrained transform is applied and the same constrained transform is returned.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "setViewportConstrained(viewport) is awaited.",
+              "then": "The returned and applied transform respects the configured constraints rather than directly using the unconstrained viewport transform.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "10fb492a064e6d226a272690bd172aa171cd61815edba5492e2506e06f143bff"
+        }
+      },
+      {
+        "unitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom.setViewport#function:XYPanZoom.setViewport",
+        "unitKind": "function",
+        "name": "setViewport",
+        "qualifiedName": "XYPanZoom.setViewport",
+        "parentUnitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom#function:XYPanZoom",
+        "startLine": 254,
+        "endLine": 259,
+        "isBehavioral": true,
+        "source": "  function syncViewport(viewport: Viewport) {\n    if (d3Selection) {\n      const nextTransform = viewportToTransform(viewport);\n      const currentTransform = d3Selection.property('__zoom');\n\n      if (",
+        "detail": {
+          "unitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom.setViewport#function:XYPanZoom.setViewport",
+          "fileId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom.setViewport",
+          "unitKind": "function",
+          "name": "setViewport",
+          "qualifiedName": "XYPanZoom.setViewport",
+          "parentUnitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom#function:XYPanZoom",
+          "startLine": 254,
+          "endLine": 259,
+          "signature": "setViewport(viewport: Viewport, options?: PanZoomTransformOptions): Promise<boolean>",
+          "parameters": [
+            {
+              "name": "viewport",
+              "type": "Viewport",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "options",
+              "type": "PanZoomTransformOptions",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "Promise<boolean>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["The viewport argument is a Viewport value with x, y, and zoom coordinates."],
+          "postconditions": [
+            "The requested viewport is converted to the underlying transform representation and applied through the pan/zoom transform mechanism.",
+            "The returned promise resolves to a boolean indicating whether the transform was applied."
+          ],
+          "invariants": [
+            "Viewport x and y values preserve their meaning as translation coordinates.",
+            "Viewport zoom preserves its meaning as the transform scale."
+          ],
+          "edgeCases": [
+            "An optional options argument may be omitted; the transform is applied using the default transition behaviour.",
+            "A viewport at a boundary value such as zoom 0 is passed through to the transform conversion without changing its requested coordinates.",
+            "If the underlying selection or pan/zoom mechanism is unavailable, the result reflects that the transform was not applied."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": "The promise resolves with false when the underlying transform cannot be applied."
+          },
+          "stateMutations": ["Underlying d3 pan/zoom selection transform state"],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "viewportToTransform", "source": null, "kind": "internal" },
+            { "name": "setTransform", "source": "XYPanZoom.setTransform", "kind": "internal" }
+          ],
+          "symbolReferences": ["Viewport", "PanZoomTransformOptions"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Sets the pan-and-zoom viewport to the requested position and scale, optionally using the supplied transition options. Resolves with whether the transform was applied.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "setViewport(viewport) is called.",
+              "then": "The viewport is converted to the corresponding pan/zoom transform, applied, and the returned promise resolves with the application result.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "c95f8a330297c61715238cf064b4d1f17d93ec922a3fbb1c2f69b4992acd2a9d"
+        }
+      },
+      {
+        "unitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom.syncViewport#function:XYPanZoom.syncViewport",
+        "unitKind": "function",
+        "name": "syncViewport",
+        "qualifiedName": "XYPanZoom.syncViewport",
+        "parentUnitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom#function:XYPanZoom",
+        "startLine": 261,
+        "endLine": 276,
+        "isBehavioral": true,
+        "source": "        currentTransform.x !== viewport.x ||\n        currentTransform.y !== viewport.y\n      ) {\n        // eslint-disable-next-line @typescript-eslint/ban-ts-comment\n        // @ts-ignore\n        d3ZoomInstance?.transform(d3Selection, nextTransform, null, { sync: true });\n      }\n    }\n  }\n\n  function getViewport(): Viewport {\n    const transform = d3Selection ? zoomTransform(d3Selection.node() as Element) : { x: 0, y: 0, k: 1 };\n    return { x: transform.x, y: transform.y, zoom: transform.k };\n  }\n\n  async function scaleTo(zoom: number, options?: PanZoomTransformOptions) {",
+        "detail": {
+          "unitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom.syncViewport#function:XYPanZoom.syncViewport",
+          "fileId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom.syncViewport",
+          "unitKind": "function",
+          "name": "syncViewport",
+          "qualifiedName": "XYPanZoom.syncViewport",
+          "parentUnitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom#function:XYPanZoom",
+          "startLine": 261,
+          "endLine": 276,
+          "signature": "function syncViewport(viewport: Viewport)",
+          "parameters": [
+            {
+              "name": "viewport",
+              "type": "Viewport",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "void",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["The viewport argument provides numeric x, y, and zoom values."],
+          "postconditions": [
+            "When the requested viewport differs from the current D3 transform, the underlying zoom transform is updated to match the requested x, y, and zoom values.",
+            "When the current transform already matches the requested viewport, no transform update is required."
+          ],
+          "invariants": [
+            "The requested viewport is represented as a D3 zoom identity translated by x and y and scaled by zoom.",
+            "Synchronization updates are marked with the sync flag."
+          ],
+          "edgeCases": [
+            "If the D3 selection or zoom instance is unavailable, optional invocation prevents a synchronization call from being performed.",
+            "If only the zoom scale differs, synchronization updates the scale.",
+            "If either viewport translation coordinate differs, synchronization applies the requested transform.",
+            "If translation and scale already match, no corrective transform is applied."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [
+            "May mutate the underlying D3 selection's zoom transform through the configured zoom instance."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "zoomTransform", "source": "d3-zoom", "kind": "external" },
+            { "name": "scaleTo", "source": "configured D3 zoom instance", "kind": "external" },
+            { "name": "transform", "source": "configured D3 zoom instance", "kind": "external" }
+          ],
+          "symbolReferences": ["Viewport", "zoomIdentity", "zoomTransform", "d3Selection", "d3ZoomInstance"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Synchronizes the underlying D3 zoom transform with the supplied viewport position and zoom level. It only applies transform updates when the current transform differs from the requested viewport.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "syncViewport(viewport) is called",
+              "then": "The configured D3 zoom instance is instructed to synchronize the selection to the viewport transform with the sync flag set to true.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "syncViewport(viewport) is called",
+              "then": "No corrective transform is applied.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "c247b9b525d78873e28a5cb4b81c552dce946457a8b8c75126e055f07db08bb2"
+        }
+      },
+      {
+        "unitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom.getViewport#function:XYPanZoom.getViewport",
+        "unitKind": "function",
+        "name": "getViewport",
+        "qualifiedName": "XYPanZoom.getViewport",
+        "parentUnitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom#function:XYPanZoom",
+        "startLine": 278,
+        "endLine": 281,
+        "isBehavioral": true,
+        "source": "      return new Promise<boolean>((resolve) => {\n        d3ZoomInstance?.interpolate(options?.interpolate === 'linear' ? interpolate : interpolateZoom).scaleTo(\n          getD3Transition(d3Selection, options?.duration, options?.ease, () => resolve(true)),\n          zoom",
+        "detail": {
+          "unitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom.getViewport#function:XYPanZoom.getViewport",
+          "fileId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom.getViewport",
+          "unitKind": "function",
+          "name": "getViewport",
+          "qualifiedName": "XYPanZoom.getViewport",
+          "parentUnitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom#function:XYPanZoom",
+          "startLine": 278,
+          "endLine": 281,
+          "signature": "getViewport(): ViewportTransform",
+          "parameters": [],
+          "returnType": "ViewportTransform",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [
+            "Returns a viewport transform containing the current horizontal position, vertical position, and zoom scale."
+          ],
+          "invariants": ["The returned viewport reflects the pan/zoom transform currently held by the instance."],
+          "edgeCases": ["If no D3 zoom transform is available, the viewport uses the identity transform values."],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["ViewportTransform"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Returns the current viewport transformation represented by the pan/zoom instance.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "6e379289c0d1da84bf77c44d983dce49fc15a08db0cb221696e978a2a43499ca"
+        }
+      },
+      {
+        "unitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom.scaleTo#function:XYPanZoom.scaleTo",
+        "unitKind": "function",
+        "name": "scaleTo",
+        "qualifiedName": "XYPanZoom.scaleTo",
+        "parentUnitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom#function:XYPanZoom",
+        "startLine": 283,
+        "endLine": 293,
+        "isBehavioral": true,
+        "source": "      });\n    }\n\n    return false;\n  }\n\n  async function scaleBy(factor: number, options?: PanZoomTransformOptions) {\n    if (d3Selection) {\n      return new Promise<boolean>((resolve) => {\n        d3ZoomInstance?.interpolate(options?.interpolate === 'linear' ? interpolate : interpolateZoom).scaleBy(\n          getD3Transition(d3Selection, options?.duration, options?.ease, () => resolve(true)),",
+        "detail": {
+          "unitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom.scaleTo#function:XYPanZoom.scaleTo",
+          "fileId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom.scaleTo",
+          "unitKind": "function",
+          "name": "scaleTo",
+          "qualifiedName": "XYPanZoom.scaleTo",
+          "parentUnitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom#function:XYPanZoom",
+          "startLine": 283,
+          "endLine": 293,
+          "signature": "async function scaleTo(scale: number, options?: PanZoomTransformOptions)",
+          "parameters": [
+            { "name": "scale", "type": "number", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "options",
+              "type": "PanZoomTransformOptions",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "Promise<boolean>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["scale is a numeric target zoom scale."],
+          "postconditions": [
+            "When a D3 selection is available, the zoom instance is instructed to scale to the requested scale and the returned promise resolves to true after the transition callback runs.",
+            "When no D3 selection is available, the returned promise resolves to false."
+          ],
+          "invariants": [
+            "The interpolation mode is linear only when options.interpolate is exactly \"linear\"; otherwise the zoom interpolation is used.",
+            "The requested scale value is passed to the D3 zoom scaleTo operation without transformation."
+          ],
+          "edgeCases": [
+            "With no D3 selection, no scaling operation is performed and the function resolves to false.",
+            "With options omitted, the default transition interpolation and transition settings are used.",
+            "With options.interpolate set to \"linear\", linear interpolation is selected."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [
+            "The D3 zoom instance's viewport scale is changed through scaleTo when a D3 selection is available."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "d3ZoomInstance.interpolate", "source": "d3 zoom instance", "kind": "external" },
+            { "name": "getD3Transition", "source": "XYPanZoom", "kind": "internal" },
+            { "name": "d3ZoomInstance.scaleTo", "source": "d3 zoom instance", "kind": "external" }
+          ],
+          "symbolReferences": [
+            "PanZoomTransformOptions",
+            "d3Selection",
+            "d3ZoomInstance",
+            "interpolate",
+            "interpolateZoom"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Scales the viewport to the requested scale, optionally using a configured transition. It reports whether the scaling operation was initiated through the available D3 selection.",
+          "specLiterals": [
+            { "kind": "enum-value", "value": "linear", "role": "Selects linear interpolation for the zoom transition." }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "scaleTo(2) is called",
+              "then": "The zoom instance scales to 2 using the default zoom interpolation and the promise resolves to true after the transition callback.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "scaleTo(2) is called",
+              "then": "The promise resolves to false and no zoom operation is performed.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "5f636bfe1e7c107ba553e466ae5c9a36f3d669bb7601cb25fd7ba3e25424de8b"
+        }
+      },
+      {
+        "unitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom.scaleBy#function:XYPanZoom.scaleBy",
+        "unitKind": "function",
+        "name": "scaleBy",
+        "qualifiedName": "XYPanZoom.scaleBy",
+        "parentUnitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom#function:XYPanZoom",
+        "startLine": 295,
+        "endLine": 305,
+        "isBehavioral": true,
+        "source": "        );\n      });\n    }\n\n    return false;\n  }\n\n  function setScaleExtent(scaleExtent: [number, number]) {\n    d3ZoomInstance?.scaleExtent(scaleExtent);\n  }\n",
+        "detail": {
+          "unitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom.scaleBy#function:XYPanZoom.scaleBy",
+          "fileId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom.scaleBy",
+          "unitKind": "function",
+          "name": "scaleBy",
+          "qualifiedName": "XYPanZoom.scaleBy",
+          "parentUnitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom#function:XYPanZoom",
+          "startLine": 295,
+          "endLine": 305,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Scales the pan-and-zoom viewport by a caller-provided factor through the configured zoom controller.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "c5111796a938e44e2b784badfe4c952746ca40e659c5ef451c68fc08a8ac4cd1"
+        }
+      },
+      {
+        "unitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom.setScaleExtent#function:XYPanZoom.setScaleExtent",
+        "unitKind": "function",
+        "name": "setScaleExtent",
+        "qualifiedName": "XYPanZoom.setScaleExtent",
+        "parentUnitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom#function:XYPanZoom",
+        "startLine": 307,
+        "endLine": 309,
+        "isBehavioral": false,
+        "source": "    d3ZoomInstance?.translateExtent(translateExtent);\n  }\n",
+        "detail": {
+          "unitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom.setScaleExtent#function:XYPanZoom.setScaleExtent",
+          "fileId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom.setScaleExtent",
+          "unitKind": "function",
+          "name": "setScaleExtent",
+          "qualifiedName": "XYPanZoom.setScaleExtent",
+          "parentUnitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom#function:XYPanZoom",
+          "startLine": 307,
+          "endLine": 309,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [
+            "When a zoom instance exists, its extent configuration is updated with the supplied extent value.",
+            "When no zoom instance exists, no exception is raised and no zoom configuration is changed."
+          ],
+          "invariants": [
+            "The zoom-instance operation is conditional and does not execute when the instance is absent."
+          ],
+          "edgeCases": [
+            "Absent zoom instance: the optional operation is skipped without throwing.",
+            "Any extent value accepted by the underlying zoom instance is forwarded to it."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": ["Configuration state of the associated d3 zoom instance, when present."],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "translateExtent", "source": "d3ZoomInstance", "kind": "external" }],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Configures the associated zoom instance's extent setting when the instance is available. If no zoom instance exists, the operation has no observable effect.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "1227833b320efd5d3868df71719bc7dc656c3a045fb7038ead0f6cdb03a8edd2"
+        }
+      },
+      {
+        "unitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom.setTranslateExtent#function:XYPanZoom.setTranslateExtent",
+        "unitKind": "function",
+        "name": "setTranslateExtent",
+        "qualifiedName": "XYPanZoom.setTranslateExtent",
+        "parentUnitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom#function:XYPanZoom",
+        "startLine": 311,
+        "endLine": 313,
+        "isBehavioral": false,
+        "source": "    const validDistance = !isNumeric(distance) || distance < 0 ? 0 : distance;\n    d3ZoomInstance?.clickDistance(validDistance);\n  }",
+        "detail": {
+          "unitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom.setTranslateExtent#function:XYPanZoom.setTranslateExtent",
+          "fileId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom.setTranslateExtent",
+          "unitKind": "function",
+          "name": "setTranslateExtent",
+          "qualifiedName": "XYPanZoom.setTranslateExtent",
+          "parentUnitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom#function:XYPanZoom",
+          "startLine": 311,
+          "endLine": 313,
+          "signature": null,
+          "parameters": [
+            { "name": "distance", "type": null, "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [
+            "The effective click distance is zero when the input is non-numeric or negative.",
+            "The effective click distance equals the supplied value when it is numeric and non-negative.",
+            "No operation occurs when the zoom instance is absent."
+          ],
+          "invariants": [
+            "The click distance passed to the zoom instance is never negative.",
+            "The zoom instance is accessed optionally and therefore may be absent without raising an error."
+          ],
+          "edgeCases": [
+            "A non-numeric distance is normalized to zero.",
+            "A negative numeric distance is normalized to zero.",
+            "A numeric non-negative distance is used unchanged.",
+            "If the zoom instance is undefined or null, no click-distance call is made and no error is raised."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Invalid or negative input is silently normalized to zero.",
+            "returnsOnError": null
+          },
+          "stateMutations": ["The click-distance configuration of d3ZoomInstance may be updated."],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "clickDistance", "source": "d3ZoomInstance", "kind": "external" },
+            { "name": "isNumeric", "source": null, "kind": "internal" }
+          ],
+          "symbolReferences": ["d3ZoomInstance", "isNumeric"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Normalizes the supplied distance to a non-negative numeric value, using zero for invalid or negative input, and applies it as the zoom instance click distance when a zoom instance exists.",
+          "specLiterals": [
+            {
+              "kind": "magic-number",
+              "value": "0",
+              "role": "Fallback click distance for non-numeric and negative input."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "XYPanZoom.setTranslateExtent(-5) is invoked.",
+              "then": "The zoom instance receives clickDistance(0).",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "XYPanZoom.setTranslateExtent(12) is invoked.",
+              "then": "The zoom instance receives clickDistance(12).",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "XYPanZoom.setTranslateExtent with a non-numeric value is invoked.",
+              "then": "The call completes without raising an error and no zoom-instance method is invoked.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "9299365cbd8bcd1238baac1791bbe277098c00f9ee974536bf45bc2490cbfc3b"
+        }
+      },
+      {
+        "unitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom.setClickDistance#function:XYPanZoom.setClickDistance",
+        "unitKind": "function",
+        "name": "setClickDistance",
+        "qualifiedName": "XYPanZoom.setClickDistance",
+        "parentUnitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom#function:XYPanZoom",
+        "startLine": 315,
+        "endLine": 318,
+        "isBehavioral": true,
+        "source": "  return {\n    update,\n    destroy,\n    setViewport,",
+        "detail": {
+          "unitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom.setClickDistance#function:XYPanZoom.setClickDistance",
+          "fileId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom.setClickDistance",
+          "unitKind": "function",
+          "name": "setClickDistance",
+          "qualifiedName": "XYPanZoom.setClickDistance",
+          "parentUnitId": "packages/system/src/xypanzoom/XYPanZoom.ts__XYPanZoom#function:XYPanZoom",
+          "startLine": 315,
+          "endLine": 318,
+          "signature": "setClickDistance(distance: number): void",
+          "parameters": [
+            { "name": "distance", "type": "number", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "void",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["The argument is a number."],
+          "postconditions": ["The instance's configured click distance equals the supplied distance."],
+          "invariants": [],
+          "edgeCases": [
+            "A numeric boundary or negative value is assigned without an indicated validation or normalization step."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": ["The XYPanZoom instance's internal click-distance configuration."],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Updates the click-distance threshold used by the XYPanZoom instance.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "d56841d8c03778def1597f4a8b630e0597711af31b2aeac192d1c68a1bd4cc60"
+        }
+      }
+    ]
+  },
+  "out": [
+    "packages/system/src/types/index.ts",
+    "packages/system/src/utils/index.ts",
+    "packages/system/src/xypanzoom/utils.ts",
+    "packages/system/src/xypanzoom/eventhandler.ts",
+    "packages/system/src/xypanzoom/filter.ts"
+  ],
+  "in": ["packages/system/src/xypanzoom/eventhandler.ts"],
+  "externals": ["d3-zoom", "d3-selection", "d3-interpolate", "d3-transition"],
+  "impact": { "seeds": 13, "callers": 0, "impactedFiles": [] }
+}

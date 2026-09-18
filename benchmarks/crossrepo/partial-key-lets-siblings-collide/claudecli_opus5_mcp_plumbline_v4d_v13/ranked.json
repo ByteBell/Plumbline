@@ -1,0 +1,162 @@
+[
+  {
+    "repo": "db",
+    "files": [
+      "packages/db/src/query/compiler/index.ts",
+      "packages/db/src/query/compiler/group-by.ts",
+      "packages/db/src/query/compiler/order-by.ts",
+      "packages/db/src/query/compiler/joins.ts",
+      "packages/db-ivm/src/operators/join.ts",
+      "packages/db-ivm/src/operators/keying.ts",
+      "packages/db/src/query/compiler/select.ts",
+      "packages/db-ivm/src/operators/groupBy.ts",
+      "packages/db-ivm/src/operators/groupedOrderBy.ts",
+      "packages/db/src/query/compiler/types.ts",
+      "packages/db/src/query/compiler/evaluators.ts",
+      "packages/db/src/query/ir.ts",
+      "packages/db/src/query/optimizer.ts",
+      "packages/db/src/query/builder/index.ts",
+      "packages/db/src/query/live/utils.ts",
+      "packages/db/src/query/live/collection-subscriber.ts",
+      "packages/db-ivm/src/indexes.ts",
+      "packages/db/src/indexes/basic-index.ts",
+      "packages/db-ivm/src/operators/topKArray.ts",
+      "packages/db-ivm/src/operators/topKWithFractionalIndexBTree.ts",
+      "packages/db/src/query/builder/types.ts",
+      "packages/db/src/virtual-props.ts",
+      "packages/db/src/collection/change-events.ts"
+    ],
+    "pinpoints": [
+      {
+        "path": "packages/db/src/query/compiler/index.ts",
+        "symbol": "effectiveKey (correlated includes inner-join map)",
+        "lines": "274-277",
+        "change": "Fold correlationValue into the emitted key (as includesGroupKeyFn already does at :847-851) so two parents correlating to the same child row cannot collide."
+      },
+      {
+        "path": "packages/db/src/query/compiler/group-by.ts",
+        "symbol": "processGroupBy keyExtractor / replaceAggregatesByRefs finalKey",
+        "lines": "328-330, 402-413",
+        "change": "No change required - this is the in-repo contract the join key must match; keep __correlationKey in both the key extractor and finalKey."
+      },
+      {
+        "path": "packages/db/src/query/compiler/order-by.ts",
+        "symbol": "processOrderBy",
+        "lines": "45-184",
+        "change": "Ensure the groupKeyFn it receives for per-parent ordering/limit carries the parent correlation key, since this file references none itself."
+      }
+    ]
+  },
+  {
+    "repo": "query",
+    "files": [
+      "packages/query-core/src/utils.ts",
+      "packages/query-core/src/queryCache.ts",
+      "packages/query-core/src/query.ts",
+      "packages/query-core/src/queryClient.ts",
+      "packages/query-core/src/queryObserver.ts",
+      "packages/query-core/src/queriesObserver.ts",
+      "packages/query-core/src/hydration.ts",
+      "packages/query-core/src/types.ts",
+      "packages/query-persist-client-core/src/createPersister.ts",
+      "packages/query-core/src/infiniteQueryBehavior.ts",
+      "packages/react-query/src/queryOptions.ts"
+    ],
+    "pinpoints": [
+      {
+        "path": "packages/query-core/src/utils.ts",
+        "symbol": "hashKey / hashQueryKeyByOptions / matchMutation",
+        "lines": "191-242",
+        "change": "Owns the key-completeness contract: the hashed key must capture every distinguishing dimension, not merely what the partial-match filter references."
+      }
+    ]
+  },
+  {
+    "repo": "redux-toolkit",
+    "files": [
+      "packages/toolkit/src/query/defaultSerializeQueryArgs.ts",
+      "packages/toolkit/src/query/core/buildSlice.ts",
+      "packages/toolkit/src/query/core/buildThunks.ts",
+      "packages/toolkit/src/query/endpointDefinitions.ts",
+      "packages/toolkit/src/query/core/apiState.ts",
+      "packages/toolkit/src/query/core/buildSelectors.ts",
+      "packages/toolkit/src/query/core/buildMiddleware/cacheLifecycle.ts",
+      "packages/toolkit/src/query/core/buildMiddleware/cacheCollection.ts",
+      "packages/toolkit/src/entities/utils.ts"
+    ],
+    "pinpoints": [
+      {
+        "path": "packages/toolkit/src/query/defaultSerializeQueryArgs.ts",
+        "symbol": "defaultSerializeQueryArgs",
+        "lines": "9-40",
+        "change": "Owns the contract: the cache key combines the identity of who asked (endpointName) with the normalized args, never the value alone."
+      }
+    ]
+  },
+  {
+    "repo": "tldraw",
+    "files": [
+      "packages/store/src/lib/StoreQueries.ts",
+      "packages/store/src/lib/executeQuery.ts",
+      "packages/editor/src/lib/editor/derivations/bindingsIndex.ts",
+      "packages/editor/src/lib/editor/derivations/parentsToChildren.ts",
+      "packages/store/src/lib/Store.ts",
+      "packages/state/src/lib/Computed.ts"
+    ],
+    "pinpoints": [
+      {
+        "path": "packages/store/src/lib/StoreQueries.ts",
+        "symbol": "StoreQueries.index",
+        "lines": "243-258",
+        "change": "Owns the contract: the index cache key is typeName + ':' + path, capturing every dimension that distinguishes two indexes rather than only the filtered property."
+      }
+    ]
+  },
+  {
+    "repo": "table",
+    "files": [
+      "packages/table-core/src/utils/getGroupedRowModel.ts",
+      "packages/table-core/src/features/ColumnGrouping.ts",
+      "packages/table-core/src/utils/getFacetedUniqueValues.ts",
+      "packages/table-core/src/features/ColumnFaceting.ts",
+      "packages/table-core/src/core/row.ts",
+      "packages/table-core/src/utils/filterRowsUtils.ts"
+    ],
+    "pinpoints": [
+      {
+        "path": "packages/table-core/src/utils/getGroupedRowModel.ts",
+        "symbol": "groupBy",
+        "lines": "1-60",
+        "change": "Groups rows under a key computed from a column value; the group key must capture the grouping dimension, not only the stringified value."
+      }
+    ]
+  },
+  {
+    "repo": "reselect",
+    "files": ["src/weakMapMemoize.ts", "src/lruMemoize.ts", "src/createSelectorCreator.ts", "src/types.ts"]
+  },
+  {
+    "repo": "jotai",
+    "files": ["src/vanilla/utils/atomFamily.ts", "src/vanilla/utils/selectAtom.ts", "src/vanilla/utils/splitAtom.ts"]
+  },
+  {
+    "repo": "router",
+    "files": [
+      "packages/router-core/src/utils.ts",
+      "packages/router-core/src/Matches.ts",
+      "packages/router-core/src/useLoaderDeps.ts"
+    ]
+  },
+  {
+    "repo": "zustand",
+    "files": ["src/vanilla/shallow.ts"]
+  },
+  {
+    "repo": "xyflow",
+    "files": ["packages/system/src/utils/store.ts"]
+  },
+  {
+    "repo": "primitives",
+    "files": ["packages/react/collection/src/collection.tsx"]
+  }
+]

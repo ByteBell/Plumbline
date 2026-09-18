@@ -1,0 +1,186 @@
+[
+  {
+    "repo": "react-redux",
+    "files": [
+      "src/hooks/useSelector.ts",
+      "src/utils/shallowEqual.ts",
+      "src/connect/selectorFactory.ts",
+      "src/connect/mergeProps.ts",
+      "src/types.ts",
+      "src/exports.ts"
+    ],
+    "pinpoints": [
+      {
+        "path": "src/hooks/useSelector.ts",
+        "symbol": "refEquality",
+        "lines": "119-119",
+        "change": "the default comparator is `(a, b) => a === b`, one level shallower than the contract needs; the depth of the default bail-out check is decided here and applied at `const { equalityFn = refEquality }`"
+      }
+    ]
+  },
+  {
+    "repo": "zustand",
+    "files": [
+      "src/vanilla/shallow.ts",
+      "src/react/shallow.ts",
+      "src/shallow.ts",
+      "src/traditional.ts",
+      "src/vanilla.ts",
+      "src/middleware/subscribeWithSelector.ts"
+    ],
+    "pinpoints": [
+      {
+        "path": "src/vanilla/shallow.ts",
+        "symbol": "shallow",
+        "lines": "48-74",
+        "change": "`export function shallow<T>(valueA: T, valueB: T): boolean` stops after one level of keys/iterable entries \u2014 this is where the comparison depth is decided for every useShallow consumer"
+      }
+    ]
+  },
+  {
+    "repo": "reselect",
+    "files": [
+      "src/lruMemoize.ts",
+      "src/weakMapMemoize.ts",
+      "src/createSelectorCreator.ts",
+      "src/types.ts",
+      "src/createStructuredSelector.ts",
+      "src/devModeChecks/identityFunctionCheck.ts"
+    ],
+    "pinpoints": [
+      {
+        "path": "src/weakMapMemoize.ts",
+        "symbol": "weakMapMemoize",
+        "lines": "231-233",
+        "change": "`export function weakMapMemoize<Func extends AnyFunction>(func: Func, options: WeakMapMemoizeOptions<ReturnType<Func>> = {})` keys its cache on argument identity only, so a freshly built but identical description misses"
+      },
+      {
+        "path": "src/lruMemoize.ts",
+        "symbol": "LruMemoizeOptions",
+        "lines": "171-204",
+        "change": "the equalityCheck / resultEqualityCheck options are the knob that sets how deep argument and result comparison is allowed to look"
+      }
+    ]
+  },
+  {
+    "repo": "react",
+    "files": [
+      "packages/shared/shallowEqual.js",
+      "packages/shared/objectIs.js",
+      "packages/react-reconciler/src/ReactFiberBeginWork.js",
+      "packages/react-reconciler/src/ReactFiberClassComponent.js"
+    ]
+  },
+  {
+    "repo": "query",
+    "files": [
+      "packages/query-core/src/utils.ts",
+      "packages/query-core/src/queryObserver.ts",
+      "packages/react-query/src/useMutationState.ts"
+    ],
+    "pinpoints": [
+      {
+        "path": "packages/query-core/src/utils.ts",
+        "symbol": "shallowEqualObjects",
+        "lines": "339-349",
+        "change": "`export function shallowEqualObjects<T extends Record<string, any>>(a: T, b: T | undefined): boolean` compares with `a[key] !== b[key]`, one level only; it sits directly beneath the deep structural-sharing routine that returns `aSize === bSize && equalItems === aSize ? a : copy`, and the two must agree on depth"
+      }
+    ]
+  },
+  {
+    "repo": "router",
+    "files": [
+      "packages/router-core/src/utils.ts",
+      "packages/react-router/src/useMatch.tsx",
+      "packages/react-router/src/useRouterState.tsx",
+      "packages/solid-router/src/useLocation.tsx",
+      "packages/solid-router/src/useRouterState.tsx",
+      "packages/solid-router/src/useMatch.tsx",
+      "packages/react-router/src/link.tsx"
+    ],
+    "pinpoints": [
+      {
+        "path": "packages/router-core/src/utils.ts",
+        "symbol": "deepEqual",
+        "lines": "344-399",
+        "change": "`export function deepEqual(a: any, b: any, opts?: { partial?: boolean; ignoreUndefined?: boolean }): boolean` plus the replaceEqualDeep structural-sharing routine in the same file own the depth decision for every selected router slice"
+      }
+    ]
+  },
+  {
+    "repo": "tldraw",
+    "files": [
+      "packages/utils/src/lib/object.ts",
+      "packages/editor/src/lib/hooks/useIdentity.tsx",
+      "packages/state/src/lib/Computed.ts",
+      "packages/state/src/lib/Atom.ts",
+      "packages/store/src/lib/Store.ts",
+      "packages/sync-core/src/lib/diff.ts"
+    ],
+    "pinpoints": [
+      {
+        "path": "packages/utils/src/lib/object.ts",
+        "symbol": "areObjectsShallowEqual",
+        "lines": "241-249",
+        "change": "compares own keys with `Object.is((obj1 as any)[key], (obj2 as any)[key])` and never descends \u2014 a nested mutation under an unchanged key reads as equal"
+      },
+      {
+        "path": "packages/editor/src/lib/hooks/useIdentity.tsx",
+        "symbol": "areNullableArraysShallowEqual",
+        "lines": "13-21",
+        "change": "the nullable-array wrapper that decides identity preservation inherits the same one-level depth"
+      }
+    ]
+  },
+  {
+    "repo": "xyflow",
+    "files": [
+      "packages/system/src/utils/shallow-node-data.ts",
+      "packages/react/src/hooks/useStore.ts",
+      "packages/react/src/hooks/useNodes.ts",
+      "packages/react/src/contexts/HandleConfigContext.tsx"
+    ]
+  },
+  {
+    "repo": "redux-toolkit",
+    "files": [
+      "packages/toolkit/src/query/react/useShallowStableValue.ts",
+      "packages/toolkit/src/query/utils/copyWithStructuralSharing.ts",
+      "packages/toolkit/src/createDraftSafeSelector.ts",
+      "packages/toolkit/src/query/react/reactReduxImports.ts",
+      "packages/toolkit/src/entities/state_selectors.ts"
+    ],
+    "pinpoints": [
+      {
+        "path": "packages/toolkit/src/query/utils/copyWithStructuralSharing.ts",
+        "symbol": "copyWithStructuralSharing",
+        "lines": "6-27",
+        "change": "`export function copyWithStructuralSharing<T>(oldObj: any, newObj: T): T` is this repo's deep half of the contract; it must agree with the shallow cache in useShallowStableValue, which currently preserves a stale reference when only nested data changed"
+      }
+    ]
+  },
+  {
+    "repo": "jotai",
+    "files": ["src/vanilla/utils/selectAtom.ts", "src/vanilla/internals.ts", "src/react/useAtomValue.ts"]
+  },
+  {
+    "repo": "table",
+    "files": ["packages/table-core/src/utils.ts"]
+  },
+  {
+    "repo": "db",
+    "files": ["packages/db/src/utils.ts"],
+    "pinpoints": [
+      {
+        "path": "packages/db/src/utils.ts",
+        "symbol": "deepEqualsInternal",
+        "lines": "35-203",
+        "change": "the recursive structural comparison that defines what 'unchanged' means for a collection row; it is the deep counterpart the shallow comparators must be reconciled against"
+      }
+    ]
+  },
+  {
+    "repo": "primitives",
+    "files": ["packages/react/collection/src/collection.tsx"]
+  }
+]

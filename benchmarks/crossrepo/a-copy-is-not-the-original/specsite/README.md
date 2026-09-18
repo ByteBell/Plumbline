@@ -1,0 +1,29 @@
+# spec-site pages for `hard-a-copy-is-not-the-original`
+
+One JSON spec page per file, laid out as `<repo>/<path in repo>.json`. The set of
+files is the union of
+
+- the 5 gold files in `../golden.json`, and
+- the 70 files any arm returned in its `ranked.json`.
+
+Every page is taken at that repo's ROSTER PIN — the same commit the arms searched.
+A repo whose pinned commit has no page for a file gets no page at all; pages are
+never borrowed from another commit.
+
+`MANIFEST.json` says, for each file, whether it is gold, run-returned or both,
+which arms named it, the pinned commit, where the page came from (`local` tree or
+`s3` mirror), and - when no page was copied - why, including the scan-manifest
+`kind` when that is what explains it. 71 of 72 files have a page
+(19 fetched from the mirror); 1 do not.
+
+Arms in this case:
+
+- `attempt-1-descriptive-question` - no ranked.json - arm not run (or run not finalized)
+- `attempt-2-contract-only` - no ranked.json - arm not run (or run not finalized)
+- `claudecli_opus5_bare` - contributed
+- `claudecli_opus5_mcp_graphify` - no ranked.json - arm not run (or run not finalized)
+- `claudecli_opus5_mcp_plumbline` - contributed
+- `claudecli_opus5_mcp_plumbline_v1` - contributed
+- `claudecli_opus5_mcp_serena` - no ranked.json - arm not run (or run not finalized)
+- `claudecli_opus5_mcp_turbovec` - no ranked.json - arm not run (or run not finalized)
+- `opencode_deepseekv4.1flash_mcp_plumbline` - no ranked.json - arm not run (or run not finalized)

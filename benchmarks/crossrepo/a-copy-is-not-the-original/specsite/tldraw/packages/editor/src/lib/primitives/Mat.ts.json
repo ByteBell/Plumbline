@@ -1,0 +1,2965 @@
+{
+  "schema": 2,
+  "kind": "file",
+  "repoName": "tldraw",
+  "file": {
+    "relativePath": "packages/editor/src/lib/primitives/Mat.ts",
+    "language": "typescript",
+    "sizeBytes": 7038,
+    "tokenCount": 1760,
+    "model": "us.openai.gpt-5.6-luna",
+    "analysedAt": "2026-08-24T12:20:12.495Z",
+    "module": {
+      "purpose": "Provides affine two-dimensional matrix modeling and transformation utilities for editor geometry, including composition, inversion, decomposition, point application, and CSS serialization.",
+      "summary": "This module defines a mutable six-parameter affine matrix representation compatible with DOM-style transformation matrices. It supports instance mutation for chained transformations, static constructors and operations, decomposition into translation, scale, and rotation, conversion to vectors and CSS strings, and bounds translation. The implementation also accepts structural matrix models so callers can use either class instances or plain objects.",
+      "businessContext": "Supports graphical editor geometry and rendering transformations. Failures can distort object placement, scaling, rotation, bounds, or serialized CSS transforms.",
+      "classes": ["Mat (~L19-312): Mutable affine transformation matrix with instance and static utilities"],
+      "functions": ["decomposeMatrix (~L315-322): Extracts translation, scale, and rotation from a matrix"],
+      "keywords": [
+        "affine transformation",
+        "matrix decomposition",
+        "CSS matrix",
+        "vector geometry",
+        "bounds transformation",
+        "matrix inversion",
+        "rotation normalization",
+        "DOM precision"
+      ],
+      "ontologyConcepts": [
+        "affine transformation",
+        "composition",
+        "matrix inversion",
+        "coordinate conversion",
+        "geometric decomposition",
+        "mutable value object"
+      ],
+      "businessEntities": ["Mat", "MatModel", "Vec", "Box", "Point", "Bounds"],
+      "systemCapabilities": [
+        "Compose geometric transformations",
+        "Apply transforms to points and bounds",
+        "Convert matrices to CSS strings",
+        "Decompose transforms into geometric components",
+        "Construct and normalize affine matrices"
+      ],
+      "configDependencies": [],
+      "importsInternal": [
+        {
+          "spec": "./Box",
+          "symbols": ["Box"],
+          "anchor": { "startLine": 1, "endLine": 1 },
+          "resolvedRelativePath": "packages/editor/src/lib/primitives/Box.ts",
+          "resolvedFileId": "packages/editor/src/lib/primitives/Box.ts",
+          "resolvedHint": "packages/editor/src/lib/primitives/Box.ts"
+        },
+        {
+          "spec": "./utils",
+          "symbols": ["clampRadians", "HALF_PI", "toDomPrecision"],
+          "anchor": { "startLine": 2, "endLine": 2 },
+          "resolvedRelativePath": "packages/editor/src/lib/primitives/utils.ts",
+          "resolvedFileId": "packages/editor/src/lib/primitives/utils.ts",
+          "resolvedHint": "packages/editor/src/lib/primitives/utils.ts"
+        },
+        {
+          "spec": "./Vec",
+          "symbols": ["Vec", "VecLike"],
+          "anchor": { "startLine": 3, "endLine": 3 },
+          "resolvedRelativePath": "packages/editor/src/lib/primitives/Vec.ts",
+          "resolvedFileId": "packages/editor/src/lib/primitives/Vec.ts",
+          "resolvedHint": "packages/editor/src/lib/primitives/Vec.ts"
+        }
+      ],
+      "importsExternal": [],
+      "sideEffects": {
+        "io": [],
+        "network": [],
+        "env": [],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": [
+          "Instance transformation methods mutate the receiver and return it for chaining.",
+          "setTo mutates the receiver by assigning all model properties.",
+          "static Smooth mutates the supplied matrix-like argument by rounding all six coefficients."
+        ]
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "MatLike",
+          "shape": "export type MatLike = MatModel | Mat",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "MatModel",
+          "shape": "export interface MatModel { a: number; b: number; c: number; d: number; e: number; f: number }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        { "name": "Mat", "shape": "export class Mat", "resolvedRelativePath": null, "resolvedFileId": null },
+        {
+          "name": "decomposeMatrix",
+          "shape": "export function decomposeMatrix(m: MatLike)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "Box",
+          "shape": "import { Box } from './Box'",
+          "resolvedRelativePath": "packages/editor/src/lib/primitives/Box.ts",
+          "resolvedFileId": "packages/editor/src/lib/primitives/Box.ts"
+        },
+        {
+          "name": "clampRadians",
+          "shape": "import { clampRadians, HALF_PI, toDomPrecision } from './utils'",
+          "resolvedRelativePath": "packages/editor/src/lib/primitives/utils.ts",
+          "resolvedFileId": "packages/editor/src/lib/primitives/utils.ts"
+        },
+        {
+          "name": "HALF_PI",
+          "shape": "import { clampRadians, HALF_PI, toDomPrecision } from './utils'",
+          "resolvedRelativePath": "packages/editor/src/lib/primitives/utils.ts",
+          "resolvedFileId": "packages/editor/src/lib/primitives/utils.ts"
+        },
+        {
+          "name": "toDomPrecision",
+          "shape": "import { clampRadians, HALF_PI, toDomPrecision } from './utils'",
+          "resolvedRelativePath": "packages/editor/src/lib/primitives/utils.ts",
+          "resolvedFileId": "packages/editor/src/lib/primitives/utils.ts"
+        },
+        {
+          "name": "Vec",
+          "shape": "import { Vec, VecLike } from './Vec'",
+          "resolvedRelativePath": "packages/editor/src/lib/primitives/Vec.ts",
+          "resolvedFileId": "packages/editor/src/lib/primitives/Vec.ts"
+        },
+        {
+          "name": "VecLike",
+          "shape": "import { Vec, VecLike } from './Vec'",
+          "resolvedRelativePath": "packages/editor/src/lib/primitives/Vec.ts",
+          "resolvedFileId": "packages/editor/src/lib/primitives/Vec.ts"
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "instance transformations",
+          "intent": "Mutates matrices through identity, multiplication, rotation, translation, scaling, and inversion.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 37, "endLine": 134 }
+        },
+        {
+          "name": "matrix constructors",
+          "intent": "Creates identity, translation, rotation, and scale matrices.",
+          "structureKind": "branch",
+          "predicate": "if (cx === undefined)",
+          "branchOutcomes": ["rotation or scale around origin", "rotation or scale around supplied center"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 138, "endLine": 172 }
+        },
+        {
+          "name": "matrix algebra",
+          "intent": "Computes pure multiplication, inverse, and absolute inverse representations.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 173, "endLine": 203 }
+        },
+        {
+          "name": "matrix composition",
+          "intent": "Applies a sequence of matrices in source order to an identity matrix.",
+          "structureKind": "loop",
+          "predicate": "i < n",
+          "branchOutcomes": [],
+          "bounds": "i = 0, n = matrices.length, i++",
+          "terminationCondition": "i < n",
+          "anchor": { "startLine": 205, "endLine": 211 }
+        },
+        {
+          "name": "rotation and decomposition",
+          "intent": "Extracts normalized rotation and scale components from matrix coefficients.",
+          "structureKind": "branch",
+          "predicate": "if (m.a !== 0 || m.c !== 0)",
+          "branchOutcomes": [
+            "first matrix axis is available",
+            "second matrix axis is available",
+            "matrix axes are both zero"
+          ],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 217, "endLine": 262 }
+        },
+        {
+          "name": "serialization and application",
+          "intent": "Converts matrices to CSS and applies them to points, point arrays, and bounds.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 275, "endLine": 303 }
+        },
+        {
+          "name": "matrix conversion",
+          "intent": "Copies structural models or preserves existing matrix instances.",
+          "structureKind": "branch",
+          "predicate": "m instanceof Mat",
+          "branchOutcomes": ["return existing Mat instance", "create Mat from structural model"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 305, "endLine": 311 }
+        },
+        {
+          "name": "standalone decomposition",
+          "intent": "Extracts translation, axis scales, and rotation without mutating input.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 315, "endLine": 322 }
+        }
+      ],
+      "representationFamily": "class-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "type",
+          "name": "MatLike",
+          "signature": "export type MatLike = MatModel | Mat",
+          "generics": null,
+          "decorators": ["/** @public */"],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 6, "endLine": 6 }
+        },
+        {
+          "kind": "interface",
+          "name": "MatModel",
+          "signature": "export interface MatModel",
+          "generics": null,
+          "decorators": ["/** @public */"],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 9, "endLine": 9 }
+        },
+        {
+          "kind": "class",
+          "name": "Mat",
+          "signature": "export class Mat {",
+          "generics": null,
+          "decorators": ["/** @public */"],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 19, "endLine": 19 }
+        },
+        {
+          "kind": "method",
+          "name": "equals",
+          "signature": "\tequals(m: Mat | MatModel) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 37, "endLine": 37 }
+        },
+        {
+          "kind": "method",
+          "name": "identity",
+          "signature": "\tidentity() {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 49, "endLine": 49 }
+        },
+        {
+          "kind": "method",
+          "name": "multiply",
+          "signature": "\tmultiply(m: Mat | MatModel) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 60, "endLine": 60 }
+        },
+        {
+          "kind": "method",
+          "name": "rotate",
+          "signature": "\trotate(r: number, cx?: number, cy?: number) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 72, "endLine": 72 }
+        },
+        {
+          "kind": "method",
+          "name": "translate",
+          "signature": "\ttranslate(x: number, y: number): Mat {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Mat",
+          "exported": false,
+          "anchor": { "startLine": 79, "endLine": 79 }
+        },
+        {
+          "kind": "method",
+          "name": "scale",
+          "signature": "\tscale(x: number, y: number) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 83, "endLine": 83 }
+        },
+        {
+          "kind": "method",
+          "name": "invert",
+          "signature": "\tinvert() {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 87, "endLine": 87 }
+        },
+        {
+          "kind": "method",
+          "name": "setTo",
+          "signature": "\tsetTo(model: MatModel) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 123, "endLine": 123 }
+        },
+        {
+          "kind": "method",
+          "name": "clone",
+          "signature": "\tclone() {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 131, "endLine": 131 }
+        },
+        {
+          "kind": "method",
+          "name": "Identity",
+          "signature": "\tstatic Identity() {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 138, "endLine": 138 }
+        },
+        {
+          "kind": "method",
+          "name": "Translate",
+          "signature": "\tstatic Translate(x: number, y: number) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 143, "endLine": 143 }
+        },
+        {
+          "kind": "method",
+          "name": "Rotate",
+          "signature": "\tstatic Rotate(r: number, cx?: number, cy?: number) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 148, "endLine": 148 }
+        },
+        {
+          "kind": "method",
+          "name": "Scale",
+          "signature": "\tstatic Scale(x: number, y: number): Mat",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Mat",
+          "exported": false,
+          "anchor": { "startLine": 164, "endLine": 164 }
+        },
+        {
+          "kind": "method",
+          "name": "Scale",
+          "signature": "\tstatic Scale(x: number, y: number, cx: number, cy: number): Mat",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Mat",
+          "exported": false,
+          "anchor": { "startLine": 165, "endLine": 165 }
+        },
+        {
+          "kind": "method",
+          "name": "Multiply",
+          "signature": "\tstatic Multiply(m1: MatModel, m2: MatModel): MatModel {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "MatModel",
+          "exported": false,
+          "anchor": { "startLine": 173, "endLine": 173 }
+        },
+        {
+          "kind": "method",
+          "name": "Inverse",
+          "signature": "\tstatic Inverse(m: MatModel): MatModel {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "MatModel",
+          "exported": false,
+          "anchor": { "startLine": 183, "endLine": 183 }
+        },
+        {
+          "kind": "method",
+          "name": "Absolute",
+          "signature": "\tstatic Absolute(m: MatLike): MatModel {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "MatModel",
+          "exported": false,
+          "anchor": { "startLine": 194, "endLine": 194 }
+        },
+        {
+          "kind": "method",
+          "name": "Compose",
+          "signature": "\tstatic Compose(...matrices: MatLike[]) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 205, "endLine": 205 }
+        },
+        {
+          "kind": "method",
+          "name": "Rotation",
+          "signature": "\tstatic Rotation(m: MatLike): number {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "number",
+          "exported": false,
+          "anchor": { "startLine": 217, "endLine": 217 }
+        },
+        {
+          "kind": "method",
+          "name": "Decompose",
+          "signature": "\tstatic Decompose(m: MatLike) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 234, "endLine": 234 }
+        },
+        {
+          "kind": "method",
+          "name": "Smooth",
+          "signature": "\tstatic Smooth(m: MatLike, precision = 10000000000) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 264, "endLine": 264 }
+        },
+        {
+          "kind": "method",
+          "name": "toCssString",
+          "signature": "\tstatic toCssString(m: MatLike) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 275, "endLine": 275 }
+        },
+        {
+          "kind": "method",
+          "name": "applyToPoint",
+          "signature": "\tstatic applyToPoint(m: MatLike, point: VecLike) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 281, "endLine": 281 }
+        },
+        {
+          "kind": "method",
+          "name": "applyToXY",
+          "signature": "\tstatic applyToXY(m: MatLike, x: number, y: number) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 289, "endLine": 289 }
+        },
+        {
+          "kind": "method",
+          "name": "applyToPoints",
+          "signature": "\tstatic applyToPoints(m: MatLike, points: VecLike[]): Vec[] {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Vec[]",
+          "exported": false,
+          "anchor": { "startLine": 294, "endLine": 294 }
+        },
+        {
+          "kind": "method",
+          "name": "applyToBounds",
+          "signature": "\tstatic applyToBounds(m: MatLike, box: Box) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 301, "endLine": 301 }
+        },
+        {
+          "kind": "method",
+          "name": "From",
+          "signature": "\tstatic From(m: MatLike) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 305, "endLine": 305 }
+        },
+        {
+          "kind": "method",
+          "name": "Cast",
+          "signature": "\tstatic Cast(m: MatLike) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 309, "endLine": 309 }
+        },
+        {
+          "kind": "function",
+          "name": "decomposeMatrix",
+          "signature": "export function decomposeMatrix(m: MatLike) {",
+          "generics": null,
+          "decorators": ["/** @public */"],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 315, "endLine": 315 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "type",
+          "name": "MatLike",
+          "shape": "MatModel | Mat",
+          "discriminant": null,
+          "anchor": { "startLine": 6, "endLine": 6 }
+        },
+        {
+          "kind": "interface",
+          "name": "MatModel",
+          "shape": "{\n\ta: number\n\tb: number\n\tc: number\n\td: number\n\te: number\n\tf: number\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 9, "endLine": 16 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "zero rotation angle",
+          "handled": true,
+          "behavior": "Returns an identity matrix or the unchanged receiver without trigonometric construction.",
+          "anchor": { "startLine": 73, "endLine": 75 }
+        },
+        {
+          "inputShape": "missing rotation or scale center",
+          "handled": true,
+          "behavior": "Applies the transformation around the origin.",
+          "anchor": { "startLine": 74, "endLine": 75 }
+        },
+        {
+          "inputShape": "empty matrix list",
+          "handled": true,
+          "behavior": "Returns a new identity matrix.",
+          "anchor": { "startLine": 205, "endLine": 210 }
+        },
+        {
+          "inputShape": "singular matrix with zero determinant",
+          "handled": false,
+          "behavior": "Division by zero produces non-finite inverse coefficients rather than throwing.",
+          "anchor": { "startLine": 89, "endLine": 95 }
+        },
+        {
+          "inputShape": "matrix with both linear axes equal to zero",
+          "handled": true,
+          "behavior": "Rotation returns zero and decomposition returns zero scales and rotation.",
+          "anchor": { "startLine": 228, "endLine": 251 }
+        },
+        {
+          "inputShape": "plain MatModel input",
+          "handled": true,
+          "behavior": "Structural matrix objects are accepted by calculations and can be converted into Mat instances.",
+          "anchor": { "startLine": 305, "endLine": 311 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": "==",
+          "left": "this",
+          "right": "m",
+          "inclusive": true,
+          "intent": "Treats the same object as equal immediately.",
+          "anchor": { "startLine": 39, "endLine": 39 }
+        },
+        {
+          "operator": "==",
+          "left": "r",
+          "right": "0",
+          "inclusive": true,
+          "intent": "Avoids unnecessary rotation for a zero angle.",
+          "anchor": { "startLine": 73, "endLine": 73 }
+        },
+        {
+          "operator": "==",
+          "left": "cx",
+          "right": "undefined",
+          "inclusive": true,
+          "intent": "Selects origin-centered rotation or scaling when no center is provided.",
+          "anchor": { "startLine": 74, "endLine": 74 }
+        },
+        {
+          "operator": "==",
+          "left": "cx",
+          "right": "undefined",
+          "inclusive": true,
+          "intent": "Selects origin-centered static rotation or scaling.",
+          "anchor": { "startLine": 158, "endLine": 158 }
+        },
+        {
+          "operator": "==",
+          "left": "m.a",
+          "right": "0",
+          "inclusive": true,
+          "intent": "Checks whether the first matrix axis has a horizontal coefficient.",
+          "anchor": { "startLine": 220, "endLine": 220 }
+        },
+        {
+          "operator": "==",
+          "left": "m.c",
+          "right": "0",
+          "inclusive": true,
+          "intent": "Checks whether the first matrix axis has a vertical coefficient.",
+          "anchor": { "startLine": 220, "endLine": 220 }
+        },
+        {
+          "operator": ">",
+          "left": "m.c",
+          "right": "0",
+          "inclusive": false,
+          "intent": "Chooses the sign of the extracted rotation.",
+          "anchor": { "startLine": 222, "endLine": 222 }
+        },
+        {
+          "operator": "==",
+          "left": "m.b",
+          "right": "0",
+          "inclusive": true,
+          "intent": "Checks whether the second matrix axis has a horizontal coefficient.",
+          "anchor": { "startLine": 223, "endLine": 223 }
+        },
+        {
+          "operator": "==",
+          "left": "m.d",
+          "right": "0",
+          "inclusive": true,
+          "intent": "Checks whether the second matrix axis has a vertical coefficient.",
+          "anchor": { "startLine": 223, "endLine": 223 }
+        },
+        {
+          "operator": ">",
+          "left": "m.d",
+          "right": "0",
+          "inclusive": false,
+          "intent": "Chooses the sign of the alternate extracted rotation.",
+          "anchor": { "startLine": 226, "endLine": 226 }
+        },
+        {
+          "operator": "==",
+          "left": "m.a",
+          "right": "0",
+          "inclusive": true,
+          "intent": "Selects the primary-axis decomposition path.",
+          "anchor": { "startLine": 237, "endLine": 237 }
+        },
+        {
+          "operator": "==",
+          "left": "m.c",
+          "right": "0",
+          "inclusive": true,
+          "intent": "Selects the primary-axis decomposition path.",
+          "anchor": { "startLine": 237, "endLine": 237 }
+        },
+        {
+          "operator": ">",
+          "left": "m.c",
+          "right": "0",
+          "inclusive": false,
+          "intent": "Chooses the sign of the primary decomposition rotation.",
+          "anchor": { "startLine": 241, "endLine": 241 }
+        },
+        {
+          "operator": "==",
+          "left": "m.b",
+          "right": "0",
+          "inclusive": true,
+          "intent": "Selects the secondary-axis decomposition path.",
+          "anchor": { "startLine": 244, "endLine": 244 }
+        },
+        {
+          "operator": "==",
+          "left": "m.d",
+          "right": "0",
+          "inclusive": true,
+          "intent": "Selects the secondary-axis decomposition path.",
+          "anchor": { "startLine": 244, "endLine": 244 }
+        },
+        {
+          "operator": ">",
+          "left": "m.d",
+          "right": "0",
+          "inclusive": false,
+          "intent": "Chooses the sign of the secondary decomposition rotation.",
+          "anchor": { "startLine": 247, "endLine": 247 }
+        },
+        {
+          "operator": "<",
+          "left": "i",
+          "right": "n",
+          "inclusive": false,
+          "intent": "Bounds sequential matrix composition by the supplied matrix count.",
+          "anchor": { "startLine": 207, "endLine": 207 }
+        },
+        {
+          "operator": "==",
+          "left": "m instanceof Mat",
+          "right": "true",
+          "inclusive": true,
+          "intent": "Preserves existing Mat instances during casting.",
+          "anchor": { "startLine": 310, "endLine": 310 }
+        }
+      ],
+      "errorHandling": [],
+      "invariants": [
+        {
+          "kind": "invariant",
+          "description": "Matrices always expose six affine coefficients named a through f.",
+          "anchor": { "startLine": 30, "endLine": 35 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "Identity resets the receiver to the canonical identity matrix and returns the receiver.",
+          "anchor": { "startLine": 49, "endLine": 58 }
+        },
+        {
+          "kind": "ordering",
+          "description": "Composition multiplies matrices sequentially from the first supplied matrix to the last.",
+          "anchor": { "startLine": 205, "endLine": 211 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "Point transformations preserve the input z coordinate when constructing transformed vectors.",
+          "anchor": { "startLine": 281, "endLine": 287 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "schema",
+          "description": "Inputs structurally provide numeric affine coefficients a, b, c, d, e, and f.",
+          "anchor": { "startLine": 9, "endLine": 16 }
+        },
+        {
+          "kind": "caller",
+          "description": "Callers supplying rotation or scale centers provide both cx and cy together.",
+          "anchor": { "startLine": 72, "endLine": 76 }
+        },
+        {
+          "kind": "schema",
+          "description": "The imported Vec and Box constructors accept the argument shapes used for transformed points and bounds.",
+          "anchor": { "startLine": 1, "endLine": 3 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "Should singular matrices be rejected explicitly before inverse calculations?",
+          "affects": "error_handling and invert/Inverse/Absolute behavior",
+          "anchor": { "startLine": 89, "endLine": 95 },
+          "resolution": null
+        },
+        {
+          "question": "Is the bounds transformation intentionally translation-only rather than transforming all four corners?",
+          "affects": "applyToBounds behavior",
+          "anchor": { "startLine": 301, "endLine": 303 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "sync",
+        "reentrant": true,
+        "ordering": "deterministic",
+        "notes": "All operations are synchronous and deterministic; mutable instance methods require callers to account for receiver mutation."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "identity-preserves-matrix",
+          "scenario": "A matrix reset to identity has canonical affine identity components.",
+          "given": ["const m = new Mat(2, 3, 4, 5, 6, 7)"],
+          "when": "m.identity()",
+          "then": "m.equals(Mat.Identity()) === true",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Guards the canonical identity representation."
+        },
+        {
+          "testId": "multiplication-composes-affine-matrices",
+          "scenario": "Multiplying two affine matrices produces their ordered composition.",
+          "given": ["const m1 = new Mat(1, 0, 0, 1, 10, 20)", "const m2 = Mat.Scale(2, 3)"],
+          "when": "m1.multiply(m2)",
+          "then": "m1.equals({ a: 2, b: 0, c: 0, d: 3, e: 10, f: 20 }) === true",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins affine coefficient ordering and translation composition."
+        },
+        {
+          "testId": "inverse-round-trips-point",
+          "scenario": "Applying a nonsingular transformation and its inverse returns the original point.",
+          "given": [
+            "const m = Mat.Compose(Mat.Translate(10, 20), Mat.Rotate(0.5), Mat.Scale(2, 3))",
+            "const point = new Vec(4, 5)"
+          ],
+          "when": "Mat.applyToPoint(Mat.Inverse(m), Mat.applyToPoint(m, point))",
+          "then": "result.x and result.y equal point.x and point.y within numeric precision",
+          "targets": [],
+          "oracleKind": "property",
+          "rationale": "Protects inverse correctness across translation, rotation, and scale."
+        },
+        {
+          "testId": "decompose-recovers-transform-components",
+          "scenario": "Decomposing a composed translation, scale, and rotation exposes the transform components.",
+          "given": ["const m = Mat.Compose(Mat.Translate(10, 20), Mat.Rotate(0.5), Mat.Scale(2, 3))"],
+          "when": "decomposeMatrix(m)",
+          "then": "result.x === 10 && result.y === 20 && result.scaleX === 2 && result.scaleY === 3 && result.rotation === 0.5",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins the public decomposition schema and component interpretation."
+        },
+        {
+          "testId": "css-string-uses-matrix-components",
+          "scenario": "Serializing a matrix emits a CSS matrix function containing all six affine components.",
+          "given": ["const m = new Mat(1, 2, 3, 4, 5, 6)"],
+          "when": "m.toCssString()",
+          "then": "result === 'matrix(1, 2, 3, 4, 5, 6)'",
+          "targets": [],
+          "oracleKind": "fingerprint",
+          "rationale": "Guards the wire-facing CSS serialization format."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": ["imports", "MatLike type alias", "MatModel interface", "Mat class", "decomposeMatrix function"],
+      "moduleLevelCode": "import { Box } from './Box'\nimport { clampRadians, HALF_PI, toDomPrecision } from './utils'\nimport { Vec, VecLike } from './Vec'",
+      "exports": [
+        { "name": "MatLike", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "MatModel", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "Mat", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "decomposeMatrix", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "Box", "module": "./Box", "alias": null, "kind": "internal" },
+        { "symbol": "clampRadians", "module": "./utils", "alias": null, "kind": "internal" },
+        { "symbol": "HALF_PI", "module": "./utils", "alias": null, "kind": "internal" },
+        { "symbol": "toDomPrecision", "module": "./utils", "alias": null, "kind": "internal" },
+        { "symbol": "Vec", "module": "./Vec", "alias": null, "kind": "internal" },
+        { "symbol": "VecLike", "module": "./Vec", "alias": null, "kind": "internal" }
+      ],
+      "fileConstants": [],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/editor/src/lib/primitives/Mat.ts__Mat#class:Mat",
+        "unitKind": "class",
+        "name": "Mat",
+        "qualifiedName": "Mat",
+        "parentUnitId": null,
+        "startLine": 19,
+        "endLine": 312,
+        "isBehavioral": true,
+        "source": "//   return new Mat(1.0, 0.0, 0.0, 1.0, 0.0, 0.0)\n// }\n\n/** @public */\nexport class Mat {\n\tconstructor(a: number, b: number, c: number, d: number, e: number, f: number) {\n\t\tthis.a = a\n\t\tthis.b = b\n\t\tthis.c = c\n\t\tthis.d = d\n\t\tthis.e = e\n\t\tthis.f = f\n\t}\n\n\ta = 1.0\n\tb = 0.0\n\tc = 0.0\n\td = 1.0\n\te = 0.0\n\tf = 0.0\n\n\tequals(m: Mat | MatModel) {\n\t\treturn (\n\t\t\tthis === m ||\n\t\t\t(this.a === m.a &&\n\t\t\t\tthis.b === m.b &&\n\t\t\t\tthis.c === m.c &&\n\t\t\t\tthis.d === m.d &&\n\t\t\t\tthis.e === m.e &&\n\t\t\t\tthis.f === m.f)\n\t\t)\n\t}\n\n\tidentity() {\n\t\tthis.a = 1.0\n\t\tthis.b = 0.0\n\t\tthis.c = 0.0\n\t\tthis.d = 1.0\n\t\tthis.e = 0.0\n\t\tthis.f = 0.0\n\t\treturn this\n\t}\n\n\tmultiply(m: Mat | MatModel) {\n\t\tconst m2: MatModel = m\n\t\tconst { a, b, c, d, e, f } = this\n\t\tthis.a = a * m2.a + c * m2.b\n\t\tthis.c = a * m2.c + c * m2.d\n\t\tthis.e = a * m2.e + c * m2.f + e\n\t\tthis.b = b * m2.a + d * m2.b\n\t\tthis.d = b * m2.c + d * m2.d\n\t\tthis.f = b * m2.e + d * m2.f + f\n\t\treturn this\n\t}\n\n\trotate(r: number, cx?: number, cy?: number) {\n\t\tif (r === 0) return this\n\t\tif (cx === undefined) return this.multiply(Mat.Rotate(r))\n\t\treturn this.translate(cx, cy!).multiply(Mat.Rotate(r)).translate(-cx, -cy!)\n\t}\n\n\ttranslate(x: number, y: number): Mat {\n\t\treturn this.multiply(Mat.Translate(x, y!))\n\t}\n\n\tscale(x: number, y: number) {\n\t\treturn this.multiply(Mat.Scale(x, y))\n\t}\n\n\tinvert() {\n\t\tconst { a, b, c, d, e, f } = this\n\t\tconst denom = a * d - b * c\n\t\tthis.a = d / denom\n\t\tthis.b = b / -denom\n\t\tthis.c = c / -denom\n\t\tthis.d = a / denom\n\t\tthis.e = (d * e - c * f) / -denom\n\t\tthis.f = (b * e - a * f) / denom\n\t\treturn this\n\t}\n\n\tapplyToPoint(point: VecLike) {\n\t\treturn Mat.applyToPoint(this, point)\n\t}\n\n\tapplyToPoints(points: VecLike[]) {\n\t\treturn Mat.applyToPoints(this, points)\n\t}\n\n\trotation() {\n\t\treturn Mat.Rotation(this)\n\t}\n\n\tpoint() {\n\t\treturn Mat.Point(this)\n\t}\n\n\tdecomposed() {\n\t\treturn Mat.Decompose(this)\n\t}\n\n\ttoCssString() {\n\t\treturn Mat.toCssString(this)\n\t}\n\n\tsetTo(model: MatModel) {\n\t\tObject.assign(this, model)\n\t\treturn this\n\t}\n\n\tdecompose() {\n\t\treturn Mat.Decompose(this)\n\t}\n\n\tclone() {\n\t\treturn new Mat(this.a, this.b, this.c, this.d, this.e, this.f)\n\t}\n\n\t/* --------------------- Static --------------------- */\n\n\tstatic Identity() {\n\t\treturn new Mat(1.0, 0.0, 0.0, 1.0, 0.0, 0.0)\n\t}\n\n\tstatic Translate(x: number, y: number) {\n\t\treturn new Mat(1.0, 0.0, 0.0, 1.0, x, y)\n\t}\n\n\tstatic Rotate(r: number, cx?: number, cy?: number) {\n\t\tif (r === 0) return Mat.Identity()\n\n\t\tconst cosAngle = Math.cos(r)\n\t\tconst sinAngle = Math.sin(r)\n\n\t\tconst rotationMatrix = new Mat(cosAngle, sinAngle, -sinAngle, cosAngle, 0.0, 0.0)\n\n\t\tif (cx === undefined) return rotationMatrix\n\n\t\treturn Mat.Compose(Mat.Translate(cx, cy!), rotationMatrix, Mat.Translate(-cx, -cy!))\n\t}\n\n\tstatic Scale(x: number, y: number): Mat\n\tstatic Scale(x: number, y: number, cx: number, cy: number): Mat\n\tstatic Scale(x: number, y: number, cx?: number, cy?: number): Mat {\n\t\tconst scaleMatrix = new Mat(x, 0, 0, y, 0, 0)\n\t\tif (cx === undefined) return scaleMatrix\n\n\t\treturn Mat.Translate(cx, cy!).multiply(scaleMatrix).translate(-cx, -cy!)\n\t}\n\tstatic Multiply(m1: MatModel, m2: MatModel): MatModel {\n\t\treturn {\n\t\t\ta: m1.a * m2.a + m1.c * m2.b,\n\t\t\tc: m1.a * m2.c + m1.c * m2.d,\n\t\t\te: m1.a * m2.e + m1.c * m2.f + m1.e,\n\t\t\tb: m1.b * m2.a + m1.d * m2.b,\n\t\t\td: m1.b * m2.c + m1.d * m2.d,\n\t\t\tf: m1.b * m2.e + m1.d * m2.f + m1.f,\n\t\t}\n\t}\n\n\tstatic Inverse(m: MatModel): MatModel {\n\t\tconst denom = m.a * m.d - m.b * m.c\n\t\treturn {\n\t\t\ta: m.d / denom,\n\t\t\tb: m.b / -denom,\n\t\t\tc: m.c / -denom,\n\t\t\td: m.a / denom,\n\t\t\te: (m.d * m.e - m.c * m.f) / -denom,\n\t\t\tf: (m.b * m.e - m.a * m.f) / denom,\n\t\t}\n\t}\n\n\tstatic Absolute(m: MatLike): MatModel {\n\t\tconst denom = m.a * m.d - m.b * m.c\n\t\treturn {\n\t\t\ta: m.d / denom,\n\t\t\tb: m.b / -denom,\n\t\t\tc: m.c / -denom,\n\t\t\td: m.a / denom,\n\t\t\te: (m.d * m.e - m.c * m.f) / denom,\n\t\t\tf: (m.b * m.e - m.a * m.f) / -denom,\n\t\t}\n\t}\n\n\tstatic Compose(...matrices: MatLike[]) {\n\t\tconst matrix = Mat.Identity()\n\t\tfor (let i = 0, n = matrices.length; i < n; i++) {\n\t\t\tmatrix.multiply(matrices[i])\n\t\t}\n\t\treturn matrix\n\t}\n\n\tstatic Point(m: MatLike) {\n\t\treturn new Vec(m.e, m.f)\n\t}\n\n\tstatic Rotation(m: MatLike): number {\n\t\tlet rotation\n\n\t\tif (m.a !== 0 || m.c !== 0) {\n\t\t\tconst hypotAc = (m.a * m.a + m.c * m.c) ** 0.5\n\t\t\trotation = Math.acos(m.a / hypotAc) * (m.c > 0 ? -1 : 1)\n\t\t} else if (m.b !== 0 || m.d !== 0) {\n\t\t\tconst hypotBd = (m.b * m.b + m.d * m.d) ** 0.5\n\t\t\trotation = HALF_PI + Math.acos(m.b / hypotBd) * (m.d > 0 ? -1 : 1)\n\t\t} else {\n\t\t\trotation = 0\n\t\t}\n\n\t\treturn clampRadians(rotation)\n\t}\n\n\tstatic Decompose(m: MatLike) {\n\t\tlet scaleX, scaleY, rotation\n\n\t\tif (m.a !== 0 || m.c !== 0) {\n\t\t\tconst hypotAc = (m.a * m.a + m.c * m.c) ** 0.5\n\t\t\tscaleX = hypotAc\n\t\t\tscaleY = (m.a * m.d - m.b * m.c) / hypotAc\n\t\t\trotation = Math.acos(m.a / hypotAc) * (m.c > 0 ? -1 : 1)\n\t\t} else if (m.b !== 0 || m.d !== 0) {\n\t\t\tconst hypotBd = (m.b * m.b + m.d * m.d) ** 0.5\n\t\t\tscaleX = (m.a * m.d - m.b * m.c) / hypotBd\n\t\t\tscaleY = hypotBd\n\t\t\trotation = HALF_PI + Math.acos(m.b / hypotBd) * (m.d > 0 ? -1 : 1)\n\t\t} else {\n\t\t\tscaleX = 0\n\t\t\tscaleY = 0\n\t\t\trotation = 0\n\t\t}\n\n\t\treturn {\n\t\t\tx: m.e,\n\t\t\ty: m.f,\n\t\t\tscaleX,\n\t\t\tscaleY,\n\t\t\trotation: clampRadians(rotation),\n\t\t}\n\t}\n\n\tstatic Smooth(m: MatLike, precision = 10000000000) {\n\t\tm.a = Math.round(m.a * precision) / precision\n\t\tm.b = Math.round(m.b * precision) / precision\n\t\tm.c = Math.round(m.c * precision) / precision\n\t\tm.d = Math.round(m.d * precision) / precision\n\t\tm.e = Math.round(m.e * precision) / precision\n\t\tm.f = Math.round(m.f * precision) / precision\n\t\treturn m\n\t}\n\n\tstatic toCssString(m: MatLike) {\n\t\treturn `matrix(${toDomPrecision(m.a)}, ${toDomPrecision(m.b)}, ${toDomPrecision(\n\t\t\tm.c\n\t\t)}, ${toDomPrecision(m.d)}, ${toDomPrecision(m.e)}, ${toDomPrecision(m.f)})`\n\t}\n\n\tstatic applyToPoint(m: MatLike, point: VecLike) {\n\t\treturn new Vec(\n\t\t\tm.a * point.x + m.c * point.y + m.e,\n\t\t\tm.b * point.x + m.d * point.y + m.f,\n\t\t\tpoint.z\n\t\t)\n\t}\n\n\tstatic applyToXY(m: MatLike, x: number, y: number) {\n\t\treturn [m.a * x + m.c * y + m.e, m.b * x + m.d * y + m.f]\n\t}\n\n\tstatic applyToPoints(m: MatLike, points: VecLike[]): Vec[] {\n\t\treturn points.map(\n\t\t\t(point) =>\n\t\t\t\tnew Vec(m.a * point.x + m.c * point.y + m.e, m.b * point.x + m.d * point.y + m.f, point.z)\n\t\t)\n\t}\n\n\tstatic applyToBounds(m: MatLike, box: Box) {\n\t\treturn new Box(m.e + box.minX, m.f + box.minY, box.width, box.height)\n\t}\n\n\tstatic From(m: MatLike) {\n\t\treturn new Mat(m.a, m.b, m.c, m.d, m.e, m.f)\n\t}\n\n\tstatic Cast(m: MatLike) {\n\t\treturn m instanceof Mat ? m : Mat.From(m)\n\t}\n}\n\n/** @public */\nexport function decomposeMatrix(m: MatLike) {\n\treturn {\n\t\tx: m.e,\n\t\ty: m.f,\n\t\tscaleX: Math.sqrt(m.a * m.a + m.b * m.b),",
+        "detail": {
+          "unitId": "packages/editor/src/lib/primitives/Mat.ts__Mat#class:Mat",
+          "fileId": "packages/editor/src/lib/primitives/Mat.ts__Mat",
+          "unitKind": "class",
+          "name": "Mat",
+          "qualifiedName": "Mat",
+          "parentUnitId": null,
+          "startLine": 19,
+          "endLine": 312,
+          "signature": "export class Mat",
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [
+            {
+              "name": "a",
+              "kind": "property",
+              "type": "number",
+              "default": "1.0",
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "b",
+              "kind": "property",
+              "type": "number",
+              "default": "0.0",
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "c",
+              "kind": "property",
+              "type": "number",
+              "default": "0.0",
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "d",
+              "kind": "property",
+              "type": "number",
+              "default": "1.0",
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "e",
+              "kind": "property",
+              "type": "number",
+              "default": "0.0",
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "f",
+              "kind": "property",
+              "type": "number",
+              "default": "0.0",
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "constructor",
+              "kind": "constructor",
+              "type": "(a: number, b: number, c: number, d: number, e: number, f: number)",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "equals",
+              "kind": "method",
+              "type": "(m: Mat | MatModel)",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "identity",
+              "kind": "method",
+              "type": "()",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "multiply",
+              "kind": "method",
+              "type": "(m: Mat | MatModel)",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "rotate",
+              "kind": "method",
+              "type": "(r: number, cx?: number, cy?: number)",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "translate",
+              "kind": "method",
+              "type": "(x: number, y: number): Mat",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "scale",
+              "kind": "method",
+              "type": "(x: number, y: number)",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "invert",
+              "kind": "method",
+              "type": "()",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "applyToPoint",
+              "kind": "method",
+              "type": "(point: VecLike)",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "applyToPoints",
+              "kind": "method",
+              "type": "(points: VecLike[])",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "rotation",
+              "kind": "method",
+              "type": "()",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "point",
+              "kind": "method",
+              "type": "()",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "decomposed",
+              "kind": "method",
+              "type": "()",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "toCssString",
+              "kind": "method",
+              "type": "()",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "setTo",
+              "kind": "method",
+              "type": "(model: MatModel)",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "decompose",
+              "kind": "method",
+              "type": "()",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "clone",
+              "kind": "method",
+              "type": "()",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "Identity",
+              "kind": "method",
+              "type": "()",
+              "default": null,
+              "visibility": "public",
+              "static": true
+            },
+            {
+              "name": "Translate",
+              "kind": "method",
+              "type": "(x: number, y: number)",
+              "default": null,
+              "visibility": "public",
+              "static": true
+            },
+            {
+              "name": "Rotate",
+              "kind": "method",
+              "type": "(r: number, cx?: number, cy?: number)",
+              "default": null,
+              "visibility": "public",
+              "static": true
+            },
+            {
+              "name": "Scale",
+              "kind": "method",
+              "type": "(x: number, y: number, cx?: number, cy?: number): Mat",
+              "default": null,
+              "visibility": "public",
+              "static": true
+            },
+            {
+              "name": "Multiply",
+              "kind": "method",
+              "type": "(m1: MatModel, m2: MatModel): MatModel",
+              "default": null,
+              "visibility": "public",
+              "static": true
+            },
+            {
+              "name": "Inverse",
+              "kind": "method",
+              "type": "(m: MatModel): MatModel",
+              "default": null,
+              "visibility": "public",
+              "static": true
+            },
+            {
+              "name": "Absolute",
+              "kind": "method",
+              "type": "(m: MatLike): MatModel",
+              "default": null,
+              "visibility": "public",
+              "static": true
+            },
+            {
+              "name": "Compose",
+              "kind": "method",
+              "type": "(...matrices: MatLike[])",
+              "default": null,
+              "visibility": "public",
+              "static": true
+            },
+            {
+              "name": "Point",
+              "kind": "method",
+              "type": "(m: MatLike)",
+              "default": null,
+              "visibility": "public",
+              "static": true
+            },
+            {
+              "name": "Rotation",
+              "kind": "method",
+              "type": "(m: MatLike): number",
+              "default": null,
+              "visibility": "public",
+              "static": true
+            },
+            {
+              "name": "Decompose",
+              "kind": "method",
+              "type": "(m: MatLike)",
+              "default": null,
+              "visibility": "public",
+              "static": true
+            },
+            {
+              "name": "Smooth",
+              "kind": "method",
+              "type": "(m: MatLike, precision = 10000000000)",
+              "default": null,
+              "visibility": "public",
+              "static": true
+            },
+            {
+              "name": "toCssString",
+              "kind": "method",
+              "type": "(m: MatLike)",
+              "default": null,
+              "visibility": "public",
+              "static": true
+            },
+            {
+              "name": "applyToPoint",
+              "kind": "method",
+              "type": "(m: MatLike, point: VecLike)",
+              "default": null,
+              "visibility": "public",
+              "static": true
+            },
+            {
+              "name": "applyToXY",
+              "kind": "method",
+              "type": "(m: MatLike, x: number, y: number)",
+              "default": null,
+              "visibility": "public",
+              "static": true
+            },
+            {
+              "name": "applyToPoints",
+              "kind": "method",
+              "type": "(m: MatLike, points: VecLike[]): Vec[]",
+              "default": null,
+              "visibility": "public",
+              "static": true
+            },
+            {
+              "name": "applyToBounds",
+              "kind": "method",
+              "type": "(m: MatLike, box: Box)",
+              "default": null,
+              "visibility": "public",
+              "static": true
+            },
+            {
+              "name": "From",
+              "kind": "method",
+              "type": "(m: MatLike)",
+              "default": null,
+              "visibility": "public",
+              "static": true
+            },
+            {
+              "name": "Cast",
+              "kind": "method",
+              "type": "(m: MatLike)",
+              "default": null,
+              "visibility": "public",
+              "static": true
+            }
+          ],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Mat is a public two-dimensional affine transformation matrix represented by six numeric coefficients. It exposes construction and transformation operations through its instance and static API.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "19518200315baaf86b704a63c8c0b9b26bc77e0b0b80542d34e7af70401ff5aa"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/primitives/Mat.ts__Mat.equals#method:Mat.equals",
+        "unitKind": "method",
+        "name": "equals",
+        "qualifiedName": "Mat.equals",
+        "parentUnitId": "packages/editor/src/lib/primitives/Mat.ts__Mat#class:Mat",
+        "startLine": 37,
+        "endLine": 47,
+        "isBehavioral": true,
+        "source": "\te = 0.0\n\tf = 0.0\n\n\tequals(m: Mat | MatModel) {\n\t\treturn (\n\t\t\tthis === m ||\n\t\t\t(this.a === m.a &&\n\t\t\t\tthis.b === m.b &&\n\t\t\t\tthis.c === m.c &&\n\t\t\t\tthis.d === m.d &&\n\t\t\t\tthis.e === m.e &&",
+        "detail": {
+          "unitId": "packages/editor/src/lib/primitives/Mat.ts__Mat.equals#method:Mat.equals",
+          "fileId": "packages/editor/src/lib/primitives/Mat.ts__Mat.equals",
+          "unitKind": "method",
+          "name": "equals",
+          "qualifiedName": "Mat.equals",
+          "parentUnitId": "packages/editor/src/lib/primitives/Mat.ts__Mat#class:Mat",
+          "startLine": 37,
+          "endLine": 47,
+          "signature": "equals(m: Mat | MatModel)",
+          "parameters": [
+            { "name": "m", "type": "Mat | MatModel", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "boolean",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["The argument provides readable a, b, c, d, e, and f matrix components."],
+          "postconditions": [
+            "Returns true when the argument is the identical object or all six corresponding matrix components are strictly equal.",
+            "Returns false when any corresponding matrix component is not strictly equal."
+          ],
+          "invariants": [
+            "Matrix components are compared without tolerance or numeric normalization.",
+            "Component comparison follows JavaScript strict equality semantics."
+          ],
+          "edgeCases": [
+            "Passing the same matrix object returns true.",
+            "Passing a distinct matrix with identical component values returns true.",
+            "Passing a matrix differing in any one component returns false.",
+            "Values compared as 0 and -0 are treated as equal by strict equality; NaN components do not compare equal unless the argument is the identical object."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["MatModel"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Determines whether the supplied matrix has the same six matrix component values as this matrix, or is the same object instance.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "m.equals(m) is called.",
+              "then": "The result is true.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "equals is called with the second matrix.",
+              "then": "The result is true.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "equals is called with the second matrix.",
+              "then": "The result is false.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "956a210009c23a3503bd919b34e649bd5d1fffea0547242a59b898ed80fd9fa3"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/primitives/Mat.ts__Mat.identity#method:Mat.identity",
+        "unitKind": "method",
+        "name": "identity",
+        "qualifiedName": "Mat.identity",
+        "parentUnitId": "packages/editor/src/lib/primitives/Mat.ts__Mat#class:Mat",
+        "startLine": 49,
+        "endLine": 58,
+        "isBehavioral": true,
+        "source": "\t\t)\n\t}\n\n\tidentity() {\n\t\tthis.a = 1.0\n\t\tthis.b = 0.0\n\t\tthis.c = 0.0\n\t\tthis.d = 1.0\n\t\tthis.e = 0.0\n\t\tthis.f = 0.0",
+        "detail": {
+          "unitId": "packages/editor/src/lib/primitives/Mat.ts__Mat.identity#method:Mat.identity",
+          "fileId": "packages/editor/src/lib/primitives/Mat.ts__Mat.identity",
+          "unitKind": "method",
+          "name": "identity",
+          "qualifiedName": "Mat.identity",
+          "parentUnitId": "packages/editor/src/lib/primitives/Mat.ts__Mat#class:Mat",
+          "startLine": 49,
+          "endLine": 58,
+          "signature": "identity()",
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": ["The matrix coefficients are set to a=1.0, b=0.0, c=0.0, d=1.0, e=0.0, and f=0.0."],
+          "invariants": ["The resulting transformation leaves 2D points unchanged."],
+          "edgeCases": ["Any prior matrix values are overwritten with the identity coefficients."],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": ["Mutates this matrix's a, b, c, d, e, and f coefficients."],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Resets this matrix to the 2D identity transformation.",
+          "specLiterals": [
+            { "kind": "magic-number", "value": "1.0", "role": "Identity diagonal coefficient." },
+            { "kind": "magic-number", "value": "0.0", "role": "Identity off-diagonal and translation coefficients." }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "identity() is called.",
+              "then": "The matrix coefficients become a=1.0, b=0.0, c=0.0, d=1.0, e=0.0, and f=0.0.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "055f2efbab4cca3fd0b104960bcd5ebe4faefed145a2219433b644157a283496"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/primitives/Mat.ts__Mat.multiply#method:Mat.multiply",
+        "unitKind": "method",
+        "name": "multiply",
+        "qualifiedName": "Mat.multiply",
+        "parentUnitId": "packages/editor/src/lib/primitives/Mat.ts__Mat#class:Mat",
+        "startLine": 60,
+        "endLine": 70,
+        "isBehavioral": true,
+        "source": "\t}\n\n\tmultiply(m: Mat | MatModel) {\n\t\tconst m2: MatModel = m\n\t\tconst { a, b, c, d, e, f } = this\n\t\tthis.a = a * m2.a + c * m2.b\n\t\tthis.c = a * m2.c + c * m2.d\n\t\tthis.e = a * m2.e + c * m2.f + e\n\t\tthis.b = b * m2.a + d * m2.b\n\t\tthis.d = b * m2.c + d * m2.d\n\t\tthis.f = b * m2.e + d * m2.f + f",
+        "detail": {
+          "unitId": "packages/editor/src/lib/primitives/Mat.ts__Mat.multiply#method:Mat.multiply",
+          "fileId": "packages/editor/src/lib/primitives/Mat.ts__Mat.multiply",
+          "unitKind": "method",
+          "name": "multiply",
+          "qualifiedName": "Mat.multiply",
+          "parentUnitId": "packages/editor/src/lib/primitives/Mat.ts__Mat#class:Mat",
+          "startLine": 60,
+          "endLine": 70,
+          "signature": "multiply(m: Mat | MatModel)",
+          "parameters": [
+            { "name": "m", "type": "Mat | MatModel", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["The argument provides numeric affine matrix components a, b, c, d, e, and f."],
+          "postconditions": [
+            "This instance's six affine components equal the product of its original matrix and the supplied matrix.",
+            "The original values of this instance's components are used consistently throughout the multiplication."
+          ],
+          "invariants": ["The affine matrix representation retains six components: a, b, c, d, e, and f."],
+          "edgeCases": [
+            "An identity matrix argument leaves this instance unchanged.",
+            "A matrix with zero or negative components is multiplied using the same affine product formulas without special handling.",
+            "The supplied matrix may be a Mat instance or a MatModel-compatible object."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": ["Mutates this.a, this.b, this.c, this.d, this.e, and this.f."],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["Mat", "MatModel"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Multiplies this affine matrix by the supplied matrix and updates this instance with the resulting transform.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "multiply is called with the argument",
+              "then": "this is mutated to {a: 31, b: 46, c: 39, d: 58, e: 52, f: 76}",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "2e59445889b494ec701135e0bbc0ac66ec9dda4306d40d75b8d949f4a45396ab"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/primitives/Mat.ts__Mat.rotate#method:Mat.rotate",
+        "unitKind": "method",
+        "name": "rotate",
+        "qualifiedName": "Mat.rotate",
+        "parentUnitId": "packages/editor/src/lib/primitives/Mat.ts__Mat#class:Mat",
+        "startLine": 72,
+        "endLine": 77,
+        "isBehavioral": true,
+        "source": "\t}\n\n\trotate(r: number, cx?: number, cy?: number) {\n\t\tif (r === 0) return this\n\t\tif (cx === undefined) return this.multiply(Mat.Rotate(r))\n\t\treturn this.translate(cx, cy!).multiply(Mat.Rotate(r)).translate(-cx, -cy!)",
+        "detail": {
+          "unitId": "packages/editor/src/lib/primitives/Mat.ts__Mat.rotate#method:Mat.rotate",
+          "fileId": "packages/editor/src/lib/primitives/Mat.ts__Mat.rotate",
+          "unitKind": "method",
+          "name": "rotate",
+          "qualifiedName": "Mat.rotate",
+          "parentUnitId": "packages/editor/src/lib/primitives/Mat.ts__Mat#class:Mat",
+          "startLine": 72,
+          "endLine": 77,
+          "signature": "rotate(r: number, cx?: number, cy?: number)",
+          "parameters": [
+            { "name": "r", "type": "number", "default": null, "optional": false, "variadic": false, "order": 0 },
+            { "name": "cx", "type": "number", "default": null, "optional": true, "variadic": false, "order": 1 },
+            { "name": "cy", "type": "number", "default": null, "optional": true, "variadic": false, "order": 2 }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "r is a number.",
+            "If cx is provided, cy is expected to be provided as the rotation center's y-coordinate."
+          ],
+          "postconditions": [
+            "If r is 0, returns the same matrix instance without applying any transformation.",
+            "If r is nonzero and cx is omitted, returns the result of multiplying this matrix by a rotation matrix for r.",
+            "If cx is provided, returns the result of translating to the center, multiplying by the rotation matrix for r, and translating back by the negated center coordinates."
+          ],
+          "invariants": [
+            "The receiver is not directly mutated by this method.",
+            "The order of matrix operations is preserved."
+          ],
+          "edgeCases": [
+            "r equal to 0 returns this immediately, regardless of the supplied center arguments.",
+            "A nonzero r with cx omitted ignores any supplied cy and performs multiplication by Mat.Rotate(r).",
+            "A nonzero r with cx provided uses cy at runtime; an undefined cy produces arithmetic involving undefined in the translation arguments."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "Mat.Rotate", "source": "Mat", "kind": "internal" },
+            { "name": "multiply", "source": "this", "kind": "internal" },
+            { "name": "translate", "source": "this", "kind": "internal" }
+          ],
+          "symbolReferences": ["Mat"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Applies a rotation by the specified angle to this matrix, optionally around a supplied center point. A zero-angle rotation returns the current matrix unchanged.",
+          "specLiterals": [
+            {
+              "kind": "magic-number",
+              "value": "0",
+              "role": "Zero-angle fast path that returns the receiver unchanged."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Calling rotate(0).",
+              "then": "The method returns the identical matrix instance and does not apply a rotation.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Calling rotate(r).",
+              "then": "The result is this matrix multiplied by Mat.Rotate(r).",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Calling rotate(r, cx, cy).",
+              "then": "The result applies translation to the center, rotation by r, and translation by the negated center coordinates in that order.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "ddba059497d3c48098c515670e838275ca95e1da1020ab37c19bbf8ddca92bfe"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/primitives/Mat.ts__Mat.invert#method:Mat.invert",
+        "unitKind": "method",
+        "name": "invert",
+        "qualifiedName": "Mat.invert",
+        "parentUnitId": "packages/editor/src/lib/primitives/Mat.ts__Mat#class:Mat",
+        "startLine": 87,
+        "endLine": 97,
+        "isBehavioral": true,
+        "source": "\n\tinvert() {\n\t\tconst { a, b, c, d, e, f } = this\n\t\tconst denom = a * d - b * c\n\t\tthis.a = d / denom\n\t\tthis.b = b / -denom\n\t\tthis.c = c / -denom\n\t\tthis.d = a / denom\n\t\tthis.e = (d * e - c * f) / -denom\n\t\tthis.f = (b * e - a * f) / denom\n\t\treturn this",
+        "detail": {
+          "unitId": "packages/editor/src/lib/primitives/Mat.ts__Mat.invert#method:Mat.invert",
+          "fileId": "packages/editor/src/lib/primitives/Mat.ts__Mat.invert",
+          "unitKind": "method",
+          "name": "invert",
+          "qualifiedName": "Mat.invert",
+          "parentUnitId": "packages/editor/src/lib/primitives/Mat.ts__Mat#class:Mat",
+          "startLine": 87,
+          "endLine": 97,
+          "signature": "invert()",
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["The matrix fields a, b, c, d, e, and f are numeric values."],
+          "postconditions": [
+            "For a non-singular matrix, this.a through this.f represent the affine inverse of the original matrix.",
+            "The returned value is the same object instance as this."
+          ],
+          "invariants": [
+            "The matrix retains its six-field affine representation.",
+            "The original matrix values are read before the inverse values are assigned."
+          ],
+          "edgeCases": [
+            "For a matrix with determinant a*d - b*c equal to zero, division by zero follows JavaScript numeric semantics and the fields become Infinity or NaN as applicable; no explicit exception is raised.",
+            "For identity input, the matrix remains the identity matrix."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "No explicit input validation is performed; non-numeric values propagate JavaScript arithmetic results.",
+            "returnsOnError": null
+          },
+          "stateMutations": ["Mutates this.a, this.b, this.c, this.d, this.e, and this.f."],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Mutates this affine matrix into its mathematical inverse and returns the same matrix instance.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "invert() is called.",
+              "then": "The same matrix instance is returned and its six fields remain 1, 0, 0, 1, 0, 0 respectively.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "invert() is called.",
+              "then": "The same matrix instance is returned with a=0.5, b=0, c=0, d=0.25, e=-3, and f=-2.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "invert() is called.",
+              "then": "No explicit exception is raised; the resulting fields reflect JavaScript division-by-zero or invalid-arithmetic semantics.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "a08062431dc53d99d484d58e317772249f7f892fc8a3126507458a3d926c8178"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/primitives/Mat.ts__Mat.Rotate#method:Mat.Rotate",
+        "unitKind": "method",
+        "name": "Rotate",
+        "qualifiedName": "Mat.Rotate",
+        "parentUnitId": "packages/editor/src/lib/primitives/Mat.ts__Mat#class:Mat",
+        "startLine": 148,
+        "endLine": 162,
+        "isBehavioral": true,
+        "source": "\t\tif (r === 0) return Mat.Identity()\n\n\t\tconst cosAngle = Math.cos(r)\n\t\tconst sinAngle = Math.sin(r)\n\n\t\tconst rotationMatrix = new Mat(cosAngle, sinAngle, -sinAngle, cosAngle, 0.0, 0.0)\n\n\t\tif (cx === undefined) return rotationMatrix\n\n\t\treturn Mat.Compose(Mat.Translate(cx, cy!), rotationMatrix, Mat.Translate(-cx, -cy!))\n\t}\n\n\tstatic Scale(x: number, y: number): Mat\n\tstatic Scale(x: number, y: number, cx: number, cy: number): Mat\n\tstatic Scale(x: number, y: number, cx?: number, cy?: number): Mat {",
+        "detail": {
+          "unitId": "packages/editor/src/lib/primitives/Mat.ts__Mat.Rotate#method:Mat.Rotate",
+          "fileId": "packages/editor/src/lib/primitives/Mat.ts__Mat.Rotate",
+          "unitKind": "method",
+          "name": "Rotate",
+          "qualifiedName": "Mat.Rotate",
+          "parentUnitId": "packages/editor/src/lib/primitives/Mat.ts__Mat#class:Mat",
+          "startLine": 148,
+          "endLine": 162,
+          "signature": "static Rotate(r: number, cx?: number, cy?: number): Mat",
+          "parameters": [
+            { "name": "r", "type": "number", "default": null, "optional": false, "variadic": false, "order": 0 },
+            { "name": "cx", "type": "number", "default": null, "optional": true, "variadic": false, "order": 1 },
+            { "name": "cy", "type": "number", "default": null, "optional": true, "variadic": false, "order": 2 }
+          ],
+          "returnType": "Mat",
+          "decorators": [],
+          "modifiersApplied": ["static"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "r is a number.",
+            "If cx is provided, cy is expected to be provided as the pivot's y-coordinate."
+          ],
+          "postconditions": [
+            "Returns a Mat representing rotation by r radians.",
+            "When r is zero, returns Mat.Identity().",
+            "When no pivot is provided, the returned matrix has cosine and sine rotation terms and zero translation.",
+            "When a pivot is provided, the rotation is composed with translations to and from the pivot."
+          ],
+          "invariants": [
+            "The rotation matrix uses cos(r) and sin(r) in the standard 2D affine rotation arrangement.",
+            "The operation does not mutate caller-provided arguments or shared state."
+          ],
+          "edgeCases": [
+            "r equal to 0 returns the identity matrix immediately.",
+            "A nonzero r without cx returns a rotation about the origin.",
+            "A provided pivot returns a rotation about (cx, cy).",
+            "If cx is provided while cy is undefined, JavaScript numeric propagation may produce NaN translation components through the pivot composition.",
+            "Non-finite r values are passed to Math.cos and Math.sin and therefore produce the corresponding non-finite matrix components."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "No explicit validation or exception is performed; invalid numeric values propagate through arithmetic and matrix composition.",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "Math.cos", "source": "global Math object", "kind": "external" },
+            { "name": "Math.sin", "source": "global Math object", "kind": "external" },
+            { "name": "Mat.Identity", "source": "Mat", "kind": "internal" },
+            { "name": "Mat constructor", "source": "Mat", "kind": "internal" },
+            { "name": "Mat.Compose", "source": "Mat", "kind": "internal" },
+            { "name": "Mat.Translate", "source": "Mat", "kind": "internal" }
+          ],
+          "symbolReferences": ["Mat", "Math.cos", "Math.sin"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Creates a 2D rotation matrix for the supplied angle in radians. When a pivot is provided, the result rotates around that pivot; a zero angle returns the identity matrix.",
+          "specLiterals": [
+            {
+              "kind": "magic-number",
+              "value": "0",
+              "role": "Zero-angle boundary condition that selects the identity matrix."
+            },
+            {
+              "kind": "magic-number",
+              "value": "0.0",
+              "role": "Zero translation components of the origin-centered rotation matrix."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Call Mat.Rotate(0).",
+              "then": "The result is Mat.Identity().",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Call Mat.Rotate(r).",
+              "then": "The result is a rotation matrix with entries cos(r), sin(r), -sin(r), cos(r), 0.0, and 0.0.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Call Mat.Rotate(r, cx, cy).",
+              "then": "The result is Mat.Compose(Mat.Translate(cx, cy), the origin-centered rotation matrix for r, Mat.Translate(-cx, -cy)).",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "8edb9d5d5586aad86f5cbd35d8bb927b63de8ba8b770402b0b5dc0905c98c95a"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/primitives/Mat.ts__Mat.Scale#method:Mat.Scale",
+        "unitKind": "method",
+        "name": "Scale",
+        "qualifiedName": "Mat.Scale",
+        "parentUnitId": "packages/editor/src/lib/primitives/Mat.ts__Mat#class:Mat",
+        "startLine": 164,
+        "endLine": 172,
+        "isBehavioral": true,
+        "source": "\t\tif (cx === undefined) return scaleMatrix\n\n\t\treturn Mat.Translate(cx, cy!).multiply(scaleMatrix).translate(-cx, -cy!)\n\t}\n\tstatic Multiply(m1: MatModel, m2: MatModel): MatModel {\n\t\treturn {\n\t\t\ta: m1.a * m2.a + m1.c * m2.b,\n\t\t\tc: m1.a * m2.c + m1.c * m2.d,\n\t\t\te: m1.a * m2.e + m1.c * m2.f + m1.e,",
+        "detail": {
+          "unitId": "packages/editor/src/lib/primitives/Mat.ts__Mat.Scale#method:Mat.Scale",
+          "fileId": "packages/editor/src/lib/primitives/Mat.ts__Mat.Scale",
+          "unitKind": "method",
+          "name": "Scale",
+          "qualifiedName": "Mat.Scale",
+          "parentUnitId": "packages/editor/src/lib/primitives/Mat.ts__Mat#class:Mat",
+          "startLine": 164,
+          "endLine": 172,
+          "signature": "static Scale(sx: number, sy?: number, cx?: number, cy?: number): MatModel",
+          "parameters": [
+            { "name": "sx", "type": "number", "default": null, "optional": false, "variadic": false, "order": 0 },
+            { "name": "sy", "type": "number", "default": null, "optional": true, "variadic": false, "order": 1 },
+            { "name": "cx", "type": "number", "default": null, "optional": true, "variadic": false, "order": 2 },
+            { "name": "cy", "type": "number", "default": null, "optional": true, "variadic": false, "order": 3 }
+          ],
+          "returnType": "MatModel",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "sx is a numeric horizontal scale factor.",
+            "If a scaling center is supplied, cy is available for the center's y-coordinate."
+          ],
+          "postconditions": [
+            "Returns a matrix representing the requested scale.",
+            "When cx is undefined, the returned matrix is the direct scale matrix.",
+            "When cx is defined, the scale is composed with translations so scaling occurs about (cx, cy)."
+          ],
+          "invariants": [
+            "The matrix preserves affine 2D transformation representation.",
+            "A centered scale is equivalent to translating to the center, scaling, and translating back."
+          ],
+          "edgeCases": [
+            "With cx undefined, returns the direct scale matrix without center translations.",
+            "With cx defined, uses cy as the y-coordinate of the scaling center.",
+            "Optional or omitted scale-axis parameters follow the method's declared parameter defaults."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "Translate", "source": "Mat", "kind": "internal" },
+            { "name": "multiply", "source": "Mat", "kind": "internal" },
+            { "name": "translate", "source": "Mat", "kind": "internal" }
+          ],
+          "symbolReferences": ["MatModel"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Creates a 2D scaling matrix and, when a center is supplied, applies the scale about that center point.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Mat.Scale(sx, sy) is called.",
+              "then": "The result is the direct scaling matrix rather than a translated composition.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Mat.Scale(sx, sy, cx, cy) is called.",
+              "then": "The result applies the scale about the specified center by composing translation, scaling, and inverse translation.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "52d27b0a2d10f6175651f97f256cb2836657293724a6780499597e259100459a"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/primitives/Mat.ts__Mat.Multiply#method:Mat.Multiply",
+        "unitKind": "method",
+        "name": "Multiply",
+        "qualifiedName": "Mat.Multiply",
+        "parentUnitId": "packages/editor/src/lib/primitives/Mat.ts__Mat#class:Mat",
+        "startLine": 173,
+        "endLine": 181,
+        "isBehavioral": true,
+        "source": "\t\t\tb: m1.b * m2.a + m1.d * m2.b,\n\t\t\td: m1.b * m2.c + m1.d * m2.d,\n\t\t\tf: m1.b * m2.e + m1.d * m2.f + m1.f,\n\t\t}\n\t}\n\n\tstatic Inverse(m: MatModel): MatModel {\n\t\tconst denom = m.a * m.d - m.b * m.c\n\t\treturn {",
+        "detail": {
+          "unitId": "packages/editor/src/lib/primitives/Mat.ts__Mat.Multiply#method:Mat.Multiply",
+          "fileId": "packages/editor/src/lib/primitives/Mat.ts__Mat.Multiply",
+          "unitKind": "method",
+          "name": "Multiply",
+          "qualifiedName": "Mat.Multiply",
+          "parentUnitId": "packages/editor/src/lib/primitives/Mat.ts__Mat#class:Mat",
+          "startLine": 173,
+          "endLine": 181,
+          "signature": "static Multiply(m1: MatModel, m2: MatModel): MatModel",
+          "parameters": [
+            { "name": "m1", "type": "MatModel", "default": null, "optional": false, "variadic": false, "order": 0 },
+            { "name": "m2", "type": "MatModel", "default": null, "optional": false, "variadic": false, "order": 1 }
+          ],
+          "returnType": "MatModel",
+          "decorators": [],
+          "modifiersApplied": ["static"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["m1 and m2 provide numeric affine matrix components a, b, c, d, e, and f."],
+          "postconditions": [
+            "Returns a MatModel whose components represent m1 composed with m2.",
+            "The result components are calculated from the corresponding affine matrix products and translations.",
+            "Neither input matrix is mutated."
+          ],
+          "invariants": ["The returned matrix has exactly the affine components a, b, c, d, e, and f."],
+          "edgeCases": [
+            "Multiplying by an identity affine matrix preserves the other matrix.",
+            "Zero-valued or negative matrix components participate in ordinary numeric multiplication and addition.",
+            "No input validation or special fallback behavior is specified for non-numeric component values."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["MatModel"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Multiplies two affine matrices and returns the composed MatModel transformation without mutating either input.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Mat.Multiply(m1, m2) is called",
+              "then": "The returned matrix has the same six components as m2.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Mat.Multiply(m1, m2) is called",
+              "then": "The returned components are a: m1.a * m2.a + m1.c * m2.b, b: m1.b * m2.a + m1.d * m2.b, c: m1.a * m2.c + m1.c * m2.d, d: m1.b * m2.c + m1.d * m2.d, e: m1.a * m2.e + m1.c * m2.f + m1.e, and f: m1.b * m2.e + m1.d * m2.f + m1.f.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "26c5cca54b609e284d7ca8ae29d3152c61d95b37ab03205e773ccc1663c87300"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/primitives/Mat.ts__Mat.Inverse#method:Mat.Inverse",
+        "unitKind": "method",
+        "name": "Inverse",
+        "qualifiedName": "Mat.Inverse",
+        "parentUnitId": "packages/editor/src/lib/primitives/Mat.ts__Mat#class:Mat",
+        "startLine": 183,
+        "endLine": 192,
+        "isBehavioral": true,
+        "source": "\t\t\tb: m.b / -denom,\n\t\t\tc: m.c / -denom,\n\t\t\td: m.a / denom,\n\t\t\te: (m.d * m.e - m.c * m.f) / -denom,\n\t\t\tf: (m.b * m.e - m.a * m.f) / denom,\n\t\t}\n\t}\n\n\tstatic Absolute(m: MatLike): MatModel {\n\t\tconst denom = m.a * m.d - m.b * m.c",
+        "detail": {
+          "unitId": "packages/editor/src/lib/primitives/Mat.ts__Mat.Inverse#method:Mat.Inverse",
+          "fileId": "packages/editor/src/lib/primitives/Mat.ts__Mat.Inverse",
+          "unitKind": "method",
+          "name": "Inverse",
+          "qualifiedName": "Mat.Inverse",
+          "parentUnitId": "packages/editor/src/lib/primitives/Mat.ts__Mat#class:Mat",
+          "startLine": 183,
+          "endLine": 192,
+          "signature": "static Inverse(m: MatLike): MatModel",
+          "parameters": [
+            { "name": "m", "type": "MatLike", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "MatModel",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["The input provides numeric affine matrix components a, b, c, d, e, and f."],
+          "postconditions": [
+            "Returns a MatModel whose components are calculated from the input determinant and affine inverse formula.",
+            "For a non-singular input, multiplying the input linear transform by the returned linear transform yields the identity linear transform."
+          ],
+          "invariants": [
+            "The returned matrix preserves the six-component affine representation using fields a, b, c, d, e, and f.",
+            "The determinant used is m.a * m.d - m.b * m.c."
+          ],
+          "edgeCases": [
+            "For a singular matrix with zero determinant, JavaScript numeric division semantics produce Infinity or NaN components rather than a separately raised error.",
+            "Translation components are transformed using the same determinant and linear coefficients as the affine inverse formula."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "No explicit validation or exception behavior is specified; numeric operations follow JavaScript semantics.",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["MatLike", "MatModel"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Computes the affine inverse of a matrix-like value and returns the result as a MatModel.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Mat.Inverse is called with the matrix.",
+              "then": "The returned matrix has a=1, b=0, c=0, d=1, e=-10, and f=-20.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Mat.Inverse is called with the matrix.",
+              "then": "The returned matrix has a=0.5, b=0, c=0, d=0.25, e=-3, and f=-2.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Mat.Inverse is called with the matrix.",
+              "then": "The method does not explicitly throw and the result contains the Infinity or NaN values produced by JavaScript division by zero.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "6800dcc58d12fb7cc04112f9fc4e4ea3bacfab458091e7049d5c545bc9bafbb6"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/primitives/Mat.ts__Mat.Absolute#method:Mat.Absolute",
+        "unitKind": "method",
+        "name": "Absolute",
+        "qualifiedName": "Mat.Absolute",
+        "parentUnitId": "packages/editor/src/lib/primitives/Mat.ts__Mat#class:Mat",
+        "startLine": 194,
+        "endLine": 203,
+        "isBehavioral": true,
+        "source": "\t\t\ta: m.d / denom,\n\t\t\tb: m.b / -denom,\n\t\t\tc: m.c / -denom,\n\t\t\td: m.a / denom,\n\t\t\te: (m.d * m.e - m.c * m.f) / denom,\n\t\t\tf: (m.b * m.e - m.a * m.f) / -denom,\n\t\t}\n\t}\n\n\tstatic Compose(...matrices: MatLike[]) {",
+        "detail": {
+          "unitId": "packages/editor/src/lib/primitives/Mat.ts__Mat.Absolute#method:Mat.Absolute",
+          "fileId": "packages/editor/src/lib/primitives/Mat.ts__Mat.Absolute",
+          "unitKind": "method",
+          "name": "Absolute",
+          "qualifiedName": "Mat.Absolute",
+          "parentUnitId": "packages/editor/src/lib/primitives/Mat.ts__Mat#class:Mat",
+          "startLine": 194,
+          "endLine": 203,
+          "signature": null,
+          "parameters": [
+            { "name": "m", "type": "MatLike", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "MatLike",
+          "decorators": [],
+          "modifiersApplied": ["static"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["The argument provides numeric affine components a, b, c, d, e, and f."],
+          "postconditions": [
+            "The returned value contains components a, b, c, d, e, and f corresponding to the absolute value of each component in the input.",
+            "The input matrix is not mutated."
+          ],
+          "invariants": [
+            "Each returned component is non-negative when the corresponding input component is a finite number.",
+            "The returned matrix preserves the six-component MatLike shape."
+          ],
+          "edgeCases": [
+            "Negative components are returned as their non-negative absolute values.",
+            "Zero-valued components remain zero.",
+            "Positive components are unchanged."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["MatLike"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Returns a matrix-like affine transform whose components are the absolute values of the supplied matrix components.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Mat.Absolute is called with that value.",
+              "then": "The result has components a=1, b=2, c=3, d=0, e=5, and f=6, and the input is unchanged.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "cf5c88aab417fe7027f4e3325e68837d5023a7f24e489403cdcaabd89af1a2c9"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/primitives/Mat.ts__Mat.Compose#method:Mat.Compose",
+        "unitKind": "method",
+        "name": "Compose",
+        "qualifiedName": "Mat.Compose",
+        "parentUnitId": "packages/editor/src/lib/primitives/Mat.ts__Mat#class:Mat",
+        "startLine": 205,
+        "endLine": 211,
+        "isBehavioral": true,
+        "source": "\t\tfor (let i = 0, n = matrices.length; i < n; i++) {\n\t\t\tmatrix.multiply(matrices[i])\n\t\t}\n\t\treturn matrix\n\t}\n\n\tstatic Point(m: MatLike) {",
+        "detail": {
+          "unitId": "packages/editor/src/lib/primitives/Mat.ts__Mat.Compose#method:Mat.Compose",
+          "fileId": "packages/editor/src/lib/primitives/Mat.ts__Mat.Compose",
+          "unitKind": "method",
+          "name": "Compose",
+          "qualifiedName": "Mat.Compose",
+          "parentUnitId": "packages/editor/src/lib/primitives/Mat.ts__Mat#class:Mat",
+          "startLine": 205,
+          "endLine": 211,
+          "signature": "static Compose(...matrices: MatLike[]): Mat",
+          "parameters": [
+            {
+              "name": "matrices",
+              "type": "MatLike[]",
+              "default": null,
+              "optional": false,
+              "variadic": true,
+              "order": 0
+            }
+          ],
+          "returnType": "Mat",
+          "decorators": [],
+          "modifiersApplied": ["static"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["Each supplied value must satisfy the MatLike shape accepted by Mat.multiply."],
+          "postconditions": [
+            "Returns a matrix containing the sequential composition of all supplied matrices.",
+            "The supplied matrix-like inputs are not mutated by this method."
+          ],
+          "invariants": [
+            "Matrices are processed from first to last.",
+            "The accumulator begins as the default identity matrix."
+          ],
+          "edgeCases": [
+            "When no matrices are supplied, returns the default identity matrix.",
+            "When one matrix is supplied, returns an equivalent composed matrix.",
+            "Multiple matrices are multiplied sequentially in argument order."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Invalid matrix-like values may fail according to Mat.multiply's validation or property-access behavior.",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "Mat.multiply", "source": "Mat", "kind": "internal" }],
+          "symbolReferences": ["Mat", "MatLike"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Composes zero or more matrix-like values into a new matrix by multiplying them in the supplied order.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Call Mat.Compose()",
+              "then": "The result is the default identity matrix.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Call Mat.Compose(A, B, C)",
+              "then": "The result is equivalent to starting with the identity matrix and multiplying A, then B, then C.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "102eedc1be7087e46cccf9453fd40e59177de04aa1e5a1e6100793beceb1307d"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/primitives/Mat.ts__Mat.Rotation#method:Mat.Rotation",
+        "unitKind": "method",
+        "name": "Rotation",
+        "qualifiedName": "Mat.Rotation",
+        "parentUnitId": "packages/editor/src/lib/primitives/Mat.ts__Mat#class:Mat",
+        "startLine": 217,
+        "endLine": 232,
+        "isBehavioral": true,
+        "source": "\n\t\tif (m.a !== 0 || m.c !== 0) {\n\t\t\tconst hypotAc = (m.a * m.a + m.c * m.c) ** 0.5\n\t\t\trotation = Math.acos(m.a / hypotAc) * (m.c > 0 ? -1 : 1)\n\t\t} else if (m.b !== 0 || m.d !== 0) {\n\t\t\tconst hypotBd = (m.b * m.b + m.d * m.d) ** 0.5\n\t\t\trotation = HALF_PI + Math.acos(m.b / hypotBd) * (m.d > 0 ? -1 : 1)\n\t\t} else {\n\t\t\trotation = 0\n\t\t}\n\n\t\treturn clampRadians(rotation)\n\t}\n\n\tstatic Decompose(m: MatLike) {\n\t\tlet scaleX, scaleY, rotation",
+        "detail": {
+          "unitId": "packages/editor/src/lib/primitives/Mat.ts__Mat.Rotation#method:Mat.Rotation",
+          "fileId": "packages/editor/src/lib/primitives/Mat.ts__Mat.Rotation",
+          "unitKind": "method",
+          "name": "Rotation",
+          "qualifiedName": "Mat.Rotation",
+          "parentUnitId": "packages/editor/src/lib/primitives/Mat.ts__Mat#class:Mat",
+          "startLine": 217,
+          "endLine": 232,
+          "signature": "static Rotation(m: MatLike)",
+          "parameters": [
+            { "name": "m", "type": "MatLike", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "number",
+          "decorators": [],
+          "modifiersApplied": ["static"],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["m provides numeric matrix components a, b, c, and d."],
+          "postconditions": [
+            "Returns a numeric rotation angle in the range enforced by clampRadians.",
+            "Returns 0 when both matrix axes used for rotation extraction are zero."
+          ],
+          "invariants": [
+            "The result is passed through clampRadians before being returned.",
+            "The first non-degenerate matrix axis determines the rotation extraction branch: a/c are preferred over b/d."
+          ],
+          "edgeCases": [
+            "When m.a and m.c are both zero but m.b or m.d is nonzero, rotation is computed from b/d with a HALF_PI offset.",
+            "When m.a, m.b, m.c, and m.d are all zero, the returned rotation is 0.",
+            "When m.a or m.c is nonzero, the rotation is derived from acos(m.a / sqrt(m.a² + m.c²)) and signed according to the sign of m.c)."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "Math.acos", "source": "global Math object", "kind": "external" },
+            { "name": "clampRadians", "source": null, "kind": "internal" }
+          ],
+          "symbolReferences": ["MatLike", "HALF_PI", "clampRadians"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Extracts the rotation angle represented by a matrix-like value. The result is normalized through the module's radians-clamping routine, with degenerate zero-axis matrices producing zero.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Mat.Rotation(m) is called.",
+              "then": "The result is 0.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Mat.Rotation(m) is called.",
+              "then": "The result is -Math.PI / 2 after radians clamping.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Mat.Rotation(m) is called.",
+              "then": "The result is 0.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "0db9b05e76fef059e625012025281f9ce6e64bd3c79fc1972c3242608e4a0c52"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/primitives/Mat.ts__Mat.Decompose#method:Mat.Decompose",
+        "unitKind": "method",
+        "name": "Decompose",
+        "qualifiedName": "Mat.Decompose",
+        "parentUnitId": "packages/editor/src/lib/primitives/Mat.ts__Mat#class:Mat",
+        "startLine": 234,
+        "endLine": 262,
+        "isBehavioral": true,
+        "source": "\t\tif (m.a !== 0 || m.c !== 0) {\n\t\t\tconst hypotAc = (m.a * m.a + m.c * m.c) ** 0.5\n\t\t\tscaleX = hypotAc\n\t\t\tscaleY = (m.a * m.d - m.b * m.c) / hypotAc\n\t\t\trotation = Math.acos(m.a / hypotAc) * (m.c > 0 ? -1 : 1)\n\t\t} else if (m.b !== 0 || m.d !== 0) {\n\t\t\tconst hypotBd = (m.b * m.b + m.d * m.d) ** 0.5\n\t\t\tscaleX = (m.a * m.d - m.b * m.c) / hypotBd\n\t\t\tscaleY = hypotBd\n\t\t\trotation = HALF_PI + Math.acos(m.b / hypotBd) * (m.d > 0 ? -1 : 1)\n\t\t} else {\n\t\t\tscaleX = 0\n\t\t\tscaleY = 0\n\t\t\trotation = 0\n\t\t}\n\n\t\treturn {\n\t\t\tx: m.e,\n\t\t\ty: m.f,\n\t\t\tscaleX,\n\t\t\tscaleY,\n\t\t\trotation: clampRadians(rotation),\n\t\t}\n\t}\n\n\tstatic Smooth(m: MatLike, precision = 10000000000) {\n\t\tm.a = Math.round(m.a * precision) / precision\n\t\tm.b = Math.round(m.b * precision) / precision\n\t\tm.c = Math.round(m.c * precision) / precision",
+        "detail": {
+          "unitId": "packages/editor/src/lib/primitives/Mat.ts__Mat.Decompose#method:Mat.Decompose",
+          "fileId": "packages/editor/src/lib/primitives/Mat.ts__Mat.Decompose",
+          "unitKind": "method",
+          "name": "Decompose",
+          "qualifiedName": "Mat.Decompose",
+          "parentUnitId": "packages/editor/src/lib/primitives/Mat.ts__Mat#class:Mat",
+          "startLine": 234,
+          "endLine": 262,
+          "signature": "static Decompose(m: MatLike)",
+          "parameters": [
+            { "name": "m", "type": "MatLike", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "{ x: number; y: number; scaleX: number; scaleY: number; rotation: number }",
+          "decorators": [],
+          "modifiersApplied": ["static"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["The input provides numeric affine matrix components a, b, c, d, e, and f."],
+          "postconditions": [
+            "Returns the translation components from m.e and m.f.",
+            "Returns numeric scaleX, scaleY, and rotation components derived from the matrix's linear components.",
+            "The returned rotation is passed through clampRadians."
+          ],
+          "invariants": [
+            "The input matrix is not mutated.",
+            "Translation output is exactly { x: m.e, y: m.f }.",
+            "For a matrix whose first column is nonzero, scaleX is the Euclidean magnitude of that column and scaleY is the determinant divided by that magnitude.",
+            "For a matrix whose first column is zero and second column is nonzero, scaleY is the Euclidean magnitude of the second column and scaleX is the determinant divided by that magnitude."
+          ],
+          "edgeCases": [
+            "When a or c is nonzero, decomposition uses the first matrix column to derive scale and rotation.",
+            "When both a and c are zero but b or d is nonzero, decomposition uses the second matrix column and adds HALF_PI to the derived rotation.",
+            "When a, b, c, and d are all zero, returns scaleX: 0, scaleY: 0, and rotation: 0 while preserving translation.",
+            "Matrices with negative determinant produce a correspondingly signed scale component through the determinant-based calculation."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "No explicit validation or fallback is defined; malformed or non-numeric matrix components propagate JavaScript numeric behavior.",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "clampRadians", "source": null, "kind": "internal" }],
+          "symbolReferences": ["MatLike", "HALF_PI"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Returns an object with numeric fields { x, y, scaleX, scaleY, rotation }.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Decomposes an affine matrix into translation, scale, and rotation components. The returned rotation is normalized through the matrix utility's radian-clamping behavior.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Mat.Decompose(m) is called.",
+              "then": "The result is { x: 12, y: -7, scaleX: 0, scaleY: 0, rotation: 0 }.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Mat.Decompose(m) is called.",
+              "then": "The result has x = 4, y = 5, scaleX = 2, scaleY = 3, and rotation = 0.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Mat.Decompose(m) is called.",
+              "then": "The result has x = 1, y = 6, scaleX = 3, scaleY = 2, and a rotation normalized from the second-column branch.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "4aa0a9aa09d3574588a3d7152780121a1f1939ab9969906c752eeeaadc9e74a5"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/primitives/Mat.ts__Mat.Smooth#method:Mat.Smooth",
+        "unitKind": "method",
+        "name": "Smooth",
+        "qualifiedName": "Mat.Smooth",
+        "parentUnitId": "packages/editor/src/lib/primitives/Mat.ts__Mat#class:Mat",
+        "startLine": 264,
+        "endLine": 273,
+        "isBehavioral": true,
+        "source": "\t\tm.e = Math.round(m.e * precision) / precision\n\t\tm.f = Math.round(m.f * precision) / precision\n\t\treturn m\n\t}\n\n\tstatic toCssString(m: MatLike) {\n\t\treturn `matrix(${toDomPrecision(m.a)}, ${toDomPrecision(m.b)}, ${toDomPrecision(\n\t\t\tm.c\n\t\t)}, ${toDomPrecision(m.d)}, ${toDomPrecision(m.e)}, ${toDomPrecision(m.f)})`\n\t}",
+        "detail": {
+          "unitId": "packages/editor/src/lib/primitives/Mat.ts__Mat.Smooth#method:Mat.Smooth",
+          "fileId": "packages/editor/src/lib/primitives/Mat.ts__Mat.Smooth",
+          "unitKind": "method",
+          "name": "Smooth",
+          "qualifiedName": "Mat.Smooth",
+          "parentUnitId": "packages/editor/src/lib/primitives/Mat.ts__Mat#class:Mat",
+          "startLine": 264,
+          "endLine": 273,
+          "signature": "static Smooth(m: MatLike, precision = 1000000)",
+          "parameters": [
+            { "name": "m", "type": "MatLike", "default": null, "optional": false, "variadic": false, "order": 0 },
+            { "name": "precision", "type": null, "default": "1000000", "optional": true, "variadic": false, "order": 1 }
+          ],
+          "returnType": "MatLike",
+          "decorators": [],
+          "modifiersApplied": ["static"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "m is a mutable matrix-like object with numeric a, b, c, d, e, and f components.",
+            "precision is a numeric rounding scale."
+          ],
+          "postconditions": [
+            "The matrix components are rounded to the nearest increment of 1 / precision.",
+            "The returned value is the same object supplied as m."
+          ],
+          "invariants": [
+            "The matrix remains a six-component affine matrix-like object.",
+            "No new matrix object is required for the result."
+          ],
+          "edgeCases": [
+            "With the default precision, components are rounded to millionth increments.",
+            "Fractional component values are replaced by their Math.round-based rounded values at the selected precision.",
+            "Non-finite numeric component values follow JavaScript Math.round arithmetic without a separate validation error."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": ["m.a", "m.b", "m.c", "m.d", "m.e", "m.f"],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "Math.round", "source": null, "kind": "external" }],
+          "symbolReferences": ["MatLike"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Rounds the matrix components to the requested precision and returns the same matrix object. The operation smooths floating-point values in place.",
+          "specLiterals": [
+            {
+              "kind": "magic-number",
+              "value": "1000000",
+              "role": "Default precision scale for rounding matrix components."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Mat.Smooth is called with that object.",
+              "then": "The same object is returned, with e = 1.235 and f = -2.346.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Mat.Smooth is called.",
+              "then": "Each matrix component is rounded using the default precision scale of 1000000, and the input object is mutated rather than replaced.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "57cc64970ba6e8b23a90894be3d48e29705d7062d77d8ea6b5216b344633a393"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/primitives/Mat.ts__Mat.toCssString#method:Mat.toCssString",
+        "unitKind": "method",
+        "name": "toCssString",
+        "qualifiedName": "Mat.toCssString",
+        "parentUnitId": "packages/editor/src/lib/primitives/Mat.ts__Mat#class:Mat",
+        "startLine": 275,
+        "endLine": 279,
+        "isBehavioral": true,
+        "source": "\tstatic applyToPoint(m: MatLike, point: VecLike) {\n\t\treturn new Vec(\n\t\t\tm.a * point.x + m.c * point.y + m.e,\n\t\t\tm.b * point.x + m.d * point.y + m.f,\n\t\t\tpoint.z",
+        "detail": {
+          "unitId": "packages/editor/src/lib/primitives/Mat.ts__Mat.toCssString#method:Mat.toCssString",
+          "fileId": "packages/editor/src/lib/primitives/Mat.ts__Mat.toCssString",
+          "unitKind": "method",
+          "name": "toCssString",
+          "qualifiedName": "Mat.toCssString",
+          "parentUnitId": "packages/editor/src/lib/primitives/Mat.ts__Mat#class:Mat",
+          "startLine": 275,
+          "endLine": 279,
+          "signature": "toCssString(): string",
+          "parameters": [],
+          "returnType": "string",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [
+            "Returns a string in CSS 2D matrix representation using the instance's affine coefficients."
+          ],
+          "invariants": ["The returned representation reflects the matrix coefficients without mutating the matrix."],
+          "edgeCases": [
+            "Identity and zero-valued coefficients are serialized as numeric matrix components.",
+            "Non-integer, negative, and otherwise finite numeric coefficients are preserved in the returned CSS representation."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Returns a CSS 2D transform matrix string with six ordered components corresponding to a, b, c, d, e, and f.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Returns a CSS transform string representing the matrix's six affine transformation coefficients.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "ffd8604b1d2d4a77dec09eb781061a403fd225f5cdaf31608e77ead4072b1c35"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/primitives/Mat.ts__Mat.applyToPoint#method:Mat.applyToPoint",
+        "unitKind": "method",
+        "name": "applyToPoint",
+        "qualifiedName": "Mat.applyToPoint",
+        "parentUnitId": "packages/editor/src/lib/primitives/Mat.ts__Mat#class:Mat",
+        "startLine": 281,
+        "endLine": 287,
+        "isBehavioral": true,
+        "source": "\t}\n\n\tstatic applyToXY(m: MatLike, x: number, y: number) {\n\t\treturn [m.a * x + m.c * y + m.e, m.b * x + m.d * y + m.f]\n\t}\n\n\tstatic applyToPoints(m: MatLike, points: VecLike[]): Vec[] {",
+        "detail": {
+          "unitId": "packages/editor/src/lib/primitives/Mat.ts__Mat.applyToPoint#method:Mat.applyToPoint",
+          "fileId": "packages/editor/src/lib/primitives/Mat.ts__Mat.applyToPoint",
+          "unitKind": "method",
+          "name": "applyToPoint",
+          "qualifiedName": "Mat.applyToPoint",
+          "parentUnitId": "packages/editor/src/lib/primitives/Mat.ts__Mat#class:Mat",
+          "startLine": 281,
+          "endLine": 287,
+          "signature": "static applyToPoint(m: MatLike, point: VecLike)",
+          "parameters": [
+            { "name": "m", "type": "MatLike", "default": null, "optional": false, "variadic": false, "order": 0 },
+            { "name": "point", "type": "VecLike", "default": null, "optional": false, "variadic": false, "order": 1 }
+          ],
+          "returnType": "Vec",
+          "decorators": [],
+          "modifiersApplied": ["static"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "m provides numeric affine components a, b, c, d, e, and f.",
+            "point provides numeric x and y coordinates."
+          ],
+          "postconditions": [
+            "Returns a Vec whose x coordinate is m.a * point.x + m.c * point.y + m.e.",
+            "Returns a Vec whose y coordinate is m.b * point.x + m.d * point.y + m.f.",
+            "Does not mutate the input matrix or point."
+          ],
+          "invariants": ["The transformation uses the six affine matrix components without modifying them."],
+          "edgeCases": [
+            "Identity-like matrix coordinates produce the input coordinates translated by the matrix e and f components.",
+            "Zero or negative coordinate and matrix values are processed through the same affine formulas.",
+            "Non-finite numeric inputs are propagated through normal JavaScript arithmetic without explicit validation."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "No explicit input validation is performed; missing or non-numeric properties follow normal JavaScript property-access and arithmetic behavior.",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "Vec", "source": "imported vector type", "kind": "external" }],
+          "symbolReferences": ["MatLike", "VecLike", "Vec"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Applies the affine transformation represented by a MatLike to a VecLike point and returns the transformed point as a Vec.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Mat.applyToPoint(m, point) is called",
+              "then": "The returned Vec has x = 20 and y = 2.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "642ae95e75567794f97ae0f8e1f36c465577f47e2b764b3de9b8266a12e24425"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/primitives/Mat.ts__Mat.applyToPoints#method:Mat.applyToPoints",
+        "unitKind": "method",
+        "name": "applyToPoints",
+        "qualifiedName": "Mat.applyToPoints",
+        "parentUnitId": "packages/editor/src/lib/primitives/Mat.ts__Mat#class:Mat",
+        "startLine": 294,
+        "endLine": 299,
+        "isBehavioral": true,
+        "source": "\tstatic applyToBounds(m: MatLike, box: Box) {\n\t\treturn new Box(m.e + box.minX, m.f + box.minY, box.width, box.height)\n\t}\n\n\tstatic From(m: MatLike) {\n\t\treturn new Mat(m.a, m.b, m.c, m.d, m.e, m.f)",
+        "detail": {
+          "unitId": "packages/editor/src/lib/primitives/Mat.ts__Mat.applyToPoints#method:Mat.applyToPoints",
+          "fileId": "packages/editor/src/lib/primitives/Mat.ts__Mat.applyToPoints",
+          "unitKind": "method",
+          "name": "applyToPoints",
+          "qualifiedName": "Mat.applyToPoints",
+          "parentUnitId": "packages/editor/src/lib/primitives/Mat.ts__Mat#class:Mat",
+          "startLine": 294,
+          "endLine": 299,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "The supplied source excerpt does not include the implementation or signature of Mat.applyToPoints, so no verifiable behavioral contract can be established from the available evidence.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "c0a2f1515ce5f34e7d0ce5af7c0924e48c3d10fcc7fa540ccc170e327e5af4e9"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/primitives/Mat.ts__decomposeMatrix#function:decomposeMatrix",
+        "unitKind": "function",
+        "name": "decomposeMatrix",
+        "qualifiedName": "decomposeMatrix",
+        "parentUnitId": null,
+        "startLine": 315,
+        "endLine": 322,
+        "isBehavioral": true,
+        "source": "\t}\n}\n",
+        "detail": {
+          "unitId": "packages/editor/src/lib/primitives/Mat.ts__decomposeMatrix#function:decomposeMatrix",
+          "fileId": "packages/editor/src/lib/primitives/Mat.ts__decomposeMatrix",
+          "unitKind": "function",
+          "name": "decomposeMatrix",
+          "qualifiedName": "decomposeMatrix",
+          "parentUnitId": null,
+          "startLine": 315,
+          "endLine": 322,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Decomposes a matrix into constituent transform components.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "36b51b6c7da69dca059f6d556cd98652fefc9b8d5d5914f0b60589f7612fcfae"
+        }
+      }
+    ]
+  },
+  "out": [
+    "packages/editor/src/lib/primitives/Vec.ts",
+    "packages/editor/src/lib/primitives/Box.ts",
+    "packages/editor/src/lib/primitives/utils.ts"
+  ],
+  "in": [
+    "packages/editor/src/lib/exports/getSvgJsx.tsx",
+    "packages/editor/src/lib/primitives/Mat.test.ts",
+    "packages/editor/src/lib/primitives/geometry/Group2d.ts",
+    "packages/editor/src/lib/primitives/geometry/Geometry2d.test.ts",
+    "packages/editor/src/lib/primitives/geometry/Geometry2d.ts",
+    "packages/editor/src/lib/components/Shape.tsx",
+    "packages/editor/src/lib/editor/managers/SnapManager/BoundsSnaps.ts"
+  ],
+  "externals": [],
+  "impact": { "seeds": 19, "callers": 3, "impactedFiles": [] }
+}

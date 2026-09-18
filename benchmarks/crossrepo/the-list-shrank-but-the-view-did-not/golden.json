@@ -1,0 +1,60 @@
+{
+  "id": "xrepo-v6-21-the-list-shrank-but-the-view-did-not-medium",
+  "question": "A reactive projection of a collection in one of these libraries is maintained in place: when the underlying collection changes, the projection's existing slots are overwritten one by one and new slots are appended. Nothing removes slots. So the projection is correct whenever the collection grows or stays the same size and wrong whenever it shrinks - the tail of the previous, longer collection is still there, still reactive, and still rendered, and shrinking by more than one at a time leaves more than one stale entry behind. The bug is structural rather than arithmetic: the update path was written as 'assign each new item to a slot' rather than 'make the projection equal to the new collection'. The contract is that a projection must converge on the source in both directions, and that removals are as much a part of an update as insertions. Elsewhere in the folder that symmetry is explicit: one library's incremental builder records additions and removals as it goes and can still yield the whole, and another renders its collection through a keyed pass that drops the elements whose keys are gone. Which files update a projection without shrinking it, and which own the converge-in-both-directions contract they have to be brought in line with?",
+  "anchor": {
+    "repo": "query",
+    "pinned_commit": "46d7f02f1c7b9fcd3255082cc7103e8bfa3dab76",
+    "fix_pr": "https://github.com/TanStack/query/pull/11153",
+    "pr_number": 11153,
+    "pr_title": "fix(svelte-query): shrink useMutationState results",
+    "fix_merged": "2026-08-24",
+    "fix_merge_commit": "250050d863d3",
+    "parent_is_buggy": true
+  },
+  "counts": {
+    "min_repos": 3,
+    "min_files": 4
+  },
+  "repo_commits": {
+    "query": "46d7f02f1c7b9fcd3255082cc7103e8bfa3dab76",
+    "tldraw": "5590d14d8edd4faab7dc1177b6e1adb28876fd23",
+    "xyflow": "360f5b13e2bc6899ea06b4be1a49b068d86926cf"
+  },
+  "expected": [
+    {
+      "repo": "query",
+      "knowledgeId": "0c574639-1088-4233-a793-3a4397e6c431",
+      "files": [
+        "packages/svelte-query/src/useMutationState.svelte.ts",
+        "packages/svelte-query/src/containers.svelte.ts"
+      ]
+    },
+    {
+      "repo": "tldraw",
+      "knowledgeId": "91b23c56-1aee-5c86-a34b-c66f8970d025",
+      "files": ["packages/store/src/lib/IncrementalSetConstructor.ts"]
+    },
+    {
+      "repo": "xyflow",
+      "knowledgeId": "6f1f2a40-aa51-4fe1-b9d2-d33ee4571368",
+      "files": ["packages/react/src/container/NodeRenderer/index.tsx"]
+    }
+  ],
+  "grader_notes": {
+    "why_cross_repo": "ANCHOR (TanStack/query #11153, merged 2026-08-24 as 250050d863d3, AFTER the pinned commit 46d7f02f1c; 1/1 removed line live at the pin). containers.svelte.ts is the same package's reactive-container helper, patched post-pin by the sibling fix #11127 for the empty-array case (320ed25caca4) - the same 'grow-only' shape. Citations: tldraw's IncrementalSetConstructor records additions AND removals while retaining the whole; xyflow's NodeRenderer renders through a keyed pass so vanished keys drop out.",
+    "verification_method": "(1) Both query commits mined from `pin..origin/main`, pin-is-ancestor True; useMutationState.svelte.ts 1/1 live, containers.svelte.ts present at the pin (the sibling fix is pure addition, so it is included as context rather than as a removed-line-verified defect). (2) Citation paths confirmed at their pins. (3) Overlap check: 0 shared (repo,file) pairs. (4) MEDIUM by design: the svelte package is small and the defect is visible in the update loop itself.",
+    "difficulty_design": "Medium: 4 files / 3 repos; the anchor is a single short update loop and the citations are conceptually adjacent.",
+    "rejected_candidates": ""
+  },
+  "calibration": {
+    "probe": "claudecli_opus5_bare (Opus 5, Bash/Read/Grep/Glob over the pinned checkouts, sandbox-exec gold-blind, one fresh headless session)",
+    "date": "2026-09-10",
+    "recall": 0.75,
+    "precision": 0.111,
+    "returned": 27,
+    "gold": 4,
+    "cost_usd": 7.32,
+    "rule": "hard requires recall < 0.6; medium requires recall <= 0.8; above that the case is easy",
+    "label_from_probe": "medium"
+  }
+}

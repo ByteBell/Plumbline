@@ -1,0 +1,437 @@
+{
+  "schema": 2,
+  "kind": "file",
+  "repoName": "cal.diy",
+  "file": {
+    "relativePath": "packages/lib/checkRateLimitAndThrowError.ts",
+    "language": "typescript",
+    "sizeBytes": 2360,
+    "tokenCount": 590,
+    "model": "z-ai/glm-5.3-flash",
+    "analysedAt": "2026-09-04T19:30:27.345Z",
+    "module": {
+      "purpose": "Provides rate-limiting enforcement helpers for the Cal.com API. It wraps a generic rate limiter and, when limits are exceeded, either throws a tRPC TOO_MANY_REQUESTS error or, for SMS flows, locks the offending user or team in the database via Prisma.",
+      "summary": "This module defines two exported functions that enforce rate limits on API operations. checkRateLimitAndThrowError delegates to a shared rateLimiter with a configurable limiting type (defaulting to 'core'), optionally invokes an onRateLimiterResponse callback, and throws a TRPCError with code TOO_MANY_REQUESTS and a retry hint in seconds when the limit is exceeded. checkSMSRateLimit uses the same limiter with an 'sms' default type, but instead of throwing, it changes the SMS lock state of the identified user or team via the internal changeSMSLockState helper. That helper parses identifiers of the form 'sms:user:<id>' or 'sms:team:<id>', looks up the corresponding Prisma User or Team record (skipping entities already reviewed by an admin), and updates their smsLockState to LOCKED or REVIEW_NEEDED depending on the rate-limiting type.",
+      "businessContext": "Protects Cal.com's API and SMS-sending features from abuse by throttling excessive requests. SMS overuse can incur costs or spam; failing here means abuse protections and SMS lockdown safeguards stop working.",
+      "classes": [],
+      "functions": [
+        "checkRateLimitAndThrowError (~L9-29): Enforce rate limit and throw tRPC error when exceeded",
+        "checkSMSRateLimit (~L31-48): Rate limit SMS usage and lock user or team",
+        "changeSMSLockState (~L50-89): Update smsLockState on user or team via Prisma"
+      ],
+      "keywords": [
+        "rate limit",
+        "TRPCError",
+        "TOO_MANY_REQUESTS",
+        "SMSLockState",
+        "rateLimiter",
+        "identifier",
+        "Prisma",
+        "sms lock"
+      ],
+      "ontologyConcepts": [
+        "Rate limiting",
+        "Throttling",
+        "Error handling",
+        "Lock state transition",
+        "Identifier parsing"
+      ],
+      "businessEntities": ["User", "Team", "SMSLockState", "RateLimitHelper"],
+      "systemCapabilities": [
+        "Enforce API rate limits",
+        "Throw rate limit errors with retry hints",
+        "Lock users or teams on SMS abuse"
+      ],
+      "configDependencies": [],
+      "importsInternal": [
+        {
+          "spec": "./rateLimit",
+          "symbols": ["rateLimiter"],
+          "anchor": { "startLine": 6, "endLine": 7 },
+          "resolvedRelativePath": "packages/lib/rateLimit.ts",
+          "resolvedFileId": "packages/lib/rateLimit.ts",
+          "resolvedHint": "packages/lib/rateLimit.ts"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "@calcom/prisma",
+          "symbols": ["prisma"],
+          "package": "@calcom/prisma",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 1 }
+        },
+        {
+          "spec": "@calcom/prisma/enums",
+          "symbols": ["SMSLockState"],
+          "package": "@calcom/prisma",
+          "subpath": "enums",
+          "isBuiltin": false,
+          "anchor": { "startLine": 2, "endLine": 2 }
+        },
+        {
+          "spec": "@trpc/server",
+          "symbols": ["TRPCError"],
+          "package": "@trpc/server",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 4, "endLine": 4 }
+        }
+      ],
+      "sideEffects": { "io": [], "network": [], "env": [], "fs": [], "process": [], "mutationOfArg": [] },
+      "integrationSurface": [
+        { "kind": "table", "role": "consumes", "address": "prisma.user", "payloadRef": null, "rawKind": null },
+        { "kind": "table", "role": "consumes", "address": "prisma.team", "payloadRef": null, "rawKind": null }
+      ],
+      "contractsProvided": [
+        {
+          "name": "checkRateLimitAndThrowError",
+          "shape": "async function checkRateLimitAndThrowError({ rateLimitingType = \"core\", identifier, onRateLimiterResponse, opts }: RateLimitHelper): Promise<response>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "checkSMSRateLimit",
+          "shape": "async function checkSMSRateLimit({ rateLimitingType = \"sms\", identifier, onRateLimiterResponse, opts }: RateLimitHelper): Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "rateLimiter",
+          "shape": "rateLimiter()({ rateLimitingType, identifier, opts }) → { success, reset }",
+          "resolvedRelativePath": "packages/lib/rateLimit.ts",
+          "resolvedFileId": "packages/lib/rateLimit.ts"
+        },
+        {
+          "name": "RateLimitHelper",
+          "shape": "type RateLimitHelper = { rateLimitingType?: string; identifier: string; onRateLimiterResponse?: (response) => void; opts?: unknown }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "TRPCError",
+          "shape": "new TRPCError({ code: \"TOO_MANY_REQUESTS\", message: string })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "SMSLockState",
+          "shape": "enum SMSLockState { LOCKED, REVIEW_NEEDED }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "checkRateLimitAndThrowError",
+          "intent": "Check rate limit; throw TRPCError with retry seconds on failure",
+          "structureKind": "async",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 9, "endLine": 29 }
+        },
+        {
+          "name": "checkSMSRateLimit",
+          "intent": "Check SMS rate limit; lock user/team when exceeded",
+          "structureKind": "async",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 31, "endLine": 48 }
+        },
+        {
+          "name": "changeSMSLockState",
+          "intent": "Parse identifier and update SMS lock state via Prisma",
+          "structureKind": "branch",
+          "predicate": "identifier.startsWith(\"sms:user:\")",
+          "branchOutcomes": ["user path", "team path"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 50, "endLine": 89 }
+        }
+      ],
+      "representationFamily": "function-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "function",
+          "name": "checkRateLimitAndThrowError",
+          "signature": "export async function checkRateLimitAndThrowError({\n  rateLimitingType = \"core\",\n  identifier,\n  onRateLimiterResponse,\n  opts,\n}: RateLimitHelper) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 9, "endLine": 29 }
+        },
+        {
+          "kind": "function",
+          "name": "checkSMSRateLimit",
+          "signature": "export async function checkSMSRateLimit({\n  rateLimitingType = \"sms\",\n  identifier,\n  onRateLimiterResponse,\n  opts,\n}: RateLimitHelper) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 31, "endLine": 48 }
+        },
+        {
+          "kind": "function",
+          "name": "changeSMSLockState",
+          "signature": "async function changeSMSLockState(identifier: string, status: SMSLockState) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 50, "endLine": 89 }
+        }
+      ],
+      "typeShapes": [],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "identifier not starting with 'sms:user:' or 'sms:team:'",
+          "handled": false,
+          "behavior": "Falls into team branch with undefined teamId; Prisma update with undefined id fails",
+          "anchor": { "startLine": 53, "endLine": 88 }
+        },
+        {
+          "inputShape": "user/team already reviewed by admin (smsLockReviewedByAdmin true)",
+          "handled": true,
+          "behavior": "Skips updating smsLockState, returns early",
+          "anchor": { "startLine": 61, "endLine": 61 }
+        },
+        {
+          "inputShape": "reset timestamp earlier than Date.now()",
+          "handled": true,
+          "behavior": "Negative seconds computed via Math.floor, embedded in error message",
+          "anchor": { "startLine": 22, "endLine": 22 }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": "TRPCError code TOO_MANY_REQUESTS",
+          "caught": null,
+          "action": "Throw when rate limiter reports !success, with seconds-to-wait message",
+          "fallback": null,
+          "anchor": { "startLine": 23, "endLine": 26 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "schema",
+          "description": "Prisma User and Team models expose smsLockState and smsLockReviewedByAdmin fields",
+          "anchor": { "startLine": 60, "endLine": 87 }
+        },
+        {
+          "kind": "schema",
+          "description": "Identifier format is 'sms:user:<id>' or 'sms:team:<id>' with numeric suffix",
+          "anchor": { "startLine": 53, "endLine": 57 }
+        },
+        {
+          "kind": "caller",
+          "description": "RateLimitHelper provides identifier matching that prefix convention",
+          "anchor": { "startLine": 6, "endLine": 7 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "What rate limiting backends/config does rateLimiter() use?",
+          "affects": "section_map: rateLimiter behavior",
+          "anchor": { "startLine": 15, "endLine": 15 },
+          "resolution": null
+        },
+        {
+          "question": "Behavior when identifier matches neither sms:user: nor sms:team: prefixes?",
+          "affects": "edge_cases: team branch with undefined teamId",
+          "anchor": { "startLine": 53, "endLine": 57 },
+          "resolution": null
+        }
+      ],
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "throws-trpc-too-many-requests-on-limit",
+          "scenario": "When the rate limiter reports no remaining quota, the caller receives a TRPCError with TOO_MANY_REQUESTS code",
+          "given": ["rateLimiter resolves { success: false, reset: Date.now() + 5000 }"],
+          "when": "checkRateLimitAndThrowError({ identifier: 'k' })",
+          "then": "throws TRPCError with code 'TOO_MANY_REQUESTS' and message containing wait seconds",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins the error contract consumers rely on for rate-limited requests."
+        },
+        {
+          "testId": "passes-through-success-response",
+          "scenario": "When the rate limiter allows the request, the response is returned unchanged",
+          "given": ["rateLimiter resolves { success: true, reset: Date.now() }"],
+          "when": "checkRateLimitAndThrowError({ identifier: 'k' })",
+          "then": "resolves with the rateLimiter response object",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "on-rate-limiter-response-callback-invoked",
+          "scenario": "The onRateLimiterResponse callback is invoked with the raw limiter response in both success and failure cases",
+          "given": ["onRateLimiterResponse: spy"],
+          "when": "checkRateLimitAndThrowError({ identifier: 'k', onRateLimiterResponse: spy })",
+          "then": "spy called once with the limiter response",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "sms-lock-set-on-exceeded-user",
+          "scenario": "When an SMS rate limit is exceeded for a user identifier, the user's smsLockState is set to LOCKED",
+          "given": [
+            "rateLimiter resolves { success: false }",
+            "identifier 'sms:user:1', user 1 exists, smsLockReviewedByAdmin false"
+          ],
+          "when": "checkSMSRateLimit({ identifier: 'sms:user:1' })",
+          "then": "prisma user updated with smsLockState LOCKED",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "review-needed-for-non-default-type",
+          "scenario": "A non-'sms' rateLimitingType yields REVIEW_NEEDED instead of LOCKED",
+          "given": ["rateLimiter resolves { success: false }", "identifier 'sms:user:1'"],
+          "when": "checkSMSRateLimit({ identifier: 'sms:user:1', rateLimitingType: 'global' })",
+          "then": "user updated with smsLockState REVIEW_NEEDED",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "sms-lock-skipped-for-admin-reviewed",
+          "scenario": "Users already reviewed by an admin are not re-locked",
+          "given": ["rateLimiter resolves { success: false }", "user 1 has smsLockReviewedByAdmin true"],
+          "when": "checkSMSRateLimit({ identifier: 'sms:user:1' })",
+          "then": "no prisma user update is performed",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Guards against overwriting an admin's manual review decision."
+        },
+        {
+          "testId": "team-identifier-locks-team",
+          "scenario": "Team identifiers target the team table instead of users",
+          "given": ["rateLimiter resolves { success: false }", "identifier 'sms:team:2', team 2 exists"],
+          "when": "checkSMSRateLimit({ identifier: 'sms:team:2' })",
+          "then": "prisma team updated with smsLockState LOCKED, no user update",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "sms-success-no-lock",
+          "scenario": "No lock state changes when the SMS limiter succeeds",
+          "given": ["rateLimiter resolves { success: true }"],
+          "when": "checkSMSRateLimit({ identifier: 'sms:user:1' })",
+          "then": "resolves without any prisma update and does not throw",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "import { prisma } from \"@calcom/prisma\";",
+        "import { SMSLockState } from \"@calcom/prisma/enums\";",
+        "import { TRPCError } from \"@trpc/server\";",
+        "import type { RateLimitHelper } from \"./rateLimit\";",
+        "import { rateLimiter } from \"./rateLimit\";",
+        "checkRateLimitAndThrowError",
+        "checkSMSRateLimit",
+        "changeSMSLockState"
+      ],
+      "moduleLevelCode": "import { prisma } from \"@calcom/prisma\";\nimport { SMSLockState } from \"@calcom/prisma/enums\";\n\nimport { TRPCError } from \"@trpc/server\";\n\nimport type { RateLimitHelper } from \"./rateLimit\";\nimport { rateLimiter } from \"./rateLimit\";",
+      "exports": [
+        { "name": "checkRateLimitAndThrowError", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "checkSMSRateLimit", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "prisma", "module": "@calcom/prisma", "alias": null, "kind": "external" },
+        { "symbol": "SMSLockState", "module": "@calcom/prisma/enums", "alias": null, "kind": "external" },
+        { "symbol": "TRPCError", "module": "@trpc/server", "alias": null, "kind": "external" },
+        { "symbol": "RateLimitHelper", "module": "./rateLimit", "alias": null, "kind": "internal" },
+        { "symbol": "rateLimiter", "module": "./rateLimit", "alias": null, "kind": "internal" }
+      ],
+      "fileConstants": [],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/lib/checkRateLimitAndThrowError.ts__checkRateLimitAndThrowError_1#function:checkRateLimitAndThrowError",
+        "unitKind": "function",
+        "name": "checkRateLimitAndThrowError",
+        "qualifiedName": "checkRateLimitAndThrowError",
+        "parentUnitId": null,
+        "startLine": 9,
+        "endLine": 29,
+        "isBehavioral": true,
+        "source": "export async function checkRateLimitAndThrowError({\n  rateLimitingType = \"core\",\n  identifier,\n  onRateLimiterResponse,\n  opts,\n}: RateLimitHelper) {\n  const response = await rateLimiter()({ rateLimitingType, identifier, opts });\n  const { success, reset } = response;\n\n  if (onRateLimiterResponse) onRateLimiterResponse(response);\n\n  if (!success) {\n    const convertToSeconds = (ms: number) => Math.floor(ms / 1000);\n    const secondsToWait = convertToSeconds(reset - Date.now());\n    throw new TRPCError({\n      code: \"TOO_MANY_REQUESTS\",\n      message: `Rate limit exceeded. Try again in ${secondsToWait} seconds.`,\n    });\n  }\n  return response;\n}"
+      },
+      {
+        "unitId": "packages/lib/checkRateLimitAndThrowError.ts__checkSMSRateLimit_2#function:checkSMSRateLimit",
+        "unitKind": "function",
+        "name": "checkSMSRateLimit",
+        "qualifiedName": "checkSMSRateLimit",
+        "parentUnitId": null,
+        "startLine": 31,
+        "endLine": 48,
+        "isBehavioral": true,
+        "source": "export async function checkSMSRateLimit({\n  rateLimitingType = \"sms\",\n  identifier,\n  onRateLimiterResponse,\n  opts,\n}: RateLimitHelper) {\n  const response = await rateLimiter()({ rateLimitingType, identifier, opts });\n  const { success } = response;\n\n  if (onRateLimiterResponse) onRateLimiterResponse(response);\n\n  if (!success) {\n    await changeSMSLockState(\n      identifier,\n      rateLimitingType === \"sms\" ? SMSLockState.LOCKED : SMSLockState.REVIEW_NEEDED\n    );\n  }\n}"
+      },
+      {
+        "unitId": "packages/lib/checkRateLimitAndThrowError.ts__changeSMSLockState_3#function:changeSMSLockState",
+        "unitKind": "function",
+        "name": "changeSMSLockState",
+        "qualifiedName": "changeSMSLockState",
+        "parentUnitId": null,
+        "startLine": 50,
+        "endLine": 89,
+        "isBehavioral": true,
+        "source": "async function changeSMSLockState(identifier: string, status: SMSLockState) {\n  let userId, teamId;\n\n  if (identifier.startsWith(\"sms:user:\")) {\n    userId = Number(identifier.slice(9));\n  } else if (identifier.startsWith(\"sms:team:\")) {\n    teamId = Number(identifier.slice(9));\n  }\n\n  if (userId) {\n    const user = await prisma.user.findUnique({ where: { id: userId, profiles: { none: {} } } });\n    if (user?.smsLockReviewedByAdmin) return;\n\n    await prisma.user.update({\n      where: {\n        id: userId,\n        profiles: { none: {} },\n      },\n      data: {\n        smsLockState: status,\n      },\n    });\n  } else {\n    const team = await prisma.team.findUnique({\n      where: { id: teamId, parentId: null, isOrganization: false },\n    });\n    if (team?.smsLockReviewedByAdmin) return;\n\n    await prisma.team.update({\n      where: {\n        id: teamId,\n        parentId: null,\n        isOrganization: false,\n      },\n      data: {\n        smsLockState: status,\n      },\n    });\n  }\n}"
+      }
+    ]
+  },
+  "out": ["packages/lib/rateLimit.ts"],
+  "in": [
+    "packages/sms/test/sms-manager.test.ts",
+    "packages/trpc/server/routers/loggedInViewer/addSecondaryEmail.handler.ts",
+    "packages/features/auth/lib/verifyEmail.ts",
+    "packages/features/auth/lib/next-auth-options.ts",
+    "packages/features/ee/workflows/lib/reminders/reminderScheduler.ts",
+    "packages/features/routing-forms/lib/getRoutedUrl.test.ts",
+    "packages/features/routing-forms/lib/getRoutedUrl.ts",
+    "packages/features/tasker/tasks/executeAIPhoneCall.ts",
+    "packages/lib/checkRateLimitAndThrowError.test.ts",
+    "apps/web/app/api/auth/forgot-password/route.ts"
+  ],
+  "externals": ["@calcom/prisma", "@calcom/prisma/enums", "@trpc/server"],
+  "impact": {
+    "seeds": 3,
+    "callers": 14,
+    "impactedFiles": [
+      "packages/sms/test/sms-manager.test.ts",
+      "packages/features/auth/lib/verifyEmail.ts",
+      "packages/features/routing-forms/lib/getRoutedUrl.test.ts",
+      "packages/features/tasker/tasks/executeAIPhoneCall.ts",
+      "packages/trpc/server/routers/loggedInViewer/addSecondaryEmail.handler.ts",
+      "packages/features/routing-forms/lib/getRoutedUrl.ts",
+      "apps/web/app/api/auth/forgot-password/route.ts",
+      "packages/features/auth/lib/next-auth-options.ts"
+    ]
+  }
+}

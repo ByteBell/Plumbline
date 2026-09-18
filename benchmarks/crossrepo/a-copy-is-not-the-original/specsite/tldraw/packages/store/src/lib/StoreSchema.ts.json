@@ -1,0 +1,2151 @@
+{
+  "schema": 2,
+  "kind": "file",
+  "repoName": "tldraw",
+  "file": {
+    "relativePath": "packages/store/src/lib/StoreSchema.ts",
+    "language": "typescript",
+    "sizeBytes": 25636,
+    "tokenCount": 6408,
+    "model": "us.openai.gpt-5.6-luna",
+    "analysedAt": "2026-08-24T12:22:15.641Z",
+    "module": {
+      "purpose": "Defines the store schema model, serialized schema formats, record validation, migration planning, persistence migration, and schema serialization for the store subsystem.",
+      "summary": "This module provides the central schema authority for typed records and migration sequences. It supports legacy and current serialized schema formats, upgrades legacy schemas, validates records with optional recovery callbacks, caches migration plans, migrates individual records or complete storage backends, removes non-document records during storage migration, and exposes current or earliest schema versions. The main class coordinates record definitions, migration ordering, integrity-checker setup, and persistence-facing schema operations.",
+      "businessContext": "Supports versioned persistence for collaborative document stores and protects data across application upgrades. Failures can prevent stored documents from loading, migrate records incorrectly, or leave storage inconsistent.",
+      "classes": [
+        "StoreSchema (~L284-739): Central schema authority for validation, migration planning, and persistence upgrades"
+      ],
+      "functions": [
+        "upgradeSchema (~L142-163): Converts legacy version-one schema metadata into unified version-two sequences",
+        "create (~L317-329): Constructs a schema from record type definitions and options",
+        "validateRecord (~L366-390): Validates a record and optionally delegates recovery to a failure handler",
+        "getMigrationsSince (~L417-432): Retrieves or caches migrations required from a persisted schema",
+        "computeMigrationsSince (~L434-485): Computes applicable migrations from persisted sequence versions",
+        "migratePersistedRecord (~L510-562): Applies record migrations in the requested direction",
+        "migrateStorage (~L564-646): Applies migrations directly to synchronous storage and removes transient records",
+        "migrateStoreSnapshot (~L672-721): Migrates a serialized store snapshot with optional input mutation",
+        "createIntegrityChecker (~L738-740): Creates an optional configured store integrity checker",
+        "serialize (~L768-780): Serializes current migration sequence versions",
+        "serializeEarliestVersion (~L797-805): Serializes all migration sequences at version zero",
+        "getType (~L823-827): Retrieves a registered record type by name"
+      ],
+      "keywords": [
+        "schema migration",
+        "serialized schema",
+        "record validation",
+        "retroactive migration",
+        "migration sequence",
+        "synchronous storage",
+        "record type",
+        "schema versioning",
+        "integrity checker",
+        "store snapshot"
+      ],
+      "ontologyConcepts": [
+        "schema evolution",
+        "data migration",
+        "record validation",
+        "version compatibility",
+        "failure recovery",
+        "persistence integrity",
+        "cache",
+        "legacy support"
+      ],
+      "businessEntities": ["Store", "Record", "RecordType", "Migration", "Schema", "StoreSnapshot", "Storage"],
+      "systemCapabilities": [
+        "Validate typed store records",
+        "Plan schema migrations",
+        "Migrate persisted records",
+        "Migrate complete storage backends",
+        "Serialize schema versions",
+        "Configure integrity checking"
+      ],
+      "configDependencies": [],
+      "importsInternal": [
+        {
+          "spec": "./BaseRecord",
+          "symbols": ["UnknownRecord"],
+          "anchor": { "startLine": 10, "endLine": 10 },
+          "resolvedRelativePath": "packages/store/src/lib/BaseRecord.ts",
+          "resolvedFileId": "packages/store/src/lib/BaseRecord.ts",
+          "resolvedHint": "packages/store/src/lib/BaseRecord.ts"
+        },
+        {
+          "spec": "./devFreeze",
+          "symbols": ["devFreeze"],
+          "anchor": { "startLine": 11, "endLine": 11 },
+          "resolvedRelativePath": "packages/store/src/lib/devFreeze.ts",
+          "resolvedFileId": "packages/store/src/lib/devFreeze.ts",
+          "resolvedHint": "packages/store/src/lib/devFreeze.ts"
+        },
+        {
+          "spec": "./migrate",
+          "symbols": [
+            "Migration",
+            "MigrationFailureReason",
+            "MigrationId",
+            "MigrationResult",
+            "MigrationSequence",
+            "parseMigrationId",
+            "sortMigrations",
+            "SynchronousStorage",
+            "validateMigrations"
+          ],
+          "anchor": { "startLine": 12, "endLine": 22 },
+          "resolvedRelativePath": "packages/store/src/lib/migrate.ts",
+          "resolvedFileId": "packages/store/src/lib/migrate.ts",
+          "resolvedHint": "packages/store/src/lib/migrate.ts"
+        },
+        {
+          "spec": "./RecordType",
+          "symbols": ["RecordType"],
+          "anchor": { "startLine": 23, "endLine": 23 },
+          "resolvedRelativePath": "packages/store/src/lib/RecordType.ts",
+          "resolvedFileId": "packages/store/src/lib/RecordType.ts",
+          "resolvedHint": "packages/store/src/lib/RecordType.ts"
+        },
+        {
+          "spec": "./Store",
+          "symbols": ["SerializedStore", "Store", "StoreSnapshot"],
+          "anchor": { "startLine": 24, "endLine": 24 },
+          "resolvedRelativePath": "packages/store/src/lib/Store.ts",
+          "resolvedFileId": "packages/store/src/lib/Store.ts",
+          "resolvedHint": "packages/store/src/lib/Store.ts"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "@tldraw/utils",
+          "symbols": [
+            "assert",
+            "exhaustiveSwitchError",
+            "getOwnProperty",
+            "isEqual",
+            "objectMapEntries",
+            "Result",
+            "structuredClone"
+          ],
+          "package": "@tldraw/utils",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 9 }
+        }
+      ],
+      "sideEffects": {
+        "io": ["Logs migration failures and validation-related migration errors to the console."],
+        "network": [],
+        "env": [],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": [
+          "Optionally mutates the input store snapshot when migrateStoreSnapshot receives mutateInputStore: true.",
+          "Mutates synchronous storage through setSchema, set, and delete during migration."
+        ]
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "SerializedSchemaV1",
+          "shape": "interface SerializedSchemaV1 { schemaVersion: 1; storeVersion: number; recordVersions: Record<string, { version: number } | { version: number; subTypeVersions: Record<string, number>; subTypeKey: string }> }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "SerializedSchemaV2",
+          "shape": "interface SerializedSchemaV2 { schemaVersion: 2; sequences: { [sequenceId: string]: number } }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "SerializedSchema",
+          "shape": "type SerializedSchema = SerializedSchemaV1 | SerializedSchemaV2",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "upgradeSchema",
+          "shape": "function upgradeSchema(schema: SerializedSchema): Result<SerializedSchemaV2, string>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "StoreValidationFailure",
+          "shape": "interface StoreValidationFailure<R extends UnknownRecord> { error: unknown; store: Store<R>; record: R; phase: 'initialize' | 'createRecord' | 'updateRecord' | 'tests'; recordBefore: R | null }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "StoreSchemaOptions",
+          "shape": "interface StoreSchemaOptions<R extends UnknownRecord, P> { migrations?: MigrationSequence[]; onValidationFailure?(data: StoreValidationFailure<R>): R; createIntegrityChecker?(store: Store<R, P>): void }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "StoreSchema",
+          "shape": "class StoreSchema<R extends UnknownRecord, P = unknown>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "UnknownRecord",
+          "shape": "UnknownRecord",
+          "resolvedRelativePath": "packages/store/src/lib/BaseRecord.ts",
+          "resolvedFileId": "packages/store/src/lib/BaseRecord.ts"
+        },
+        {
+          "name": "RecordType",
+          "shape": "RecordType<R, any>",
+          "resolvedRelativePath": "packages/store/src/lib/RecordType.ts",
+          "resolvedFileId": "packages/store/src/lib/RecordType.ts"
+        },
+        {
+          "name": "MigrationSequence",
+          "shape": "MigrationSequence[]",
+          "resolvedRelativePath": "packages/store/src/lib/migrate.ts",
+          "resolvedFileId": "packages/store/src/lib/migrate.ts"
+        },
+        {
+          "name": "Migration",
+          "shape": "Migration[]",
+          "resolvedRelativePath": "packages/store/src/lib/migrate.ts",
+          "resolvedFileId": "packages/store/src/lib/migrate.ts"
+        },
+        {
+          "name": "MigrationResult",
+          "shape": "MigrationResult<R>",
+          "resolvedRelativePath": "packages/store/src/lib/migrate.ts",
+          "resolvedFileId": "packages/store/src/lib/migrate.ts"
+        },
+        {
+          "name": "SynchronousStorage",
+          "shape": "SynchronousStorage<R>",
+          "resolvedRelativePath": "packages/store/src/lib/migrate.ts",
+          "resolvedFileId": "packages/store/src/lib/migrate.ts"
+        },
+        {
+          "name": "SerializedSchema",
+          "shape": "SerializedSchema",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "Store",
+          "shape": "Store<R, P>",
+          "resolvedRelativePath": "packages/store/src/lib/Store.ts",
+          "resolvedFileId": "packages/store/src/lib/Store.ts"
+        },
+        {
+          "name": "StoreSnapshot",
+          "shape": "StoreSnapshot<R>",
+          "resolvedRelativePath": "packages/store/src/lib/Store.ts",
+          "resolvedFileId": "packages/store/src/lib/Store.ts"
+        },
+        {
+          "name": "SerializedStore",
+          "shape": "SerializedStore<R>",
+          "resolvedRelativePath": "packages/store/src/lib/Store.ts",
+          "resolvedFileId": "packages/store/src/lib/Store.ts"
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "schema-upgrade",
+          "intent": "Rejects unsupported versions and converts legacy schema metadata.",
+          "structureKind": "branch",
+          "predicate": "schema.schemaVersion > 2 || schema.schemaVersion < 1",
+          "branchOutcomes": ["bad schema version", "already version two", "upgrade version one"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 142, "endLine": 163 }
+        },
+        {
+          "name": "constructor-migration-registration",
+          "intent": "Validates, indexes, sorts, and dependency-checks configured migrations.",
+          "structureKind": "loop",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": "options.migrations ?? []",
+          "terminationCondition": null,
+          "anchor": { "startLine": 340, "endLine": 363 }
+        },
+        {
+          "name": "record-validation",
+          "intent": "Resolves a record type and validates the record with recovery handling.",
+          "structureKind": "try",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 366, "endLine": 390 }
+        },
+        {
+          "name": "migration-planning",
+          "intent": "Determines shared and retroactive migrations and returns sorted applicable steps.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 434, "endLine": 485 }
+        },
+        {
+          "name": "record-migration",
+          "intent": "Clones records and applies filtered migrations forward or backward.",
+          "structureKind": "loop",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": "migrationsToApply",
+          "terminationCondition": null,
+          "anchor": { "startLine": 510, "endLine": 562 }
+        },
+        {
+          "name": "storage-migration",
+          "intent": "Applies record, store, and storage migrations before deleting non-document records.",
+          "structureKind": "branch",
+          "predicate": "migration.scope === 'record'",
+          "branchOutcomes": ["record migration", "store migration", "storage migration", "exhaustive failure"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 564, "endLine": 646 }
+        },
+        {
+          "name": "snapshot-migration",
+          "intent": "Wraps snapshot data in temporary storage and optionally writes results back.",
+          "structureKind": "try",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 672, "endLine": 721 }
+        },
+        {
+          "name": "schema-serialization",
+          "intent": "Produces current or earliest serialized sequence version metadata.",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 768, "endLine": 805 }
+        }
+      ],
+      "representationFamily": "state-machine",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "interface",
+          "name": "SerializedSchemaV1",
+          "signature": "export interface SerializedSchemaV1",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 43, "endLine": 43 }
+        },
+        {
+          "kind": "interface",
+          "name": "SerializedSchemaV2",
+          "signature": "export interface SerializedSchemaV2",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 86, "endLine": 86 }
+        },
+        {
+          "kind": "type",
+          "name": "SerializedSchema",
+          "signature": "export type SerializedSchema = SerializedSchemaV1 | SerializedSchemaV2",
+          "generics": null,
+          "decorators": [],
+          "returnType": "SerializedSchemaV1 | SerializedSchemaV2",
+          "exported": true,
+          "anchor": { "startLine": 112, "endLine": 112 }
+        },
+        {
+          "kind": "function",
+          "name": "upgradeSchema",
+          "signature": "export function upgradeSchema(schema: SerializedSchema): Result<SerializedSchemaV2, string>",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Result<SerializedSchemaV2, string>",
+          "exported": true,
+          "anchor": { "startLine": 142, "endLine": 142 }
+        },
+        {
+          "kind": "interface",
+          "name": "StoreValidationFailure",
+          "signature": "export interface StoreValidationFailure<R extends UnknownRecord>",
+          "generics": "<R extends UnknownRecord>",
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 194, "endLine": 194 }
+        },
+        {
+          "kind": "interface",
+          "name": "StoreSchemaOptions",
+          "signature": "export interface StoreSchemaOptions<R extends UnknownRecord, P>",
+          "generics": "<R extends UnknownRecord, P>",
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 232, "endLine": 232 }
+        },
+        {
+          "kind": "class",
+          "name": "StoreSchema",
+          "signature": "export class StoreSchema<R extends UnknownRecord, P = unknown>",
+          "generics": "<R extends UnknownRecord, P = unknown>",
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 284, "endLine": 829 }
+        },
+        {
+          "kind": "method",
+          "name": "create",
+          "signature": "static create<R extends UnknownRecord, P = unknown>(",
+          "generics": "<R extends UnknownRecord, P = unknown>",
+          "decorators": [],
+          "returnType": "StoreSchema<R, P>",
+          "exported": true,
+          "anchor": { "startLine": 317, "endLine": 329 }
+        },
+        {
+          "kind": "method",
+          "name": "validateRecord",
+          "signature": "validateRecord(",
+          "generics": null,
+          "decorators": [],
+          "returnType": "R",
+          "exported": true,
+          "anchor": { "startLine": 366, "endLine": 390 }
+        },
+        {
+          "kind": "method",
+          "name": "getMigrationsSince",
+          "signature": "public getMigrationsSince(persistedSchema: SerializedSchema): Result<Migration[], string>",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Result<Migration[], string>",
+          "exported": true,
+          "anchor": { "startLine": 417, "endLine": 432 }
+        },
+        {
+          "kind": "method",
+          "name": "migratePersistedRecord",
+          "signature": "migratePersistedRecord(",
+          "generics": null,
+          "decorators": [],
+          "returnType": "MigrationResult<R>",
+          "exported": true,
+          "anchor": { "startLine": 510, "endLine": 562 }
+        },
+        {
+          "kind": "method",
+          "name": "migrateStorage",
+          "signature": "migrateStorage(storage: SynchronousStorage<R>)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 564, "endLine": 646 }
+        },
+        {
+          "kind": "method",
+          "name": "migrateStoreSnapshot",
+          "signature": "migrateStoreSnapshot(",
+          "generics": null,
+          "decorators": [],
+          "returnType": "MigrationResult<SerializedStore<R>>",
+          "exported": true,
+          "anchor": { "startLine": 672, "endLine": 721 }
+        },
+        {
+          "kind": "method",
+          "name": "createIntegrityChecker",
+          "signature": "createIntegrityChecker(store: Store<R, P>): (() => void) | undefined",
+          "generics": null,
+          "decorators": [],
+          "returnType": "(() => void) | undefined",
+          "exported": true,
+          "anchor": { "startLine": 738, "endLine": 740 }
+        },
+        {
+          "kind": "method",
+          "name": "serialize",
+          "signature": "serialize(): SerializedSchemaV2",
+          "generics": null,
+          "decorators": [],
+          "returnType": "SerializedSchemaV2",
+          "exported": true,
+          "anchor": { "startLine": 768, "endLine": 780 }
+        },
+        {
+          "kind": "method",
+          "name": "serializeEarliestVersion",
+          "signature": "serializeEarliestVersion(): SerializedSchema",
+          "generics": null,
+          "decorators": [],
+          "returnType": "SerializedSchema",
+          "exported": true,
+          "anchor": { "startLine": 797, "endLine": 805 }
+        },
+        {
+          "kind": "method",
+          "name": "getType",
+          "signature": "getType(typeName: string)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 823, "endLine": 827 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "interface",
+          "name": "SerializedSchemaV1",
+          "shape": "{\n\t/** Schema version is the version for this type you're looking at right now */\n\tschemaVersion: 1\n\t/**\n\t * Store version is the version for the structure of the store. e.g. higher level structure like\n\t * removing or renaming a record type.\n\t */\n\tstoreVersion: number\n\t/** Record versions are the versions for each record type. e.g. adding a new field to a record */\n\trecordVersions: Record<\n\t\tstring,\n\t\t| {\n\t\t\t\tversion: number\n\t\t  }\n\t\t| {\n\t\t\t\t// subtypes are used for migrating shape and asset props\n\t\t\t\tversion: number\n\t\t\t\tsubTypeVersions: Record<string, number>\n\t\t\t\tsubTypeKey: string\n\t\t  }\n\t>\n}",
+          "discriminant": "schemaVersion",
+          "anchor": { "startLine": 43, "endLine": 69 }
+        },
+        {
+          "kind": "interface",
+          "name": "SerializedSchemaV2",
+          "shape": "{\n\tschemaVersion: 2\n\tsequences: {\n\t\t[sequenceId: string]: number\n\t}\n}",
+          "discriminant": "schemaVersion",
+          "anchor": { "startLine": 86, "endLine": 92 }
+        },
+        {
+          "kind": "union",
+          "name": "SerializedSchema",
+          "shape": "SerializedSchemaV1 | SerializedSchemaV2",
+          "discriminant": "schemaVersion",
+          "anchor": { "startLine": 112, "endLine": 112 }
+        },
+        {
+          "kind": "interface",
+          "name": "StoreValidationFailure",
+          "shape": "{\n\terror: unknown\n\tstore: Store<R>\n\trecord: R\n\tphase: 'initialize' | 'createRecord' | 'updateRecord' | 'tests'\n\trecordBefore: R | null\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 194, "endLine": 201 }
+        },
+        {
+          "kind": "interface",
+          "name": "StoreSchemaOptions",
+          "shape": "{\n\tmigrations?: MigrationSequence[]\n\t/** @public */\n\tonValidationFailure?(data: StoreValidationFailure<R>): R\n\t/** @internal */\n\tcreateIntegrityChecker?(store: Store<R, P>): void\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 232, "endLine": 238 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "schemaVersion outside the supported range",
+          "handled": true,
+          "behavior": "Returns a Result error with Bad schema version.",
+          "anchor": { "startLine": 143, "endLine": 143 }
+        },
+        {
+          "inputShape": "legacy version-one serialized schema",
+          "handled": true,
+          "behavior": "Converts store, record, and subtype versions into unified sequence identifiers.",
+          "anchor": { "startLine": 144, "endLine": 163 }
+        },
+        {
+          "inputShape": "record with no registered type",
+          "handled": true,
+          "behavior": "Throws internally and either invokes onValidationFailure or rethrows.",
+          "anchor": { "startLine": 372, "endLine": 389 }
+        },
+        {
+          "inputShape": "persisted schema requiring no migrations",
+          "handled": true,
+          "behavior": "Returns an empty migration list or the unchanged record/store.",
+          "anchor": { "startLine": 470, "endLine": 472 }
+        },
+        {
+          "inputShape": "persisted sequence version absent from configured migration sequence",
+          "handled": true,
+          "behavior": "Returns an Incompatible schema? Result error.",
+          "anchor": { "startLine": 477, "endLine": 480 }
+        },
+        {
+          "inputShape": "downward migration without down functions",
+          "handled": true,
+          "behavior": "Returns TargetVersionTooOld.",
+          "anchor": { "startLine": 535, "endLine": 541 }
+        },
+        {
+          "inputShape": "migration failure during record or store migration",
+          "handled": true,
+          "behavior": "Logs the error and returns MigrationError.",
+          "anchor": { "startLine": 555, "endLine": 560 }
+        },
+        {
+          "inputShape": "non-document records in storage",
+          "handled": true,
+          "behavior": "Collects and deletes them after all migrations complete.",
+          "anchor": { "startLine": 635, "endLine": 646 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": ">",
+          "left": "schema.schemaVersion",
+          "right": "2",
+          "inclusive": false,
+          "intent": "Rejects schema versions newer than the supported format.",
+          "anchor": { "startLine": 143, "endLine": 143 }
+        },
+        {
+          "operator": "<",
+          "left": "schema.schemaVersion",
+          "right": "1",
+          "inclusive": false,
+          "intent": "Rejects schema versions older than the supported legacy format.",
+          "anchor": { "startLine": 143, "endLine": 143 }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": "new Error(`Missing definition for record type ${record.typeName}`)",
+          "caught": "unknown validation or record-type error",
+          "action": "Invokes onValidationFailure when configured; otherwise rethrows.",
+          "fallback": null,
+          "anchor": { "startLine": 372, "endLine": 389 }
+        },
+        {
+          "thrown": null,
+          "caught": "migration planning Result error",
+          "action": "Logs the error and returns MigrationError.",
+          "fallback": "{ type: 'error', reason: MigrationFailureReason.MigrationError }",
+          "anchor": { "startLine": 516, "endLine": 520 }
+        },
+        {
+          "thrown": null,
+          "caught": "migration scope incompatibility",
+          "action": "Returns a direction-specific target-version error.",
+          "fallback": "{ type: 'error', reason: MigrationFailureReason.TargetVersionTooNew } or TargetVersionTooOld",
+          "anchor": { "startLine": 525, "endLine": 533 }
+        },
+        {
+          "thrown": "new Error(/* won't happen, just for TS */)",
+          "caught": "migration execution exception",
+          "action": "Logs the error and returns MigrationError.",
+          "fallback": "{ type: 'error', reason: MigrationFailureReason.MigrationError }",
+          "anchor": { "startLine": 548, "endLine": 560 }
+        },
+        {
+          "thrown": "new Error(migrations.error)",
+          "caught": null,
+          "action": "Logs the storage migration error and aborts migration.",
+          "fallback": null,
+          "anchor": { "startLine": 569, "endLine": 573 }
+        },
+        {
+          "thrown": null,
+          "caught": "store snapshot migration exception",
+          "action": "Logs the error and returns MigrationError.",
+          "fallback": "{ type: 'error', reason: MigrationFailureReason.MigrationError }",
+          "anchor": { "startLine": 716, "endLine": 720 }
+        }
+      ],
+      "invariants": [
+        {
+          "kind": "invariant",
+          "description": "Migration sequence identifiers are unique within a schema.",
+          "anchor": { "startLine": 343, "endLine": 345 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Configured migrations are validated and sorted before migration planning.",
+          "anchor": { "startLine": 346, "endLine": 348 }
+        },
+        {
+          "kind": "ordering",
+          "description": "Returned migrations preserve the globally sorted migration order.",
+          "anchor": { "startLine": 483, "endLine": 485 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "Successful record migration returns a cloned or migrated record rather than the original input.",
+          "anchor": { "startLine": 544, "endLine": 562 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Storage migration updates records after collecting iteration results to avoid live-iterator corruption.",
+          "anchor": { "startLine": 581, "endLine": 598 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Serialized schemas always use schemaVersion 2.",
+          "anchor": { "startLine": 769, "endLine": 779 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "Callers provide records whose typeName corresponds to a registered record type.",
+          "anchor": { "startLine": 366, "endLine": 377 }
+        },
+        {
+          "kind": "caller",
+          "description": "Callers provide a synchronous storage implementation with schema, entry, set, and delete operations.",
+          "anchor": { "startLine": 564, "endLine": 573 }
+        },
+        {
+          "kind": "schema",
+          "description": "Migration identifiers and persisted sequence versions follow the format expected by parseMigrationId.",
+          "anchor": { "startLine": 477, "endLine": 480 }
+        },
+        {
+          "kind": "init-order",
+          "description": "Migration dependencies must be registered in the configured migration sequences before schema construction completes.",
+          "anchor": { "startLine": 350, "endLine": 363 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "What exact persistence guarantees are provided by each SynchronousStorage implementation when migration operations partially fail?",
+          "affects": "migrateStorage error recovery and transactional behavior",
+          "anchor": { "startLine": 564, "endLine": 646 },
+          "resolution": null
+        },
+        {
+          "question": "What external consumers rely on the legacy store-scope migration path and non-document cleanup?",
+          "affects": "legacy migration compatibility and cleanup behavior",
+          "anchor": { "startLine": 599, "endLine": 646 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "sync",
+        "reentrant": true,
+        "ordering": "deterministic",
+        "notes": "All operations are synchronous. Migration planning is cached by persisted schema object identity; storage mutation is performed sequentially."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "upgrades-v1-schema-to-v2",
+          "scenario": "A version 1 schema with store, record, and subtype versions is upgraded to unified sequence identifiers.",
+          "given": [
+            "schema.schemaVersion === 1",
+            "schema.storeVersion === 1",
+            "schema.recordVersions.book.version === 2",
+            "schema.recordVersions.author.subTypeVersions.fiction === 1"
+          ],
+          "when": "upgradeSchema(schema)",
+          "then": "result.ok === true && result.value.schemaVersion === 2 && result.value.sequences['com.tldraw.store'] === 1 && result.value.sequences['com.tldraw.book'] === 2 && result.value.sequences['com.tldraw.author.fiction'] === 1",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins the legacy-to-current schema mapping, including subtype sequence naming."
+        },
+        {
+          "testId": "rejects-invalid-schema-version",
+          "scenario": "A schema with a version outside the supported range is rejected.",
+          "given": ["schema.schemaVersion > 2 || schema.schemaVersion < 1"],
+          "when": "upgradeSchema(schema)",
+          "then": "result.ok === false && result.error === 'Bad schema version'",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Prevents unsupported persisted schema versions from being interpreted."
+        },
+        {
+          "testId": "returns-validated-record",
+          "scenario": "A record matching its registered record type is validated and returned.",
+          "given": ["schema.types[record.typeName] exists", "recordBefore === null"],
+          "when": "schema.validateRecord(store, record, 'createRecord', recordBefore)",
+          "then": "the returned value is the result of the registered record type's validate call",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins delegation to the record-specific validator."
+        },
+        {
+          "testId": "recovers-validation-failure",
+          "scenario": "A record validation failure is passed to the configured recovery handler.",
+          "given": ["schema.options.onValidationFailure is configured", "recordType.validate throws"],
+          "when": "schema.validateRecord(store, record, 'updateRecord', recordBefore)",
+          "then": "the returned value is schema.options.onValidationFailure({ store, record, phase: 'updateRecord', recordBefore, error })",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Guards the validation recovery contract and failure context."
+        },
+        {
+          "testId": "returns-no-migrations-for-current-schema",
+          "scenario": "A persisted schema already at the current migration versions requires no migration.",
+          "given": ["persistedSchema matches schema.serialize()"],
+          "when": "schema.getMigrationsSince(persistedSchema)",
+          "then": "result.ok === true && result.value.length === 0",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins the current-version identity behavior."
+        },
+        {
+          "testId": "down-migration-requires-reversible-record-migrations",
+          "scenario": "A backward record migration is requested when one required migration has no down function.",
+          "given": ["direction === 'down'", "migrationsToApply.some((migration) => !migration.down)"],
+          "when": "schema.migratePersistedRecord(record, persistedSchema, 'down')",
+          "then": "result.type === 'error' && result.reason === MigrationFailureReason.TargetVersionTooOld",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Ensures unsupported reverse migrations fail with the documented reason."
+        },
+        {
+          "testId": "serializes-latest-migration-versions",
+          "scenario": "A schema with migration sequences serializes each sequence at its latest migration version.",
+          "given": ["schema.migrations contains sequences with migration IDs"],
+          "when": "schema.serialize()",
+          "then": "result.schemaVersion === 2 && result.sequences[sequenceId] equals the latest parsed migration version, or 0 for an empty sequence",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins the persisted schema representation used for future migration planning."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "imports",
+        "SerializedSchemaV1 interface",
+        "SerializedSchemaV2 interface",
+        "SerializedSchema union type",
+        "upgradeSchema function",
+        "StoreValidationFailure interface",
+        "StoreSchemaOptions interface",
+        "StoreSchema class"
+      ],
+      "moduleLevelCode": "import {\n\tassert,\n\texhaustiveSwitchError,\n\tgetOwnProperty,\n\tisEqual,\n\tobjectMapEntries,\n\tResult,\n\tstructuredClone,\n} from '@tldraw/utils'\nimport { UnknownRecord } from './BaseRecord'\nimport { devFreeze } from './devFreeze'\nimport {\n\tMigration,\n\tMigrationFailureReason,\n\tMigrationId,\n\tMigrationResult,\n\tMigrationSequence,\n\tparseMigrationId,\n\tsortMigrations,\n\tSynchronousStorage,\n\tvalidateMigrations,\n} from './migrate'\nimport { RecordType } from './RecordType'\nimport { SerializedStore, Store, StoreSnapshot } from './Store'",
+      "exports": [
+        { "name": "SerializedSchemaV1", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "SerializedSchemaV2", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "SerializedSchema", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "upgradeSchema", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "StoreValidationFailure", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "StoreSchemaOptions", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "StoreSchema", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "assert", "module": "@tldraw/utils", "alias": null, "kind": "external" },
+        { "symbol": "exhaustiveSwitchError", "module": "@tldraw/utils", "alias": null, "kind": "external" },
+        { "symbol": "getOwnProperty", "module": "@tldraw/utils", "alias": null, "kind": "external" },
+        { "symbol": "isEqual", "module": "@tldraw/utils", "alias": null, "kind": "external" },
+        { "symbol": "objectMapEntries", "module": "@tldraw/utils", "alias": null, "kind": "external" },
+        { "symbol": "Result", "module": "@tldraw/utils", "alias": null, "kind": "external" },
+        { "symbol": "structuredClone", "module": "@tldraw/utils", "alias": null, "kind": "external" },
+        { "symbol": "UnknownRecord", "module": "./BaseRecord", "alias": null, "kind": "internal" },
+        { "symbol": "devFreeze", "module": "./devFreeze", "alias": null, "kind": "internal" },
+        { "symbol": "Migration", "module": "./migrate", "alias": null, "kind": "internal" },
+        { "symbol": "MigrationFailureReason", "module": "./migrate", "alias": null, "kind": "internal" },
+        { "symbol": "MigrationId", "module": "./migrate", "alias": null, "kind": "internal" },
+        { "symbol": "MigrationResult", "module": "./migrate", "alias": null, "kind": "internal" },
+        { "symbol": "MigrationSequence", "module": "./migrate", "alias": null, "kind": "internal" },
+        { "symbol": "parseMigrationId", "module": "./migrate", "alias": null, "kind": "internal" },
+        { "symbol": "sortMigrations", "module": "./migrate", "alias": null, "kind": "internal" },
+        { "symbol": "SynchronousStorage", "module": "./migrate", "alias": null, "kind": "internal" },
+        { "symbol": "validateMigrations", "module": "./migrate", "alias": null, "kind": "internal" },
+        { "symbol": "RecordType", "module": "./RecordType", "alias": null, "kind": "internal" },
+        { "symbol": "SerializedStore", "module": "./Store", "alias": null, "kind": "internal" },
+        { "symbol": "Store", "module": "./Store", "alias": null, "kind": "internal" },
+        { "symbol": "StoreSnapshot", "module": "./Store", "alias": null, "kind": "internal" }
+      ],
+      "fileConstants": [],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/store/src/lib/StoreSchema.ts__upgradeSchema#function:upgradeSchema",
+        "unitKind": "function",
+        "name": "upgradeSchema",
+        "qualifiedName": "upgradeSchema",
+        "parentUnitId": null,
+        "startLine": 142,
+        "endLine": 163,
+        "isBehavioral": true,
+        "source": " *     author: { version: 1, subTypeVersions: { fiction: 1 }, subTypeKey: 'genre' }\n *   }\n * }\n *\n * const result = upgradeSchema(v1Schema)\n * if (result.ok) {\n *   console.log(result.value.sequences)\n *   // { 'com.tldraw.store': 1, 'com.tldraw.book': 2, 'com.tldraw.author': 1, 'com.tldraw.author.fiction': 1 }\n * }\n * ```\n *\n * @public\n */\nexport function upgradeSchema(schema: SerializedSchema): Result<SerializedSchemaV2, string> {\n\tif (schema.schemaVersion > 2 || schema.schemaVersion < 1) return Result.err('Bad schema version')\n\tif (schema.schemaVersion === 2) return Result.ok(schema as SerializedSchemaV2)\n\tconst result: SerializedSchemaV2 = {\n\t\tschemaVersion: 2,\n\t\tsequences: {\n\t\t\t'com.tldraw.store': schema.storeVersion,\n\t\t},\n\t}",
+        "detail": {
+          "unitId": "packages/store/src/lib/StoreSchema.ts__upgradeSchema#function:upgradeSchema",
+          "fileId": "packages/store/src/lib/StoreSchema.ts__upgradeSchema",
+          "unitKind": "function",
+          "name": "upgradeSchema",
+          "qualifiedName": "upgradeSchema",
+          "parentUnitId": null,
+          "startLine": 142,
+          "endLine": 163,
+          "signature": "export function upgradeSchema(schema: SerializedSchema): Result<SerializedSchemaV2, string>",
+          "parameters": [
+            {
+              "name": "schema",
+              "type": "SerializedSchema",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "Result<SerializedSchemaV2, string>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["schema is a SerializedSchema value"],
+          "postconditions": [
+            "For schemaVersion 2, returns a successful Result containing the input schema as a SerializedSchemaV2.",
+            "For schemaVersion 1, returns a successful version-2 schema whose store sequence is initialized from schema.storeVersion.",
+            "For schemaVersion values greater than 2 or less than 1, returns an error Result."
+          ],
+          "invariants": ["The returned upgraded schema has schemaVersion 2 on successful version-1 conversion."],
+          "edgeCases": [
+            "schemaVersion 2 is accepted without schema conversion and returned as the successful value.",
+            "schemaVersion 1 is converted to schemaVersion 2 with the com.tldraw.store sequence set to schema.storeVersion.",
+            "schemaVersion greater than 2 returns an error Result.",
+            "schemaVersion less than 1 returns an error Result."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Returns Result.err('Bad schema version') when schema.schemaVersion is outside the inclusive range 1 through 2.",
+            "returnsOnError": "Result.err('Bad schema version')"
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "Result.err", "source": null, "kind": "external" },
+            { "name": "Result.ok", "source": null, "kind": "external" }
+          ],
+          "symbolReferences": ["SerializedSchema", "SerializedSchemaV2", "Result"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Accepts a serialized schema object and returns Result<SerializedSchemaV2, string>; successful version-2 output has schemaVersion 2 and a sequences object containing the com.tldraw.store sequence.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Upgrades a serialized store schema from version 1 to version 2. It returns an error for unsupported schema versions and preserves version 2 schemas as successful results.",
+          "specLiterals": [
+            {
+              "kind": "error-message",
+              "value": "Bad schema version",
+              "role": "Error value returned for schema versions outside the supported range."
+            },
+            { "kind": "magic-number", "value": "1", "role": "Lowest supported serialized schema version." },
+            { "kind": "magic-number", "value": "2", "role": "Target and highest supported serialized schema version." },
+            {
+              "kind": "enum-value",
+              "value": "com.tldraw.store",
+              "role": "Sequence key used for the store schema version during version-1 upgrades."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Calling upgradeSchema(schema).",
+              "then": "The result is an error containing exactly 'Bad schema version'.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Calling upgradeSchema(schema).",
+              "then": "The result is an error containing exactly 'Bad schema version'.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Calling upgradeSchema(schema).",
+              "then": "The result is successful and contains the input schema as the SerializedSchemaV2 value.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "17267166407d49524939c4fee8edf3045f080e495306396dd680a8431d3bbb74"
+        }
+      },
+      {
+        "unitId": "packages/store/src/lib/StoreSchema.ts__StoreSchema#class:StoreSchema",
+        "unitKind": "class",
+        "name": "StoreSchema",
+        "qualifiedName": "StoreSchema",
+        "parentUnitId": null,
+        "startLine": 284,
+        "endLine": 829,
+        "isBehavioral": true,
+        "source": "\t *\n\t * @example\n\t * ```ts\n\t * const Book = createRecordType<Book>('book', { scope: 'document' })\n\t * const Author = createRecordType<Author>('author', { scope: 'document' })\n\t *\n\t * const schema = StoreSchema.create(\n\t *   {\n\t *     book: Book,\n\t *     author: Author\n\t *   },\n\t *   {\n\t *     migrations: [bookMigrations],\n\t *     onValidationFailure: (failure) => failure.record\n\t *   }\n\t * )\n\t * ```\n\t *\n\t * @public\n\t */\n\tstatic create<R extends UnknownRecord, P = unknown>(\n\t\t// HACK: making this param work with RecordType is an enormous pain\n\t\t// let's just settle for making sure each typeName has a corresponding RecordType\n\t\t// and accept that this function won't be able to infer the record type from it's arguments\n\t\ttypes: { [TypeName in R['typeName']]: { createId: any } },\n\t\toptions?: StoreSchemaOptions<R, P>\n\t): StoreSchema<R, P> {\n\t\treturn new StoreSchema<R, P>(types as any, options ?? {})\n\t}\n\n\treadonly migrations: Record<string, MigrationSequence> = {}\n\treadonly sortedMigrations: readonly Migration[]\n\tprivate readonly migrationCache = new WeakMap<SerializedSchema, Result<Migration[], string>>()\n\n\tprivate constructor(\n\t\tpublic readonly types: {\n\t\t\t[Record in R as Record['typeName']]: RecordType<R, any>\n\t\t},\n\t\tprivate readonly options: StoreSchemaOptions<R, P>\n\t) {\n\t\tfor (const m of options.migrations ?? []) {\n\t\t\tassert(!this.migrations[m.sequenceId], `Duplicate migration sequenceId ${m.sequenceId}`)\n\t\t\tvalidateMigrations(m)\n\t\t\tthis.migrations[m.sequenceId] = m\n\t\t}\n\t\tconst allMigrations = Object.values(this.migrations).flatMap((m) => m.sequence)\n\t\tthis.sortedMigrations = sortMigrations(allMigrations)\n\n\t\tfor (const migration of this.sortedMigrations) {\n\t\t\tif (!migration.dependsOn?.length) continue\n\t\t\tfor (const dep of migration.dependsOn) {\n\t\t\t\tconst depMigration = allMigrations.find((m) => m.id === dep)\n\t\t\t\tassert(depMigration, `Migration '${migration.id}' depends on missing migration '${dep}'`)\n\t\t\t}\n\t\t}\n\t}\n\n\t/**\n\t * Validates a record using its corresponding RecordType validator.\n\t *\n\t * This method ensures that records conform to their type definitions before\n\t * being stored. If validation fails and an onValidationFailure handler is\n\t * provided, it will be called to potentially recover from the error.\n\t *\n\t * @param store - The store instance where validation is occurring\n\t * @param record - The record to validate\n\t * @param phase - The lifecycle phase where validation is happening\n\t * @param recordBefore - The previous version of the record (for updates)\n\t * @returns The validated record, potentially modified by validation failure handler\n\t *\n\t * @example\n\t * ```ts\n\t * try {\n\t *   const validatedBook = schema.validateRecord(\n\t *     store,\n\t *     { id: 'book:1', typeName: 'book', title: '', author: 'Jane Doe' },\n\t *     'createRecord',\n\t *     null\n\t *   )\n\t * } catch (error) {\n\t *   console.error('Record validation failed:', error)\n\t * }\n\t * ```\n\t *\n\t * @public\n\t */\n\tvalidateRecord(\n\t\tstore: Store<R>,\n\t\trecord: R,\n\t\tphase: 'initialize' | 'createRecord' | 'updateRecord' | 'tests',\n\t\trecordBefore: R | null\n\t): R {\n\t\ttry {\n\t\t\tconst recordType = getOwnProperty(this.types, record.typeName)\n\t\t\tif (!recordType) {\n\t\t\t\tthrow new Error(`Missing definition for record type ${record.typeName}`)\n\t\t\t}\n\t\t\treturn recordType.validate(record, recordBefore ?? undefined)\n\t\t} catch (error: unknown) {\n\t\t\tif (this.options.onValidationFailure) {\n\t\t\t\treturn this.options.onValidationFailure({\n\t\t\t\t\tstore,\n\t\t\t\t\trecord,\n\t\t\t\t\tphase,\n\t\t\t\t\trecordBefore,\n\t\t\t\t\terror,\n\t\t\t\t})\n\t\t\t} else {\n\t\t\t\tthrow error\n\t\t\t}\n\t\t}\n\t}\n\n\t/**\n\t * Gets all migrations that need to be applied to upgrade from a persisted schema\n\t * to the current schema version.\n\t *\n\t * This method compares the persisted schema with the current schema and determines\n\t * which migrations need to be applied to bring the data up to date. It handles\n\t * both regular migrations and retroactive migrations, and caches results for\n\t * performance.\n\t *\n\t * @param persistedSchema - The schema version that was previously persisted\n\t * @returns A Result containing the list of migrations to apply, or an error message\n\t *\n\t * @example\n\t * ```ts\n\t * const persistedSchema = {\n\t *   schemaVersion: 2,\n\t *   sequences: { 'com.tldraw.book': 1, 'com.tldraw.author': 0 }\n\t * }\n\t *\n\t * const migrationsResult = schema.getMigrationsSince(persistedSchema)\n\t * if (migrationsResult.ok) {\n\t *   console.log('Migrations to apply:', migrationsResult.value.length)\n\t *   // Apply each migration to bring data up to date\n\t * }\n\t * ```\n\t *\n\t * @public\n\t */\n\tpublic getMigrationsSince(persistedSchema: SerializedSchema): Result<Migration[], string> {\n\t\t// Every result — success, empty, or error — is cached, so cache once around the whole\n\t\t// computation rather than at each of its exit points.\n\t\tconst cached = this.migrationCache.get(persistedSchema)\n\t\tif (cached) {\n\t\t\treturn cached\n\t\t}\n\n\t\tconst result = this.computeMigrationsSince(persistedSchema)\n\t\tthis.migrationCache.set(persistedSchema, result)\n\t\treturn result\n\t}\n\n\tprivate computeMigrationsSince(persistedSchema: SerializedSchema): Result<Migration[], string> {\n\t\tconst upgradeResult = upgradeSchema(persistedSchema)\n\t\tif (!upgradeResult.ok) {\n\t\t\treturn upgradeResult\n\t\t}\n\t\tconst schema = upgradeResult.value\n\t\tconst sequenceIdsToInclude = new Set(\n\t\t\t// start with any shared sequences\n\t\t\tObject.keys(schema.sequences).filter((sequenceId) => this.migrations[sequenceId])\n\t\t)\n\n\t\t// also include any sequences that are not in the persisted schema but are marked as postHoc\n\t\tfor (const sequenceId in this.migrations) {\n\t\t\tif (schema.sequences[sequenceId] === undefined && this.migrations[sequenceId].retroactive) {\n\t\t\t\tsequenceIdsToInclude.add(sequenceId)\n\t\t\t}\n\t\t}\n\n\t\tif (sequenceIdsToInclude.size === 0) {\n\t\t\treturn Result.ok([])\n\t\t}\n\n\t\tconst allMigrationsToInclude = new Set<MigrationId>()\n\t\tfor (const sequenceId of sequenceIdsToInclude) {\n\t\t\tconst theirVersion = schema.sequences[sequenceId]\n\t\t\tif (\n\t\t\t\t(typeof theirVersion !== 'number' && this.migrations[sequenceId].retroactive) ||\n\t\t\t\ttheirVersion === 0\n\t\t\t) {\n\t\t\t\tfor (const migration of this.migrations[sequenceId].sequence) {\n\t\t\t\t\tallMigrationsToInclude.add(migration.id)\n\t\t\t\t}\n\t\t\t\tcontinue\n\t\t\t}\n\t\t\tconst theirVersionId = `${sequenceId}/${theirVersion}`\n\t\t\tconst idx = this.migrations[sequenceId].sequence.findIndex((m) => m.id === theirVersionId)\n\t\t\t// todo: better error handling\n\t\t\tif (idx === -1) {\n\t\t\t\treturn Result.err('Incompatible schema?')\n\t\t\t}\n\t\t\tfor (const migration of this.migrations[sequenceId].sequence.slice(idx + 1)) {\n\t\t\t\tallMigrationsToInclude.add(migration.id)\n\t\t\t}\n\t\t}\n\n\t\t// collect any migrations\n\t\treturn Result.ok(this.sortedMigrations.filter(({ id }) => allMigrationsToInclude.has(id)))\n\t}\n\n\t/**\n\t * Migrates a single persisted record to match the current schema version.\n\t *\n\t * This method applies the necessary migrations to transform a record from an\n\t * older (or newer) schema version to the current version. It supports both\n\t * forward ('up') and backward ('down') migrations.\n\t *\n\t * @param record - The record to migrate\n\t * @param persistedSchema - The schema version the record was persisted with\n\t * @param direction - Direction to migrate ('up' for newer, 'down' for older)\n\t * @returns A MigrationResult containing the migrated record or an error\n\t *\n\t * @example\n\t * ```ts\n\t * const oldRecord = { id: 'book:1', typeName: 'book', title: 'Old Title', publishDate: '2020-01-01' }\n\t * const oldSchema = { schemaVersion: 2, sequences: { 'com.tldraw.book': 1 } }\n\t *\n\t * const result = schema.migratePersistedRecord(oldRecord, oldSchema, 'up')\n\t * if (result.type === 'success') {\n\t *   console.log('Migrated record:', result.value)\n\t *   // Record now has publishedYear instead of publishDate\n\t * } else {\n\t *   console.error('Migration failed:', result.reason)\n\t * }\n\t * ```\n\t *\n\t * @public\n\t */\n\tmigratePersistedRecord(\n\t\trecord: R,\n\t\tpersistedSchema: SerializedSchema,\n\t\tdirection: 'up' | 'down' = 'up'\n\t): MigrationResult<R> {\n\t\tconst migrations = this.getMigrationsSince(persistedSchema)\n\t\tif (!migrations.ok) {\n\t\t\t// TODO: better error\n\t\t\tconsole.error('Error migrating record', migrations.error)\n\t\t\treturn { type: 'error', reason: MigrationFailureReason.MigrationError }\n\t\t}\n\t\tlet migrationsToApply = migrations.value\n\t\tif (migrationsToApply.length === 0) {\n\t\t\treturn { type: 'success', value: record }\n\t\t}\n\n\t\tif (!migrationsToApply.every((m) => m.scope === 'record')) {\n\t\t\treturn {\n\t\t\t\ttype: 'error',\n\t\t\t\treason:\n\t\t\t\t\tdirection === 'down'\n\t\t\t\t\t\t? MigrationFailureReason.TargetVersionTooOld\n\t\t\t\t\t\t: MigrationFailureReason.TargetVersionTooNew,\n\t\t\t}\n\t\t}\n\n\t\tif (direction === 'down') {\n\t\t\tif (!migrationsToApply.every((m) => m.scope === 'record' && m.down)) {\n\t\t\t\treturn {\n\t\t\t\t\ttype: 'error',\n\t\t\t\t\treason: MigrationFailureReason.TargetVersionTooOld,\n\t\t\t\t}\n\t\t\t}\n\t\t\tmigrationsToApply = migrationsToApply.slice().reverse()\n\t\t}\n\n\t\trecord = structuredClone(record)\n\t\ttry {\n\t\t\tfor (const migration of migrationsToApply) {\n\t\t\t\tif (migration.scope === 'store') throw new Error(/* won't happen, just for TS */)\n\t\t\t\tif (migration.scope === 'storage') throw new Error(/* won't happen, just for TS */)\n\t\t\t\tconst shouldApply = migration.filter ? migration.filter(record) : true\n\t\t\t\tif (!shouldApply) continue\n\t\t\t\tconst result = migration[direction]!(record)\n\t\t\t\tif (result) {\n\t\t\t\t\trecord = structuredClone(result) as any\n\t\t\t\t}\n\t\t\t}\n\t\t} catch (e) {\n\t\t\tconsole.error('Error migrating record', e)\n\t\t\treturn { type: 'error', reason: MigrationFailureReason.MigrationError }\n\t\t}\n\n\t\treturn { type: 'success', value: record }\n\t}\n\n\tmigrateStorage(storage: SynchronousStorage<R>) {\n\t\tconst schema = storage.getSchema()\n\t\tassert(schema, 'Schema is missing.')\n\n\t\tconst migrations = this.getMigrationsSince(schema)\n\t\tif (!migrations.ok) {\n\t\t\tconsole.error('Error migrating store', migrations.error)\n\t\t\tthrow new Error(migrations.error)\n\t\t}\n\t\tconst migrationsToApply = migrations.value\n\t\tif (migrationsToApply.length === 0) {\n\t\t\treturn\n\t\t}\n\n\t\tstorage.setSchema(this.serialize())\n\n\t\tfor (const migration of migrationsToApply) {\n\t\t\tif (migration.scope === 'record') {\n\t\t\t\t// Collect updates during iteration, then apply them after.\n\t\t\t\t// This avoids issues with live iterators (e.g., SQLite) where updating\n\t\t\t\t// records during iteration can cause them to be visited multiple times.\n\t\t\t\tconst updates: [string, R][] = []\n\t\t\t\tfor (const [id, state] of storage.entries()) {\n\t\t\t\t\tconst shouldApply = migration.filter ? migration.filter(state) : true\n\t\t\t\t\tif (!shouldApply) continue\n\t\t\t\t\tconst record = structuredClone(state)\n\t\t\t\t\tconst result = migration.up!(record as any) ?? record\n\t\t\t\t\tif (!isEqual(result, state)) {\n\t\t\t\t\t\tupdates.push([id, result as R])\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t\tfor (const [id, record] of updates) {\n\t\t\t\t\tstorage.set(id, record)\n\t\t\t\t}\n\t\t\t} else if (migration.scope === 'store') {\n\t\t\t\t// legacy\n\t\t\t\tconst prevStore = Object.fromEntries(storage.entries())\n\t\t\t\tlet nextStore = structuredClone(prevStore)\n\t\t\t\tnextStore = (migration.up!(nextStore) as any) ?? nextStore\n\t\t\t\tfor (const [id, state] of Object.entries(nextStore)) {\n\t\t\t\t\tif (!state) continue // these will be deleted in the next loop\n\t\t\t\t\tif (!isEqual(state, prevStore[id])) {\n\t\t\t\t\t\tstorage.set(id, state)\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t\tfor (const id of Object.keys(prevStore)) {\n\t\t\t\t\tif (!nextStore[id]) {\n\t\t\t\t\t\tstorage.delete(id)\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t} else if (migration.scope === 'storage') {\n\t\t\t\tmigration.up!(storage)\n\t\t\t} else {\n\t\t\t\texhaustiveSwitchError(migration)\n\t\t\t}\n\t\t}\n\t\t// Clean up by filtering out any non-document records.\n\t\t// This is mainly legacy support for extremely early days tldraw.\n\t\t// Collect first: as above, deleting during a live iterator can throw on SQLite backends.\n\t\tconst idsToDelete: string[] = []\n\t\tfor (const [id, state] of storage.entries()) {\n\t\t\tif (this.getType(state.typeName).scope !== 'document') {\n\t\t\t\tidsToDelete.push(id)\n\t\t\t}\n\t\t}\n\t\tfor (const id of idsToDelete) {\n\t\t\tstorage.delete(id)\n\t\t}\n\t}\n\n\t/**\n\t * Migrates an entire store snapshot to match the current schema version.\n\t *\n\t * This method applies all necessary migrations to bring a persisted store\n\t * snapshot up to the current schema version. It handles both record-level\n\t * and store-level migrations, and can optionally mutate the input store\n\t * for performance.\n\t *\n\t * @param snapshot - The store snapshot containing data and schema information\n\t * @param opts - Options controlling migration behavior\n\t *   - mutateInputStore - Whether to modify the input store directly (default: false)\n\t * @returns A MigrationResult containing the migrated store or an error\n\t *\n\t * @example\n\t * ```ts\n\t * const snapshot = {\n\t *   schema: { schemaVersion: 2, sequences: { 'com.tldraw.book': 1 } },\n\t *   store: {\n\t *     'book:1': { id: 'book:1', typeName: 'book', title: 'Old Book', publishDate: '2020-01-01' }\n\t *   }\n\t * }\n\t *\n\t * const result = schema.migrateStoreSnapshot(snapshot)\n\t * if (result.type === 'success') {\n\t *   console.log('Migrated store:', result.value)\n\t *   // All records are now at current schema version\n\t * }\n\t * ```\n\t *\n\t * @public\n\t */\n\tmigrateStoreSnapshot(\n\t\tsnapshot: StoreSnapshot<R>,\n\t\topts?: { mutateInputStore?: boolean }\n\t): MigrationResult<SerializedStore<R>> {\n\t\tconst migrations = this.getMigrationsSince(snapshot.schema)\n\t\tif (!migrations.ok) {\n\t\t\t// TODO: better error\n\t\t\tconsole.error('Error migrating store', migrations.error)\n\t\t\treturn { type: 'error', reason: MigrationFailureReason.MigrationError }\n\t\t}\n\t\tconst migrationsToApply = migrations.value\n\t\tif (migrationsToApply.length === 0) {\n\t\t\treturn { type: 'success', value: snapshot.store }\n\t\t}\n\t\tconst store = Object.assign(\n\t\t\tnew Map<string, R>(objectMapEntries(snapshot.store).map(devFreeze)),\n\t\t\t{\n\t\t\t\tgetSchema: () => snapshot.schema,\n\t\t\t\tsetSchema: (_: SerializedSchema) => {},\n\t\t\t}\n\t\t)\n\t\ttry {\n\t\t\tthis.migrateStorage(store)\n\t\t\tif (opts?.mutateInputStore) {\n\t\t\t\tfor (const [id, record] of store.entries()) {\n\t\t\t\t\tsnapshot.store[id as keyof typeof snapshot.store] = record\n\t\t\t\t}\n\t\t\t\tfor (const id of Object.keys(snapshot.store)) {\n\t\t\t\t\tif (!store.has(id)) {\n\t\t\t\t\t\tdelete snapshot.store[id as keyof typeof snapshot.store]\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t\treturn { type: 'success', value: snapshot.store }\n\t\t\t} else {\n\t\t\t\treturn {\n\t\t\t\t\ttype: 'success',\n\t\t\t\t\tvalue: Object.fromEntries(store.entries()) as SerializedStore<R>,\n\t\t\t\t}\n\t\t\t}\n\t\t} catch (e) {\n\t\t\tconsole.error('Error migrating store', e)\n\t\t\treturn { type: 'error', reason: MigrationFailureReason.MigrationError }\n\t\t}\n\t}\n\n\t/**\n\t * Creates an integrity checker function for the given store.\n\t *\n\t * This method calls the createIntegrityChecker option if provided, allowing\n\t * custom integrity checking logic to be set up for the store. The integrity\n\t * checker is used to validate store consistency and catch data corruption.\n\t *\n\t * @param store - The store instance to create an integrity checker for\n\t * @returns An integrity checker function, or undefined if none is configured\n\t *\n\t * @internal\n\t */\n\tcreateIntegrityChecker(store: Store<R, P>): (() => void) | undefined {\n\t\treturn this.options.createIntegrityChecker?.(store) ?? undefined\n\t}\n\n\t/**\n\t * Serializes the current schema to a SerializedSchemaV2 format.\n\t *\n\t * This method creates a serialized representation of the current schema,\n\t * capturing the latest version number for each migration sequence.\n\t * The result can be persisted and later used to determine what migrations\n\t * need to be applied when loading data.\n\t *\n\t * @returns A SerializedSchemaV2 object representing the current schema state\n\t *\n\t * @example\n\t * ```ts\n\t * const serialized = schema.serialize()\n\t * console.log(serialized)\n\t * // {\n\t * //   schemaVersion: 2,\n\t * //   sequences: {\n\t * //     'com.tldraw.book': 3,\n\t * //     'com.tldraw.author': 2\n\t * //   }\n\t * // }\n\t *\n\t * // Store this with your data for future migrations\n\t * localStorage.setItem('schema', JSON.stringify(serialized))\n\t * ```\n\t *\n\t * @public\n\t */\n\tserialize(): SerializedSchemaV2 {\n\t\treturn {\n\t\t\tschemaVersion: 2,\n\t\t\tsequences: Object.fromEntries(\n\t\t\t\tObject.values(this.migrations).map(({ sequenceId, sequence }) => [\n\t\t\t\t\tsequenceId,\n\t\t\t\t\tsequence.length ? parseMigrationId(sequence.at(-1)!.id).version : 0,\n\t\t\t\t])\n\t\t\t),\n\t\t}\n\t}\n\n\t/**\n\t * Serializes a schema representing the earliest possible version.\n\t *\n\t * This method creates a serialized schema where all migration sequences\n\t * are set to version 0, representing the state before any migrations\n\t * have been applied. This is used in specific legacy scenarios.\n\t *\n\t * @returns A SerializedSchema with all sequences set to version 0\n\t *\n\t * @deprecated This is only here for legacy reasons, don't use it unless you have david's blessing!\n\t * @internal\n\t */\n\tserializeEarliestVersion(): SerializedSchema {\n\t\treturn {\n\t\t\tschemaVersion: 2,\n\t\t\tsequences: Object.fromEntries(\n\t\t\t\tObject.values(this.migrations).map(({ sequenceId }) => [sequenceId, 0])\n\t\t\t),\n\t\t}\n\t}\n\n\t/**\n\t * Gets the RecordType definition for a given type name.\n\t *\n\t * This method retrieves the RecordType associated with the specified\n\t * type name, which contains the record's validation, creation, and\n\t * other behavioral logic.\n\t *\n\t * @param typeName - The name of the record type to retrieve\n\t * @returns The RecordType definition for the specified type\n\t *\n\t * @throws Will throw an error if the record type does not exist\n\t *\n\t * @internal\n\t */\n\tgetType(typeName: string) {\n\t\tconst type = getOwnProperty(this.types, typeName)\n\t\tassert(type, 'record type does not exist')\n\t\treturn type\n\t}\n}\n",
+        "detail": {
+          "unitId": "packages/store/src/lib/StoreSchema.ts__StoreSchema#class:StoreSchema",
+          "fileId": "packages/store/src/lib/StoreSchema.ts__StoreSchema",
+          "unitKind": "class",
+          "name": "StoreSchema",
+          "qualifiedName": "StoreSchema",
+          "parentUnitId": null,
+          "startLine": 284,
+          "endLine": 829,
+          "signature": "class StoreSchema<R extends UnknownRecord, P = unknown>",
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": ["R extends UnknownRecord", "P = unknown"],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [
+            {
+              "name": "types",
+              "kind": "property",
+              "type": "{ [Record in R as Record['typeName']]: RecordType<R, any> }",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "options",
+              "kind": "property",
+              "type": "StoreSchemaOptions<R, P>",
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "migrations",
+              "kind": "property",
+              "type": "Record<string, MigrationSequence>",
+              "default": "{}",
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "sortedMigrations",
+              "kind": "property",
+              "type": "readonly Migration[]",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "migrationCache",
+              "kind": "property",
+              "type": "WeakMap<SerializedSchema, Result<Migration[], string>>",
+              "default": null,
+              "visibility": "private",
+              "static": false
+            }
+          ],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "StoreSchema defines the record types and migration sequences for a store, exposing the schema shape required for validation, persistence, and version upgrades.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "cc85f30323ec1b056288f2009937cfcae3b398b62243433b96f4b2622dc4cb83"
+        }
+      },
+      {
+        "unitId": "packages/store/src/lib/StoreSchema.ts__StoreSchema.constructor#method:StoreSchema.constructor",
+        "unitKind": "method",
+        "name": "constructor",
+        "qualifiedName": "StoreSchema.constructor",
+        "parentUnitId": "packages/store/src/lib/StoreSchema.ts__StoreSchema#class:StoreSchema",
+        "startLine": 336,
+        "endLine": 363,
+        "isBehavioral": true,
+        "source": "\t\t\t\tassert(depMigration, `Migration '${migration.id}' depends on missing migration '${dep}'`)\n\t\t\t}\n\t\t}\n\t}\n\n\t/**\n\t * Validates a record using its corresponding RecordType validator.\n\t *\n\t * This method ensures that records conform to their type definitions before\n\t * being stored. If validation fails and an onValidationFailure handler is\n\t * provided, it will be called to potentially recover from the error.\n\t *\n\t * @param store - The store instance where validation is occurring\n\t * @param record - The record to validate\n\t * @param phase - The lifecycle phase where validation is happening\n\t * @param recordBefore - The previous version of the record (for updates)\n\t * @returns The validated record, potentially modified by validation failure handler\n\t *\n\t * @example\n\t * ```ts\n\t * try {\n\t *   const validatedBook = schema.validateRecord(\n\t *     store,\n\t *     { id: 'book:1', typeName: 'book', title: '', author: 'Jane Doe' },\n\t *     'createRecord',\n\t *     null\n\t *   )\n\t * } catch (error) {",
+        "detail": {
+          "unitId": "packages/store/src/lib/StoreSchema.ts__StoreSchema.constructor#method:StoreSchema.constructor",
+          "fileId": "packages/store/src/lib/StoreSchema.ts__StoreSchema.constructor",
+          "unitKind": "method",
+          "name": "constructor",
+          "qualifiedName": "StoreSchema.constructor",
+          "parentUnitId": "packages/store/src/lib/StoreSchema.ts__StoreSchema#class:StoreSchema",
+          "startLine": 336,
+          "endLine": 363,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["Migration dependency declarations, if present, reference migration identifiers."],
+          "postconditions": [
+            "A StoreSchema instance is initialized with its supplied schema and migration configuration.",
+            "Every declared migration dependency resolves to an existing migration."
+          ],
+          "invariants": ["No migration may depend on a missing migration."],
+          "edgeCases": [
+            "A migration with no dependencies is accepted.",
+            "A migration whose dependency identifier is absent from the declared migrations causes construction to fail."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["Assertion error when a migration depends on a missing migration"],
+            "reverts": [],
+            "onInvalidInput": "Construction fails when a declared migration dependency cannot be resolved.",
+            "returnsOnError": null
+          },
+          "stateMutations": ["Initializes the StoreSchema instance state."],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Initializes a StoreSchema instance and validates the declared migration dependency graph. Construction rejects migrations that depend on an unknown migration.",
+          "specLiterals": [
+            {
+              "kind": "error-message",
+              "value": "Migration '${migration.id}' depends on missing migration '${dep}'",
+              "role": "Assertion error message identifying an unresolved migration dependency."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "A StoreSchema is constructed.",
+              "then": "Construction succeeds and produces an initialized schema instance.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "A StoreSchema is constructed.",
+              "then": "Construction throws an assertion error containing the missing-migration dependency message.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "77fc920cd54434a3655d8c2c8fbb8d49bcc8122a99c8c23fba51f556930b8caa"
+        }
+      },
+      {
+        "unitId": "packages/store/src/lib/StoreSchema.ts__StoreSchema.validateRecord#method:StoreSchema.validateRecord",
+        "unitKind": "method",
+        "name": "validateRecord",
+        "qualifiedName": "StoreSchema.validateRecord",
+        "parentUnitId": "packages/store/src/lib/StoreSchema.ts__StoreSchema#class:StoreSchema",
+        "startLine": 366,
+        "endLine": 390,
+        "isBehavioral": true,
+        "source": "\t * ```\n\t *\n\t * @public\n\t */\n\tvalidateRecord(\n\t\tstore: Store<R>,\n\t\trecord: R,\n\t\tphase: 'initialize' | 'createRecord' | 'updateRecord' | 'tests',\n\t\trecordBefore: R | null\n\t): R {\n\t\ttry {\n\t\t\tconst recordType = getOwnProperty(this.types, record.typeName)\n\t\t\tif (!recordType) {\n\t\t\t\tthrow new Error(`Missing definition for record type ${record.typeName}`)\n\t\t\t}\n\t\t\treturn recordType.validate(record, recordBefore ?? undefined)\n\t\t} catch (error: unknown) {\n\t\t\tif (this.options.onValidationFailure) {\n\t\t\t\treturn this.options.onValidationFailure({\n\t\t\t\t\tstore,\n\t\t\t\t\trecord,\n\t\t\t\t\tphase,\n\t\t\t\t\trecordBefore,\n\t\t\t\t\terror,\n\t\t\t\t})",
+        "detail": {
+          "unitId": "packages/store/src/lib/StoreSchema.ts__StoreSchema.validateRecord#method:StoreSchema.validateRecord",
+          "fileId": "packages/store/src/lib/StoreSchema.ts__StoreSchema.validateRecord",
+          "unitKind": "method",
+          "name": "validateRecord",
+          "qualifiedName": "StoreSchema.validateRecord",
+          "parentUnitId": "packages/store/src/lib/StoreSchema.ts__StoreSchema#class:StoreSchema",
+          "startLine": 366,
+          "endLine": 390,
+          "signature": "validateRecord(\n\t\tstore: Store<R>,\n\t\trecord: R,\n\t\tphase: 'initialize' | 'createRecord' | 'updateRecord' | 'tests',\n\t\trecordBefore: R | null\n\t): R",
+          "parameters": [
+            { "name": "store", "type": "Store<R>", "default": null, "optional": false, "variadic": false, "order": 0 },
+            { "name": "record", "type": "R", "default": null, "optional": false, "variadic": false, "order": 1 },
+            {
+              "name": "phase",
+              "type": "'initialize' | 'createRecord' | 'updateRecord' | 'tests'",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            },
+            {
+              "name": "recordBefore",
+              "type": "R | null",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 3
+            }
+          ],
+          "returnType": "R",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "record.typeName identifies the record type to validate.",
+            "phase is one of 'initialize', 'createRecord', 'updateRecord', or 'tests'."
+          ],
+          "postconditions": [
+            "On successful validation, returns the value produced by the matching record type's validate method.",
+            "If a validation error occurs and onValidationFailure is configured, returns the value produced by that handler."
+          ],
+          "invariants": [
+            "The configured validation failure handler receives the store, record, phase, original recordBefore value, and caught error.",
+            "A null recordBefore is passed to the record validator as undefined."
+          ],
+          "edgeCases": [
+            "When no schema definition exists for record.typeName, validation fails with an error identifying the missing record type.",
+            "When recordBefore is null, the record type validator receives undefined for its prior-record argument.",
+            "When validation throws and onValidationFailure is configured, the handler determines the returned result.",
+            "When validation throws and no onValidationFailure handler is configured, the caught error is propagated."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [
+              "Error when no definition exists for record.typeName",
+              "Validation errors from the record type validator when no onValidationFailure handler is configured"
+            ],
+            "reverts": [],
+            "onInvalidInput": "Treats a missing record type definition or any validator-thrown error as a validation failure.",
+            "returnsOnError": "Returns the result of onValidationFailure when configured; otherwise propagates the error."
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "getOwnProperty", "source": null, "kind": "external" },
+            {
+              "name": "recordType.validate",
+              "source": "record type definition selected from this.types",
+              "kind": "external"
+            },
+            { "name": "onValidationFailure", "source": "this.options", "kind": "external" }
+          ],
+          "symbolReferences": ["Store<R>", "R", "this.types", "this.options.onValidationFailure", "getOwnProperty"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Validates a record using the schema definition for its type. Validation failures are either passed to the configured failure handler or propagated.",
+          "specLiterals": [
+            {
+              "kind": "error-message",
+              "value": "Missing definition for record type ",
+              "role": "Prefix of the error message raised when record.typeName has no schema definition."
+            },
+            { "kind": "enum-value", "value": "initialize", "role": "Allowed validation phase." },
+            { "kind": "enum-value", "value": "createRecord", "role": "Allowed validation phase." },
+            { "kind": "enum-value", "value": "updateRecord", "role": "Allowed validation phase." },
+            { "kind": "enum-value", "value": "tests", "role": "Allowed validation phase." }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "validateRecord is called with the store, record, an allowed phase, and null recordBefore.",
+              "then": "It calls the type validator with the record and undefined as the prior record, and returns the validator's result.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "validateRecord is called.",
+              "then": "The failure handler receives the store, record, phase, null recordBefore, and an error whose message is 'Missing definition for record type ' followed by record.typeName; its return value is returned.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "validateRecord is called.",
+              "then": "The same validation error is propagated to the caller.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "249054b26caae5b382cf244ed9ed5edc2a3df8b22ae515137b355d6335c3d777"
+        }
+      },
+      {
+        "unitId": "packages/store/src/lib/StoreSchema.ts__StoreSchema.getMigrationsSince#method:StoreSchema.getMigrationsSince",
+        "unitKind": "method",
+        "name": "getMigrationsSince",
+        "qualifiedName": "StoreSchema.getMigrationsSince",
+        "parentUnitId": "packages/store/src/lib/StoreSchema.ts__StoreSchema#class:StoreSchema",
+        "startLine": 417,
+        "endLine": 432,
+        "isBehavioral": true,
+        "source": "\t * if (migrationsResult.ok) {\n\t *   console.log('Migrations to apply:', migrationsResult.value.length)\n\t *   // Apply each migration to bring data up to date\n\t * }\n\t * ```\n\t *\n\t * @public\n\t */\n\tpublic getMigrationsSince(persistedSchema: SerializedSchema): Result<Migration[], string> {\n\t\t// Every result — success, empty, or error — is cached, so cache once around the whole\n\t\t// computation rather than at each of its exit points.\n\t\tconst cached = this.migrationCache.get(persistedSchema)\n\t\tif (cached) {\n\t\t\treturn cached\n\t\t}\n",
+        "detail": {
+          "unitId": "packages/store/src/lib/StoreSchema.ts__StoreSchema.getMigrationsSince#method:StoreSchema.getMigrationsSince",
+          "fileId": "packages/store/src/lib/StoreSchema.ts__StoreSchema.getMigrationsSince",
+          "unitKind": "method",
+          "name": "getMigrationsSince",
+          "qualifiedName": "StoreSchema.getMigrationsSince",
+          "parentUnitId": "packages/store/src/lib/StoreSchema.ts__StoreSchema#class:StoreSchema",
+          "startLine": 417,
+          "endLine": 432,
+          "signature": "public getMigrationsSince(persistedSchema: SerializedSchema): Result<Migration[], string>",
+          "parameters": [
+            {
+              "name": "persistedSchema",
+              "type": "SerializedSchema",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "Result<Migration[], string>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["persistedSchema is a SerializedSchema value."],
+          "postconditions": [
+            "Returns a Result containing either the migrations to apply or an error string.",
+            "The result for the provided persisted schema is cached, including successful, empty, and error results."
+          ],
+          "invariants": ["A previously cached result is returned without recomputing migrations."],
+          "edgeCases": [
+            "When a cached result exists for the persisted schema, that result is returned directly.",
+            "When no migrations are required, the successful empty migration result is cached and returned.",
+            "When migration computation fails, the error result is cached and returned."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": "Returns Result<Migration[], string> containing the migration error string."
+          },
+          "stateMutations": ["Reads and writes the StoreSchema migration cache for the persisted schema."],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "migrationCache.get", "source": "StoreSchema migration cache", "kind": "internal" }],
+          "symbolReferences": ["SerializedSchema", "Migration", "Result"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Determines the migrations required for a persisted schema and returns them as a Result. Successful, empty, and error results are cached for the provided persisted schema.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "getMigrationsSince is called with the same persisted schema.",
+              "then": "The cached Result<Migration[], string> is returned without recomputing the migration result.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "46de3e0831b5c63ef9090cf66ef3fe59a22fb4cad23bff6d49c4b56effa64850"
+        }
+      },
+      {
+        "unitId": "packages/store/src/lib/StoreSchema.ts__StoreSchema.computeMigrationsSince#method:StoreSchema.computeMigrationsSince",
+        "unitKind": "method",
+        "name": "computeMigrationsSince",
+        "qualifiedName": "StoreSchema.computeMigrationsSince",
+        "parentUnitId": "packages/store/src/lib/StoreSchema.ts__StoreSchema#class:StoreSchema",
+        "startLine": 434,
+        "endLine": 485,
+        "isBehavioral": true,
+        "source": "\t\tthis.migrationCache.set(persistedSchema, result)\n\t\treturn result\n\t}\n\n\tprivate computeMigrationsSince(persistedSchema: SerializedSchema): Result<Migration[], string> {\n\t\tconst upgradeResult = upgradeSchema(persistedSchema)\n\t\tif (!upgradeResult.ok) {\n\t\t\treturn upgradeResult\n\t\t}\n\t\tconst schema = upgradeResult.value\n\t\tconst sequenceIdsToInclude = new Set(\n\t\t\t// start with any shared sequences\n\t\t\tObject.keys(schema.sequences).filter((sequenceId) => this.migrations[sequenceId])\n\t\t)\n\n\t\t// also include any sequences that are not in the persisted schema but are marked as postHoc\n\t\tfor (const sequenceId in this.migrations) {\n\t\t\tif (schema.sequences[sequenceId] === undefined && this.migrations[sequenceId].retroactive) {\n\t\t\t\tsequenceIdsToInclude.add(sequenceId)\n\t\t\t}\n\t\t}\n\n\t\tif (sequenceIdsToInclude.size === 0) {\n\t\t\treturn Result.ok([])\n\t\t}\n\n\t\tconst allMigrationsToInclude = new Set<MigrationId>()\n\t\tfor (const sequenceId of sequenceIdsToInclude) {\n\t\t\tconst theirVersion = schema.sequences[sequenceId]\n\t\t\tif (\n\t\t\t\t(typeof theirVersion !== 'number' && this.migrations[sequenceId].retroactive) ||\n\t\t\t\ttheirVersion === 0\n\t\t\t) {\n\t\t\t\tfor (const migration of this.migrations[sequenceId].sequence) {\n\t\t\t\t\tallMigrationsToInclude.add(migration.id)\n\t\t\t\t}\n\t\t\t\tcontinue\n\t\t\t}\n\t\t\tconst theirVersionId = `${sequenceId}/${theirVersion}`\n\t\t\tconst idx = this.migrations[sequenceId].sequence.findIndex((m) => m.id === theirVersionId)\n\t\t\t// todo: better error handling\n\t\t\tif (idx === -1) {\n\t\t\t\treturn Result.err('Incompatible schema?')\n\t\t\t}\n\t\t\tfor (const migration of this.migrations[sequenceId].sequence.slice(idx + 1)) {\n\t\t\t\tallMigrationsToInclude.add(migration.id)\n\t\t\t}\n\t\t}\n\n\t\t// collect any migrations\n\t\treturn Result.ok(this.sortedMigrations.filter(({ id }) => allMigrationsToInclude.has(id)))\n\t}",
+        "detail": {
+          "unitId": "packages/store/src/lib/StoreSchema.ts__StoreSchema.computeMigrationsSince#method:StoreSchema.computeMigrationsSince",
+          "fileId": "packages/store/src/lib/StoreSchema.ts__StoreSchema.computeMigrationsSince",
+          "unitKind": "method",
+          "name": "computeMigrationsSince",
+          "qualifiedName": "StoreSchema.computeMigrationsSince",
+          "parentUnitId": "packages/store/src/lib/StoreSchema.ts__StoreSchema#class:StoreSchema",
+          "startLine": 434,
+          "endLine": 485,
+          "signature": "private computeMigrationsSince(persistedSchema: SerializedSchema): Result<Migration[], string>",
+          "parameters": [
+            {
+              "name": "persistedSchema",
+              "type": "SerializedSchema",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "Result<Migration[], string>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "private",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "persistedSchema must be a value accepted by upgradeSchema.",
+            "The instance must have migration definitions and a sortedMigrations collection available."
+          ],
+          "postconditions": [
+            "On success, returns a Result containing every applicable migration after the persisted version, ordered according to sortedMigrations.",
+            "If no migration sequence applies, returns a successful Result containing an empty array.",
+            "If the persisted schema cannot be upgraded or references an unknown migration version, returns an error Result."
+          ],
+          "invariants": [
+            "Each migration is included at most once, even if it is selected by multiple sequences.",
+            "Migrations are selected from sortedMigrations, preserving that collection's ordering.",
+            "A retroactive migration sequence absent from the persisted schema is included in full."
+          ],
+          "edgeCases": [
+            "When no persisted sequence matches a configured migration sequence and no configured sequence is retroactive, returns Result.ok([]).",
+            "When a persisted sequence is at version 0, includes every migration in that sequence.",
+            "When a configured retroactive sequence is absent from the persisted schema, includes every migration in that sequence.",
+            "When a persisted sequence version does not identify an entry in its configured migration sequence, returns Result.err('Incompatible schema?').",
+            "When upgradeSchema returns an error, propagates that error Result without computing migrations."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Propagates the error Result returned by upgradeSchema; an unrecognized persisted migration version returns Result.err('Incompatible schema?').",
+            "returnsOnError": "Result<Migration[], string> containing the relevant schema-upgrade or incompatibility error."
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "upgradeSchema", "source": "module-local function", "kind": "internal" }],
+          "symbolReferences": ["SerializedSchema", "Result", "Migration", "MigrationId"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Computes the migrations required to bring a persisted schema up to the current schema. It includes applicable shared and retroactive migration sequences and returns the migrations in the schema's sorted migration order.",
+          "specLiterals": [
+            {
+              "kind": "error-message",
+              "value": "Incompatible schema?",
+              "role": "Error string returned when a persisted sequence version cannot be found in the configured migration sequence."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "computeMigrationsSince is called.",
+              "then": "It returns a successful Result containing an empty migration array.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "computeMigrationsSince is called.",
+              "then": "The successful result contains all migrations from that sequence, without duplicate migration IDs.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "computeMigrationsSince is called.",
+              "then": "It returns Result.err('Incompatible schema?').",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "4e02a51f193d2bea4311deea0e56f298f9c1f8b79252b4e74e4ce150a039909a"
+        }
+      },
+      {
+        "unitId": "packages/store/src/lib/StoreSchema.ts__StoreSchema.migratePersistedRecord#method:StoreSchema.migratePersistedRecord",
+        "unitKind": "method",
+        "name": "migratePersistedRecord",
+        "qualifiedName": "StoreSchema.migratePersistedRecord",
+        "parentUnitId": "packages/store/src/lib/StoreSchema.ts__StoreSchema#class:StoreSchema",
+        "startLine": 510,
+        "endLine": 562,
+        "isBehavioral": true,
+        "source": "\t * }\n\t * ```\n\t *\n\t * @public\n\t */\n\tmigratePersistedRecord(\n\t\trecord: R,\n\t\tpersistedSchema: SerializedSchema,\n\t\tdirection: 'up' | 'down' = 'up'\n\t): MigrationResult<R> {\n\t\tconst migrations = this.getMigrationsSince(persistedSchema)\n\t\tif (!migrations.ok) {\n\t\t\t// TODO: better error\n\t\t\tconsole.error('Error migrating record', migrations.error)\n\t\t\treturn { type: 'error', reason: MigrationFailureReason.MigrationError }\n\t\t}\n\t\tlet migrationsToApply = migrations.value\n\t\tif (migrationsToApply.length === 0) {\n\t\t\treturn { type: 'success', value: record }\n\t\t}\n\n\t\tif (!migrationsToApply.every((m) => m.scope === 'record')) {\n\t\t\treturn {\n\t\t\t\ttype: 'error',\n\t\t\t\treason:\n\t\t\t\t\tdirection === 'down'\n\t\t\t\t\t\t? MigrationFailureReason.TargetVersionTooOld\n\t\t\t\t\t\t: MigrationFailureReason.TargetVersionTooNew,\n\t\t\t}\n\t\t}\n\n\t\tif (direction === 'down') {\n\t\t\tif (!migrationsToApply.every((m) => m.scope === 'record' && m.down)) {\n\t\t\t\treturn {\n\t\t\t\t\ttype: 'error',\n\t\t\t\t\treason: MigrationFailureReason.TargetVersionTooOld,\n\t\t\t\t}\n\t\t\t}\n\t\t\tmigrationsToApply = migrationsToApply.slice().reverse()\n\t\t}\n\n\t\trecord = structuredClone(record)\n\t\ttry {\n\t\t\tfor (const migration of migrationsToApply) {\n\t\t\t\tif (migration.scope === 'store') throw new Error(/* won't happen, just for TS */)\n\t\t\t\tif (migration.scope === 'storage') throw new Error(/* won't happen, just for TS */)\n\t\t\t\tconst shouldApply = migration.filter ? migration.filter(record) : true\n\t\t\t\tif (!shouldApply) continue\n\t\t\t\tconst result = migration[direction]!(record)\n\t\t\t\tif (result) {\n\t\t\t\t\trecord = structuredClone(result) as any\n\t\t\t\t}\n\t\t\t}",
+        "detail": {
+          "unitId": "packages/store/src/lib/StoreSchema.ts__StoreSchema.migratePersistedRecord#method:StoreSchema.migratePersistedRecord",
+          "fileId": "packages/store/src/lib/StoreSchema.ts__StoreSchema.migratePersistedRecord",
+          "unitKind": "method",
+          "name": "migratePersistedRecord",
+          "qualifiedName": "StoreSchema.migratePersistedRecord",
+          "parentUnitId": "packages/store/src/lib/StoreSchema.ts__StoreSchema#class:StoreSchema",
+          "startLine": 510,
+          "endLine": 562,
+          "signature": "migratePersistedRecord(record: R, persistedSchema: SerializedSchema, direction: 'up' | 'down' = 'up'): MigrationResult<R>",
+          "parameters": [
+            { "name": "record", "type": "R", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "persistedSchema",
+              "type": "SerializedSchema",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "direction",
+              "type": "'up' | 'down'",
+              "default": "'up'",
+              "optional": true,
+              "variadic": false,
+              "order": 2
+            }
+          ],
+          "returnType": "MigrationResult<R>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "record conforms to the expected record type R.",
+            "persistedSchema is a valid serialized schema descriptor.",
+            "direction is either 'up' or 'down'."
+          ],
+          "postconditions": [
+            "On success, returns a success result containing the migrated record.",
+            "The input record is not mutated; migration operates on a structured clone.",
+            "When migrating down, applicable migrations are applied in reverse order.",
+            "When no migrations are required, returns the original record in a success result."
+          ],
+          "invariants": [
+            "Only migrations with scope 'record' may be applied.",
+            "A migration filter, when present, determines whether that migration is applied to the current record.",
+            "A truthy migration result replaces the current record with a structured clone of that result.",
+            "Migration failures are represented by MigrationResult errors rather than successful values."
+          ],
+          "edgeCases": [
+            "If getMigrationsSince reports an error, returns an error result with reason MigrationFailureReason.MigrationError.",
+            "If no migrations are required, returns a success result containing the supplied record without applying cloning or migration callbacks.",
+            "If any required migration is not record-scoped, returns TargetVersionTooNew for upward migration or TargetVersionTooOld for downward migration.",
+            "For downward migration, if any required record migration lacks a down function, returns TargetVersionTooOld.",
+            "Migrations whose filters return false are skipped.",
+            "If migration execution fails, returns a migration error result."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Returns a structured migration error when the schema lookup fails, when the transition includes non-record migrations, or when a downward migration lacks a down function.",
+            "returnsOnError": "MigrationResult error with reason MigrationFailureReason.MigrationError, MigrationFailureReason.TargetVersionTooNew, or MigrationFailureReason.TargetVersionTooOld as applicable."
+          },
+          "stateMutations": [
+            "Mutates only the local record variable and local migration list; does not mutate the caller's record."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "getMigrationsSince", "source": "StoreSchema", "kind": "internal" },
+            { "name": "structuredClone", "source": "runtime", "kind": "external" },
+            { "name": "migration.filter", "source": "migration definition", "kind": "external" },
+            { "name": "migration[direction]", "source": "migration definition", "kind": "external" },
+            { "name": "console.error", "source": "runtime", "kind": "external" }
+          ],
+          "symbolReferences": ["R", "SerializedSchema", "MigrationResult", "MigrationFailureReason"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Migrates a persisted record between schema versions using applicable record-scoped migrations. It returns the unchanged record when no migration is needed, or a structured failure when the schema transition cannot be performed.",
+          "specLiterals": [
+            { "kind": "enum-value", "value": "'up'", "role": "Default migration direction." },
+            { "kind": "enum-value", "value": "'down'", "role": "Supported reverse migration direction." },
+            {
+              "kind": "enum-value",
+              "value": "'record'",
+              "role": "Required migration scope for persisted-record migration."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "migratePersistedRecord(record, persistedSchema) is called",
+              "then": "The result is { type: 'success', value: record } and no migration is applied.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "migratePersistedRecord is called with direction 'up'",
+              "then": "The result is an error with reason MigrationFailureReason.TargetVersionTooNew.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "migratePersistedRecord is called",
+              "then": "Record migrations are evaluated in reverse order, and the original input record remains unmodified.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "eddcdbc0becd53e9078d9ce82ae24f3adc0e8f0ff2f93eeb3492a3e88ceace10"
+        }
+      },
+      {
+        "unitId": "packages/store/src/lib/StoreSchema.ts__StoreSchema.migrateStorage#method:StoreSchema.migrateStorage",
+        "unitKind": "method",
+        "name": "migrateStorage",
+        "qualifiedName": "StoreSchema.migrateStorage",
+        "parentUnitId": "packages/store/src/lib/StoreSchema.ts__StoreSchema#class:StoreSchema",
+        "startLine": 564,
+        "endLine": 646,
+        "isBehavioral": true,
+        "source": "\t\t\tconsole.error('Error migrating record', e)\n\t\t\treturn { type: 'error', reason: MigrationFailureReason.MigrationError }\n\t\t}\n\n\t\treturn { type: 'success', value: record }\n\t}\n\n\tmigrateStorage(storage: SynchronousStorage<R>) {\n\t\tconst schema = storage.getSchema()\n\t\tassert(schema, 'Schema is missing.')\n\n\t\tconst migrations = this.getMigrationsSince(schema)\n\t\tif (!migrations.ok) {\n\t\t\tconsole.error('Error migrating store', migrations.error)\n\t\t\tthrow new Error(migrations.error)\n\t\t}\n\t\tconst migrationsToApply = migrations.value\n\t\tif (migrationsToApply.length === 0) {\n\t\t\treturn\n\t\t}\n\n\t\tstorage.setSchema(this.serialize())\n\n\t\tfor (const migration of migrationsToApply) {\n\t\t\tif (migration.scope === 'record') {\n\t\t\t\t// Collect updates during iteration, then apply them after.\n\t\t\t\t// This avoids issues with live iterators (e.g., SQLite) where updating\n\t\t\t\t// records during iteration can cause them to be visited multiple times.\n\t\t\t\tconst updates: [string, R][] = []\n\t\t\t\tfor (const [id, state] of storage.entries()) {\n\t\t\t\t\tconst shouldApply = migration.filter ? migration.filter(state) : true\n\t\t\t\t\tif (!shouldApply) continue\n\t\t\t\t\tconst record = structuredClone(state)\n\t\t\t\t\tconst result = migration.up!(record as any) ?? record\n\t\t\t\t\tif (!isEqual(result, state)) {\n\t\t\t\t\t\tupdates.push([id, result as R])\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t\tfor (const [id, record] of updates) {\n\t\t\t\t\tstorage.set(id, record)\n\t\t\t\t}\n\t\t\t} else if (migration.scope === 'store') {\n\t\t\t\t// legacy\n\t\t\t\tconst prevStore = Object.fromEntries(storage.entries())\n\t\t\t\tlet nextStore = structuredClone(prevStore)\n\t\t\t\tnextStore = (migration.up!(nextStore) as any) ?? nextStore\n\t\t\t\tfor (const [id, state] of Object.entries(nextStore)) {\n\t\t\t\t\tif (!state) continue // these will be deleted in the next loop\n\t\t\t\t\tif (!isEqual(state, prevStore[id])) {\n\t\t\t\t\t\tstorage.set(id, state)\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t\tfor (const id of Object.keys(prevStore)) {\n\t\t\t\t\tif (!nextStore[id]) {\n\t\t\t\t\t\tstorage.delete(id)\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t} else if (migration.scope === 'storage') {\n\t\t\t\tmigration.up!(storage)\n\t\t\t} else {\n\t\t\t\texhaustiveSwitchError(migration)\n\t\t\t}\n\t\t}\n\t\t// Clean up by filtering out any non-document records.\n\t\t// This is mainly legacy support for extremely early days tldraw.\n\t\t// Collect first: as above, deleting during a live iterator can throw on SQLite backends.\n\t\tconst idsToDelete: string[] = []\n\t\tfor (const [id, state] of storage.entries()) {\n\t\t\tif (this.getType(state.typeName).scope !== 'document') {\n\t\t\t\tidsToDelete.push(id)\n\t\t\t}\n\t\t}\n\t\tfor (const id of idsToDelete) {\n\t\t\tstorage.delete(id)\n\t\t}\n\t}\n\n\t/**\n\t * Migrates an entire store snapshot to match the current schema version.\n\t *\n\t * This method applies all necessary migrations to bring a persisted store\n\t * snapshot up to the current schema version. It handles both record-level\n\t * and store-level migrations, and can optionally mutate the input store",
+        "detail": {
+          "unitId": "packages/store/src/lib/StoreSchema.ts__StoreSchema.migrateStorage#method:StoreSchema.migrateStorage",
+          "fileId": "packages/store/src/lib/StoreSchema.ts__StoreSchema.migrateStorage",
+          "unitKind": "method",
+          "name": "migrateStorage",
+          "qualifiedName": "StoreSchema.migrateStorage",
+          "parentUnitId": "packages/store/src/lib/StoreSchema.ts__StoreSchema#class:StoreSchema",
+          "startLine": 564,
+          "endLine": 646,
+          "signature": "migrateStorage(storage: SynchronousStorage<R>)",
+          "parameters": [
+            {
+              "name": "storage",
+              "type": "SynchronousStorage<R>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "void",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "storage.getSchema() returns a schema value.",
+            "The storage implementation supports schema updates, entry iteration, record writes, and record deletion.",
+            "Migration definitions returned by getMigrationsSince are valid migration objects with supported scopes."
+          ],
+          "postconditions": [
+            "If migrations are required, storage.setSchema(this.serialize()) is called before applying them.",
+            "All applicable migrations are applied in order.",
+            "Record-scoped migrations update only records whose filters pass and whose migrated values differ from their original values.",
+            "Store-scoped migrations persist changed truthy records and delete identifiers whose resulting values are falsy or absent.",
+            "Storage-scoped migrations receive the storage instance directly.",
+            "After migrations, all records whose schema type scope is not document are deleted.",
+            "If no migrations are required, the method returns without changing the storage."
+          ],
+          "invariants": [
+            "Record-scoped updates are collected before being written, so storage is not mutated while iterating its entries.",
+            "A record-scoped migration operates on a structured clone of the original record.",
+            "Unchanged migrated records are not written.",
+            "Migrations are applied in the order returned by getMigrationsSince."
+          ],
+          "edgeCases": [
+            "When storage.getSchema() is missing, the method fails immediately with the assertion message \"Schema is missing.\".",
+            "When getMigrationsSince reports failure, the error is logged, an Error is thrown with the reported error value, and no migration loop is entered.",
+            "When no migrations are required, the method returns without setting the schema or performing legacy non-document cleanup.",
+            "When a record migration has a filter that returns false, that record is skipped.",
+            "When a migration returns undefined or null, the cloned or copied value is retained as the migration result.",
+            "When a migrated record is deeply equal to its original value, no storage write is performed.",
+            "When a store migration produces a falsy value for an existing identifier, that identifier is deleted.",
+            "When a storage-scoped migration is present, it is invoked with the storage object and is responsible for its own storage changes."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [
+              "Assertion failure when the persisted schema is missing",
+              "Error containing the getMigrationsSince failure value",
+              "Exceptions thrown by migration callbacks or storage operations"
+            ],
+            "reverts": [],
+            "onInvalidInput": "Fails when the persisted schema is absent; migration and storage callback failures propagate.",
+            "returnsOnError": null
+          },
+          "stateMutations": [
+            "Updates the persisted schema when at least one migration is required.",
+            "Writes changed records produced by record- and store-scoped migrations.",
+            "Deletes records removed by store migrations.",
+            "Deletes records whose schema type scope is not document during final cleanup."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "storage.getSchema", "source": "SynchronousStorage<R>", "kind": "external" },
+            { "name": "this.getMigrationsSince", "source": "StoreSchema", "kind": "internal" },
+            { "name": "this.serialize", "source": "StoreSchema", "kind": "internal" },
+            { "name": "storage.entries", "source": "SynchronousStorage<R>", "kind": "external" },
+            { "name": "storage.setSchema", "source": "SynchronousStorage<R>", "kind": "external" },
+            { "name": "storage.set", "source": "SynchronousStorage<R>", "kind": "external" },
+            { "name": "storage.delete", "source": "SynchronousStorage<R>", "kind": "external" },
+            { "name": "migration.filter", "source": "migration definition", "kind": "external" },
+            { "name": "migration.up", "source": "migration definition", "kind": "external" },
+            { "name": "this.getType", "source": "StoreSchema", "kind": "internal" }
+          ],
+          "symbolReferences": [
+            "SynchronousStorage<R>",
+            "structuredClone",
+            "isEqual",
+            "assert",
+            "exhaustiveSwitchError"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Migrates persisted storage records and schema from the stored schema version to the current schema. It applies record-, store-, and storage-scoped migrations, then removes records that are not document records.",
+          "specLiterals": [
+            {
+              "kind": "error-message",
+              "value": "Schema is missing.",
+              "role": "Assertion failure message when persisted storage has no schema."
+            },
+            {
+              "kind": "enum-value",
+              "value": "record",
+              "role": "Migration scope selecting per-record migration behavior."
+            },
+            {
+              "kind": "enum-value",
+              "value": "store",
+              "role": "Migration scope selecting legacy whole-store migration behavior."
+            },
+            {
+              "kind": "enum-value",
+              "value": "storage",
+              "role": "Migration scope selecting direct storage migration behavior."
+            },
+            { "kind": "enum-value", "value": "document", "role": "Record type scope retained during final cleanup." }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "migrateStorage(storage) is called.",
+              "then": "It returns without calling setSchema, without applying migrations, and without deleting non-document records.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "migrateStorage(storage) is called.",
+              "then": "Each applicable record is cloned and migrated, unchanged records are not written, and changed records are written only after entry iteration completes.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "All migrations finish successfully.",
+              "then": "Those non-document records are deleted during the final cleanup pass.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "fec7a81210f272fa29bf573d61cd5c4e86eeaf95bf7d7ab464e2d0a7a7d42c1d"
+        }
+      },
+      {
+        "unitId": "packages/store/src/lib/StoreSchema.ts__StoreSchema.migrateStoreSnapshot#method:StoreSchema.migrateStoreSnapshot",
+        "unitKind": "method",
+        "name": "migrateStoreSnapshot",
+        "qualifiedName": "StoreSchema.migrateStoreSnapshot",
+        "parentUnitId": "packages/store/src/lib/StoreSchema.ts__StoreSchema#class:StoreSchema",
+        "startLine": 672,
+        "endLine": 721,
+        "isBehavioral": true,
+        "source": "\tmigrateStoreSnapshot(\n\t\tsnapshot: StoreSnapshot<R>,\n\t\topts?: { mutateInputStore?: boolean }\n\t): MigrationResult<SerializedStore<R>> {\n\t\tconst migrations = this.getMigrationsSince(snapshot.schema)\n\t\tif (!migrations.ok) {\n\t\t\t// TODO: better error\n\t\t\tconsole.error('Error migrating store', migrations.error)\n\t\t\treturn { type: 'error', reason: MigrationFailureReason.MigrationError }\n\t\t}\n\t\tconst migrationsToApply = migrations.value\n\t\tif (migrationsToApply.length === 0) {\n\t\t\treturn { type: 'success', value: snapshot.store }\n\t\t}\n\t\tconst store = Object.assign(\n\t\t\tnew Map<string, R>(objectMapEntries(snapshot.store).map(devFreeze)),\n\t\t\t{\n\t\t\t\tgetSchema: () => snapshot.schema,\n\t\t\t\tsetSchema: (_: SerializedSchema) => {},\n\t\t\t}\n\t\t)\n\t\ttry {\n\t\t\tthis.migrateStorage(store)\n\t\t\tif (opts?.mutateInputStore) {\n\t\t\t\tfor (const [id, record] of store.entries()) {\n\t\t\t\t\tsnapshot.store[id as keyof typeof snapshot.store] = record\n\t\t\t\t}\n\t\t\t\tfor (const id of Object.keys(snapshot.store)) {\n\t\t\t\t\tif (!store.has(id)) {\n\t\t\t\t\t\tdelete snapshot.store[id as keyof typeof snapshot.store]\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t\treturn { type: 'success', value: snapshot.store }\n\t\t\t} else {\n\t\t\t\treturn {\n\t\t\t\t\ttype: 'success',\n\t\t\t\t\tvalue: Object.fromEntries(store.entries()) as SerializedStore<R>,\n\t\t\t\t}\n\t\t\t}\n\t\t} catch (e) {\n\t\t\tconsole.error('Error migrating store', e)\n\t\t\treturn { type: 'error', reason: MigrationFailureReason.MigrationError }\n\t\t}\n\t}\n\n\t/**\n\t * Creates an integrity checker function for the given store.\n\t *\n\t * This method calls the createIntegrityChecker option if provided, allowing\n\t * custom integrity checking logic to be set up for the store. The integrity",
+        "detail": {
+          "unitId": "packages/store/src/lib/StoreSchema.ts__StoreSchema.migrateStoreSnapshot#method:StoreSchema.migrateStoreSnapshot",
+          "fileId": "packages/store/src/lib/StoreSchema.ts__StoreSchema.migrateStoreSnapshot",
+          "unitKind": "method",
+          "name": "migrateStoreSnapshot",
+          "qualifiedName": "StoreSchema.migrateStoreSnapshot",
+          "parentUnitId": "packages/store/src/lib/StoreSchema.ts__StoreSchema#class:StoreSchema",
+          "startLine": 672,
+          "endLine": 721,
+          "signature": "migrateStoreSnapshot(snapshot: StoreSnapshot<R>, opts?: { mutateInputStore?: boolean }): MigrationResult<SerializedStore<R>>",
+          "parameters": [
+            {
+              "name": "snapshot",
+              "type": "StoreSnapshot<R>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "opts",
+              "type": "{ mutateInputStore?: boolean }",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "MigrationResult<SerializedStore<R>>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["snapshot contains a schema and serialized store compatible with StoreSnapshot<R>."],
+          "postconditions": [
+            "If no migrations apply, returns a success result containing snapshot.store.",
+            "If migrations apply successfully and mutateInputStore is false or omitted, returns a success result containing a newly constructed serialized store with the migrated entries.",
+            "If migrations apply successfully and mutateInputStore is true, updates snapshot.store to match the migrated store and returns a success result containing snapshot.store.",
+            "If determining or applying migrations fails, returns a MigrationError result."
+          ],
+          "invariants": [
+            "The input snapshot store is not mutated when migrations apply and mutateInputStore is false or omitted.",
+            "When mutateInputStore is true, entries absent from the migrated store are deleted from snapshot.store.",
+            "A failed migration is represented by a MigrationResult error rather than being propagated to the caller."
+          ],
+          "edgeCases": [
+            "When the snapshot schema has no migrations to apply, returns success with the original snapshot.store without running storage migration.",
+            "When migration lookup fails, logs the migration error and returns MigrationFailureReason.MigrationError.",
+            "When storage migration throws, logs the error and returns MigrationFailureReason.MigrationError.",
+            "When mutateInputStore is true, migrated entries are copied into snapshot.store and stale original entries are removed.",
+            "When mutateInputStore is false or omitted, migration output is returned as a separate object created from the migrated entries."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Migration lookup or storage migration failures are caught or converted into a MigrationResult error.",
+            "returnsOnError": "Returns { type: 'error', reason: MigrationFailureReason.MigrationError }."
+          },
+          "stateMutations": [
+            "When opts.mutateInputStore is true, mutates snapshot.store by assigning migrated records and deleting records absent from the migrated store.",
+            "The temporary migration store is mutated by migrateStorage."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "getMigrationsSince", "source": "StoreSchema", "kind": "internal" },
+            { "name": "migrateStorage", "source": "StoreSchema", "kind": "internal" },
+            { "name": "objectMapEntries", "source": null, "kind": "external" },
+            { "name": "devFreeze", "source": null, "kind": "external" },
+            { "name": "console.error", "source": "console", "kind": "external" }
+          ],
+          "symbolReferences": [
+            "StoreSnapshot<R>",
+            "MigrationResult<SerializedStore<R>>",
+            "SerializedStore<R>",
+            "SerializedSchema",
+            "MigrationFailureReason.MigrationError"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Migrates a persisted store snapshot through all schema migrations applicable after its recorded schema. It returns either the migrated serialized store or a migration error, optionally applying the migrated contents back to the input snapshot store.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "migrateStoreSnapshot(snapshot) is called.",
+              "then": "The result is a success result whose value is the exact snapshot.store object.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "migrateStoreSnapshot(snapshot) is called.",
+              "then": "The result is successful and contains the migrated entries in a newly constructed serialized store; the original snapshot.store is not updated.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "migrateStoreSnapshot(snapshot) is called.",
+              "then": "The result is { type: 'error', reason: MigrationFailureReason.MigrationError } rather than a thrown migration exception.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "5de09d3b661af92c74a81eaee2b443b482779b81e656c4716c821c2fe8bb0e4b"
+        }
+      },
+      {
+        "unitId": "packages/store/src/lib/StoreSchema.ts__StoreSchema.serialize#method:StoreSchema.serialize",
+        "unitKind": "method",
+        "name": "serialize",
+        "qualifiedName": "StoreSchema.serialize",
+        "parentUnitId": "packages/store/src/lib/StoreSchema.ts__StoreSchema#class:StoreSchema",
+        "startLine": 768,
+        "endLine": 780,
+        "isBehavioral": true,
+        "source": "\t\t\t\t])\n\t\t\t),\n\t\t}\n\t}\n\n\t/**\n\t * Serializes a schema representing the earliest possible version.\n\t *\n\t * This method creates a serialized schema where all migration sequences\n\t * are set to version 0, representing the state before any migrations\n\t * have been applied. This is used in specific legacy scenarios.\n\t *\n\t * @returns A SerializedSchema with all sequences set to version 0",
+        "detail": {
+          "unitId": "packages/store/src/lib/StoreSchema.ts__StoreSchema.serialize#method:StoreSchema.serialize",
+          "fileId": "packages/store/src/lib/StoreSchema.ts__StoreSchema.serialize",
+          "unitKind": "method",
+          "name": "serialize",
+          "qualifiedName": "StoreSchema.serialize",
+          "parentUnitId": "packages/store/src/lib/StoreSchema.ts__StoreSchema#class:StoreSchema",
+          "startLine": 768,
+          "endLine": 780,
+          "signature": "serialize(): SerializedSchema",
+          "parameters": [],
+          "returnType": "SerializedSchema",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": ["Returns a SerializedSchema representing the current schema state."],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["SerializedSchema"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Serializes the store schema into its persisted SerializedSchema representation.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "47c6aaa14ebf3bfbaeaffafea233db69ecf54be5097f243e689e021108cf2ce1"
+        }
+      },
+      {
+        "unitId": "packages/store/src/lib/StoreSchema.ts__StoreSchema.serializeEarliestVersion#method:StoreSchema.serializeEarliestVersion",
+        "unitKind": "method",
+        "name": "serializeEarliestVersion",
+        "qualifiedName": "StoreSchema.serializeEarliestVersion",
+        "parentUnitId": "packages/store/src/lib/StoreSchema.ts__StoreSchema#class:StoreSchema",
+        "startLine": 797,
+        "endLine": 805,
+        "isBehavioral": true,
+        "source": "\t * This method retrieves the RecordType associated with the specified\n\t * type name, which contains the record's validation, creation, and\n\t * other behavioral logic.\n\t *\n\t * @param typeName - The name of the record type to retrieve\n\t * @returns The RecordType definition for the specified type\n\t *\n\t * @throws Will throw an error if the record type does not exist\n\t *",
+        "detail": {
+          "unitId": "packages/store/src/lib/StoreSchema.ts__StoreSchema.serializeEarliestVersion#method:StoreSchema.serializeEarliestVersion",
+          "fileId": "packages/store/src/lib/StoreSchema.ts__StoreSchema.serializeEarliestVersion",
+          "unitKind": "method",
+          "name": "serializeEarliestVersion",
+          "qualifiedName": "StoreSchema.serializeEarliestVersion",
+          "parentUnitId": "packages/store/src/lib/StoreSchema.ts__StoreSchema#class:StoreSchema",
+          "startLine": 797,
+          "endLine": 805,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "The available documentation describes retrieving the RecordType associated with a specified type name. The implementation contract for serialization, including its inputs and output, is not present in the supplied unit source.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "37d13a68e4e45c636c0248a98934d921764b755491b269d1a57b09a312dd2347"
+        }
+      }
+    ]
+  },
+  "out": [
+    "packages/store/src/lib/migrate.ts",
+    "packages/store/src/lib/RecordType.ts",
+    "packages/store/src/lib/devFreeze.ts",
+    "packages/store/src/lib/Store.ts",
+    "packages/store/src/lib/BaseRecord.ts"
+  ],
+  "in": [
+    "packages/store/src/lib/StoreListeners.test.ts",
+    "packages/store/src/lib/Store.test.ts",
+    "packages/store/src/lib/migrate.ts",
+    "packages/store/src/lib/test/recordStoreFuzzing.test.ts",
+    "packages/store/src/lib/test/testSchema.v0.ts",
+    "packages/store/src/lib/test/testSchema.v1.ts",
+    "packages/store/src/lib/StoreSchema.test.ts",
+    "packages/store/src/lib/StoreSideEffects.test.ts",
+    "packages/store/src/lib/StoreQueries.test.ts",
+    "packages/store/src/lib/executeQuery.test.ts",
+    "packages/store/src/lib/Store.ts",
+    "packages/store/src/index.ts"
+  ],
+  "externals": ["@tldraw/utils"],
+  "impact": { "seeds": 11, "callers": 1, "impactedFiles": [] }
+}

@@ -1,22 +1,14 @@
-You are performing a cross-repository information-retrieval task over the
-React state-management ecosystem.
+CASE: xrepo-h06
 
-CASE:       xrepo-v6-4-lifecycle-fires-for-a-branch-that-was-never-shown-hard
-ECOSYSTEM:  15 sibling repositories. They are separate products with separate
-            release trains; most of them do not import one another, and there is
-            no monorepo, workspace or shared package graph tying them together.
-CHECKOUTS:  ~/programs/benchmarks/react-ecosystem/<repo>
-            Each repository is checked out at exactly the commit below and at no
-            other revision. The repositories at those commits are the whole world
-            for this task: do not use any other revision, and do not rely on
-            knowledge of these projects' later history.
+You are looking for every file that a single change would touch, across 16
+separate React-ecosystem repositories. They do not import one another, so the
+answer spans more than one repository.
 
   repo             commit
   redux            3aa561f9fc13f3287e6d83764f85fe0e82437c5f
   redux-toolkit    b1c5130154c454ca8387f55da6122fcb507c560c
   react-redux      ad5d1e0816d0cb1464b25cf2853f2a7d73433f5b
-  reselect         8d87c27b75f55883629be75d1eae1c27832d907a
-  redux-thunk      184205d49f707c6f203269e0d39ad85824801816
+  reselect         950112a328f71d97d18fd543159d6fdefa432b38
   react            3a717e42438afac81020cdec297dadb5613a4304
   jotai            5c4ca26b0db5571114be58393e17854a771f7790
   zustand          beca84e600e4e250f6b244d22878e72948f331c7
@@ -27,75 +19,82 @@ CHECKOUTS:  ~/programs/benchmarks/react-ecosystem/<repo>
   tldraw           5590d14d8edd4faab7dc1177b6e1adb28876fd23
   redux-devtools   f4b4668c30ae08920c59a76cc4629c35c16ef0fa
   router           3dee5b2e9453d01a3172c73426959007b290b3fc
+  primitives       58164e06ca67dff9a68dd375d858180cfdc8ec27
+  zod              912f0f51b0ced654d0069741e7160834dca742ee
+
+Assume these commits are already indexed and ready. Do not verify checkouts, do
+not check revisions, do not run any gates. Just start searching.
 
 PROBLEM
-A behaviour-level description of a defect and the contract it belongs to. The
-identifiers used in the code are deliberately withheld, so searching for the
-words below will not find the answer:
-
 When part of a tree is not the part that actually got shown - it was superseded and replaced by a stand-in while it was still settling - the per-node enter and leave notifications for the superseded part still run, because the code that decides which nodes entered and which left compares only the old set against the new set. It has no notion of where the shown region stops, so nodes below that boundary are treated exactly like nodes the user is really looking at: their callbacks fire for a region that was never presented, and they fire against membership that was published without any record of which branch it belonged to, so an observer re-entering during publication sees the wrong extent. The concept that would fix this does not exist anywhere in the repository yet - there is no name to search for. Elsewhere in the folder the same hazard is handled on purpose: one library carries an explicit flag down the tree so that a subtree currently held back does not run its attach and detach work, another attaches and detaches only along the branch that is genuinely depended upon, and another funnels all observer notification through a single batching point so that membership and notification cannot interleave. Which files decide entered-and-left membership without a boundary, and which own the scoped-notification contract they have to be brought in line with?
 
-TASK
-Identify every file, in every repository listed above, that would have to change
-to satisfy the described contract. The answer spans MULTIPLE repositories that do
-not import one another - do not stop at the first repository that matches, and do
-not assume the repository where the symptom appears is the only one affected.
+PHASE 1 - FIND THE FILES
+- Use ONLY the plumbline MCP tools. That is your whole surface.
+- You are sandboxed: nothing else on this machine is readable, and any denial you
+  hit is expected. Do not work around it.
+- Do NOT read golden.json, and do not look for it. Phase 1 is answered blind.
+- Work outward from the symptom to the contract, across repositories. Source files
+  only - no tests, docs, examples, fixtures or build output.
+- Return repo-relative paths (no leading slash, no repo name prefix), most likely
+  first, at most 75 paths total.
 
-RULES
-- You may ONLY use the plumbline MCP tools. You have no filesystem, shell, or search access.
-- Only the repository directories listed below are readable. Anything else under
-  the benchmark root is blocked at the kernel level and will fail with
-  "Operation not permitted"; that is expected and is not a fault to work around.
-  Do not spend turns probing outside them.
-- Do not stop at the first plausible file, and do not stop at the first repository.
-  Work outward from the symptom to the contract: once you can state the rule the
-  defect breaks, find every other file in the roster that defines, enforces,
-  relies on, or violates that same rule.
-- Return repo-relative paths: no leading slash, no repository name prefix.
-  Example: packages/<package-name>/src/<SomeFile>.ts
-- Every path must exist in that repository AT THE PINNED COMMIT. These working
-  trees are NOT clean: they carry untracked files that are not part of the commit
-  and are not part of this task. You have no Bash and cannot run `git cat-file`
-  yourself - the harness has already gated every checkout to the pinned commit
-  before launching you (see CHECKOUT below), so trust what the tool surface shows
-  you and drop anything it does not confirm exists.
-- Name source files only. Ignore tests, docs, examples, fixtures, benchmarks,
-  build output, dependency directories and generated API reports.
-- Prefer the files that define, enforce, or violate the contract over files that
-  merely mention it.
-- Rank most likely first and cap the whole answer at 75 paths across all
-  repositories combined.
+- Keep a running note of every error you hit in this phase: a tool call that is
+  rejected, times out, returns an MCP error, overflows, or comes back empty when
+  it should not. Record the call number, the tool, the arguments, and the exact
+  error text. You will write them all to errors.log in PHASE 2.
 
-RUN CONDITIONS (MANDATORY - this run is invalid if any of these is not met):
-- LAUNCH: one fresh session per run. Prompt caching WITHIN this run is fine -
-  cache this session creates and reads back is expected and costs nothing in
-  comparability. What is forbidden is inheriting cache from an EARLIER session:
-  do not resume or continue a prior session, do not reuse a session across cases
-  or arms, and do not re-attempt a case in a session that already attempted it.
-  A run that starts warm on someone else's context is not a measurement.
-- CHECKOUT: before searching, confirm your surface is actually live for THESE
-  repositories at THESE commits. Verify the revision of every repository you
-  intend to answer from before you trust anything you read out of it. If a
-  repository is missing, or sits at a different revision than the one pinned
-  above, STOP and say so plainly. Do not answer from parametric memory, from
-  another revision, or from a partially materialised tree, and do not return a
-  guessed list. A run against a missing or drifted checkout is a failed run to be
-  relaunched - it is not an empty answer.
-- COST: cost.json must record cache_read and cache_creation next to the USD
-  figure, and both must be attributable to THIS run alone. If the session was
-  resumed, reused, or had already attempted the case, say so plainly in your final
-  message so the run can be marked not-comparable instead of scored against clean runs.
-
-
-FINAL MESSAGE
-Output ONLY a JSON array, most likely first, with no prose and no markdown fence.
-One object per repository you are naming; omit repositories you are not naming:
+End PHASE 1 with ONLY this JSON array, no prose and no markdown fence:
 [{"repo": "<repo>", "files": ["<path>", "..."]}, ...]
 
+PHASE 2 - ARTIFACTS (only after PHASE 1's array is out)
+File access opens now, and not before. You were launched inside this arm's own
+folder: everything you write goes HERE, and the answer key sits one level up at
+../golden.json. Read ../golden.json, print every file its `expected` block lists,
+then which of them PHASE 1 found and which it missed.
 
-DELIVERABLES: the harness captures this run for you - it records the full transcript,
-every tool call, and the cost, and it writes ranked.json from your final message. You
-have no write tools; do not attempt to create files. Your only job is the ranked answer.
-result.json is NOT yours to produce and nothing you emit lands in it: after the run the
-scorer writes it from ranked.json against the held-out gold set, carrying recall,
-precision, F1, MRR and hits alongside ranked_detail, found, missed_gold and retriever.
+Write ALL of these in THIS directory before ending. A missing file is a failed
+run; a null value is data.
+
+1. ranked.json        PHASE 1's array, verbatim.
+2. result.json        {"arm","case_id","model","retrieved","gold_size","hits",
+                      "missed_gold","metrics":{"recall@10","recall@25","recall@50",
+                      "recall@75","precision@5","precision@10","MRR",
+                      "first_hit_rank","repo_recall"},
+                      "ranked_detail":[{"rank","repo","path","gold"}]}
+                      recall@k counts gold files inside the first k paths of your
+                      ranked list, over the total gold count; MRR is 1/rank of
+                      your first gold hit, 0 if none; repo_recall is the share of
+                      gold repos your answer named at all.
+3. commands.log       One line per PHASE 1 tool call, in order:
+                      "NN. <tool> <json args>" (truncate args to 400 chars).
+4. output.log         Prose: what you searched and why, conclusions, final
+                      array, PHASE 2 comparison.
+5. raw_result.json    {"case","arm","model","phase1":<array>,
+                      "phase2":{"gold":[],"hits":[],"missed":[]}}
+6. cost.json          {"session_id","arm","model","usd","duration_ms",
+                      "num_turns","tokens":{"input","output","reasoning",
+                      "cache_read","cache_creation"},"tools_called":{},
+                      "errors":[],"not_comparable_reason":[]}
+                      You cannot see your own cost counters. If raw_response.json
+                      is readable here, aggregate it. If not, write every field
+                      null with "note":"counters not exposed to the agent" and
+                      STILL write the file - never skip it.
+7. errors.log         Every error you faced during PHASE 1, one per entry, in
+                      call order: "NN. <tool> <json args> -> <exact error text>".
+                      Include rejected arguments, MCP errors, timeouts, result
+                      overflows, and empty results that should not have been
+                      empty. If there were none, write the single line
+                      "no errors in PHASE 1" - the file must still exist.
+
+FINALIZE CHECKLIST (verify before you end):
+- all seven files exist and ranked/result/raw_result/cost parse as JSON;
+- ranked.json: <=75 paths, repo-relative, no leading slash, no repo prefix;
+- result.json `retrieved` equals the path count; metrics computed only against
+  ../golden.json, after the PHASE 1 array was final;
+- commands.log has one line per PHASE 1 tool call, and errors.log lists every
+  failed one of them (or says there were none);
+- nothing written outside this directory. golden.json is read-only, the sibling
+  arm folders are not yours, and the pinned checkouts are not to be touched.
+
+raw_response.json and stderr.log are written by the shell that launched you - the
+event stream and stderr - so do not try to create them yourself.

@@ -1,0 +1,1037 @@
+{
+  "schema": 1,
+  "kind": "file",
+  "repoName": "reselect",
+  "commitHash": "8d87c27b75f55883629be75d1eae1c27832d907a",
+  "generatedAt": "2026-08-01T20:58:55.352Z",
+  "file": {
+    "relativePath": "src/weakMapMemoize.ts",
+    "language": "typescript",
+    "sizeBytes": 8297,
+    "tokenCount": 2085,
+    "model": "tencent/hy3",
+    "analysedAt": "2026-08-01T15:04:37.963Z",
+    "module": {
+      "purpose": "Provides a WeakMap-based memoization function for reselect that caches by argument reference identity, enabling effectively infinite and garbage-collected cache size.",
+      "summary": "This module implements a memoizer that constructs a tree of cache nodes using WeakMap for non-primitive arguments and Map for primitives, allowing unlimited cache entries that are cleared on garbage collection. It includes a StrongRef fallback when WeakRef is unavailable, optional result equality checking to stabilize output references, and attaches cache management methods to the returned memoized function.",
+      "businessContext": "Part of reselect's selector memoization. Critical for derived-state performance; failure causes excess recomputation or unstable references in React/Redux flows.",
+      "classes": ["StrongRef (~L11-16): Strong reference fallback used when WeakRef is unsupported"],
+      "functions": [
+        "getWeakRef (~L24-27): Returns WeakRef class or StrongRef fallback if undefined",
+        "createCacheNode (~L74-81): Creates a fresh unterminated cache node object",
+        "maybeDeref (~L130-136): Dereferences a Ref or returns the value unchanged",
+        "weakMapMemoize (~L163-261): Builds WeakMap-backed memoized function with cache controls",
+        "memoized (~L174-247): Inner cache-traversing function performing argument-based lookup"
+      ],
+      "keywords": [
+        "weakmap memoization",
+        "cache node tree",
+        "reference equality",
+        "garbage collection",
+        "result equality check",
+        "WeakRef fallback",
+        "reselect",
+        "selector memoization"
+      ],
+      "ontologyConcepts": [
+        "memoization",
+        "cache invalidation via GC",
+        "structural sharing",
+        "reference identity",
+        "fallback abstraction"
+      ],
+      "businessEntities": ["selector", "cache node", "memoized function", "argument"],
+      "systemCapabilities": [
+        "memoize functions with infinite weak cache",
+        "clear memoization cache",
+        "track result computation count",
+        "stabilize output references via equality"
+      ],
+      "configDependencies": [],
+      "importsInternal": [
+        {
+          "spec": "./types",
+          "symbols": ["AnyFunction", "DefaultMemoizeFields", "EqualityFn", "Simplify"],
+          "anchor": { "startLine": 1, "endLine": 5 },
+          "resolvedRelativePath": "src/types.ts",
+          "resolvedFileId": "src/types.ts",
+          "resolvedHint": "src/types.ts"
+        }
+      ],
+      "importsExternal": [],
+      "sideEffects": {
+        "io": [],
+        "network": [],
+        "env": ["Reads global typeof WeakRef to decide reference implementation"],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": [
+          "Mutates cacheNode.o by assigning new WeakMap when null",
+          "Mutates cacheNode.p by assigning new Map when null",
+          "Sets terminatedNode.s and terminatedNode.v on cache write",
+          "Reassigns closure variable fnNode on clearCache"
+        ]
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "WeakMapMemoizeOptions",
+          "shape": "export interface WeakMapMemoizeOptions<Result = any> { resultEqualityCheck?: EqualityFn<Result> }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "weakMapMemoize",
+          "shape": "export function weakMapMemoize<Func extends AnyFunction>(func: Func, options: WeakMapMemoizeOptions<ReturnType<Func>> = {}): Func & Simplify<DefaultMemoizeFields>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "AnyFunction",
+          "shape": "AnyFunction",
+          "resolvedRelativePath": "src/types.ts",
+          "resolvedFileId": "src/types.ts"
+        },
+        {
+          "name": "DefaultMemoizeFields",
+          "shape": "DefaultMemoizeFields",
+          "resolvedRelativePath": "src/types.ts",
+          "resolvedFileId": "src/types.ts"
+        },
+        {
+          "name": "EqualityFn",
+          "shape": "EqualityFn",
+          "resolvedRelativePath": "src/types.ts",
+          "resolvedFileId": "src/types.ts"
+        },
+        {
+          "name": "Simplify",
+          "shape": "Simplify",
+          "resolvedRelativePath": "src/types.ts",
+          "resolvedFileId": "src/types.ts"
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "weakref-selection",
+          "intent": "Choose WeakRef or StrongRef fallback at module load",
+          "structureKind": "branch",
+          "predicate": "typeof WeakRef === 'undefined'",
+          "branchOutcomes": ["StrongRef", "WeakRef"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 24, "endLine": 29 }
+        },
+        {
+          "name": "cache-node-creation",
+          "intent": "Return a fresh unterminated cache node",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 74, "endLine": 81 }
+        },
+        {
+          "name": "argument-traversal-loop",
+          "intent": "Walk arguments building or descending cache tree",
+          "structureKind": "loop",
+          "predicate": "i < l",
+          "branchOutcomes": [],
+          "bounds": "let i = 0, l = length; i < l; i++",
+          "terminationCondition": "i < l",
+          "anchor": { "startLine": 177, "endLine": 209 }
+        },
+        {
+          "name": "result-resolution",
+          "intent": "Return cached or computed result and update node",
+          "structureKind": "branch",
+          "predicate": "cacheNode.s === TERMINATED",
+          "branchOutcomes": ["use cached v", "compute via func"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 215, "endLine": 246 }
+        }
+      ],
+      "representationFamily": "function-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "class",
+          "name": "StrongRef",
+          "signature": "class StrongRef<T> {",
+          "generics": "<T>",
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 11, "endLine": 16 }
+        },
+        {
+          "kind": "function",
+          "name": "getWeakRef",
+          "signature": "const getWeakRef = () =>\n  typeof WeakRef === 'undefined'\n    ? (StrongRef as unknown as typeof WeakRef)\n    : WeakRef",
+          "generics": null,
+          "decorators": [],
+          "returnType": "typeof WeakRef",
+          "exported": false,
+          "anchor": { "startLine": 24, "endLine": 27 }
+        },
+        {
+          "kind": "function",
+          "name": "createCacheNode",
+          "signature": "function createCacheNode<T>(): CacheNode<T> {",
+          "generics": "<T>",
+          "decorators": [],
+          "returnType": "CacheNode<T>",
+          "exported": false,
+          "anchor": { "startLine": 74, "endLine": 81 }
+        },
+        {
+          "kind": "function",
+          "name": "maybeDeref",
+          "signature": "function maybeDeref(r: any) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "any",
+          "exported": false,
+          "anchor": { "startLine": 130, "endLine": 136 }
+        },
+        {
+          "kind": "interface",
+          "name": "WeakMapMemoizeOptions",
+          "signature": "export interface WeakMapMemoizeOptions<Result = any> {",
+          "generics": "<Result = any>",
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 106, "endLine": 122 }
+        },
+        {
+          "kind": "function",
+          "name": "weakMapMemoize",
+          "signature": "export function weakMapMemoize<Func extends AnyFunction>(\n  func: Func,\n  options: WeakMapMemoizeOptions<ReturnType<Func>> = {}\n) {",
+          "generics": "<Func extends AnyFunction>",
+          "decorators": [],
+          "returnType": "Func & Simplify<DefaultMemoizeFields>",
+          "exported": true,
+          "anchor": { "startLine": 163, "endLine": 261 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "interface",
+          "name": "UnterminatedCacheNode",
+          "shape": "interface UnterminatedCacheNode<T> {\n  s: 0\n  v: void\n  o: null | WeakMap<Function | Object, CacheNode<T>>\n  p: null | Map<string | number | null | void | symbol | boolean, CacheNode<T>>\n}",
+          "discriminant": "s",
+          "anchor": { "startLine": 34, "endLine": 51 }
+        },
+        {
+          "kind": "interface",
+          "name": "TerminatedCacheNode",
+          "shape": "interface TerminatedCacheNode<T> {\n  s: 1\n  v: T\n  o: null | WeakMap<Function | Object, CacheNode<T>>\n  p: null | Map<string | number | null | void | symbol | boolean, CacheNode<T>>\n}",
+          "discriminant": "s",
+          "anchor": { "startLine": 53, "endLine": 70 }
+        },
+        {
+          "kind": "type",
+          "name": "CacheNode",
+          "shape": "type CacheNode<T> = TerminatedCacheNode<T> | UnterminatedCacheNode<T>",
+          "discriminant": null,
+          "anchor": { "startLine": 72, "endLine": 72 }
+        },
+        {
+          "kind": "interface",
+          "name": "WeakMapMemoizeOptions",
+          "shape": "export interface WeakMapMemoizeOptions<Result = any> {\n  resultEqualityCheck?: EqualityFn<Result>\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 106, "endLine": 122 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "Environment without WeakRef global",
+          "handled": true,
+          "behavior": "Uses StrongRef class to hold strong references instead",
+          "anchor": { "startLine": 24, "endLine": 27 }
+        },
+        {
+          "inputShape": "Primitive arguments including null/undefined/symbol",
+          "handled": true,
+          "behavior": "Stored in regular Map keyed by value in primitive cache branch",
+          "anchor": { "startLine": 195, "endLine": 208 }
+        },
+        {
+          "inputShape": "resultEqualityCheck provided but lastResult undefined",
+          "handled": true,
+          "behavior": "maybeDeref returns undefined, null check skips equality short-circuit",
+          "anchor": { "startLine": 224, "endLine": 228 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": "==",
+          "left": "typeof WeakRef",
+          "right": "'undefined'",
+          "inclusive": false,
+          "intent": "Detect missing WeakRef support",
+          "anchor": { "startLine": 25, "endLine": 25 }
+        },
+        {
+          "operator": "<",
+          "left": "i",
+          "right": "l",
+          "inclusive": false,
+          "intent": "Iterate over all function arguments",
+          "anchor": { "startLine": 177, "endLine": 177 }
+        },
+        {
+          "operator": "!=",
+          "left": "arg",
+          "right": "null",
+          "inclusive": false,
+          "intent": "Classify non-null objects for WeakMap storage",
+          "anchor": { "startLine": 181, "endLine": 181 }
+        },
+        {
+          "operator": "==",
+          "left": "objectCache",
+          "right": "null",
+          "inclusive": false,
+          "intent": "Lazily initialize object cache WeakMap",
+          "anchor": { "startLine": 185, "endLine": 185 }
+        },
+        {
+          "operator": "==",
+          "left": "objectNode",
+          "right": "undefined",
+          "inclusive": false,
+          "intent": "Detect missing cache node for object argument",
+          "anchor": { "startLine": 189, "endLine": 189 }
+        },
+        {
+          "operator": "==",
+          "left": "primitiveCache",
+          "right": "null",
+          "inclusive": false,
+          "intent": "Lazily initialize primitive cache Map",
+          "anchor": { "startLine": 198, "endLine": 198 }
+        },
+        {
+          "operator": "==",
+          "left": "primitiveNode",
+          "right": "undefined",
+          "inclusive": false,
+          "intent": "Detect missing cache node for primitive argument",
+          "anchor": { "startLine": 202, "endLine": 202 }
+        },
+        {
+          "operator": "==",
+          "left": "cacheNode.s",
+          "right": "TERMINATED",
+          "inclusive": false,
+          "intent": "Branch between cached and fresh computation",
+          "anchor": { "startLine": 215, "endLine": 215 }
+        },
+        {
+          "operator": "!=",
+          "left": "lastResultValue",
+          "right": "null",
+          "inclusive": false,
+          "intent": "Ensure prior result exists before equality check",
+          "anchor": { "startLine": 227, "endLine": 227 }
+        },
+        {
+          "operator": "!=",
+          "left": "resultsCount",
+          "right": "0",
+          "inclusive": false,
+          "intent": "Decrement count only when positive",
+          "anchor": { "startLine": 232, "endLine": 232 }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": null,
+          "caught": null,
+          "action": "Errors from func.apply propagate to caller without caching",
+          "fallback": null,
+          "anchor": { "startLine": 218, "endLine": 219 }
+        }
+      ],
+      "invariants": [
+        {
+          "kind": "invariant",
+          "description": "Cache node status s is 0 (unterminated) or 1 (terminated) only",
+          "anchor": { "startLine": 34, "endLine": 70 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "After computation, terminatedNode.s is set to TERMINATED and v holds result",
+          "anchor": { "startLine": 243, "endLine": 245 }
+        },
+        {
+          "kind": "non-null",
+          "description": "Object arguments are stored in WeakMap keyed by reference identity",
+          "anchor": { "startLine": 183, "endLine": 194 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "env",
+          "description": "Global WeakRef may or may not be defined at module evaluation",
+          "anchor": { "startLine": 24, "endLine": 27 }
+        },
+        {
+          "kind": "caller",
+          "description": "Caller supplies options.resultEqualityCheck conforming to EqualityFn<Result>",
+          "anchor": { "startLine": 106, "endLine": 122 }
+        },
+        {
+          "kind": "platform",
+          "description": "Arguments object is available and indexed by integer in memoized()",
+          "anchor": { "startLine": 176, "endLine": 178 }
+        }
+      ],
+      "ambiguities": [],
+      "concurrencyModel": {
+        "kind": "sync",
+        "reentrant": false,
+        "ordering": "deterministic",
+        "notes": "Single-threaded closure over shared cache nodes; not designed for concurrent re-entry"
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "caches-result-for-same-object-args",
+          "scenario": "Memoized function returns cached result when called with same object reference arguments",
+          "given": ["const f = (a) => ({...a})", "const m = weakMapMemoize(f)", "const obj = {}"],
+          "when": "m(obj) === m(obj)",
+          "then": "returns same object reference and computes only once (resultsCount === 1)",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "WeakMap identity caching avoids recomputation"
+        },
+        {
+          "testId": "primitive-args-cached-by-value",
+          "scenario": "Memoized function caches results for primitive arguments by value",
+          "given": ["const m = weakMapMemoize((x) => x+1)"],
+          "when": "m(1) === m(1)",
+          "then": "second call returns cached result without recomputation",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "result-equality-check-reuses-previous",
+          "scenario": "When resultEqualityCheck matches, previous result object is returned",
+          "given": [
+            "let calls=0",
+            "const m = weakMapMemoize(() => ({v: calls++}), { resultEqualityCheck: (a,b) => a.v === b.v })"
+          ],
+          "when": "const r1 = m(); const r2 = m();",
+          "then": "r1 === r2 and calls === 1",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Ensures stable references for equal outputs"
+        },
+        {
+          "testId": "clear-cache-resets-state",
+          "scenario": "clearCache clears all cached nodes and resets results count",
+          "given": ["const m = weakMapMemoize((x)=>x)", "m(1)"],
+          "when": "m.clearCache()",
+          "then": "m.resultsCount() === 0 and calling m(1) recomputes",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "results-count-tracks-computations",
+          "scenario": "resultsCount reflects number of underlying function executions",
+          "given": ["const m = weakMapMemoize((x)=>x)"],
+          "when": "m(1); m(1); m(2)",
+          "then": "m.resultsCount() === 2",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "distinct-object-args-not-cached-together",
+          "scenario": "Different object references produce separate cache entries",
+          "given": ["const m = weakMapMemoize((o)=>o.id)", "const a={id:1}", "const b={id:2}"],
+          "when": "m(a); m(b)",
+          "then": "m.resultsCount() === 2",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "import type { AnyFunction, DefaultMemoizeFields, EqualityFn, Simplify } from './types'",
+        "class StrongRef<T>",
+        "const getWeakRef",
+        "const Ref",
+        "const UNTERMINATED",
+        "const TERMINATED",
+        "interface UnterminatedCacheNode<T>",
+        "interface TerminatedCacheNode<T>",
+        "type CacheNode<T>",
+        "function createCacheNode<T>",
+        "export interface WeakMapMemoizeOptions<Result = any>",
+        "function maybeDeref",
+        "export function weakMapMemoize<Func extends AnyFunction>"
+      ],
+      "moduleLevelCode": "import type block (L4-9); const Ref = getWeakRef() (L29); const UNTERMINATED=0, TERMINATED=1 (L31-32)",
+      "exports": [
+        { "name": "WeakMapMemoizeOptions", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "weakMapMemoize", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "AnyFunction", "module": "./types", "alias": null, "kind": "internal" },
+        { "symbol": "DefaultMemoizeFields", "module": "./types", "alias": null, "kind": "internal" },
+        { "symbol": "EqualityFn", "module": "./types", "alias": null, "kind": "internal" },
+        { "symbol": "Simplify", "module": "./types", "alias": null, "kind": "internal" }
+      ],
+      "fileConstants": [
+        { "name": "UNTERMINATED", "value": "0", "kind": "number" },
+        { "name": "TERMINATED", "value": "1", "kind": "number" },
+        { "name": "Ref", "value": "getWeakRef()", "kind": "typeof WeakRef" }
+      ],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "src/weakMapMemoize.ts__StrongRef#class:StrongRef",
+        "unitKind": "class",
+        "name": "StrongRef",
+        "qualifiedName": "StrongRef",
+        "parentUnitId": null,
+        "startLine": 11,
+        "endLine": 16,
+        "isBehavioral": false,
+        "source": "class StrongRef<T> {\n  constructor(private value: T) {}\n  deref() {\n    return this.value\n  }\n}",
+        "detail": {
+          "unitId": "src/weakMapMemoize.ts__StrongRef#class:StrongRef",
+          "fileId": "src/weakMapMemoize.ts__StrongRef",
+          "unitKind": "class",
+          "name": "StrongRef",
+          "qualifiedName": "StrongRef",
+          "parentUnitId": null,
+          "startLine": 11,
+          "endLine": 16,
+          "signature": "class StrongRef<T>",
+          "parameters": [
+            { "name": "value", "type": "T", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "view",
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": ["T"],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [
+            "The value passed to the constructor is stored on the instance for the lifetime of the StrongRef object, ensuring the reference remains reachable"
+          ],
+          "edgeCases": [
+            "No input validation is performed; any value of type T, including undefined or null when T permits, is stored as-is",
+            "When constructed, the value is immediately available via deref without any lazy initialization or side effects"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": "null", "returnsOnError": "null" },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["T"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [
+            {
+              "name": "value",
+              "kind": "property",
+              "type": "T",
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "deref",
+              "kind": "method",
+              "type": "() => T",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            }
+          ],
+          "memberUnitIds": ["src/weakMapMemoize.ts::StrongRef#deref"],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "StrongRef is a typed container that holds a strongly-referenced value of type T and exposes it via deref, preventing garbage collection of the stored reference for as long as the StrongRef instance exists.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "ef4f5f4c056cb2d9f56cd024ae88976db18b721f9e6e4df8ced78d76c6f80c83"
+        }
+      },
+      {
+        "unitId": "src/weakMapMemoize.ts__getWeakRef#function:getWeakRef",
+        "unitKind": "function",
+        "name": "getWeakRef",
+        "qualifiedName": "getWeakRef",
+        "parentUnitId": null,
+        "startLine": 24,
+        "endLine": 27,
+        "isBehavioral": false,
+        "source": "const getWeakRef = () =>\n  typeof WeakRef === 'undefined'\n    ? (StrongRef as unknown as typeof WeakRef)\n    : WeakRef",
+        "detail": {
+          "unitId": "src/weakMapMemoize.ts__getWeakRef#function:getWeakRef",
+          "fileId": "src/weakMapMemoize.ts__getWeakRef",
+          "unitKind": "function",
+          "name": "getWeakRef",
+          "qualifiedName": "getWeakRef",
+          "parentUnitId": null,
+          "startLine": 24,
+          "endLine": 27,
+          "signature": "const getWeakRef = () =>\n  typeof WeakRef === 'undefined'\n    ? (StrongRef as unknown as typeof WeakRef)\n    : WeakRef",
+          "parameters": [],
+          "returnType": "typeof WeakRef",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "view",
+          "visibility": "internal",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [
+            "The returned value is always assignable to the WeakRef interface and can be instantiated with a single target argument."
+          ],
+          "invariants": ["The fallback StrongRef is type-compatible with WeakRef (cast via unknown)."],
+          "edgeCases": [
+            "When WeakRef is undefined at runtime, the function returns StrongRef cast as typeof WeakRef; otherwise it returns the native WeakRef constructor."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["StrongRef", "WeakRef"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Returns the best available WeakRef constructor, falling back to a StrongRef polyfill when the runtime lacks native WeakRef support.",
+          "specLiterals": [
+            {
+              "kind": "magic-number",
+              "value": "typeof WeakRef === 'undefined'",
+              "role": "Determines whether native WeakRef is available in the runtime environment."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "8473034a46a32592293bc5cf384c01989d66d9e528c515a33a0ce1c1e7d19f2a"
+        }
+      },
+      {
+        "unitId": "src/weakMapMemoize.ts__createCacheNode#function:createCacheNode",
+        "unitKind": "function",
+        "name": "createCacheNode",
+        "qualifiedName": "createCacheNode",
+        "parentUnitId": null,
+        "startLine": 74,
+        "endLine": 81,
+        "isBehavioral": false,
+        "source": "function createCacheNode<T>(): CacheNode<T> {\n  return {\n    s: UNTERMINATED,\n    v: undefined,\n    o: null,\n    p: null\n  }\n}",
+        "detail": {
+          "unitId": "src/weakMapMemoize.ts__createCacheNode#function:createCacheNode",
+          "fileId": "src/weakMapMemoize.ts__createCacheNode",
+          "unitKind": "function",
+          "name": "createCacheNode",
+          "qualifiedName": "createCacheNode",
+          "parentUnitId": null,
+          "startLine": 74,
+          "endLine": 81,
+          "signature": "function createCacheNode<T>(): CacheNode<T>",
+          "parameters": [],
+          "returnType": "CacheNode<T>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "pure",
+          "visibility": "local",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": ["T"],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [
+            "The returned object has s equal to UNTERMINATED, v equal to undefined, o equal to null, and p equal to null",
+            "The returned object conforms to the CacheNode<T> interface"
+          ],
+          "invariants": [
+            "Every CacheNode produced by this function starts in the UNTERMINATED state",
+            "The v field is initialized to undefined on creation",
+            "The o and p fields are initialized to null on creation"
+          ],
+          "edgeCases": [
+            "No input parameters, so empty input is the only input shape",
+            "Called with no arguments always produces a fresh CacheNode with default uninitialized values"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["CacheNode<T>", "UNTERMINATED"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Creates and returns a newly initialized CacheNode<T> with status UNTERMINATED, undefined value, null owner, and null previous pointer, representing an empty cache entry ready for memoization.",
+          "specLiterals": [
+            {
+              "kind": "enum-value",
+              "value": "UNTERMINATED",
+              "role": "Initial state value for cache node status field"
+            },
+            { "kind": "magic-number", "value": "undefined", "role": "Initial value for cache node value field" },
+            {
+              "kind": "magic-number",
+              "value": "null",
+              "role": "Initial value for cache node owner and previous fields"
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "e080257baded0e73b7201b319776910df86eb87db77f7e9c92e6cc4c7f8e88a2"
+        }
+      },
+      {
+        "unitId": "src/weakMapMemoize.ts__maybeDeref#function:maybeDeref",
+        "unitKind": "function",
+        "name": "maybeDeref",
+        "qualifiedName": "maybeDeref",
+        "parentUnitId": null,
+        "startLine": 130,
+        "endLine": 136,
+        "isBehavioral": true,
+        "source": " *   - It has an effectively infinite cache size, but you have no control over\n *   how long values are kept in cache as it's based on garbage collection and `WeakMap`s.\n * - Cons:\n *   - There's currently no way to alter the argument comparisons.\n *   They're based on strict reference equality.\n *   - It's roughly the same speed as `lruMemoize`, although likely a fraction slower.\n *",
+        "detail": {
+          "unitId": "src/weakMapMemoize.ts__maybeDeref#function:maybeDeref",
+          "fileId": "src/weakMapMemoize.ts__maybeDeref",
+          "unitKind": "function",
+          "name": "maybeDeref",
+          "qualifiedName": "maybeDeref",
+          "parentUnitId": null,
+          "startLine": 130,
+          "endLine": 136,
+          "signature": "function maybeDeref<T>(value: { deref: () => T | undefined } | T | undefined): T | undefined",
+          "parameters": [
+            {
+              "name": "value",
+              "type": "{ deref: () => T | undefined } | T | undefined",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "T | undefined",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "const",
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": ["T"],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [
+            "If value has a deref method, the return value is deref() of that reference",
+            "If value is a plain (non-reference) value or undefined, the return value is value itself",
+            "The return type is T | undefined — undefined is returned when the input is undefined or when a weak reference's target has been garbage collected"
+          ],
+          "invariants": [],
+          "edgeCases": [
+            "undefined input: returns undefined",
+            "plain (non-reference) value input: returns the value unchanged",
+            "reference object input (WeakRef or StrongRef): returns the dereferenced value, or undefined if the referenced object was garbage collected before the deref call",
+            "null input: treated as a non-reference value, returns null"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Conditionally dereferences its argument: if the value is a reference wrapper with a deref method (e.g. WeakRef or StrongRef), it calls deref() and returns the result; otherwise it returns the value unchanged. This enables transparent retrieval of cached values that may be stored as weak references across environments where WeakRef may or may not be available.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "maybeDeref is called with the reference",
+              "then": "returns V (the dereferenced value)",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "maybeDeref is called with the value",
+              "then": "returns the value unchanged",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "maybeDeref is called with undefined",
+              "then": "returns undefined",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "2890ed424a840959b60e2a7f22d5e0fa2e3d4cacf474e2f318555f7b18395ae3"
+        }
+      },
+      {
+        "unitId": "src/weakMapMemoize.ts__weakMapMemoize#function:weakMapMemoize",
+        "unitKind": "function",
+        "name": "weakMapMemoize",
+        "qualifiedName": "weakMapMemoize",
+        "parentUnitId": null,
+        "startLine": 163,
+        "endLine": 261,
+        "isBehavioral": true,
+        "source": " *   {\n *     memoize: weakMapMemoize,\n *     argsMemoize: weakMapMemoize\n *   }\n * )\n * ```\n *\n * @example\n * <caption>Using `createSelectorCreator`</caption>\n * ```ts\n * import { createSelectorCreator, weakMapMemoize } from 'reselect'\n *\n * const createSelectorWeakMap = createSelectorCreator({ memoize: weakMapMemoize, argsMemoize: weakMapMemoize })\n *\n * const selectItemsByCategory = createSelectorWeakMap(\n *   [\n *     (state: RootState) => state.items,\n *     (state: RootState, category: string) => category\n *   ],\n *   (items, category) => items.filter(item => item.category === category)\n * )\n * ```\n *\n * @template Func - The type of the function that is memoized.\n *\n * @see {@link https://reselect.js.org/api/weakMapMemoize `weakMapMemoize`}\n *\n * @since 5.0.0\n * @public\n * @experimental\n */\nexport function weakMapMemoize<Func extends AnyFunction>(\n  func: Func,\n  options: WeakMapMemoizeOptions<ReturnType<Func>> = {}\n) {\n  let fnNode = createCacheNode()\n  const { resultEqualityCheck } = options\n\n  let lastResult: WeakRef<object> | undefined\n\n  let resultsCount = 0\n\n  function memoized() {\n    let cacheNode = fnNode\n    const { length } = arguments\n    for (let i = 0, l = length; i < l; i++) {\n      const arg = arguments[i]\n      if (\n        typeof arg === 'function' ||\n        (typeof arg === 'object' && arg !== null)\n      ) {\n        // Objects go into a WeakMap\n        let objectCache = cacheNode.o\n        if (objectCache === null) {\n          cacheNode.o = objectCache = new WeakMap()\n        }\n        const objectNode = objectCache.get(arg)\n        if (objectNode === undefined) {\n          cacheNode = createCacheNode()\n          objectCache.set(arg, cacheNode)\n        } else {\n          cacheNode = objectNode\n        }\n      } else {\n        // Primitives go into a regular Map\n        let primitiveCache = cacheNode.p\n        if (primitiveCache === null) {\n          cacheNode.p = primitiveCache = new Map()\n        }\n        const primitiveNode = primitiveCache.get(arg)\n        if (primitiveNode === undefined) {\n          cacheNode = createCacheNode()\n          primitiveCache.set(arg, cacheNode)\n        } else {\n          cacheNode = primitiveNode\n        }\n      }\n    }\n\n    const terminatedNode = cacheNode as unknown as TerminatedCacheNode<any>\n\n    let result\n\n    if (cacheNode.s === TERMINATED) {\n      result = cacheNode.v\n    } else {\n      // Allow errors to propagate\n      result = func.apply(null, arguments as unknown as any[])\n      resultsCount++\n\n      if (resultEqualityCheck) {\n        // Deref lastResult if it is a Ref\n        const lastResultValue = maybeDeref(lastResult)\n\n        if (\n          lastResultValue != null &&\n          resultEqualityCheck(lastResultValue as ReturnType<Func>, result)\n        ) {\n          result = lastResultValue",
+        "detail": {
+          "unitId": "src/weakMapMemoize.ts__weakMapMemoize#function:weakMapMemoize",
+          "fileId": "src/weakMapMemoize.ts__weakMapMemoize",
+          "unitKind": "function",
+          "name": "weakMapMemoize",
+          "qualifiedName": "weakMapMemoize",
+          "parentUnitId": null,
+          "startLine": 163,
+          "endLine": 261,
+          "signature": "export function weakMapMemoize<Func extends AnyFunction>(func: Func, options: WeakMapMemoizeOptions<ReturnType<Func>> = {}): Func",
+          "parameters": [
+            { "name": "func", "type": "Func", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "options",
+              "type": "WeakMapMemoizeOptions<ReturnType<Func>>",
+              "default": "{}",
+              "optional": true,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "Func",
+          "decorators": [],
+          "modifiersApplied": ["export"],
+          "mutability": "pure",
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": ["Func extends AnyFunction"],
+          "logicOutline": [],
+          "preconditions": [
+            "The provided `func` must be callable.",
+            "Arguments passed to the memoized function must be usable as keys in WeakMap or Map structures (objects for WeakMap, primitives for Map)."
+          ],
+          "postconditions": [
+            "Returns a new function that caches results based on argument equality.",
+            "Repeated calls with the same object/primitive arguments return the cached result without re-invoking the original function."
+          ],
+          "invariants": [
+            "Cache nodes are structured hierarchically by argument order.",
+            "WeakMap is used for cache entries keyed by objects; Map is used for primitives.",
+            "Errors thrown by the original function are allowed to propagate unchanged."
+          ],
+          "edgeCases": [
+            "When no arguments are passed, the root cache node is reused.",
+            "Primitive `null` is handled as a primitive argument and goes into Map.",
+            "Functions passed as arguments are routed into the WeakMap path because they are typeof 'function'.",
+            "If a previously cached argument no longer exists (e.g., GC'd WeakRef), a fresh cache path is created."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [
+            "Internal cache state including WeakMap/Map structures rooted in `fnNode`.",
+            "Increments `resultsCount` on each uncached invocation.",
+            "May update `lastResult` when `resultEqualityCheck` is configured."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "createCacheNode", "source": "internal", "kind": "internal" },
+            { "name": "maybeDeref", "source": "internal", "kind": "internal" }
+          ],
+          "symbolReferences": [
+            "AnyFunction",
+            "WeakMapMemoizeOptions",
+            "ReturnType",
+            "WeakRef",
+            "TerminatedCacheNode",
+            "TERMINATED"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Memoization utility that caches the results of a function using a WeakMap-backed cache structure, keying off arguments (objects and primitives) to ensure referentially stable outputs for deeply equal inputs.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "fcfd29cf24dfd15dd7b5fa2702924ed568e5e6e7bd8a63e1e6e009856227e03e"
+        }
+      },
+      {
+        "unitId": "src/weakMapMemoize.ts__weakMapMemoize.memoized#function:weakMapMemoize.memoized",
+        "unitKind": "function",
+        "name": "memoized",
+        "qualifiedName": "weakMapMemoize.memoized",
+        "parentUnitId": "src/weakMapMemoize.ts__weakMapMemoize#function:weakMapMemoize",
+        "startLine": 174,
+        "endLine": 247,
+        "isBehavioral": true,
+        "source": " *\n * const createSelectorWeakMap = createSelectorCreator({ memoize: weakMapMemoize, argsMemoize: weakMapMemoize })\n *\n * const selectItemsByCategory = createSelectorWeakMap(\n *   [\n *     (state: RootState) => state.items,\n *     (state: RootState, category: string) => category\n *   ],\n *   (items, category) => items.filter(item => item.category === category)\n * )\n * ```\n *\n * @template Func - The type of the function that is memoized.\n *\n * @see {@link https://reselect.js.org/api/weakMapMemoize `weakMapMemoize`}\n *\n * @since 5.0.0\n * @public\n * @experimental\n */\nexport function weakMapMemoize<Func extends AnyFunction>(\n  func: Func,\n  options: WeakMapMemoizeOptions<ReturnType<Func>> = {}\n) {\n  let fnNode = createCacheNode()\n  const { resultEqualityCheck } = options\n\n  let lastResult: WeakRef<object> | undefined\n\n  let resultsCount = 0\n\n  function memoized() {\n    let cacheNode = fnNode\n    const { length } = arguments\n    for (let i = 0, l = length; i < l; i++) {\n      const arg = arguments[i]\n      if (\n        typeof arg === 'function' ||\n        (typeof arg === 'object' && arg !== null)\n      ) {\n        // Objects go into a WeakMap\n        let objectCache = cacheNode.o\n        if (objectCache === null) {\n          cacheNode.o = objectCache = new WeakMap()\n        }\n        const objectNode = objectCache.get(arg)\n        if (objectNode === undefined) {\n          cacheNode = createCacheNode()\n          objectCache.set(arg, cacheNode)\n        } else {\n          cacheNode = objectNode\n        }\n      } else {\n        // Primitives go into a regular Map\n        let primitiveCache = cacheNode.p\n        if (primitiveCache === null) {\n          cacheNode.p = primitiveCache = new Map()\n        }\n        const primitiveNode = primitiveCache.get(arg)\n        if (primitiveNode === undefined) {\n          cacheNode = createCacheNode()\n          primitiveCache.set(arg, cacheNode)\n        } else {\n          cacheNode = primitiveNode\n        }\n      }\n    }\n\n    const terminatedNode = cacheNode as unknown as TerminatedCacheNode<any>\n\n    let result\n\n    if (cacheNode.s === TERMINATED) {\n      result = cacheNode.v",
+        "detail": {
+          "unitId": "src/weakMapMemoize.ts__weakMapMemoize.memoized#function:weakMapMemoize.memoized",
+          "fileId": "src/weakMapMemoize.ts__weakMapMemoize.memoized",
+          "unitKind": "function",
+          "name": "memoized",
+          "qualifiedName": "weakMapMemoize.memoized",
+          "parentUnitId": "src/weakMapMemoize.ts__weakMapMemoize#function:weakMapMemoize",
+          "startLine": 174,
+          "endLine": 247,
+          "signature": "function memoized()",
+          "parameters": [],
+          "returnType": "ReturnType<Func> | undefined",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "view",
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [
+            "On a cache miss, the wrapped func is invoked with the provided arguments and its result is stored for future lookups.",
+            "On a cache hit, the cached result is returned without re-invoking func.",
+            "Object arguments are used as keys in a WeakMap so cache entries do not prevent garbage collection of those arguments.",
+            "Primitive arguments are used as keys in a Map for deterministic lookup."
+          ],
+          "invariants": [
+            "The cache tree structure reflects the sequence of arguments passed on each invocation.",
+            "Results for the same argument sequence (by referential object identity or value equality) are returned consistently.",
+            "Cache entries depend on live references to object arguments; stale references evict implicitly via WeakMap semantics."
+          ],
+          "edgeCases": [
+            "Arguments of mixed object and primitive types traverse respective WeakMap and Map branches.",
+            "Repeated object reference returns cached value; distinct object references with equal content do not collide.",
+            "Invocation with no arguments returns the singleton cached root result.",
+            "Mutated object argument after caching causes lookup miss on subsequent calls if reference changes.",
+            "WeakRef is used internally for cache invalidation and fallback to recompute on deref failure."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [
+            "Creates new cache nodes for unseen arguments.",
+            "Updates cache tree with new entries.",
+            "Stores latest result in cacheNode.v and result flag.",
+            "Mutates lastResult WeakRef and resultsCount counter."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "func", "source": null, "kind": "internal" },
+            { "name": "createCacheNode", "source": null, "kind": "internal" },
+            { "name": "resultEqualityCheck", "source": null, "kind": "internal" }
+          ],
+          "symbolReferences": ["AnyFunction", "WeakMapMemoizeOptions", "WeakRef", "TERMINATED", "TerminatedCacheNode"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Caches and retrieves the result of the wrapped function using a per-argument cache tree keyed by WeakMap for objects and Map for primitives, preserving referential identity of cached results across invocations.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "ebb14eb954013d57c1a178adf3f6971048668d8d1d56a61a3327c8c4a90153f5"
+        }
+      }
+    ]
+  },
+  "out": ["src/types.ts"],
+  "in": ["src/createSelectorCreator.ts", "src/createStructuredSelector.ts", "src/types.ts"],
+  "externals": [],
+  "impact": { "seeds": 6, "callers": 2, "impactedFiles": [] }
+}

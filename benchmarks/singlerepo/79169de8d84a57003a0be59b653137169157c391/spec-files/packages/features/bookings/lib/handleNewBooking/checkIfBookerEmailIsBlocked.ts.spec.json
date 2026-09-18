@@ -1,0 +1,586 @@
+{
+  "schema": 2,
+  "kind": "file",
+  "repoName": "cal.diy",
+  "file": {
+    "relativePath": "packages/features/bookings/lib/handleNewBooking/checkIfBookerEmailIsBlocked.ts",
+    "language": "typescript",
+    "sizeBytes": 1503,
+    "tokenCount": 376,
+    "model": "us.openai.gpt-5.6-luna",
+    "analysedAt": "2026-08-27T14:04:49.979Z",
+    "module": {
+      "purpose": "Checks whether a booking attendee's normalized email is blacklisted and ensures that only the authenticated matching user may use it.",
+      "summary": "This asynchronous booking guard normalizes the supplied attendee email, reads a comma-separated blacklist from the environment, and performs no database lookup unless the normalized address is listed. For listed addresses, it searches for a user with a verified primary or secondary email, rejecting unknown addresses and rejecting authenticated users whose identity does not match the verified account. Unlisted addresses return false; successful authorized checks complete without an explicit value.",
+      "businessContext": "Supports booking abuse prevention and account-identity enforcement for blocked guest emails. Failure could allow prohibited attendees to create bookings or prevent legitimate users from booking.",
+      "classes": [],
+      "functions": [
+        "checkIfBookerEmailIsBlocked (~L5-62): Enforces blacklist and authenticated ownership rules for booking emails"
+      ],
+      "keywords": [
+        "blacklisted guest emails",
+        "base email normalization",
+        "verified email",
+        "secondary email",
+        "booking abuse prevention",
+        "Prisma user lookup",
+        "authenticated identity",
+        "HTTP 403"
+      ],
+      "ontologyConcepts": [
+        "access control",
+        "identity verification",
+        "email normalization",
+        "blacklist enforcement",
+        "authorization",
+        "policy validation"
+      ],
+      "businessEntities": ["Booker", "Attendee", "User", "Email", "Booking"],
+      "systemCapabilities": [
+        "Block prohibited booking emails",
+        "Verify attendee account ownership",
+        "Enforce authenticated booking identity",
+        "Query verified user email associations"
+      ],
+      "configDependencies": ["BLACKLISTED_GUEST_EMAILS"],
+      "importsInternal": [],
+      "importsExternal": [
+        {
+          "spec": "@calcom/lib/extract-base-email",
+          "symbols": ["extractBaseEmail"],
+          "package": "@calcom/lib",
+          "subpath": "extract-base-email",
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 1 }
+        },
+        {
+          "spec": "@calcom/lib/http-error",
+          "symbols": ["HttpError"],
+          "package": "@calcom/lib",
+          "subpath": "http-error",
+          "isBuiltin": false,
+          "anchor": { "startLine": 2, "endLine": 2 }
+        },
+        {
+          "spec": "@calcom/prisma",
+          "symbols": ["prisma"],
+          "package": "@calcom/prisma",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 3, "endLine": 3 }
+        }
+      ],
+      "sideEffects": {
+        "io": [
+          "Queries Prisma for a verified user matching the normalized primary or secondary email when the address is blacklisted.",
+          "Throws HTTP authorization errors for missing or mismatched verified users."
+        ],
+        "network": [],
+        "env": ["Reads BLACKLISTED_GUEST_EMAILS from process.env."],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": []
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "checkIfBookerEmailIsBlocked",
+          "shape": "checkIfBookerEmailIsBlocked = async ({ bookerEmail, loggedInUserId }: { bookerEmail: string; loggedInUserId?: number }) =>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "extractBaseEmail",
+          "shape": "extractBaseEmail(bookerEmail)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "HttpError",
+          "shape": "new HttpError({ statusCode: 403, message: string })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "prisma.user.findFirst",
+          "shape": "prisma.user.findFirst({ where: { OR: [{ email: baseEmail, emailVerified: { not: null } }, { secondaryEmails: { some: { email: baseEmail, emailVerified: { not: null } } } }] }, select: { id: true, email: true } })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "email-normalization",
+          "intent": "Derive the canonical comparison email from the supplied booking address.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 12, "endLine": 12 }
+        },
+        {
+          "name": "blacklist-configuration",
+          "intent": "Read and split the optional environment blacklist into candidate addresses.",
+          "structureKind": "branch",
+          "predicate": "process.env.BLACKLISTED_GUEST_EMAILS",
+          "branchOutcomes": ["configured blacklist is split on commas", "missing blacklist becomes an empty array"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 13, "endLine": 15 }
+        },
+        {
+          "name": "blacklist-match",
+          "intent": "Find a case-insensitive blacklist entry matching the normalized email.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 17, "endLine": 19 }
+        },
+        {
+          "name": "unlisted-email-allowance",
+          "intent": "Return false immediately when the normalized email is not blacklisted.",
+          "structureKind": "branch",
+          "predicate": "!blacklistedEmail",
+          "branchOutcomes": [
+            "email is not blacklisted and returns false",
+            "email is blacklisted and continues to account lookup"
+          ],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 21, "endLine": 23 }
+        },
+        {
+          "name": "verified-account-lookup",
+          "intent": "Locate a user owning a verified primary or secondary email.",
+          "structureKind": "io",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 25, "endLine": 50 }
+        },
+        {
+          "name": "missing-account-rejection",
+          "intent": "Reject blacklisted emails that have no verified associated user.",
+          "structureKind": "branch",
+          "predicate": "!user",
+          "branchOutcomes": ["no verified user causes HTTP 403", "verified user continues to identity comparison"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 52, "endLine": 54 }
+        },
+        {
+          "name": "identity-mismatch-rejection",
+          "intent": "Reject use when the verified email owner differs from the logged-in user.",
+          "structureKind": "branch",
+          "predicate": "user.id !== loggedInUserId",
+          "branchOutcomes": ["different user causes HTTP 403", "same user completes successfully"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 56, "endLine": 61 }
+        }
+      ],
+      "representationFamily": "function-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "function",
+          "name": "checkIfBookerEmailIsBlocked",
+          "signature": "export const checkIfBookerEmailIsBlocked = async ({\n  bookerEmail,\n  loggedInUserId,\n}: {\n  bookerEmail: string;\n  loggedInUserId?: number;\n}) => {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 5, "endLine": 11 }
+        }
+      ],
+      "typeShapes": [],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "BLACKLISTED_GUEST_EMAILS is absent or empty",
+          "handled": true,
+          "behavior": "The blacklist is empty, so no user lookup occurs and the function returns false.",
+          "anchor": { "startLine": 13, "endLine": 15 }
+        },
+        {
+          "inputShape": "Email differs from a blacklist entry only by letter case",
+          "handled": true,
+          "behavior": "Lowercase comparison treats the address as blacklisted.",
+          "anchor": { "startLine": 17, "endLine": 19 }
+        },
+        {
+          "inputShape": "Blacklisted email has no verified primary or secondary account",
+          "handled": true,
+          "behavior": "Throws an HTTP 403 error stating the email cannot create the booking.",
+          "anchor": { "startLine": 52, "endLine": 54 }
+        },
+        {
+          "inputShape": "Blacklisted email belongs to a verified user different from loggedInUserId",
+          "handled": true,
+          "behavior": "Throws an HTTP 403 error instructing the attendee to log in as the supplied email.",
+          "anchor": { "startLine": 56, "endLine": 61 }
+        },
+        {
+          "inputShape": "Blacklisted email belongs to the logged-in verified user",
+          "handled": true,
+          "behavior": "Completes without throwing or returning an explicit success value.",
+          "anchor": { "startLine": 56, "endLine": 61 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": "==",
+          "left": "guestEmail.toLowerCase()",
+          "right": "baseEmail.toLowerCase()",
+          "inclusive": false,
+          "intent": "Treat case-insensitively equal blacklist and normalized emails as a match.",
+          "anchor": { "startLine": 18, "endLine": 18 }
+        },
+        {
+          "operator": "!=",
+          "left": "user.id",
+          "right": "loggedInUserId",
+          "inclusive": false,
+          "intent": "Reject the booking when the verified owner differs from the logged-in user.",
+          "anchor": { "startLine": 56, "endLine": 56 }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": "new HttpError({ statusCode: 403, message: \"Cannot use this email to create the booking.\" })",
+          "caught": null,
+          "action": "Rejects a blacklisted email with no verified associated user.",
+          "fallback": null,
+          "anchor": { "startLine": 52, "endLine": 54 }
+        },
+        {
+          "thrown": "new HttpError({\n      statusCode: 403,\n      message: `Attendee email has been blocked. Make sure to login as ${bookerEmail} to use this email for creating a booking.`,\n    })",
+          "caught": null,
+          "action": "Rejects a blacklisted email when its verified owner is not the logged-in user.",
+          "fallback": null,
+          "anchor": { "startLine": 56, "endLine": 61 }
+        }
+      ],
+      "invariants": [
+        {
+          "kind": "invariant",
+          "description": "Blacklist matching compares lowercase forms of candidate and normalized emails.",
+          "anchor": { "startLine": 17, "endLine": 19 }
+        },
+        {
+          "kind": "precondition",
+          "description": "Database lookup occurs only after a matching blacklist entry is found.",
+          "anchor": { "startLine": 21, "endLine": 25 }
+        },
+        {
+          "kind": "invariant",
+          "description": "A matched email must belong to a user through a verified primary or secondary email.",
+          "anchor": { "startLine": 26, "endLine": 44 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "A blacklisted email may proceed only when its verified user's id equals loggedInUserId.",
+          "anchor": { "startLine": 56, "endLine": 61 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "config",
+          "description": "BLACKLISTED_GUEST_EMAILS contains comma-separated email values in the comparison format expected after base-email extraction.",
+          "anchor": { "startLine": 13, "endLine": 15 }
+        },
+        {
+          "kind": "caller",
+          "description": "The caller supplies loggedInUserId when a blacklisted email should be authorized against the authenticated account.",
+          "anchor": { "startLine": 5, "endLine": 11 }
+        },
+        {
+          "kind": "schema",
+          "description": "Prisma user and secondary-email records expose verified email fields and a numeric user id.",
+          "anchor": { "startLine": 25, "endLine": 50 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "What exact transformations does extractBaseEmail apply to bookerEmail?",
+          "affects": "email normalization and blacklist matching",
+          "anchor": { "startLine": 12, "endLine": 12 },
+          "resolution": null
+        },
+        {
+          "question": "Does a successful blacklisted-email authorization intentionally resolve to undefined rather than an explicit boolean?",
+          "affects": "public return contract",
+          "anchor": { "startLine": 56, "endLine": 61 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "async",
+        "reentrant": true,
+        "ordering": "unordered",
+        "notes": "Each invocation uses local values and performs an independent asynchronous database query; no shared mutable state is managed."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "allows-email-not-on-blacklist",
+          "scenario": "The normalized booker email is not present in the configured blacklist.",
+          "given": [
+            "process.env.BLACKLISTED_GUEST_EMAILS = \"blocked@example.com\"",
+            "bookerEmail = \"allowed@example.com\""
+          ],
+          "when": "await checkIfBookerEmailIsBlocked({ bookerEmail })",
+          "then": "the result is false",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "matches-blacklist-case-insensitively",
+          "scenario": "The booker email matches a blacklisted address regardless of casing.",
+          "given": [
+            "process.env.BLACKLISTED_GUEST_EMAILS = \"blocked@example.com\"",
+            "bookerEmail = \"BLOCKED@example.com\"",
+            "prisma.user.findFirst.mockResolvedValue({ id: 1, email: \"blocked@example.com\" })",
+            "loggedInUserId = 1"
+          ],
+          "when": "await checkIfBookerEmailIsBlocked({ bookerEmail, loggedInUserId })",
+          "then": "the call resolves without throwing",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Blacklist matching is explicitly case-insensitive."
+        },
+        {
+          "testId": "rejects-unverified-or-unknown-blocked-email",
+          "scenario": "A blacklisted email has no matching user with a verified primary or secondary email.",
+          "given": [
+            "process.env.BLACKLISTED_GUEST_EMAILS = \"blocked@example.com\"",
+            "bookerEmail = \"blocked@example.com\"",
+            "prisma.user.findFirst.mockResolvedValue(null)"
+          ],
+          "when": "await checkIfBookerEmailIsBlocked({ bookerEmail })",
+          "then": "the call throws an error with statusCode 403 and message \"Cannot use this email to create the booking.\"",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Blocked addresses must not be usable without a verified associated account."
+        },
+        {
+          "testId": "rejects-blocked-email-for-different-user",
+          "scenario": "A blacklisted email belongs to a verified user other than the currently logged-in user.",
+          "given": [
+            "process.env.BLACKLISTED_GUEST_EMAILS = \"blocked@example.com\"",
+            "bookerEmail = \"blocked@example.com\"",
+            "loggedInUserId = 2",
+            "prisma.user.findFirst.mockResolvedValue({ id: 1, email: \"blocked@example.com\" })"
+          ],
+          "when": "await checkIfBookerEmailIsBlocked({ bookerEmail, loggedInUserId })",
+          "then": "the call throws an error with statusCode 403 and message `Attendee email has been blocked. Make sure to login as ${bookerEmail} to use this email for creating a booking.`",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "A blocked booker email may only be used by its associated logged-in account."
+        },
+        {
+          "testId": "allows-blocked-email-for-own-user",
+          "scenario": "A blacklisted email belongs to the currently logged-in verified user.",
+          "given": [
+            "process.env.BLACKLISTED_GUEST_EMAILS = \"blocked@example.com\"",
+            "bookerEmail = \"blocked@example.com\"",
+            "loggedInUserId = 1",
+            "prisma.user.findFirst.mockResolvedValue({ id: 1, email: \"blocked@example.com\" })"
+          ],
+          "when": "await checkIfBookerEmailIsBlocked({ bookerEmail, loggedInUserId })",
+          "then": "the call resolves without throwing",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "extractBaseEmail import",
+        "HttpError import",
+        "Prisma client import",
+        "exported asynchronous booking-email authorization function"
+      ],
+      "moduleLevelCode": "import { extractBaseEmail } from \"@calcom/lib/extract-base-email\";\nimport { HttpError } from \"@calcom/lib/http-error\";\nimport prisma from \"@calcom/prisma\";",
+      "exports": [{ "name": "checkIfBookerEmailIsBlocked", "kind": "own", "fromSpec": null, "exportedAs": null }],
+      "importSymbolMap": [
+        { "symbol": "extractBaseEmail", "module": "@calcom/lib/extract-base-email", "alias": null, "kind": "external" },
+        { "symbol": "HttpError", "module": "@calcom/lib/http-error", "alias": null, "kind": "external" },
+        { "symbol": "prisma", "module": "@calcom/prisma", "alias": null, "kind": "external" }
+      ],
+      "fileConstants": [],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/features/bookings/lib/handleNewBooking/checkIfBookerEmailIsBlocked.ts__checkIfBookerEmailIsBlocked#function:checkIfBookerEmailIsBlocked",
+        "unitKind": "function",
+        "name": "checkIfBookerEmailIsBlocked",
+        "qualifiedName": "checkIfBookerEmailIsBlocked",
+        "parentUnitId": null,
+        "startLine": 5,
+        "endLine": 62,
+        "isBehavioral": true,
+        "source": "export const checkIfBookerEmailIsBlocked = async ({\n  bookerEmail,\n  loggedInUserId,\n}: {\n  bookerEmail: string;\n  loggedInUserId?: number;\n}) => {\n  const baseEmail = extractBaseEmail(bookerEmail);\n  const blacklistedGuestEmails = process.env.BLACKLISTED_GUEST_EMAILS\n    ? process.env.BLACKLISTED_GUEST_EMAILS.split(\",\")\n    : [];\n\n  const blacklistedEmail = blacklistedGuestEmails.find(\n    (guestEmail: string) => guestEmail.toLowerCase() === baseEmail.toLowerCase()\n  );\n\n  if (!blacklistedEmail) {\n    return false;\n  }\n\n  const user = await prisma.user.findFirst({\n    where: {\n      OR: [\n        {\n          email: baseEmail,\n          emailVerified: {\n            not: null,\n          },\n        },\n        {\n          secondaryEmails: {\n            some: {\n              email: baseEmail,\n              emailVerified: {\n                not: null,\n              },\n            },\n          },\n        },\n      ],\n    },\n    select: {\n      id: true,\n      email: true,\n    },\n  });\n\n  if (!user) {\n    throw new HttpError({ statusCode: 403, message: \"Cannot use this email to create the booking.\" });\n  }\n\n  if (user.id !== loggedInUserId) {\n    throw new HttpError({\n      statusCode: 403,\n      message: `Attendee email has been blocked. Make sure to login as ${bookerEmail} to use this email for creating a booking.`,\n    });\n  }\n};",
+        "detail": {
+          "unitId": "packages/features/bookings/lib/handleNewBooking/checkIfBookerEmailIsBlocked.ts__checkIfBookerEmailIsBlocked#function:checkIfBookerEmailIsBlocked",
+          "fileId": "packages/features/bookings/lib/handleNewBooking/checkIfBookerEmailIsBlocked.ts__checkIfBookerEmailIsBlocked",
+          "unitKind": "function",
+          "name": "checkIfBookerEmailIsBlocked",
+          "qualifiedName": "checkIfBookerEmailIsBlocked",
+          "parentUnitId": null,
+          "startLine": 5,
+          "endLine": 62,
+          "signature": "async ({ bookerEmail, loggedInUserId }: { bookerEmail: string; loggedInUserId?: number })",
+          "parameters": [
+            {
+              "name": "bookerEmail",
+              "type": "string",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "loggedInUserId",
+              "type": "number",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "Promise<boolean | undefined>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "bookerEmail is provided as a string.",
+            "The BLACKLISTED_GUEST_EMAILS environment variable, when present, contains comma-separated email values."
+          ],
+          "postconditions": [
+            "The email is normalized through extractBaseEmail before blacklist comparison and user lookup.",
+            "If the normalized email is not blacklisted, the function returns false without querying the database.",
+            "If the normalized email is blacklisted and no matching verified user is found, the function throws an HttpError with status code 403.",
+            "If the normalized email is blacklisted and the matching verified user's id differs from loggedInUserId, the function throws an HttpError with status code 403.",
+            "If the normalized email is blacklisted and the matching verified user's id equals loggedInUserId, the function resolves to undefined."
+          ],
+          "invariants": [
+            "Blacklist comparisons are case-insensitive.",
+            "A database match requires either a verified primary email or a verified secondary email equal to the normalized email.",
+            "Only the selected user id and email fields are requested from the database."
+          ],
+          "edgeCases": [
+            "When BLACKLISTED_GUEST_EMAILS is absent, the blacklist is empty and the function returns false.",
+            "When the normalized email is not present in the comma-separated blacklist, the function returns false.",
+            "When a blacklisted normalized email has no matching verified primary or secondary email, the function throws a 403 HttpError.",
+            "When a blacklisted email matches a verified user different from loggedInUserId, the function throws a 403 HttpError containing the supplied bookerEmail.",
+            "When a blacklisted email matches the verified user identified by loggedInUserId, the function resolves without returning a value."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [
+              "HttpError with statusCode 403 when no matching verified user exists",
+              "HttpError with statusCode 403 when the matching verified user id differs from loggedInUserId"
+            ],
+            "reverts": [],
+            "onInvalidInput": "Not explicitly validated; processing follows the string operations and database query behavior for the supplied values.",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "extractBaseEmail", "source": null, "kind": "internal" },
+            { "name": "prisma.user.findFirst", "source": "prisma", "kind": "external" },
+            { "name": "HttpError", "source": null, "kind": "internal" }
+          ],
+          "symbolReferences": ["process.env.BLACKLISTED_GUEST_EMAILS", "prisma", "HttpError", "extractBaseEmail"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Reads the BLACKLISTED_GUEST_EMAILS process environment variable as a comma-separated list. Queries the user repository with an OR condition over verified primary and secondary email records, selecting id and email.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Determines whether a booking email is blacklisted and, when it is associated with a verified user, ensures that the requester is logged in as that user. Non-blacklisted emails return false; permitted blacklisted emails complete without a value.",
+          "specLiterals": [
+            {
+              "kind": "error-message",
+              "value": "Cannot use this email to create the booking.",
+              "role": "403 error message when no verified user matches the blacklisted email"
+            },
+            {
+              "kind": "format-string",
+              "value": "Attendee email has been blocked. Make sure to login as ${bookerEmail} to use this email for creating a booking.",
+              "role": "403 error message when the matching user is not the logged-in user"
+            },
+            {
+              "kind": "magic-number",
+              "value": "403",
+              "role": "HTTP status code for both blocked-email authorization failures"
+            },
+            { "kind": "magic-number", "value": "0", "role": "Comma-separated blacklist delimiter" }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "checkIfBookerEmailIsBlocked is called.",
+              "then": "It resolves to false and does not require a user lookup.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "checkIfBookerEmailIsBlocked is called.",
+              "then": "It rejects with an HttpError whose statusCode is 403 and whose message is \"Cannot use this email to create the booking.\".",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "checkIfBookerEmailIsBlocked is called.",
+              "then": "It resolves to undefined.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "cade1d561df02c1efe1f9d3f5e4ee4046a1a09064d7d6578f8cb4a6d8e8b6f2f"
+        }
+      }
+    ]
+  },
+  "out": [],
+  "in": [],
+  "externals": ["@calcom/lib/extract-base-email", "@calcom/lib/http-error", "@calcom/prisma"],
+  "impact": { "seeds": 1, "callers": 0, "impactedFiles": [] }
+}

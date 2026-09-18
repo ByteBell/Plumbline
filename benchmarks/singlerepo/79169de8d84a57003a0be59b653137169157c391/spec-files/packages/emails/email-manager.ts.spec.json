@@ -1,0 +1,3127 @@
+{
+  "schema": 2,
+  "kind": "file",
+  "repoName": "cal.diy",
+  "file": {
+    "relativePath": "packages/emails/email-manager.ts",
+    "language": "typescript",
+    "sizeBytes": 32091,
+    "tokenCount": 8023,
+    "model": "z-ai/glm-5.3-flash",
+    "analysedAt": "2026-09-04T19:28:33.067Z",
+    "module": {
+      "purpose": "Central email/SMS dispatch facade for Cal.com bookings and account notifications. It composes template classes for every lifecycle event (scheduled, rescheduled, cancelled, declined, reschedule requests, seat changes, payments, recordings, digests, org/team/credit notifications) and fans out sends to hosts, team members, and attendees, honoring per-event-type standard email disable flags.",
+      "summary": "This file is the orchestration layer of the emails package: it imports dozens of email template classes and attendee SMS classes, then exports async functions that instantiate the right templates and send them in parallel via Promise.all. A private sendEmail helper wraps template preparation and sending in a promise with error logging. Formatting of the raw CalendarEvent into a displayable form is done through formatCalEvent before templating. Each lifecycle function checks eventTypeDisableHostEmail / eventTypeDisableAttendeeEmail flags derived from the event type metadata so standard emails can be suppressed per event type, or by explicit hostEmailDisabled/attendeeEmailDisabled arguments. Round-robin-specific variants handle newly assigned members, reassignments, and cancellations with reassigned context. Scheduled/rescheduled/cancelled/request/location-change/awaiting-payment flows pair emails with corresponding attendee SMS classes; seat-based bookings use cloneDeep to avoid mutating shared event objects. Account-level utilities cover password reset, team invites, email verification links/codes, organization creation and verification, workflow emails, feedback, broken integrations, disabled apps, slug replacement, no-show fees, Daily video recordings/transcripts, monthly digest, booking redirects, delegation credential disabled, and credit balance warnings/limits.",
+      "businessContext": "Serves Cal.com's scheduling product: every booking lifecycle change must notify organizers and attendees. Failure means users miss confirmations, cancellations, reschedule requests, payments, or recordings — degrading trust in scheduling communications.",
+      "classes": [],
+      "functions": [
+        "sendEmail (~L87-96): Wraps template preparation and send as promise",
+        "eventTypeDisableAttendeeEmail (~L98-100): Checks attendee standard email disable flag",
+        "eventTypeDisableHostEmail (~L102-104): Checks host standard email disable flag",
+        "_sendScheduledEmailsAndSMS (~L106-151): Sends booking confirmation emails and SMS",
+        "sendScheduledEmailsAndSMS (~L153-156): Reporting-wrapped scheduled emails and SMS sender",
+        "sendRoundRobinScheduledEmailsAndSMS (~L159-185): Notifies new round-robin members of booking",
+        "sendRoundRobinRescheduledEmailsAndSMS (~L187-218): Sends rescheduled notifications to round-robin participants",
+        "sendRoundRobinUpdatedEmailsAndSMS (~L220-234): Sends attendee updated booking notifications",
+        "sendRoundRobinCancelledEmailsAndSMS (~L236-259): Sends cancelled notifications to round-robin members",
+        "sendRoundRobinReassignedEmailsAndSMS (~L261-285): Notifies members of round-robin reassignment",
+        "_sendRescheduledEmailsAndSMS (~L287-317): Sends rescheduled emails and SMS to all",
+        "sendRescheduledEmailsAndSMS (~L318-321): Reporting-wrapped rescheduled notifications sender",
+        "sendRescheduledSeatEmailAndSMS (~L323-342): Sends rescheduled notification for one seat",
+        "sendScheduledSeatsEmailsAndSMS (~L344-387): Sends seat-based booking confirmations",
+        "sendCancelledSeatEmailsAndSMS (~L389-414): Notifies of single attendee seat cancellation",
+        "_sendOrganizerRequestEmail (~L416-431): Sends booking request email to organizers",
+        "sendOrganizerRequestEmail (~L433-436): Reporting-wrapped organizer request sender",
+        "_sendAttendeeRequestEmailAndSMS (~L438-449): Sends pending request email and SMS to attendee",
+        "sendAttendeeRequestEmailAndSMS (~L451-454): Reporting-wrapped attendee request sender",
+        "sendDeclinedEmailsAndSMS (~L456-474): Sends declined booking notifications",
+        "sendCancelledEmailsAndSMS (~L476-534): Sends cancellation emails with event name and SMS",
+        "sendOrganizerRequestReminderEmail (~L536-554): Sends reminder about pending booking request",
+        "sendAwaitingPaymentEmailAndSMS (~L556-571): Sends payment pending notifications to attendees",
+        "sendOrganizerPaymentRefundFailedEmail (~L573-584): Alerts organizers about refund failures",
+        "sendPasswordResetEmail (~L586-588): Sends forgot password email",
+        "sendTeamInviteEmail (~L590-592): Sends team invitation email",
+        "sendCustomWorkflowEmail (~L594-596): Sends custom workflow email",
+        "sendOrganizationCreationEmail (~L598-600): Sends organization creation notification",
+        "sendOrganizationAdminNoSlotsNotification (~L602-606): Alerts org admins when no slots available",
+        "sendEmailVerificationLink (~L608-610): Sends account verification link email",
+        "sendEmailVerificationCode (~L612-614): Sends attendee verification code email",
+        "sendChangeOfEmailVerificationLink (~L616-618): Sends email change verification link",
+        "sendRequestRescheduleEmailAndSMS (~L620-638): Sends reschedule request emails and SMS",
+        "sendLocationChangeEmailsAndSMS (~L640-671): Sends location change notifications",
+        "sendAddGuestsEmails (~L672-697): Notifies participants about added guests",
+        "sendFeedbackEmail (~L698-700): Sends user feedback email",
+        "sendBrokenIntegrationEmail (~L702-705): Alerts about broken video or calendar integration",
+        "sendDisabledAppEmail (~L707-723): Sends disabled app notification email",
+        "sendSlugReplacementEmail (~L725-739): Sends event type slug replacement notification",
+        "sendNoShowFeeChargedEmail (~L741-748): Notifies attendee of no-show fee charge",
+        "sendDailyVideoRecordingEmails (~L750-764): Sends Daily video recording download links",
+        "sendDailyVideoTranscriptEmails (~L766-777): Sends Daily video transcripts to participants",
+        "sendOrganizationEmailVerification (~L779-781): Sends organization email verification message",
+        "sendMonthlyDigestEmails (~L783-785): Sends monthly digest email",
+        "sendAdminOrganizationNotification (~L787-789): Sends admin organization notification",
+        "sendBookingRedirectNotification (~L791-793): Sends booking redirect notification email",
+        "sendCreditBalanceLowWarningEmails (~L795-830): Warns admins and users about low credits",
+        "sendCreditBalanceLimitReachedEmails (~L832-867): Notifies about credit balance limit reached",
+        "sendDelegationCredentialDisabledEmail (~L869-889): Sends delegation credential disabled notification"
+      ],
+      "keywords": [
+        "booking notifications",
+        "round-robin scheduling",
+        "attendee SMS",
+        "event type metadata",
+        "standard email disable flags",
+        "calendar event formatting",
+        "team member notifications",
+        "seat-based bookings",
+        "email verification",
+        "credit balance alerts"
+      ],
+      "ontologyConcepts": [
+        "Notification dispatch",
+        "Email templating",
+        "Message fan-out",
+        "Lifecycle event",
+        "Feature suppression flag",
+        "Localization",
+        "Parallel delivery",
+        "Facade pattern"
+      ],
+      "businessEntities": [
+        "CalendarEvent",
+        "Person",
+        "Attendee",
+        "Organizer",
+        "TeamMember",
+        "EventTypeMetadata",
+        "Booking",
+        "Organization"
+      ],
+      "systemCapabilities": [
+        "Dispatch booking lifecycle notifications",
+        "Suppress standard emails per event type",
+        "Send attendee SMS alongside emails",
+        "Handle round-robin assignment changes",
+        "Deliver account and organization notifications"
+      ],
+      "configDependencies": [],
+      "importsInternal": [
+        {
+          "spec": "../sms/attendee/awaiting-payment-sms",
+          "symbols": ["default"],
+          "anchor": { "startLine": 16, "endLine": 16 },
+          "resolvedRelativePath": "packages/sms/attendee/awaiting-payment-sms.ts",
+          "resolvedFileId": "packages/sms/attendee/awaiting-payment-sms.ts",
+          "resolvedHint": "packages/sms/attendee/awaiting-payment-sms.ts"
+        },
+        {
+          "spec": "../sms/attendee/cancelled-seat-sms",
+          "symbols": ["default"],
+          "anchor": { "startLine": 17, "endLine": 17 },
+          "resolvedRelativePath": "packages/sms/attendee/cancelled-seat-sms.ts",
+          "resolvedFileId": "packages/sms/attendee/cancelled-seat-sms.ts",
+          "resolvedHint": "packages/sms/attendee/cancelled-seat-sms.ts"
+        },
+        {
+          "spec": "../sms/attendee/event-cancelled-sms",
+          "symbols": ["default"],
+          "anchor": { "startLine": 18, "endLine": 18 },
+          "resolvedRelativePath": "packages/sms/attendee/event-cancelled-sms.ts",
+          "resolvedFileId": "packages/sms/attendee/event-cancelled-sms.ts",
+          "resolvedHint": "packages/sms/attendee/event-cancelled-sms.ts"
+        },
+        {
+          "spec": "../sms/attendee/event-declined-sms",
+          "symbols": ["default"],
+          "anchor": { "startLine": 19, "endLine": 19 },
+          "resolvedRelativePath": "packages/sms/attendee/event-declined-sms.ts",
+          "resolvedFileId": "packages/sms/attendee/event-declined-sms.ts",
+          "resolvedHint": "packages/sms/attendee/event-declined-sms.ts"
+        },
+        {
+          "spec": "../sms/attendee/event-location-changed-sms",
+          "symbols": ["default"],
+          "anchor": { "startLine": 20, "endLine": 20 },
+          "resolvedRelativePath": "packages/sms/attendee/event-location-changed-sms.ts",
+          "resolvedFileId": "packages/sms/attendee/event-location-changed-sms.ts",
+          "resolvedHint": "packages/sms/attendee/event-location-changed-sms.ts"
+        },
+        {
+          "spec": "../sms/attendee/event-request-sms",
+          "symbols": ["default"],
+          "anchor": { "startLine": 21, "endLine": 21 },
+          "resolvedRelativePath": "packages/sms/attendee/event-request-sms.ts",
+          "resolvedFileId": "packages/sms/attendee/event-request-sms.ts",
+          "resolvedHint": "packages/sms/attendee/event-request-sms.ts"
+        },
+        {
+          "spec": "../sms/attendee/event-request-to-reschedule-sms",
+          "symbols": ["default"],
+          "anchor": { "startLine": 22, "endLine": 22 },
+          "resolvedRelativePath": "packages/sms/attendee/event-request-to-reschedule-sms.ts",
+          "resolvedFileId": "packages/sms/attendee/event-request-to-reschedule-sms.ts",
+          "resolvedHint": "packages/sms/attendee/event-request-to-reschedule-sms.ts"
+        },
+        {
+          "spec": "../sms/attendee/event-rescheduled-sms",
+          "symbols": ["default"],
+          "anchor": { "startLine": 23, "endLine": 23 },
+          "resolvedRelativePath": "packages/sms/attendee/event-rescheduled-sms.ts",
+          "resolvedFileId": "packages/sms/attendee/event-rescheduled-sms.ts",
+          "resolvedHint": "packages/sms/attendee/event-rescheduled-sms.ts"
+        },
+        {
+          "spec": "../sms/attendee/event-scheduled-sms",
+          "symbols": ["default"],
+          "anchor": { "startLine": 24, "endLine": 24 },
+          "resolvedRelativePath": "packages/sms/attendee/event-scheduled-sms.ts",
+          "resolvedFileId": "packages/sms/attendee/event-scheduled-sms.ts",
+          "resolvedHint": "packages/sms/attendee/event-scheduled-sms.ts"
+        },
+        {
+          "spec": "./src/templates/MonthlyDigestEmail",
+          "symbols": ["MonthlyDigestEmailData"],
+          "anchor": { "startLine": 25, "endLine": 25 },
+          "resolvedRelativePath": "packages/emails/src/templates/MonthlyDigestEmail.tsx",
+          "resolvedFileId": "packages/emails/src/templates/MonthlyDigestEmail.tsx",
+          "resolvedHint": "packages/emails/src/templates/MonthlyDigestEmail.ts"
+        },
+        {
+          "spec": "./src/templates/OrganizationAdminNoSlots",
+          "symbols": ["OrganizationAdminNoSlotsEmailInput"],
+          "anchor": { "startLine": 26, "endLine": 26 },
+          "resolvedRelativePath": "packages/emails/src/templates/OrganizationAdminNoSlots.tsx",
+          "resolvedFileId": "packages/emails/src/templates/OrganizationAdminNoSlots.tsx",
+          "resolvedHint": "packages/emails/src/templates/OrganizationAdminNoSlots.ts"
+        },
+        {
+          "spec": "./templates/account-verify-email",
+          "symbols": ["EmailVerifyLink", "default"],
+          "anchor": { "startLine": 27, "endLine": 28 },
+          "resolvedRelativePath": "packages/emails/templates/account-verify-email.ts",
+          "resolvedFileId": "packages/emails/templates/account-verify-email.ts",
+          "resolvedHint": "packages/emails/templates/account-verify-email.ts"
+        },
+        {
+          "spec": "./templates/admin-organization-notification",
+          "symbols": ["OrganizationNotification", "default"],
+          "anchor": { "startLine": 29, "endLine": 30 },
+          "resolvedRelativePath": "packages/emails/templates/admin-organization-notification.ts",
+          "resolvedFileId": "packages/emails/templates/admin-organization-notification.ts",
+          "resolvedHint": "packages/emails/templates/admin-organization-notification.ts"
+        },
+        {
+          "spec": "./templates/attendee-add-guests-email",
+          "symbols": ["default"],
+          "anchor": { "startLine": 31, "endLine": 31 },
+          "resolvedRelativePath": "packages/emails/templates/attendee-add-guests-email.ts",
+          "resolvedFileId": "packages/emails/templates/attendee-add-guests-email.ts",
+          "resolvedHint": "packages/emails/templates/attendee-add-guests-email.ts"
+        },
+        {
+          "spec": "./templates/attendee-awaiting-payment-email",
+          "symbols": ["default"],
+          "anchor": { "startLine": 32, "endLine": 32 },
+          "resolvedRelativePath": "packages/emails/templates/attendee-awaiting-payment-email.ts",
+          "resolvedFileId": "packages/emails/templates/attendee-awaiting-payment-email.ts",
+          "resolvedHint": "packages/emails/templates/attendee-awaiting-payment-email.ts"
+        },
+        {
+          "spec": "./templates/attendee-cancelled-email",
+          "symbols": ["default"],
+          "anchor": { "startLine": 33, "endLine": 33 },
+          "resolvedRelativePath": "packages/emails/templates/attendee-cancelled-email.ts",
+          "resolvedFileId": "packages/emails/templates/attendee-cancelled-email.ts",
+          "resolvedHint": "packages/emails/templates/attendee-cancelled-email.ts"
+        },
+        {
+          "spec": "./templates/attendee-cancelled-seat-email",
+          "symbols": ["default"],
+          "anchor": { "startLine": 34, "endLine": 34 },
+          "resolvedRelativePath": "packages/emails/templates/attendee-cancelled-seat-email.ts",
+          "resolvedFileId": "packages/emails/templates/attendee-cancelled-seat-email.ts",
+          "resolvedHint": "packages/emails/templates/attendee-cancelled-seat-email.ts"
+        },
+        {
+          "spec": "./templates/attendee-daily-video-download-recording-email",
+          "symbols": ["default"],
+          "anchor": { "startLine": 35, "endLine": 35 },
+          "resolvedRelativePath": "packages/emails/templates/attendee-daily-video-download-recording-email.ts",
+          "resolvedFileId": "packages/emails/templates/attendee-daily-video-download-recording-email.ts",
+          "resolvedHint": "packages/emails/templates/attendee-daily-video-download-recording-email.ts"
+        },
+        {
+          "spec": "./templates/attendee-daily-video-download-transcript-email",
+          "symbols": ["default"],
+          "anchor": { "startLine": 36, "endLine": 36 },
+          "resolvedRelativePath": "packages/emails/templates/attendee-daily-video-download-transcript-email.ts",
+          "resolvedFileId": "packages/emails/templates/attendee-daily-video-download-transcript-email.ts",
+          "resolvedHint": "packages/emails/templates/attendee-daily-video-download-transcript-email.ts"
+        },
+        {
+          "spec": "./templates/attendee-declined-email",
+          "symbols": ["default"],
+          "anchor": { "startLine": 37, "endLine": 37 },
+          "resolvedRelativePath": "packages/emails/templates/attendee-declined-email.ts",
+          "resolvedFileId": "packages/emails/templates/attendee-declined-email.ts",
+          "resolvedHint": "packages/emails/templates/attendee-declined-email.ts"
+        },
+        {
+          "spec": "./templates/attendee-location-change-email",
+          "symbols": ["default"],
+          "anchor": { "startLine": 38, "endLine": 38 },
+          "resolvedRelativePath": "packages/emails/templates/attendee-location-change-email.ts",
+          "resolvedFileId": "packages/emails/templates/attendee-location-change-email.ts",
+          "resolvedHint": "packages/emails/templates/attendee-location-change-email.ts"
+        },
+        {
+          "spec": "./templates/attendee-request-email",
+          "symbols": ["default"],
+          "anchor": { "startLine": 39, "endLine": 39 },
+          "resolvedRelativePath": "packages/emails/templates/attendee-request-email.ts",
+          "resolvedFileId": "packages/emails/templates/attendee-request-email.ts",
+          "resolvedHint": "packages/emails/templates/attendee-request-email.ts"
+        },
+        {
+          "spec": "./templates/attendee-rescheduled-email",
+          "symbols": ["default"],
+          "anchor": { "startLine": 40, "endLine": 40 },
+          "resolvedRelativePath": "packages/emails/templates/attendee-rescheduled-email.ts",
+          "resolvedFileId": "packages/emails/templates/attendee-rescheduled-email.ts",
+          "resolvedHint": "packages/emails/templates/attendee-rescheduled-email.ts"
+        },
+        {
+          "spec": "./templates/attendee-scheduled-email",
+          "symbols": ["default"],
+          "anchor": { "startLine": 41, "endLine": 41 },
+          "resolvedRelativePath": "packages/emails/templates/attendee-scheduled-email.ts",
+          "resolvedFileId": "packages/emails/templates/attendee-scheduled-email.ts",
+          "resolvedHint": "packages/emails/templates/attendee-scheduled-email.ts"
+        },
+        {
+          "spec": "./templates/attendee-updated-email",
+          "symbols": ["default"],
+          "anchor": { "startLine": 42, "endLine": 42 },
+          "resolvedRelativePath": "packages/emails/templates/attendee-updated-email.ts",
+          "resolvedFileId": "packages/emails/templates/attendee-updated-email.ts",
+          "resolvedHint": "packages/emails/templates/attendee-updated-email.ts"
+        },
+        {
+          "spec": "./templates/attendee-verify-email",
+          "symbols": ["EmailVerifyCode", "default"],
+          "anchor": { "startLine": 43, "endLine": 44 },
+          "resolvedRelativePath": "packages/emails/templates/attendee-verify-email.ts",
+          "resolvedFileId": "packages/emails/templates/attendee-verify-email.ts",
+          "resolvedHint": "packages/emails/templates/attendee-verify-email.ts"
+        },
+        {
+          "spec": "./templates/attendee-was-requested-to-reschedule-email",
+          "symbols": ["default"],
+          "anchor": { "startLine": 45, "endLine": 45 },
+          "resolvedRelativePath": "packages/emails/templates/attendee-was-requested-to-reschedule-email.ts",
+          "resolvedFileId": "packages/emails/templates/attendee-was-requested-to-reschedule-email.ts",
+          "resolvedHint": "packages/emails/templates/attendee-was-requested-to-reschedule-email.ts"
+        },
+        {
+          "spec": "./templates/booking-redirect-notification",
+          "symbols": ["default", "IBookingRedirect"],
+          "anchor": { "startLine": 46, "endLine": 47 },
+          "resolvedRelativePath": "packages/emails/templates/booking-redirect-notification.ts",
+          "resolvedFileId": "packages/emails/templates/booking-redirect-notification.ts",
+          "resolvedHint": "packages/emails/templates/booking-redirect-notification.ts"
+        },
+        {
+          "spec": "./templates/broken-integration-email",
+          "symbols": ["default"],
+          "anchor": { "startLine": 48, "endLine": 48 },
+          "resolvedRelativePath": "packages/emails/templates/broken-integration-email.ts",
+          "resolvedFileId": "packages/emails/templates/broken-integration-email.ts",
+          "resolvedHint": "packages/emails/templates/broken-integration-email.ts"
+        },
+        {
+          "spec": "./templates/change-account-email-verify",
+          "symbols": ["ChangeOfEmailVerifyLink", "default"],
+          "anchor": { "startLine": 49, "endLine": 50 },
+          "resolvedRelativePath": "packages/emails/templates/change-account-email-verify.ts",
+          "resolvedFileId": "packages/emails/templates/change-account-email-verify.ts",
+          "resolvedHint": "packages/emails/templates/change-account-email-verify.ts"
+        },
+        {
+          "spec": "./templates/credit-balance-limit-reached-email",
+          "symbols": ["default"],
+          "anchor": { "startLine": 51, "endLine": 51 },
+          "resolvedRelativePath": "packages/emails/templates/credit-balance-limit-reached-email.ts",
+          "resolvedFileId": "packages/emails/templates/credit-balance-limit-reached-email.ts",
+          "resolvedHint": "packages/emails/templates/credit-balance-limit-reached-email.ts"
+        },
+        {
+          "spec": "./templates/credit-balance-low-warning-email",
+          "symbols": ["default"],
+          "anchor": { "startLine": 52, "endLine": 52 },
+          "resolvedRelativePath": "packages/emails/templates/credit-balance-low-warning-email.ts",
+          "resolvedFileId": "packages/emails/templates/credit-balance-low-warning-email.ts",
+          "resolvedHint": "packages/emails/templates/credit-balance-low-warning-email.ts"
+        },
+        {
+          "spec": "./templates/delegation-credential-disabled-email",
+          "symbols": ["default"],
+          "anchor": { "startLine": 53, "endLine": 53 },
+          "resolvedRelativePath": "packages/emails/templates/delegation-credential-disabled-email.ts",
+          "resolvedFileId": "packages/emails/templates/delegation-credential-disabled-email.ts",
+          "resolvedHint": "packages/emails/templates/delegation-credential-disabled-email.ts"
+        },
+        {
+          "spec": "./templates/disabled-app-email",
+          "symbols": ["default"],
+          "anchor": { "startLine": 54, "endLine": 54 },
+          "resolvedRelativePath": "packages/emails/templates/disabled-app-email.ts",
+          "resolvedFileId": "packages/emails/templates/disabled-app-email.ts",
+          "resolvedHint": "packages/emails/templates/disabled-app-email.ts"
+        },
+        {
+          "spec": "./templates/feedback-email",
+          "symbols": ["Feedback", "default"],
+          "anchor": { "startLine": 55, "endLine": 56 },
+          "resolvedRelativePath": "packages/emails/templates/feedback-email.ts",
+          "resolvedFileId": "packages/emails/templates/feedback-email.ts",
+          "resolvedHint": "packages/emails/templates/feedback-email.ts"
+        },
+        {
+          "spec": "./templates/forgot-password-email",
+          "symbols": ["PasswordReset", "default"],
+          "anchor": { "startLine": 57, "endLine": 58 },
+          "resolvedRelativePath": "packages/emails/templates/forgot-password-email.ts",
+          "resolvedFileId": "packages/emails/templates/forgot-password-email.ts",
+          "resolvedHint": "packages/emails/templates/forgot-password-email.ts"
+        },
+        {
+          "spec": "./templates/monthly-digest-email",
+          "symbols": ["default"],
+          "anchor": { "startLine": 59, "endLine": 59 },
+          "resolvedRelativePath": "packages/emails/templates/monthly-digest-email.ts",
+          "resolvedFileId": "packages/emails/templates/monthly-digest-email.ts",
+          "resolvedHint": "packages/emails/templates/monthly-digest-email.ts"
+        },
+        {
+          "spec": "./templates/no-show-fee-charged-email",
+          "symbols": ["default"],
+          "anchor": { "startLine": 60, "endLine": 60 },
+          "resolvedRelativePath": "packages/emails/templates/no-show-fee-charged-email.ts",
+          "resolvedFileId": "packages/emails/templates/no-show-fee-charged-email.ts",
+          "resolvedHint": "packages/emails/templates/no-show-fee-charged-email.ts"
+        },
+        {
+          "spec": "./templates/organization-admin-no-slots-email",
+          "symbols": ["default"],
+          "anchor": { "startLine": 61, "endLine": 61 },
+          "resolvedRelativePath": "packages/emails/templates/organization-admin-no-slots-email.ts",
+          "resolvedFileId": "packages/emails/templates/organization-admin-no-slots-email.ts",
+          "resolvedHint": "packages/emails/templates/organization-admin-no-slots-email.ts"
+        },
+        {
+          "spec": "./templates/organization-creation-email",
+          "symbols": ["OrganizationCreation", "default"],
+          "anchor": { "startLine": 62, "endLine": 63 },
+          "resolvedRelativePath": "packages/emails/templates/organization-creation-email.ts",
+          "resolvedFileId": "packages/emails/templates/organization-creation-email.ts",
+          "resolvedHint": "packages/emails/templates/organization-creation-email.ts"
+        },
+        {
+          "spec": "./templates/organization-email-verification",
+          "symbols": ["OrganizationEmailVerify", "default"],
+          "anchor": { "startLine": 64, "endLine": 65 },
+          "resolvedRelativePath": "packages/emails/templates/organization-email-verification.ts",
+          "resolvedFileId": "packages/emails/templates/organization-email-verification.ts",
+          "resolvedHint": "packages/emails/templates/organization-email-verification.ts"
+        },
+        {
+          "spec": "./templates/organizer-add-guests-email",
+          "symbols": ["default"],
+          "anchor": { "startLine": 66, "endLine": 66 },
+          "resolvedRelativePath": "packages/emails/templates/organizer-add-guests-email.ts",
+          "resolvedFileId": "packages/emails/templates/organizer-add-guests-email.ts",
+          "resolvedHint": "packages/emails/templates/organizer-add-guests-email.ts"
+        },
+        {
+          "spec": "./templates/organizer-attendee-cancelled-seat-email",
+          "symbols": ["default"],
+          "anchor": { "startLine": 67, "endLine": 67 },
+          "resolvedRelativePath": "packages/emails/templates/organizer-attendee-cancelled-seat-email.ts",
+          "resolvedFileId": "packages/emails/templates/organizer-attendee-cancelled-seat-email.ts",
+          "resolvedHint": "packages/emails/templates/organizer-attendee-cancelled-seat-email.ts"
+        },
+        {
+          "spec": "./templates/organizer-cancelled-email",
+          "symbols": ["default"],
+          "anchor": { "startLine": 68, "endLine": 68 },
+          "resolvedRelativePath": "packages/emails/templates/organizer-cancelled-email.ts",
+          "resolvedFileId": "packages/emails/templates/organizer-cancelled-email.ts",
+          "resolvedHint": "packages/emails/templates/organizer-cancelled-email.ts"
+        },
+        {
+          "spec": "./templates/organizer-daily-video-download-recording-email",
+          "symbols": ["default"],
+          "anchor": { "startLine": 69, "endLine": 69 },
+          "resolvedRelativePath": "packages/emails/templates/organizer-daily-video-download-recording-email.ts",
+          "resolvedFileId": "packages/emails/templates/organizer-daily-video-download-recording-email.ts",
+          "resolvedHint": "packages/emails/templates/organizer-daily-video-download-recording-email.ts"
+        },
+        {
+          "spec": "./templates/organizer-daily-video-download-transcript-email",
+          "symbols": ["default"],
+          "anchor": { "startLine": 70, "endLine": 70 },
+          "resolvedRelativePath": "packages/emails/templates/organizer-daily-video-download-transcript-email.ts",
+          "resolvedFileId": "packages/emails/templates/organizer-daily-video-download-transcript-email.ts",
+          "resolvedHint": "packages/emails/templates/organizer-daily-video-download-transcript-email.ts"
+        },
+        {
+          "spec": "./templates/organizer-location-change-email",
+          "symbols": ["default"],
+          "anchor": { "startLine": 71, "endLine": 71 },
+          "resolvedRelativePath": "packages/emails/templates/organizer-location-change-email.ts",
+          "resolvedFileId": "packages/emails/templates/organizer-location-change-email.ts",
+          "resolvedHint": "packages/emails/templates/organizer-location-change-email.ts"
+        },
+        {
+          "spec": "./templates/organizer-payment-refund-failed-email",
+          "symbols": ["default"],
+          "anchor": { "startLine": 72, "endLine": 72 },
+          "resolvedRelativePath": "packages/emails/templates/organizer-payment-refund-failed-email.ts",
+          "resolvedFileId": "packages/emails/templates/organizer-payment-refund-failed-email.ts",
+          "resolvedHint": "packages/emails/templates/organizer-payment-refund-failed-email.ts"
+        },
+        {
+          "spec": "./templates/organizer-reassigned-email",
+          "symbols": ["default"],
+          "anchor": { "startLine": 73, "endLine": 73 },
+          "resolvedRelativePath": "packages/emails/templates/organizer-reassigned-email.ts",
+          "resolvedFileId": "packages/emails/templates/organizer-reassigned-email.ts",
+          "resolvedHint": "packages/emails/templates/organizer-reassigned-email.ts"
+        },
+        {
+          "spec": "./templates/organizer-request-email",
+          "symbols": ["default"],
+          "anchor": { "startLine": 74, "endLine": 74 },
+          "resolvedRelativePath": "packages/emails/templates/organizer-request-email.ts",
+          "resolvedFileId": "packages/emails/templates/organizer-request-email.ts",
+          "resolvedHint": "packages/emails/templates/organizer-request-email.ts"
+        },
+        {
+          "spec": "./templates/organizer-request-reminder-email",
+          "symbols": ["default"],
+          "anchor": { "startLine": 75, "endLine": 75 },
+          "resolvedRelativePath": "packages/emails/templates/organizer-request-reminder-email.ts",
+          "resolvedFileId": "packages/emails/templates/organizer-request-reminder-email.ts",
+          "resolvedHint": "packages/emails/templates/organizer-request-reminder-email.ts"
+        },
+        {
+          "spec": "./templates/organizer-requested-to-reschedule-email",
+          "symbols": ["default"],
+          "anchor": { "startLine": 76, "endLine": 76 },
+          "resolvedRelativePath": "packages/emails/templates/organizer-requested-to-reschedule-email.ts",
+          "resolvedFileId": "packages/emails/templates/organizer-requested-to-reschedule-email.ts",
+          "resolvedHint": "packages/emails/templates/organizer-requested-to-reschedule-email.ts"
+        },
+        {
+          "spec": "./templates/organizer-rescheduled-email",
+          "symbols": ["default"],
+          "anchor": { "startLine": 77, "endLine": 77 },
+          "resolvedRelativePath": "packages/emails/templates/organizer-rescheduled-email.ts",
+          "resolvedFileId": "packages/emails/templates/organizer-rescheduled-email.ts",
+          "resolvedHint": "packages/emails/templates/organizer-rescheduled-email.ts"
+        },
+        {
+          "spec": "./templates/organizer-scheduled-email",
+          "symbols": ["default"],
+          "anchor": { "startLine": 78, "endLine": 78 },
+          "resolvedRelativePath": "packages/emails/templates/organizer-scheduled-email.ts",
+          "resolvedFileId": "packages/emails/templates/organizer-scheduled-email.ts",
+          "resolvedHint": "packages/emails/templates/organizer-scheduled-email.ts"
+        },
+        {
+          "spec": "./templates/slug-replacement-email",
+          "symbols": ["default"],
+          "anchor": { "startLine": 79, "endLine": 79 },
+          "resolvedRelativePath": "packages/emails/templates/slug-replacement-email.ts",
+          "resolvedFileId": "packages/emails/templates/slug-replacement-email.ts",
+          "resolvedHint": "packages/emails/templates/slug-replacement-email.ts"
+        },
+        {
+          "spec": "./templates/team-invite-email",
+          "symbols": ["TeamInvite", "default"],
+          "anchor": { "startLine": 80, "endLine": 81 },
+          "resolvedRelativePath": "packages/emails/templates/team-invite-email.ts",
+          "resolvedFileId": "packages/emails/templates/team-invite-email.ts",
+          "resolvedHint": "packages/emails/templates/team-invite-email.ts"
+        },
+        {
+          "spec": "./templates/workflow-email",
+          "symbols": ["WorkflowEmailData", "default"],
+          "anchor": { "startLine": 82, "endLine": 83 },
+          "resolvedRelativePath": "packages/emails/templates/workflow-email.ts",
+          "resolvedFileId": "packages/emails/templates/workflow-email.ts",
+          "resolvedHint": "packages/emails/templates/workflow-email.ts"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "i18next",
+          "symbols": ["TFunction"],
+          "package": "i18next",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 1 }
+        },
+        {
+          "spec": "lodash/cloneDeep",
+          "symbols": ["default as cloneDeep"],
+          "package": "lodash",
+          "subpath": "cloneDeep",
+          "isBuiltin": false,
+          "anchor": { "startLine": 2, "endLine": 2 }
+        },
+        {
+          "spec": "zod",
+          "symbols": ["z"],
+          "package": "zod",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 3, "endLine": 3 }
+        },
+        {
+          "spec": "@calcom/dayjs",
+          "symbols": ["default"],
+          "package": "@calcom/dayjs",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 5, "endLine": 5 }
+        },
+        {
+          "spec": "@calcom/emails/templates/_base-email",
+          "symbols": ["default"],
+          "package": "@calcom/emails",
+          "subpath": "templates/_base-email",
+          "isBuiltin": false,
+          "anchor": { "startLine": 6, "endLine": 6 }
+        },
+        {
+          "spec": "@calcom/features/eventtypes/lib/eventNaming",
+          "symbols": ["EventNameObjectType", "getEventName"],
+          "package": "@calcom/features",
+          "subpath": "eventtypes/lib/eventNaming",
+          "isBuiltin": false,
+          "anchor": { "startLine": 7, "endLine": 8 }
+        },
+        {
+          "spec": "@calcom/lib/formatCalendarEvent",
+          "symbols": ["formatCalEvent"],
+          "package": "@calcom/lib",
+          "subpath": "formatCalendarEvent",
+          "isBuiltin": false,
+          "anchor": { "startLine": 9, "endLine": 9 }
+        },
+        {
+          "spec": "@calcom/lib/logger",
+          "symbols": ["default"],
+          "package": "@calcom/lib",
+          "subpath": "logger",
+          "isBuiltin": false,
+          "anchor": { "startLine": 10, "endLine": 10 }
+        },
+        {
+          "spec": "@calcom/lib/safeStringify",
+          "symbols": ["safeStringify"],
+          "package": "@calcom/lib",
+          "subpath": "safeStringify",
+          "isBuiltin": false,
+          "anchor": { "startLine": 11, "endLine": 11 }
+        },
+        {
+          "spec": "@calcom/lib/sentryWrapper",
+          "symbols": ["withReporting"],
+          "package": "@calcom/lib",
+          "subpath": "sentryWrapper",
+          "isBuiltin": false,
+          "anchor": { "startLine": 12, "endLine": 12 }
+        },
+        {
+          "spec": "@calcom/prisma/zod-utils",
+          "symbols": ["EventTypeMetaDataSchema"],
+          "package": "@calcom/prisma",
+          "subpath": "zod-utils",
+          "isBuiltin": false,
+          "anchor": { "startLine": 13, "endLine": 13 }
+        },
+        {
+          "spec": "@calcom/types/Calendar",
+          "symbols": ["CalendarEvent", "Person"],
+          "package": "@calcom/types",
+          "subpath": "Calendar",
+          "isBuiltin": false,
+          "anchor": { "startLine": 14, "endLine": 14 }
+        }
+      ],
+      "sideEffects": {
+        "io": [
+          "sends emails via BaseEmail.sendEmail()",
+          "sends SMS to attendees via SMS classes' sendSMSToAttendee(s)()",
+          "logs error via logger.error when calEvent.length is not a number",
+          "logs email send failures via console.error"
+        ],
+        "network": ["outbound email/SMS dispatch through email/SMS template senders"],
+        "env": [],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": []
+      },
+      "integrationSurface": [
+        {
+          "kind": "event",
+          "role": "provides",
+          "address": "email.booking.scheduled",
+          "payloadRef": "CalendarEvent",
+          "rawKind": null
+        },
+        {
+          "kind": "event",
+          "role": "provides",
+          "address": "email.booking.rescheduled",
+          "payloadRef": "CalendarEvent",
+          "rawKind": null
+        },
+        {
+          "kind": "event",
+          "role": "provides",
+          "address": "email.booking.cancelled",
+          "payloadRef": "CalendarEvent",
+          "rawKind": null
+        },
+        {
+          "kind": "event",
+          "role": "provides",
+          "address": "sms.booking.scheduled",
+          "payloadRef": "CalendarEvent",
+          "rawKind": null
+        }
+      ],
+      "contractsProvided": [
+        {
+          "name": "sendScheduledEmailsAndSMS",
+          "shape": "async (calEvent: CalendarEvent, eventNameObject?: EventNameObjectType, hostEmailDisabled?: boolean, attendeeEmailDisabled?: boolean, eventTypeMetadata?: EventTypeMetadata) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendRoundRobinScheduledEmailsAndSMS",
+          "shape": "async ({ calEvent, members, eventTypeMetadata, reassigned }) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendRoundRobinRescheduledEmailsAndSMS",
+          "shape": "async (calEvent: CalendarEvent, teamMembersAndAttendees: Person[], eventTypeMetadata?: EventTypeMetadata) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendRoundRobinUpdatedEmailsAndSMS",
+          "shape": "async ({ calEvent, eventTypeMetadata }) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendRoundRobinCancelledEmailsAndSMS",
+          "shape": "async (calEvent: CalendarEvent, members: Person[], eventTypeMetadata?: EventTypeMetadata, reassignedTo?) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendRoundRobinReassignedEmailsAndSMS",
+          "shape": "async (args: { calEvent, members, reassignedTo, eventTypeMetadata }) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendRescheduledEmailsAndSMS",
+          "shape": "async (calEvent: CalendarEvent, eventTypeMetadata?: EventTypeMetadata) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendRescheduledSeatEmailAndSMS",
+          "shape": "async (calEvent: CalendarEvent, attendee: Person, eventTypeMetadata?: EventTypeMetadata) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendScheduledSeatsEmailsAndSMS",
+          "shape": "async (calEvent: CalendarEvent, invitee: Person, newSeat: boolean, showAttendees: boolean, hostEmailDisabled?, attendeeEmailDisabled?, eventTypeMetadata?) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendCancelledSeatEmailsAndSMS",
+          "shape": "async (calEvent: CalendarEvent, cancelledAttendee: Person, eventTypeMetadata?: EventTypeMetadata) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendOrganizerRequestEmail",
+          "shape": "async (calEvent: CalendarEvent, eventTypeMetadata?: EventTypeMetadata) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendAttendeeRequestEmailAndSMS",
+          "shape": "async (calEvent: CalendarEvent, attendee: Person, eventTypeMetadata?: EventTypeMetadata) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendDeclinedEmailsAndSMS",
+          "shape": "async (calEvent: CalendarEvent, eventTypeMetadata?: EventTypeMetadata) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendCancelledEmailsAndSMS",
+          "shape": "async (calEvent: CalendarEvent, eventNameObject: Pick<EventNameObjectType, \"eventName\">, eventTypeMetadata?: EventTypeMetadata) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendOrganizerRequestReminderEmail",
+          "shape": "async (calEvent: CalendarEvent, eventTypeMetadata?: EventTypeMetadata) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendAwaitingPaymentEmailAndSMS",
+          "shape": "async (calEvent: CalendarEvent, eventTypeMetadata?: EventTypeMetadata) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendOrganizerPaymentRefundFailedEmail",
+          "shape": "async (calEvent: CalendarEvent) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendPasswordResetEmail",
+          "shape": "async (passwordResetEvent: PasswordReset) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendTeamInviteEmail",
+          "shape": "async (teamInviteEvent: TeamInvite) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendCustomWorkflowEmail",
+          "shape": "async (emailData: WorkflowEmailData) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendOrganizationCreationEmail",
+          "shape": "async (organizationCreationEvent: OrganizationCreation) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendOrganizationAdminNoSlotsNotification",
+          "shape": "async (orgInviteEvent: OrganizationAdminNoSlotsEmailInput) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendEmailVerificationLink",
+          "shape": "async (verificationInput: EmailVerifyLink) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendEmailVerificationCode",
+          "shape": "async (verificationInput: EmailVerifyCode) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendChangeOfEmailVerificationLink",
+          "shape": "async (verificationInput: ChangeOfEmailVerifyLink) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendRequestRescheduleEmailAndSMS",
+          "shape": "async (calEvent: CalendarEvent, metadata: { rescheduleLink: string }, eventTypeMetadata?: EventTypeMetadata) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendLocationChangeEmailsAndSMS",
+          "shape": "async (calEvent: CalendarEvent, eventTypeMetadata?: EventTypeMetadata) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendAddGuestsEmails",
+          "shape": "async (calEvent: CalendarEvent, newGuests: string[]) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendFeedbackEmail",
+          "shape": "async (feedback: Feedback) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendBrokenIntegrationEmail",
+          "shape": "async (evt: CalendarEvent, type: \"video\" | \"calendar\") => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendDisabledAppEmail",
+          "shape": "async ({ email, appName, appType, t, title?, eventTypeId? }) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendSlugReplacementEmail",
+          "shape": "async ({ email, name, teamName, t, slug }) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendNoShowFeeChargedEmail",
+          "shape": "async (attendee: Person, evt: CalendarEvent, eventTypeMetadata?: EventTypeMetadata) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendDailyVideoRecordingEmails",
+          "shape": "async (calEvent: CalendarEvent, downloadLink: string) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendDailyVideoTranscriptEmails",
+          "shape": "async (calEvent: CalendarEvent, transcripts: string[]) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendOrganizationEmailVerification",
+          "shape": "async (sendOrgInput: OrganizationEmailVerify) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendMonthlyDigestEmails",
+          "shape": "async (eventData: MonthlyDigestEmailData) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendAdminOrganizationNotification",
+          "shape": "async (input: OrganizationNotification) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendBookingRedirectNotification",
+          "shape": "async (bookingRedirect: IBookingRedirect) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendCreditBalanceLowWarningEmails",
+          "shape": "async (input: { team?, user?, balance: number }) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendCreditBalanceLimitReachedEmails",
+          "shape": "async ({ team?, user? }) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendDelegationCredentialDisabledEmail",
+          "shape": "async ({ recipientEmail, recipientName?, calendarAppName, conferencingAppName }) => Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "BaseEmail",
+          "shape": "class BaseEmail { sendEmail(): Promise<unknown> } from @calcom/emails/templates/_base-email",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "formatCalEvent",
+          "shape": "formatCalEvent(calEvent: CalendarEvent): CalendarEvent",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "getEventName",
+          "shape": "getEventName({ ...eventNameObject, t, attendeeName?, host?, eventType?, eventDuration?, bookingFields?, location? }): string",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "withReporting",
+          "shape": "withReporting(fn, name) => wrapped async fn",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "EventTypeMetaDataSchema",
+          "shape": "zod schema; disableStandardEmails.all.{attendee,host}",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "CalendarEvent",
+          "shape": "{ attendees: Person[]; team?: { members: Person[] }; organizer; length?: number; endTime; startTime; title; bookingId; hideCalendarNotes; responses?; location? }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "Person",
+          "shape": "{ name; email; phoneNumber?; language: { translate: TFunction } }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "sendEmail",
+          "intent": "wrap email preparation+send in promise, catch errors",
+          "structureKind": "async",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 87, "endLine": 96 }
+        },
+        {
+          "name": "eventTypeDisableAttendeeEmail / eventTypeDisableHostEmail",
+          "intent": "read email-disable flags from event type metadata",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 98, "endLine": 104 }
+        },
+        {
+          "name": "sendScheduledEmailsAndSMS",
+          "intent": "send scheduled booking emails to organizer/team/attendees plus SMS",
+          "structureKind": "async",
+          "predicate": "!hostEmailDisabled && !eventTypeDisableHostEmail(eventTypeMetadata)",
+          "branchOutcomes": [
+            "host emails sent",
+            "host emails skipped",
+            "attendee emails sent",
+            "attendee emails skipped"
+          ],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 106, "endLine": 156 }
+        },
+        {
+          "name": "sendRoundRobinScheduledEmailsAndSMS",
+          "intent": "scheduled emails+SMS to reassigned round-robin members",
+          "structureKind": "async",
+          "predicate": "eventTypeDisableHostEmail(eventTypeMetadata)",
+          "branchOutcomes": ["early return", "send per member"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 159, "endLine": 185 }
+        },
+        {
+          "name": "sendRoundRobinRescheduledEmailsAndSMS",
+          "intent": "rescheduled emails+SMS to members/attendees by role",
+          "structureKind": "async",
+          "predicate": "isAttendee && !isTeamMember",
+          "branchOutcomes": ["attendee email", "organizer email"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 187, "endLine": 218 }
+        },
+        {
+          "name": "sendRoundRobinUpdatedEmailsAndSMS",
+          "intent": "updated booking emails to attendees",
+          "structureKind": "async",
+          "predicate": "eventTypeDisableAttendeeEmail(eventTypeMetadata)",
+          "branchOutcomes": ["early return", "send"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 220, "endLine": 234 }
+        },
+        {
+          "name": "sendRoundRobinCancelledEmailsAndSMS",
+          "intent": "cancelled emails+SMS to round-robin members",
+          "structureKind": "async",
+          "predicate": "eventTypeDisableHostEmail(eventTypeMetadata)",
+          "branchOutcomes": ["early return", "send per member"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 236, "endLine": 259 }
+        },
+        {
+          "name": "sendRoundRobinReassignedEmailsAndSMS",
+          "intent": "reassignment notification emails+SMS to members",
+          "structureKind": "async",
+          "predicate": "eventTypeDisableHostEmail(eventTypeMetadata)",
+          "branchOutcomes": ["early return", "send per member"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 261, "endLine": 285 }
+        },
+        {
+          "name": "sendRescheduledEmailsAndSMS",
+          "intent": "rescheduled emails to host and attendees plus SMS",
+          "structureKind": "async",
+          "predicate": "!eventTypeDisableHostEmail(eventTypeMetadata)",
+          "branchOutcomes": ["host emails sent", "attendee emails sent"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 287, "endLine": 321 }
+        },
+        {
+          "name": "sendRescheduledSeatEmailAndSMS",
+          "intent": "single-seat reschedule email to host+attendee, SMS first",
+          "structureKind": "async",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 323, "endLine": 342 }
+        },
+        {
+          "name": "sendScheduledSeatsEmailsAndSMS",
+          "intent": "seated-booking scheduled emails and SMS to invitee",
+          "structureKind": "async",
+          "predicate": "!hostEmailDisabled && !eventTypeDisableHostEmail(eventTypeMetadata)",
+          "branchOutcomes": ["host emails sent", "attendee email sent"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 344, "endLine": 387 }
+        },
+        {
+          "name": "sendCancelledSeatEmailsAndSMS",
+          "intent": "seat cancellation email to attendee and organizer plus SMS",
+          "structureKind": "async",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 389, "endLine": 414 }
+        },
+        {
+          "name": "sendOrganizerRequestEmail",
+          "intent": "booking-request emails to organizer and team members",
+          "structureKind": "async",
+          "predicate": "eventTypeDisableHostEmail(eventTypeMetadata)",
+          "branchOutcomes": ["early return", "send"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 416, "endLine": 436 }
+        },
+        {
+          "name": "sendAttendeeRequestEmailAndSMS",
+          "intent": "request email then SMS to one attendee",
+          "structureKind": "async",
+          "predicate": "eventTypeDisableAttendeeEmail(eventTypeMetadata)",
+          "branchOutcomes": ["early return", "send"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 438, "endLine": 454 }
+        },
+        {
+          "name": "sendDeclinedEmailsAndSMS",
+          "intent": "declined emails to all attendees plus SMS",
+          "structureKind": "async",
+          "predicate": "eventTypeDisableAttendeeEmail(eventTypeMetadata)",
+          "branchOutcomes": ["early return", "send"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 456, "endLine": 474 }
+        },
+        {
+          "name": "sendCancelledEmailsAndSMS",
+          "intent": "cancelled emails with computed event name plus SMS",
+          "structureKind": "async",
+          "predicate": "typeof calEventLength !== \"number\"",
+          "branchOutcomes": ["log error", "host emails sent", "attendee emails sent"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 476, "endLine": 534 }
+        },
+        {
+          "name": "sendOrganizerRequestReminderEmail",
+          "intent": "request reminder emails to organizer/team (no SMS)",
+          "structureKind": "async",
+          "predicate": "eventTypeDisableHostEmail(eventTypeMetadata)",
+          "branchOutcomes": ["early return", "send"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 536, "endLine": 554 }
+        },
+        {
+          "name": "sendAwaitingPaymentEmailAndSMS",
+          "intent": "awaiting-payment emails to attendees plus SMS",
+          "structureKind": "async",
+          "predicate": "eventTypeDisableAttendeeEmail(eventTypeMetadata)",
+          "branchOutcomes": ["early return", "send"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 556, "endLine": 571 }
+        },
+        {
+          "name": "sendOrganizerPaymentRefundFailedEmail",
+          "intent": "refund-failed emails to organizer and team",
+          "structureKind": "async",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 573, "endLine": 584 }
+        },
+        {
+          "name": "single-email senders",
+          "intent": "thin wrappers sending one email each",
+          "structureKind": "async",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 586, "endLine": 618 }
+        },
+        {
+          "name": "sendRequestRescheduleEmailAndSMS",
+          "intent": "reschedule-request emails to host+attendee plus SMS",
+          "structureKind": "async",
+          "predicate": "!eventTypeDisableHostEmail(eventTypeMetadata)",
+          "branchOutcomes": ["organizer email", "attendee email"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 620, "endLine": 638 }
+        },
+        {
+          "name": "sendLocationChangeEmailsAndSMS",
+          "intent": "location-change emails to host/team/attendees plus SMS",
+          "structureKind": "async",
+          "predicate": "!eventTypeDisableHostEmail(eventTypeMetadata)",
+          "branchOutcomes": ["host emails sent", "attendee emails sent"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 640, "endLine": 671 }
+        },
+        {
+          "name": "sendAddGuestsEmails",
+          "intent": "add-guests emails; new guests get scheduled email",
+          "structureKind": "async",
+          "predicate": "newGuests.includes(attendee.email)",
+          "branchOutcomes": ["AttendeeScheduledEmail", "AttendeeAddGuestsEmail"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 672, "endLine": 697 }
+        },
+        {
+          "name": "misc notification senders",
+          "intent": "feedback, broken integration, disabled app, slug, no-show fee",
+          "structureKind": "async",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 698, "endLine": 748 }
+        },
+        {
+          "name": "sendDailyVideoRecordingEmails / TranscriptEmails",
+          "intent": "recording/transcript download emails to organizer+attendees",
+          "structureKind": "async",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 750, "endLine": 777 }
+        },
+        {
+          "name": "org digest/notification/redirect senders",
+          "intent": "single-email wrappers for org notifications",
+          "structureKind": "async",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 779, "endLine": 793 }
+        },
+        {
+          "name": "sendCreditBalanceLowWarningEmails",
+          "intent": "credit warning emails to team admins and/or user",
+          "structureKind": "branch",
+          "predicate": "(!team || !team.adminAndOwners.length) && !user",
+          "branchOutcomes": ["early return", "team emails", "user email"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 795, "endLine": 830 }
+        },
+        {
+          "name": "sendCreditBalanceLimitReachedEmails",
+          "intent": "limit-reached emails to team admins and/or user",
+          "structureKind": "branch",
+          "predicate": "(!team || !team.adminAndOwners.length) && !user",
+          "branchOutcomes": ["early return", "team emails", "user email"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 832, "endLine": 867 }
+        },
+        {
+          "name": "sendDelegationCredentialDisabledEmail",
+          "intent": "delegation credential disabled email",
+          "structureKind": "async",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 869, "endLine": 889 }
+        }
+      ],
+      "representationFamily": "function-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "const (arrow function)",
+          "name": "sendScheduledEmailsAndSMS",
+          "signature": "export const sendScheduledEmailsAndSMS = withReporting(",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 153, "endLine": 156 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendRoundRobinScheduledEmailsAndSMS",
+          "signature": "export const sendRoundRobinScheduledEmailsAndSMS = async ({",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 159, "endLine": 185 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendRoundRobinRescheduledEmailsAndSMS",
+          "signature": "export const sendRoundRobinRescheduledEmailsAndSMS = async (",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 187, "endLine": 218 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendRoundRobinUpdatedEmailsAndSMS",
+          "signature": "export const sendRoundRobinUpdatedEmailsAndSMS = async ({",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 220, "endLine": 234 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendRoundRobinCancelledEmailsAndSMS",
+          "signature": "export const sendRoundRobinCancelledEmailsAndSMS = async (",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 236, "endLine": 259 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendRoundRobinReassignedEmailsAndSMS",
+          "signature": "export const sendRoundRobinReassignedEmailsAndSMS = async (args: {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 261, "endLine": 285 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendRescheduledEmailsAndSMS",
+          "signature": "export const sendRescheduledEmailsAndSMS = withReporting(",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 318, "endLine": 321 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendRescheduledSeatEmailAndSMS",
+          "signature": "export const sendRescheduledSeatEmailAndSMS = async (",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 323, "endLine": 342 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendScheduledSeatsEmailsAndSMS",
+          "signature": "export const sendScheduledSeatsEmailsAndSMS = async (",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 344, "endLine": 387 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendCancelledSeatEmailsAndSMS",
+          "signature": "export const sendCancelledSeatEmailsAndSMS = async (",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 389, "endLine": 414 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendOrganizerRequestEmail",
+          "signature": "export const sendOrganizerRequestEmail = withReporting(",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 433, "endLine": 436 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendAttendeeRequestEmailAndSMS",
+          "signature": "export const sendAttendeeRequestEmailAndSMS = withReporting(",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 451, "endLine": 454 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendDeclinedEmailsAndSMS",
+          "signature": "export const sendDeclinedEmailsAndSMS = async (",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 456, "endLine": 474 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendCancelledEmailsAndSMS",
+          "signature": "export const sendCancelledEmailsAndSMS = async (",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 476, "endLine": 534 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendOrganizerRequestReminderEmail",
+          "signature": "export const sendOrganizerRequestReminderEmail = async (",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 536, "endLine": 554 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendAwaitingPaymentEmailAndSMS",
+          "signature": "export const sendAwaitingPaymentEmailAndSMS = async (",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 556, "endLine": 571 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendOrganizerPaymentRefundFailedEmail",
+          "signature": "export const sendOrganizerPaymentRefundFailedEmail = async (calEvent: CalendarEvent) => {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 573, "endLine": 584 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendPasswordResetEmail",
+          "signature": "export const sendPasswordResetEmail = async (passwordResetEvent: PasswordReset) => {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 586, "endLine": 588 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendTeamInviteEmail",
+          "signature": "export const sendTeamInviteEmail = async (teamInviteEvent: TeamInvite) => {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 590, "endLine": 592 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendCustomWorkflowEmail",
+          "signature": "export const sendCustomWorkflowEmail = async (emailData: WorkflowEmailData) => {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 594, "endLine": 596 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendOrganizationCreationEmail",
+          "signature": "export const sendOrganizationCreationEmail = async (organizationCreationEvent: OrganizationCreation) => {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 598, "endLine": 600 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendOrganizationAdminNoSlotsNotification",
+          "signature": "export const sendOrganizationAdminNoSlotsNotification = async (",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 602, "endLine": 606 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendEmailVerificationLink",
+          "signature": "export const sendEmailVerificationLink = async (verificationInput: EmailVerifyLink) => {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 608, "endLine": 610 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendEmailVerificationCode",
+          "signature": "export const sendEmailVerificationCode = async (verificationInput: EmailVerifyCode) => {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 612, "endLine": 614 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendChangeOfEmailVerificationLink",
+          "signature": "export const sendChangeOfEmailVerificationLink = async (verificationInput: ChangeOfEmailVerifyLink) => {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 616, "endLine": 618 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendRequestRescheduleEmailAndSMS",
+          "signature": "export const sendRequestRescheduleEmailAndSMS = async (",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 620, "endLine": 638 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendLocationChangeEmailsAndSMS",
+          "signature": "export const sendLocationChangeEmailsAndSMS = async (",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 640, "endLine": 671 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendAddGuestsEmails",
+          "signature": "export const sendAddGuestsEmails = async (calEvent: CalendarEvent, newGuests: string[]) => {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 672, "endLine": 697 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendFeedbackEmail",
+          "signature": "export const sendFeedbackEmail = async (feedback: Feedback) => {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 698, "endLine": 700 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendBrokenIntegrationEmail",
+          "signature": "export const sendBrokenIntegrationEmail = async (evt: CalendarEvent, type: \"video\" | \"calendar\") => {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 702, "endLine": 705 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendDisabledAppEmail",
+          "signature": "export const sendDisabledAppEmail = async ({",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 707, "endLine": 723 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendSlugReplacementEmail",
+          "signature": "export const sendSlugReplacementEmail = async ({",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 725, "endLine": 739 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendNoShowFeeChargedEmail",
+          "signature": "export const sendNoShowFeeChargedEmail = async (",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 741, "endLine": 748 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendDailyVideoRecordingEmails",
+          "signature": "export const sendDailyVideoRecordingEmails = async (calEvent: CalendarEvent, downloadLink: string) => {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 750, "endLine": 764 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendDailyVideoTranscriptEmails",
+          "signature": "export const sendDailyVideoTranscriptEmails = async (calEvent: CalendarEvent, transcripts: string[]) => {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 766, "endLine": 777 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendOrganizationEmailVerification",
+          "signature": "export const sendOrganizationEmailVerification = async (sendOrgInput: OrganizationEmailVerify) => {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 779, "endLine": 781 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendMonthlyDigestEmails",
+          "signature": "export const sendMonthlyDigestEmails = async (eventData: MonthlyDigestEmailData) => {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 783, "endLine": 785 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendAdminOrganizationNotification",
+          "signature": "export const sendAdminOrganizationNotification = async (input: OrganizationNotification) => {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 787, "endLine": 789 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendBookingRedirectNotification",
+          "signature": "export const sendBookingRedirectNotification = async (bookingRedirect: IBookingRedirect) => {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 791, "endLine": 793 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendCreditBalanceLowWarningEmails",
+          "signature": "export const sendCreditBalanceLowWarningEmails = async (input: {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 795, "endLine": 830 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendCreditBalanceLimitReachedEmails",
+          "signature": "export const sendCreditBalanceLimitReachedEmails = async ({",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 832, "endLine": 867 }
+        },
+        {
+          "kind": "const (arrow function)",
+          "name": "sendDelegationCredentialDisabledEmail",
+          "signature": "export const sendDelegationCredentialDisabledEmail = async ({",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 869, "endLine": 889 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "alias",
+          "name": "EventTypeMetadata",
+          "shape": "z.infer<typeof EventTypeMetaDataSchema>",
+          "discriminant": null,
+          "anchor": { "startLine": 85, "endLine": 85 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "calendarEvent.team undefined",
+          "handled": true,
+          "behavior": "skips per-team-member organizer emails",
+          "anchor": { "startLine": 119, "endLine": 125 }
+        },
+        {
+          "inputShape": "calEvent.length not a number in sendCancelledEmailsAndSMS",
+          "handled": true,
+          "behavior": "logs error with calEventLength, title, bookingId; continues sending",
+          "anchor": { "startLine": 486, "endLine": 491 }
+        },
+        {
+          "inputShape": "hideCalendarEvent additionalNotes hidden (hideCalendarNotes true)",
+          "handled": true,
+          "behavior": "additionalNotes set to undefined in scheduled attendee email payload",
+          "anchor": { "startLine": 136, "endLine": 136 }
+        },
+        {
+          "inputShape": "team/user both absent or empty adminAndOwners for credit emails",
+          "handled": true,
+          "behavior": "early return, no emails sent",
+          "anchor": { "startLine": 815, "endLine": 815 }
+        },
+        {
+          "inputShape": "teamMember/person without phoneNumber",
+          "handled": true,
+          "behavior": "SMS skipped, only email sent",
+          "anchor": { "startLine": 179, "endLine": 181 }
+        },
+        {
+          "inputShape": "sendEmail prepare() throws",
+          "handled": true,
+          "behavior": "promise rejects after console.error logging",
+          "anchor": { "startLine": 92, "endLine": 94 }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": "any error thrown by prepare() or email.sendEmail()",
+          "caught": "catch (e) in sendEmail",
+          "action": "console.error(\"${prepare.constructor.name}.sendEmail failed\", e) and reject promise",
+          "fallback": "promise rejection propagates to awaiting callers",
+          "anchor": { "startLine": 89, "endLine": 95 }
+        },
+        {
+          "thrown": null,
+          "caught": null,
+          "action": "logger.error for non-numeric calEventLength in sendCancelledEmailsAndSMS",
+          "fallback": "continues sending emails",
+          "anchor": { "startLine": 486, "endLine": 491 }
+        },
+        {
+          "thrown": null,
+          "caught": null,
+          "action": "withReporting wraps _sendScheduledEmailsAndSMS, _sendRescheduledEmailsAndSMS, _sendOrganizerRequestEmail, _sendAttendeeRequestEmailAndSMS for Sentry reporting",
+          "fallback": null,
+          "anchor": { "startLine": 153, "endLine": 156 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "schema",
+          "description": "eventTypeMetadata conforms to EventTypeMetaDataSchema with disableStandardEmails.all.attendee/host flags",
+          "anchor": { "startLine": 85, "endLine": 85 }
+        },
+        {
+          "kind": "caller",
+          "description": "Callers supply valid CalendarEvent; eventNameObject optional and only affects attendee email titles",
+          "anchor": { "startLine": 106, "endLine": 112 }
+        },
+        {
+          "kind": "caller",
+          "description": "SMS classes accept unformatted calEvent while email classes receive formatCalEvent output",
+          "anchor": { "startLine": 148, "endLine": 150 }
+        },
+        {
+          "kind": "platform",
+          "description": "dayjs can parse calEvent.startTime/endTime to compute eventDuration in minutes",
+          "anchor": { "startLine": 484, "endLine": 484 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "What do BaseEmail.sendEmail and SMS sendSMSToAttendee(s) actually do (transport, retries)?",
+          "affects": "side_effects and error propagation semantics",
+          "anchor": { "startLine": 87, "endLine": 96 },
+          "resolution": null
+        },
+        {
+          "question": "Does withReporting alter return value or swallow errors?",
+          "affects": "error_handling behavior of wrapped exports",
+          "anchor": { "startLine": 153, "endLine": 156 },
+          "resolution": null
+        },
+        {
+          "question": "What does formatCalEvent mutate or normalize on CalendarEvent?",
+          "affects": "input shape expected by email templates",
+          "anchor": { "startLine": 113, "endLine": 113 },
+          "resolution": null
+        },
+        {
+          "question": "Why do sendRescheduledSeatEmailAndSMS and sendCancelledSeatEmailsAndSMS clone the event before passing to attendee email?",
+          "affects": "deep-equality/mutation semantics to preserve",
+          "anchor": { "startLine": 330, "endLine": 336 },
+          "resolution": null
+        }
+      ],
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "host-email-disabled-skips-organizer-emails",
+          "scenario": "When eventType metadata disables host standard emails, no organizer emails are sent on scheduled bookings.",
+          "given": [
+            "calEvent with attendees",
+            "eventTypeMetadata = { disableStandardEmails: { all: { host: true } } }"
+          ],
+          "when": "sendScheduledEmailsAndSMS(calEvent, undefined, false, false, eventTypeMetadata)",
+          "then": "no OrganizerScheduledEmail is sent for organizer or team members",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "pins metadata-driven host email suppression"
+        },
+        {
+          "testId": "attendee-email-disabled-skips-attendee-emails",
+          "scenario": "When eventType metadata disables attendee standard emails, no attendee emails are sent.",
+          "given": [
+            "calEvent with attendees",
+            "eventTypeMetadata = { disableStandardEmails: { all: { attendee: true } } }"
+          ],
+          "when": "sendScheduledEmailsAndSMS(calEvent, undefined, false, false, eventTypeMetadata)",
+          "then": "no AttendeeScheduledEmail is sent for any attendee",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "pins attendee suppression flag semantics"
+        },
+        {
+          "testId": "scheduled-booking-sends-emails-per-participant",
+          "scenario": "A scheduled booking sends one organizer email per team member and one attendee email per attendee.",
+          "given": ["calEvent with team.members = [m1, m2] and attendees = [a1, a2]"],
+          "when": "sendScheduledEmailsAndSMS(calEvent)",
+          "then": "OrganizerScheduledEmail sent for organizer and each team member; AttendeeScheduledEmail sent for each attendee",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "pins per-participant fanout count"
+        },
+        {
+          "testId": "scheduled-sms-sent-after-emails",
+          "scenario": "After scheduled emails resolve, a scheduled SMS is sent to all attendees.",
+          "given": ["calEvent with attendees"],
+          "when": "sendScheduledEmailsAndSMS(calEvent)",
+          "then": "EventSuccessfullyScheduledSMS.sendSMSToAttendees() awaited after all email promises resolve",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "pins ordering of email then SMS"
+        },
+        {
+          "testId": "rescheduled-seat-sends-both-parties",
+          "scenario": "Rescheduling a seat emails both organizer and the specific attendee.",
+          "given": ["calEvent", "attendee: Person"],
+          "when": "sendRescheduledSeatEmailAndSMS(calEvent, attendee)",
+          "then": "OrganizerRescheduledEmail and AttendeeRescheduledEmail sent and rescheduled SMS sent to the attendee",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "pins dual-party seat reschedule notification"
+        },
+        {
+          "testId": "cancelled-email-uses-derived-event-name",
+          "scenario": "Cancellation emails derive the title via getEventName per attendee, including duration.",
+          "given": ["calEvent with attendees", "eventNameObject = { eventName }"],
+          "when": "sendCancelledEmailsAndSMS(calEvent, eventNameObject)",
+          "then": "AttendeeCancelledEmail receives title computed from eventName, attendeeName, host, eventType and eventDuration",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "pins title derivation inputs for cancellation"
+        },
+        {
+          "testId": "round-robin-cancelled-guards-on-host-flag",
+          "scenario": "Round robin cancelled emails are skipped entirely when host emails are disabled.",
+          "given": ["calEvent", "members", "eventTypeMetadata = { disableStandardEmails: { all: { host: true } } }"],
+          "when": "sendRoundRobinCancelledEmailsAndSMS(calEvent, members, eventTypeMetadata)",
+          "then": "returns early with no emails or SMS sent",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "pins early-return guard"
+        },
+        {
+          "testId": "add-guests-new-guest-get-scheduled-email",
+          "scenario": "Existing attendees who are in the newGuests list receive AttendeeScheduledEmail, others receive AttendeeAddGuestsEmail.",
+          "given": ["calEvent with attendees where one email is in newGuests"],
+          "when": "sendAddGuestsEmails(calEvent, newGuests)",
+          "then": "attendee in newGuests gets AttendeeScheduledEmail; remaining attendees get AttendeeAddGuestsEmail; organizer gets OrganizerAddGuestsEmail",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "pins branch between scheduled vs add-guests email per attendee"
+        },
+        {
+          "testId": "credit-balance-warning-noop-without-recipients",
+          "scenario": "Credit balance low warning does nothing when neither team admins nor user provided.",
+          "given": ["input = { balance: 10 }"],
+          "when": "sendCreditBalanceLowWarningEmails(input)",
+          "then": "no email sent, resolves without error",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "pins empty-recipient guard"
+        },
+        {
+          "testId": "no-show-fee-email-respects-attendee-flag",
+          "scenario": "No-show fee charged email is suppressed when attendee standard emails are disabled.",
+          "given": [
+            "attendee: Person",
+            "evt: CalendarEvent",
+            "eventTypeMetadata = { disableStandardEmails: { all: { attendee: true } } }"
+          ],
+          "when": "sendNoShowFeeChargedEmail(attendee, evt, eventTypeMetadata)",
+          "then": "NoShowFeeChargedEmail is not sent",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "pins suppression for fee notification"
+        },
+        {
+          "testId": "rescheduled-emails-sends-sms-to-all-attendees",
+          "scenario": "Rescheduled booking sends SMS to all attendees after emails.",
+          "given": ["calEvent with attendees"],
+          "when": "sendRescheduledEmailsAndSMS(calEvent)",
+          "then": "OrganizerRescheduledEmail/AttendeeRescheduledEmail sent and EventSuccessfullyReScheduledSMS.sendSMSToAttendees awaited",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "pins reschedule fanout and SMS ordering"
+        },
+        {
+          "testId": "round-robin-rescheduled-disambiguates-attendee-vs-host",
+          "scenario": "Round robin rescheduling sends attendee email only to pure attendees and organizer email to team members.",
+          "given": ["calEvent where person P is attendee but not team member, and person M is team member"],
+          "when": "sendRoundRobinRescheduledEmailsAndSMS(calEvent, [P, M])",
+          "then": "P receives AttendeeRescheduledEmail and M receives OrganizerRescheduledEmail",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "pins attendee-vs-host role routing"
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "imports",
+        "type EventTypeMetadata",
+        "const sendEmail",
+        "const eventTypeDisableAttendeeEmail",
+        "const eventTypeDisableHostEmail",
+        "const _sendScheduledEmailsAndSMS",
+        "export const sendScheduledEmailsAndSMS",
+        "export const sendRoundRobinScheduledEmailsAndSMS",
+        "export const sendRoundRobinRescheduledEmailsAndSMS",
+        "export const sendRoundRobinUpdatedEmailsAndSMS",
+        "export const sendRoundRobinCancelledEmailsAndSMS",
+        "export const sendRoundRobinReassignedEmailsAndSMS",
+        "const _sendRescheduledEmailsAndSMS",
+        "export const sendRescheduledEmailsAndSMS",
+        "export const sendRescheduledSeatEmailAndSMS",
+        "export const sendScheduledSeatsEmailsAndSMS",
+        "export const sendCancelledSeatEmailsAndSMS",
+        "const _sendOrganizerRequestEmail",
+        "export const sendOrganizerRequestEmail",
+        "const _sendAttendeeRequestEmailAndSMS",
+        "export const sendAttendeeRequestEmailAndSMS",
+        "export const sendDeclinedEmailsAndSMS",
+        "export const sendCancelledEmailsAndSMS",
+        "export const sendOrganizerRequestReminderEmail",
+        "export const sendAwaitingPaymentEmailAndSMS",
+        "export const sendOrganizerPaymentRefundFailedEmail",
+        "export const sendPasswordResetEmail",
+        "export const sendTeamInviteEmail",
+        "export const sendCustomWorkflowEmail",
+        "export const sendOrganizationCreationEmail",
+        "export const sendOrganizationAdminNoSlotsNotification",
+        "export const sendEmailVerificationLink",
+        "export const sendEmailVerificationCode",
+        "export const sendChangeOfEmailVerificationLink",
+        "export const sendRequestRescheduleEmailAndSMS",
+        "export const sendLocationChangeEmailsAndSMS",
+        "export const sendAddGuestsEmails",
+        "export const sendFeedbackEmail",
+        "export const sendBrokenIntegrationEmail",
+        "export const sendDisabledAppEmail",
+        "export const sendSlugReplacementEmail",
+        "export const sendNoShowFeeChargedEmail",
+        "export const sendDailyVideoRecordingEmails",
+        "export const sendDailyVideoTranscriptEmails",
+        "export const sendOrganizationEmailVerification",
+        "export const sendMonthlyDigestEmails",
+        "export const sendAdminOrganizationNotification",
+        "export const sendBookingRedirectNotification",
+        "export const sendCreditBalanceLowWarningEmails",
+        "export const sendCreditBalanceLimitReachedEmails",
+        "export const sendDelegationCredentialDisabledEmail"
+      ],
+      "moduleLevelCode": "import block (lines 1-83): type/value imports from i18next, lodash/cloneDeep, zod, @calcom/dayjs, @calcom/emails, @calcom/features, @calcom/lib, @calcom/prisma, @calcom/types, ../sms/*, and ./templates/*",
+      "exports": [
+        { "name": "sendScheduledEmailsAndSMS", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendRoundRobinScheduledEmailsAndSMS", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendRoundRobinRescheduledEmailsAndSMS", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendRoundRobinUpdatedEmailsAndSMS", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendRoundRobinCancelledEmailsAndSMS", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendRoundRobinReassignedEmailsAndSMS", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendRescheduledEmailsAndSMS", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendRescheduledSeatEmailAndSMS", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendScheduledSeatsEmailsAndSMS", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendCancelledSeatEmailsAndSMS", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendOrganizerRequestEmail", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendAttendeeRequestEmailAndSMS", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendDeclinedEmailsAndSMS", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendCancelledEmailsAndSMS", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendOrganizerRequestReminderEmail", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendAwaitingPaymentEmailAndSMS", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendOrganizerPaymentRefundFailedEmail", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendPasswordResetEmail", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendTeamInviteEmail", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendCustomWorkflowEmail", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendOrganizationCreationEmail", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendOrganizationAdminNoSlotsNotification", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendEmailVerificationLink", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendEmailVerificationCode", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendChangeOfEmailVerificationLink", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendRequestRescheduleEmailAndSMS", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendLocationChangeEmailsAndSMS", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendAddGuestsEmails", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendFeedbackEmail", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendBrokenIntegrationEmail", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendDisabledAppEmail", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendSlugReplacementEmail", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendNoShowFeeChargedEmail", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendDailyVideoRecordingEmails", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendDailyVideoTranscriptEmails", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendOrganizationEmailVerification", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendMonthlyDigestEmails", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendAdminOrganizationNotification", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendBookingRedirectNotification", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendCreditBalanceLowWarningEmails", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendCreditBalanceLimitReachedEmails", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "sendDelegationCredentialDisabledEmail", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "TFunction", "module": "i18next", "alias": null, "kind": "external" },
+        { "symbol": "cloneDeep", "module": "lodash/cloneDeep", "alias": "default", "kind": "external" },
+        { "symbol": "z", "module": "zod", "alias": null, "kind": "external" },
+        { "symbol": "dayjs", "module": "@calcom/dayjs", "alias": "default", "kind": "external" },
+        {
+          "symbol": "BaseEmail",
+          "module": "@calcom/emails/templates/_base-email",
+          "alias": "default",
+          "kind": "external"
+        },
+        {
+          "symbol": "EventNameObjectType",
+          "module": "@calcom/features/eventtypes/lib/eventNaming",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "getEventName",
+          "module": "@calcom/features/eventtypes/lib/eventNaming",
+          "alias": null,
+          "kind": "external"
+        },
+        { "symbol": "formatCalEvent", "module": "@calcom/lib/formatCalendarEvent", "alias": null, "kind": "external" },
+        { "symbol": "logger", "module": "@calcom/lib/logger", "alias": "default", "kind": "external" },
+        { "symbol": "safeStringify", "module": "@calcom/lib/safeStringify", "alias": null, "kind": "external" },
+        { "symbol": "withReporting", "module": "@calcom/lib/sentryWrapper", "alias": null, "kind": "external" },
+        {
+          "symbol": "EventTypeMetaDataSchema",
+          "module": "@calcom/prisma/zod-utils",
+          "alias": null,
+          "kind": "external"
+        },
+        { "symbol": "CalendarEvent", "module": "@calcom/types/Calendar", "alias": null, "kind": "external" },
+        { "symbol": "Person", "module": "@calcom/types/Calendar", "alias": null, "kind": "external" },
+        {
+          "symbol": "AwaitingPaymentSMS",
+          "module": "../sms/attendee/awaiting-payment-sms",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "CancelledSeatSMS",
+          "module": "../sms/attendee/cancelled-seat-sms",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "EventCancelledSMS",
+          "module": "../sms/attendee/event-cancelled-sms",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "EventDeclinedSMS",
+          "module": "../sms/attendee/event-declined-sms",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "EventLocationChangedSMS",
+          "module": "../sms/attendee/event-location-changed-sms",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "EventRequestSMS",
+          "module": "../sms/attendee/event-request-sms",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "EventRequestToRescheduleSMS",
+          "module": "../sms/attendee/event-request-to-reschedule-sms",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "EventSuccessfullyReScheduledSMS",
+          "module": "../sms/attendee/event-rescheduled-sms",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "EventSuccessfullyScheduledSMS",
+          "module": "../sms/attendee/event-scheduled-sms",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "MonthlyDigestEmailData",
+          "module": "./src/templates/MonthlyDigestEmail",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "OrganizationAdminNoSlotsEmailInput",
+          "module": "./src/templates/OrganizationAdminNoSlots",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "EmailVerifyLink",
+          "module": "./templates/account-verify-email",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "AccountVerifyEmail",
+          "module": "./templates/account-verify-email",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "OrganizationNotification",
+          "module": "./templates/admin-organization-notification",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "AdminOrganizationNotification",
+          "module": "./templates/admin-organization-notification",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "AttendeeAddGuestsEmail",
+          "module": "./templates/attendee-add-guests-email",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "AttendeeAwaitingPaymentEmail",
+          "module": "./templates/attendee-awaiting-payment-email",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "AttendeeCancelledEmail",
+          "module": "./templates/attendee-cancelled-email",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "AttendeeCancelledSeatEmail",
+          "module": "./templates/attendee-cancelled-seat-email",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "AttendeeDailyVideoDownloadRecordingEmail",
+          "module": "./templates/attendee-daily-video-download-recording-email",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "AttendeeDailyVideoDownloadTranscriptEmail",
+          "module": "./templates/attendee-daily-video-download-transcript-email",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "AttendeeDeclinedEmail",
+          "module": "./templates/attendee-declined-email",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "AttendeeLocationChangeEmail",
+          "module": "./templates/attendee-location-change-email",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "AttendeeRequestEmail",
+          "module": "./templates/attendee-request-email",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "AttendeeRescheduledEmail",
+          "module": "./templates/attendee-rescheduled-email",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "AttendeeScheduledEmail",
+          "module": "./templates/attendee-scheduled-email",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "AttendeeUpdatedEmail",
+          "module": "./templates/attendee-updated-email",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "EmailVerifyCode",
+          "module": "./templates/attendee-verify-email",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "AttendeeVerifyEmail",
+          "module": "./templates/attendee-verify-email",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "AttendeeWasRequestedToRescheduleEmail",
+          "module": "./templates/attendee-was-requested-to-reschedule-email",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "BookingRedirectEmailNotification",
+          "module": "./templates/booking-redirect-notification",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "IBookingRedirect",
+          "module": "./templates/booking-redirect-notification",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "BrokenIntegrationEmail",
+          "module": "./templates/broken-integration-email",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "ChangeOfEmailVerifyLink",
+          "module": "./templates/change-account-email-verify",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "ChangeOfEmailVerifyEmail",
+          "module": "./templates/change-account-email-verify",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "CreditBalanceLimitReachedEmail",
+          "module": "./templates/credit-balance-limit-reached-email",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "CreditBalanceLowWarningEmail",
+          "module": "./templates/credit-balance-low-warning-email",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "DelegationCredentialDisabledEmail",
+          "module": "./templates/delegation-credential-disabled-email",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "DisabledAppEmail",
+          "module": "./templates/disabled-app-email",
+          "alias": "default",
+          "kind": "internal"
+        },
+        { "symbol": "Feedback", "module": "./templates/feedback-email", "alias": null, "kind": "internal" },
+        { "symbol": "FeedbackEmail", "module": "./templates/feedback-email", "alias": "default", "kind": "internal" },
+        { "symbol": "PasswordReset", "module": "./templates/forgot-password-email", "alias": null, "kind": "internal" },
+        {
+          "symbol": "ForgotPasswordEmail",
+          "module": "./templates/forgot-password-email",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "MonthlyDigestEmail",
+          "module": "./templates/monthly-digest-email",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "NoShowFeeChargedEmail",
+          "module": "./templates/no-show-fee-charged-email",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "OrganizationAdminNoSlotsEmail",
+          "module": "./templates/organization-admin-no-slots-email",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "OrganizationCreation",
+          "module": "./templates/organization-creation-email",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "OrganizationCreationEmail",
+          "module": "./templates/organization-creation-email",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "OrganizationEmailVerify",
+          "module": "./templates/organization-email-verification",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "OrganizationEmailVerification",
+          "module": "./templates/organization-email-verification",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "OrganizerAddGuestsEmail",
+          "module": "./templates/organizer-add-guests-email",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "OrganizerAttendeeCancelledSeatEmail",
+          "module": "./templates/organizer-attendee-cancelled-seat-email",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "OrganizerCancelledEmail",
+          "module": "./templates/organizer-cancelled-email",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "OrganizerDailyVideoDownloadRecordingEmail",
+          "module": "./templates/organizer-daily-video-download-recording-email",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "OrganizerDailyVideoDownloadTranscriptEmail",
+          "module": "./templates/organizer-daily-video-download-transcript-email",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "OrganizerLocationChangeEmail",
+          "module": "./templates/organizer-location-change-email",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "OrganizerPaymentRefundFailedEmail",
+          "module": "./templates/organizer-payment-refund-failed-email",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "OrganizerReassignedEmail",
+          "module": "./templates/organizer-reassigned-email",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "OrganizerRequestEmail",
+          "module": "./templates/organizer-request-email",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "OrganizerRequestReminderEmail",
+          "module": "./templates/organizer-request-reminder-email",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "OrganizerRequestedToRescheduleEmail",
+          "module": "./templates/organizer-requested-to-reschedule-email",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "OrganizerRescheduledEmail",
+          "module": "./templates/organizer-rescheduled-email",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "OrganizerScheduledEmail",
+          "module": "./templates/organizer-scheduled-email",
+          "alias": "default",
+          "kind": "internal"
+        },
+        {
+          "symbol": "SlugReplacementEmail",
+          "module": "./templates/slug-replacement-email",
+          "alias": "default",
+          "kind": "internal"
+        },
+        { "symbol": "TeamInvite", "module": "./templates/team-invite-email", "alias": null, "kind": "internal" },
+        {
+          "symbol": "TeamInviteEmail",
+          "module": "./templates/team-invite-email",
+          "alias": "default",
+          "kind": "internal"
+        },
+        { "symbol": "WorkflowEmailData", "module": "./templates/workflow-email", "alias": null, "kind": "internal" },
+        { "symbol": "WorkflowEmail", "module": "./templates/workflow-email", "alias": "default", "kind": "internal" }
+      ],
+      "fileConstants": [],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/emails/email-manager.ts__sendEmail_1#function:sendEmail",
+        "unitKind": "function",
+        "name": "sendEmail",
+        "qualifiedName": "sendEmail",
+        "parentUnitId": null,
+        "startLine": 87,
+        "endLine": 96,
+        "isBehavioral": true,
+        "source": "const sendEmail = (prepare: () => BaseEmail) => {\n  return new Promise((resolve, reject) => {\n    try {\n      const email = prepare();\n      resolve(email.sendEmail());\n    } catch (e) {\n      reject(console.error(`${prepare.constructor.name}.sendEmail failed`, e));\n    }\n  });\n};"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__eventTypeDisableAttendeeEmail_2#function:eventTypeDisableAttendeeEmail",
+        "unitKind": "function",
+        "name": "eventTypeDisableAttendeeEmail",
+        "qualifiedName": "eventTypeDisableAttendeeEmail",
+        "parentUnitId": null,
+        "startLine": 98,
+        "endLine": 100,
+        "isBehavioral": true,
+        "source": "const eventTypeDisableAttendeeEmail = (metadata?: EventTypeMetadata) => {\n  return !!metadata?.disableStandardEmails?.all?.attendee;\n};"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__eventTypeDisableHostEmail_3#function:eventTypeDisableHostEmail",
+        "unitKind": "function",
+        "name": "eventTypeDisableHostEmail",
+        "qualifiedName": "eventTypeDisableHostEmail",
+        "parentUnitId": null,
+        "startLine": 102,
+        "endLine": 104,
+        "isBehavioral": true,
+        "source": "const eventTypeDisableHostEmail = (metadata?: EventTypeMetadata) => {\n  return !!metadata?.disableStandardEmails?.all?.host;\n};"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts___sendScheduledEmailsAndSMS_4#function:_sendScheduledEmailsAndSMS",
+        "unitKind": "function",
+        "name": "_sendScheduledEmailsAndSMS",
+        "qualifiedName": "_sendScheduledEmailsAndSMS",
+        "parentUnitId": null,
+        "startLine": 106,
+        "endLine": 111,
+        "isBehavioral": true,
+        "source": "const _sendScheduledEmailsAndSMS = async (\n  calEvent: CalendarEvent,\n  eventNameObject?: EventNameObjectType,\n  hostEmailDisabled?: boolean,\n  attendeeEmailDisabled?: boolean,\n  eventTypeMetadata?: EventTypeMetadata"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendScheduledEmailsAndSMS_5#function:sendScheduledEmailsAndSMS",
+        "unitKind": "function",
+        "name": "sendScheduledEmailsAndSMS",
+        "qualifiedName": "sendScheduledEmailsAndSMS",
+        "parentUnitId": null,
+        "startLine": 153,
+        "endLine": 156,
+        "isBehavioral": true,
+        "source": "export const sendScheduledEmailsAndSMS = withReporting(\n  _sendScheduledEmailsAndSMS,\n  \"sendScheduledEmailsAndSMS\"\n);"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendRoundRobinScheduledEmailsAndSMS_6#function:sendRoundRobinScheduledEmailsAndSMS",
+        "unitKind": "function",
+        "name": "sendRoundRobinScheduledEmailsAndSMS",
+        "qualifiedName": "sendRoundRobinScheduledEmailsAndSMS",
+        "parentUnitId": null,
+        "startLine": 159,
+        "endLine": 185,
+        "isBehavioral": true,
+        "source": "export const sendRoundRobinScheduledEmailsAndSMS = async ({\n  calEvent,\n  members,\n  eventTypeMetadata,\n  reassigned,\n}: {\n  calEvent: CalendarEvent;\n  members: Person[];\n  eventTypeMetadata?: EventTypeMetadata;\n  reassigned?: { name: string | null; email: string; reason?: string; byUser?: string };\n}) => {\n  if (eventTypeDisableHostEmail(eventTypeMetadata)) return;\n  const formattedCalEvent = formatCalEvent(calEvent);\n  const emailsAndSMSToSend: Promise<unknown>[] = [];\n  const eventScheduledSMS = new EventSuccessfullyScheduledSMS(calEvent);\n\n  for (const teamMember of members) {\n    emailsAndSMSToSend.push(\n      sendEmail(() => new OrganizerScheduledEmail({ calEvent: formattedCalEvent, teamMember, reassigned }))\n    );\n    if (teamMember.phoneNumber) {\n      emailsAndSMSToSend.push(eventScheduledSMS.sendSMSToAttendee(teamMember));\n    }\n  }\n\n  await Promise.all(emailsAndSMSToSend);\n};"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendRoundRobinRescheduledEmailsAndSMS_7#function:sendRoundRobinRescheduledEmailsAndSMS",
+        "unitKind": "function",
+        "name": "sendRoundRobinRescheduledEmailsAndSMS",
+        "qualifiedName": "sendRoundRobinRescheduledEmailsAndSMS",
+        "parentUnitId": null,
+        "startLine": 187,
+        "endLine": 190,
+        "isBehavioral": true,
+        "source": "export const sendRoundRobinRescheduledEmailsAndSMS = async (\n  calEvent: CalendarEvent,\n  teamMembersAndAttendees: Person[],\n  eventTypeMetadata?: EventTypeMetadata"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendRoundRobinUpdatedEmailsAndSMS_8#function:sendRoundRobinUpdatedEmailsAndSMS",
+        "unitKind": "function",
+        "name": "sendRoundRobinUpdatedEmailsAndSMS",
+        "qualifiedName": "sendRoundRobinUpdatedEmailsAndSMS",
+        "parentUnitId": null,
+        "startLine": 220,
+        "endLine": 234,
+        "isBehavioral": true,
+        "source": "export const sendRoundRobinUpdatedEmailsAndSMS = async ({\n  calEvent,\n  eventTypeMetadata,\n}: {\n  calEvent: CalendarEvent;\n  eventTypeMetadata?: EventTypeMetadata;\n}) => {\n  if (eventTypeDisableAttendeeEmail(eventTypeMetadata)) return;\n\n  const emailsToSend = calEvent.attendees.map((attendee) =>\n    sendEmail(() => new AttendeeUpdatedEmail(calEvent, attendee))\n  );\n\n  await Promise.all(emailsToSend);\n};"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendRoundRobinCancelledEmailsAndSMS_9#function:sendRoundRobinCancelledEmailsAndSMS",
+        "unitKind": "function",
+        "name": "sendRoundRobinCancelledEmailsAndSMS",
+        "qualifiedName": "sendRoundRobinCancelledEmailsAndSMS",
+        "parentUnitId": null,
+        "startLine": 236,
+        "endLine": 240,
+        "isBehavioral": true,
+        "source": "export const sendRoundRobinCancelledEmailsAndSMS = async (\n  calEvent: CalendarEvent,\n  members: Person[],\n  eventTypeMetadata?: EventTypeMetadata,\n  reassignedTo?: { name: string | null; email: string; reason?: string }"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendRoundRobinReassignedEmailsAndSMS_10#function:sendRoundRobinReassignedEmailsAndSMS",
+        "unitKind": "function",
+        "name": "sendRoundRobinReassignedEmailsAndSMS",
+        "qualifiedName": "sendRoundRobinReassignedEmailsAndSMS",
+        "parentUnitId": null,
+        "startLine": 261,
+        "endLine": 285,
+        "isBehavioral": true,
+        "source": "export const sendRoundRobinReassignedEmailsAndSMS = async (args: {\n  calEvent: CalendarEvent;\n  members: Person[];\n  reassignedTo: { name: string | null; email: string };\n  eventTypeMetadata?: EventTypeMetadata;\n}) => {\n  const { calEvent, members, reassignedTo, eventTypeMetadata } = args;\n  if (eventTypeDisableHostEmail(eventTypeMetadata)) return;\n  const calendarEvent = formatCalEvent(calEvent);\n  const emailsAndSMSToSend: Promise<unknown>[] = [];\n  const successfullyReScheduledSMS = new EventCancelledSMS(calEvent);\n  for (const teamMember of members) {\n    emailsAndSMSToSend.push(\n      sendEmail(\n        () => new OrganizerReassignedEmail({ calEvent: calendarEvent, teamMember, reassigned: reassignedTo })\n      )\n    );\n\n    if (teamMember.phoneNumber) {\n      emailsAndSMSToSend.push(successfullyReScheduledSMS.sendSMSToAttendee(teamMember));\n    }\n  }\n\n  await Promise.all(emailsAndSMSToSend);\n};"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts___sendRescheduledEmailsAndSMS_11#function:_sendRescheduledEmailsAndSMS",
+        "unitKind": "function",
+        "name": "_sendRescheduledEmailsAndSMS",
+        "qualifiedName": "_sendRescheduledEmailsAndSMS",
+        "parentUnitId": null,
+        "startLine": 287,
+        "endLine": 289,
+        "isBehavioral": true,
+        "source": "const _sendRescheduledEmailsAndSMS = async (\n  calEvent: CalendarEvent,\n  eventTypeMetadata?: EventTypeMetadata"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendRescheduledEmailsAndSMS_12#function:sendRescheduledEmailsAndSMS",
+        "unitKind": "function",
+        "name": "sendRescheduledEmailsAndSMS",
+        "qualifiedName": "sendRescheduledEmailsAndSMS",
+        "parentUnitId": null,
+        "startLine": 318,
+        "endLine": 321,
+        "isBehavioral": true,
+        "source": "export const sendRescheduledEmailsAndSMS = withReporting(\n  _sendRescheduledEmailsAndSMS,\n  \"sendRescheduledEmailsAndSMS\"\n);"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendRescheduledSeatEmailAndSMS_13#function:sendRescheduledSeatEmailAndSMS",
+        "unitKind": "function",
+        "name": "sendRescheduledSeatEmailAndSMS",
+        "qualifiedName": "sendRescheduledSeatEmailAndSMS",
+        "parentUnitId": null,
+        "startLine": 323,
+        "endLine": 326,
+        "isBehavioral": true,
+        "source": "export const sendRescheduledSeatEmailAndSMS = async (\n  calEvent: CalendarEvent,\n  attendee: Person,\n  eventTypeMetadata?: EventTypeMetadata"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendScheduledSeatsEmailsAndSMS_14#function:sendScheduledSeatsEmailsAndSMS",
+        "unitKind": "function",
+        "name": "sendScheduledSeatsEmailsAndSMS",
+        "qualifiedName": "sendScheduledSeatsEmailsAndSMS",
+        "parentUnitId": null,
+        "startLine": 344,
+        "endLine": 351,
+        "isBehavioral": true,
+        "source": "export const sendScheduledSeatsEmailsAndSMS = async (\n  calEvent: CalendarEvent,\n  invitee: Person,\n  newSeat: boolean,\n  showAttendees: boolean,\n  hostEmailDisabled?: boolean,\n  attendeeEmailDisabled?: boolean,\n  eventTypeMetadata?: EventTypeMetadata"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendCancelledSeatEmailsAndSMS_15#function:sendCancelledSeatEmailsAndSMS",
+        "unitKind": "function",
+        "name": "sendCancelledSeatEmailsAndSMS",
+        "qualifiedName": "sendCancelledSeatEmailsAndSMS",
+        "parentUnitId": null,
+        "startLine": 389,
+        "endLine": 392,
+        "isBehavioral": true,
+        "source": "export const sendCancelledSeatEmailsAndSMS = async (\n  calEvent: CalendarEvent,\n  cancelledAttendee: Person,\n  eventTypeMetadata?: EventTypeMetadata"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts___sendOrganizerRequestEmail_16#function:_sendOrganizerRequestEmail",
+        "unitKind": "function",
+        "name": "_sendOrganizerRequestEmail",
+        "qualifiedName": "_sendOrganizerRequestEmail",
+        "parentUnitId": null,
+        "startLine": 416,
+        "endLine": 431,
+        "isBehavioral": true,
+        "source": "const _sendOrganizerRequestEmail = async (calEvent: CalendarEvent, eventTypeMetadata?: EventTypeMetadata) => {\n  if (eventTypeDisableHostEmail(eventTypeMetadata)) return;\n  const calendarEvent = formatCalEvent(calEvent);\n\n  const emailsToSend: Promise<unknown>[] = [];\n\n  emailsToSend.push(sendEmail(() => new OrganizerRequestEmail({ calEvent: calendarEvent })));\n\n  if (calendarEvent.team?.members) {\n    for (const teamMember of calendarEvent.team.members) {\n      emailsToSend.push(sendEmail(() => new OrganizerRequestEmail({ calEvent: calendarEvent, teamMember })));\n    }\n  }\n\n  await Promise.all(emailsToSend);\n};"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendOrganizerRequestEmail_17#function:sendOrganizerRequestEmail",
+        "unitKind": "function",
+        "name": "sendOrganizerRequestEmail",
+        "qualifiedName": "sendOrganizerRequestEmail",
+        "parentUnitId": null,
+        "startLine": 433,
+        "endLine": 436,
+        "isBehavioral": true,
+        "source": "export const sendOrganizerRequestEmail = withReporting(\n  _sendOrganizerRequestEmail,\n  \"sendOrganizerRequestEmail\"\n);"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts___sendAttendeeRequestEmailAndSMS_18#function:_sendAttendeeRequestEmailAndSMS",
+        "unitKind": "function",
+        "name": "_sendAttendeeRequestEmailAndSMS",
+        "qualifiedName": "_sendAttendeeRequestEmailAndSMS",
+        "parentUnitId": null,
+        "startLine": 438,
+        "endLine": 441,
+        "isBehavioral": true,
+        "source": "const _sendAttendeeRequestEmailAndSMS = async (\n  calEvent: CalendarEvent,\n  attendee: Person,\n  eventTypeMetadata?: EventTypeMetadata"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendAttendeeRequestEmailAndSMS_19#function:sendAttendeeRequestEmailAndSMS",
+        "unitKind": "function",
+        "name": "sendAttendeeRequestEmailAndSMS",
+        "qualifiedName": "sendAttendeeRequestEmailAndSMS",
+        "parentUnitId": null,
+        "startLine": 451,
+        "endLine": 454,
+        "isBehavioral": true,
+        "source": "export const sendAttendeeRequestEmailAndSMS = withReporting(\n  _sendAttendeeRequestEmailAndSMS,\n  \"sendAttendeeRequestEmailAndSMS\"\n);"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendDeclinedEmailsAndSMS_20#function:sendDeclinedEmailsAndSMS",
+        "unitKind": "function",
+        "name": "sendDeclinedEmailsAndSMS",
+        "qualifiedName": "sendDeclinedEmailsAndSMS",
+        "parentUnitId": null,
+        "startLine": 456,
+        "endLine": 458,
+        "isBehavioral": true,
+        "source": "export const sendDeclinedEmailsAndSMS = async (\n  calEvent: CalendarEvent,\n  eventTypeMetadata?: EventTypeMetadata"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendCancelledEmailsAndSMS_21#function:sendCancelledEmailsAndSMS",
+        "unitKind": "function",
+        "name": "sendCancelledEmailsAndSMS",
+        "qualifiedName": "sendCancelledEmailsAndSMS",
+        "parentUnitId": null,
+        "startLine": 476,
+        "endLine": 479,
+        "isBehavioral": true,
+        "source": "export const sendCancelledEmailsAndSMS = async (\n  calEvent: CalendarEvent,\n  eventNameObject: Pick<EventNameObjectType, \"eventName\">,\n  eventTypeMetadata?: EventTypeMetadata"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendOrganizerRequestReminderEmail_22#function:sendOrganizerRequestReminderEmail",
+        "unitKind": "function",
+        "name": "sendOrganizerRequestReminderEmail",
+        "qualifiedName": "sendOrganizerRequestReminderEmail",
+        "parentUnitId": null,
+        "startLine": 536,
+        "endLine": 538,
+        "isBehavioral": true,
+        "source": "export const sendOrganizerRequestReminderEmail = async (\n  calEvent: CalendarEvent,\n  eventTypeMetadata?: EventTypeMetadata"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendAwaitingPaymentEmailAndSMS_23#function:sendAwaitingPaymentEmailAndSMS",
+        "unitKind": "function",
+        "name": "sendAwaitingPaymentEmailAndSMS",
+        "qualifiedName": "sendAwaitingPaymentEmailAndSMS",
+        "parentUnitId": null,
+        "startLine": 556,
+        "endLine": 558,
+        "isBehavioral": true,
+        "source": "export const sendAwaitingPaymentEmailAndSMS = async (\n  calEvent: CalendarEvent,\n  eventTypeMetadata?: EventTypeMetadata"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendOrganizerPaymentRefundFailedEmail_24#function:sendOrganizerPaymentRefundFailedEmail",
+        "unitKind": "function",
+        "name": "sendOrganizerPaymentRefundFailedEmail",
+        "qualifiedName": "sendOrganizerPaymentRefundFailedEmail",
+        "parentUnitId": null,
+        "startLine": 573,
+        "endLine": 584,
+        "isBehavioral": true,
+        "source": "export const sendOrganizerPaymentRefundFailedEmail = async (calEvent: CalendarEvent) => {\n  const emailsToSend: Promise<unknown>[] = [];\n  emailsToSend.push(sendEmail(() => new OrganizerPaymentRefundFailedEmail({ calEvent })));\n\n  if (calEvent.team?.members) {\n    for (const teamMember of calEvent.team.members) {\n      emailsToSend.push(sendEmail(() => new OrganizerPaymentRefundFailedEmail({ calEvent, teamMember })));\n    }\n  }\n\n  await Promise.all(emailsToSend);\n};"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendPasswordResetEmail_25#function:sendPasswordResetEmail",
+        "unitKind": "function",
+        "name": "sendPasswordResetEmail",
+        "qualifiedName": "sendPasswordResetEmail",
+        "parentUnitId": null,
+        "startLine": 586,
+        "endLine": 588,
+        "isBehavioral": true,
+        "source": "export const sendPasswordResetEmail = async (passwordResetEvent: PasswordReset) => {\n  await sendEmail(() => new ForgotPasswordEmail(passwordResetEvent));\n};"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendTeamInviteEmail_26#function:sendTeamInviteEmail",
+        "unitKind": "function",
+        "name": "sendTeamInviteEmail",
+        "qualifiedName": "sendTeamInviteEmail",
+        "parentUnitId": null,
+        "startLine": 590,
+        "endLine": 592,
+        "isBehavioral": true,
+        "source": "export const sendTeamInviteEmail = async (teamInviteEvent: TeamInvite) => {\n  await sendEmail(() => new TeamInviteEmail(teamInviteEvent));\n};"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendCustomWorkflowEmail_27#function:sendCustomWorkflowEmail",
+        "unitKind": "function",
+        "name": "sendCustomWorkflowEmail",
+        "qualifiedName": "sendCustomWorkflowEmail",
+        "parentUnitId": null,
+        "startLine": 594,
+        "endLine": 596,
+        "isBehavioral": true,
+        "source": "export const sendCustomWorkflowEmail = async (emailData: WorkflowEmailData) => {\n  await sendEmail(() => new WorkflowEmail(emailData));\n};"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendOrganizationCreationEmail_28#function:sendOrganizationCreationEmail",
+        "unitKind": "function",
+        "name": "sendOrganizationCreationEmail",
+        "qualifiedName": "sendOrganizationCreationEmail",
+        "parentUnitId": null,
+        "startLine": 598,
+        "endLine": 600,
+        "isBehavioral": true,
+        "source": "export const sendOrganizationCreationEmail = async (organizationCreationEvent: OrganizationCreation) => {\n  await sendEmail(() => new OrganizationCreationEmail(organizationCreationEvent));\n};"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendOrganizationAdminNoSlotsNotification_29#function:sendOrganizationAdminNoSlotsNotification",
+        "unitKind": "function",
+        "name": "sendOrganizationAdminNoSlotsNotification",
+        "qualifiedName": "sendOrganizationAdminNoSlotsNotification",
+        "parentUnitId": null,
+        "startLine": 602,
+        "endLine": 603,
+        "isBehavioral": true,
+        "source": "export const sendOrganizationAdminNoSlotsNotification = async (\n  orgInviteEvent: OrganizationAdminNoSlotsEmailInput"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendEmailVerificationLink_30#function:sendEmailVerificationLink",
+        "unitKind": "function",
+        "name": "sendEmailVerificationLink",
+        "qualifiedName": "sendEmailVerificationLink",
+        "parentUnitId": null,
+        "startLine": 608,
+        "endLine": 610,
+        "isBehavioral": true,
+        "source": "export const sendEmailVerificationLink = async (verificationInput: EmailVerifyLink) => {\n  await sendEmail(() => new AccountVerifyEmail(verificationInput));\n};"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendEmailVerificationCode_31#function:sendEmailVerificationCode",
+        "unitKind": "function",
+        "name": "sendEmailVerificationCode",
+        "qualifiedName": "sendEmailVerificationCode",
+        "parentUnitId": null,
+        "startLine": 612,
+        "endLine": 614,
+        "isBehavioral": true,
+        "source": "export const sendEmailVerificationCode = async (verificationInput: EmailVerifyCode) => {\n  await sendEmail(() => new AttendeeVerifyEmail(verificationInput));\n};"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendChangeOfEmailVerificationLink_32#function:sendChangeOfEmailVerificationLink",
+        "unitKind": "function",
+        "name": "sendChangeOfEmailVerificationLink",
+        "qualifiedName": "sendChangeOfEmailVerificationLink",
+        "parentUnitId": null,
+        "startLine": 616,
+        "endLine": 618,
+        "isBehavioral": true,
+        "source": "export const sendChangeOfEmailVerificationLink = async (verificationInput: ChangeOfEmailVerifyLink) => {\n  await sendEmail(() => new ChangeOfEmailVerifyEmail(verificationInput));\n};"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendRequestRescheduleEmailAndSMS_33#function:sendRequestRescheduleEmailAndSMS",
+        "unitKind": "function",
+        "name": "sendRequestRescheduleEmailAndSMS",
+        "qualifiedName": "sendRequestRescheduleEmailAndSMS",
+        "parentUnitId": null,
+        "startLine": 620,
+        "endLine": 623,
+        "isBehavioral": true,
+        "source": "export const sendRequestRescheduleEmailAndSMS = async (\n  calEvent: CalendarEvent,\n  metadata: { rescheduleLink: string },\n  eventTypeMetadata?: EventTypeMetadata"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendLocationChangeEmailsAndSMS_34#function:sendLocationChangeEmailsAndSMS",
+        "unitKind": "function",
+        "name": "sendLocationChangeEmailsAndSMS",
+        "qualifiedName": "sendLocationChangeEmailsAndSMS",
+        "parentUnitId": null,
+        "startLine": 640,
+        "endLine": 642,
+        "isBehavioral": true,
+        "source": "export const sendLocationChangeEmailsAndSMS = async (\n  calEvent: CalendarEvent,\n  eventTypeMetadata?: EventTypeMetadata"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendAddGuestsEmails_35#function:sendAddGuestsEmails",
+        "unitKind": "function",
+        "name": "sendAddGuestsEmails",
+        "qualifiedName": "sendAddGuestsEmails",
+        "parentUnitId": null,
+        "startLine": 672,
+        "endLine": 697,
+        "isBehavioral": true,
+        "source": "export const sendAddGuestsEmails = async (calEvent: CalendarEvent, newGuests: string[]) => {\n  const calendarEvent = formatCalEvent(calEvent);\n\n  const emailsToSend: Promise<unknown>[] = [];\n  emailsToSend.push(sendEmail(() => new OrganizerAddGuestsEmail({ calEvent: calendarEvent })));\n\n  if (calendarEvent.team?.members) {\n    for (const teamMember of calendarEvent.team.members) {\n      emailsToSend.push(\n        sendEmail(() => new OrganizerAddGuestsEmail({ calEvent: calendarEvent, teamMember }))\n      );\n    }\n  }\n\n  emailsToSend.push(\n    ...calendarEvent.attendees.map((attendee) => {\n      if (newGuests.includes(attendee.email)) {\n        return sendEmail(() => new AttendeeScheduledEmail(calendarEvent, attendee));\n      } else {\n        return sendEmail(() => new AttendeeAddGuestsEmail(calendarEvent, attendee));\n      }\n    })\n  );\n\n  await Promise.all(emailsToSend);\n};"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendFeedbackEmail_36#function:sendFeedbackEmail",
+        "unitKind": "function",
+        "name": "sendFeedbackEmail",
+        "qualifiedName": "sendFeedbackEmail",
+        "parentUnitId": null,
+        "startLine": 698,
+        "endLine": 700,
+        "isBehavioral": true,
+        "source": "export const sendFeedbackEmail = async (feedback: Feedback) => {\n  await sendEmail(() => new FeedbackEmail(feedback));\n};"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendBrokenIntegrationEmail_37#function:sendBrokenIntegrationEmail",
+        "unitKind": "function",
+        "name": "sendBrokenIntegrationEmail",
+        "qualifiedName": "sendBrokenIntegrationEmail",
+        "parentUnitId": null,
+        "startLine": 702,
+        "endLine": 705,
+        "isBehavioral": true,
+        "source": "export const sendBrokenIntegrationEmail = async (evt: CalendarEvent, type: \"video\" | \"calendar\") => {\n  const calendarEvent = formatCalEvent(evt);\n  await sendEmail(() => new BrokenIntegrationEmail(calendarEvent, type));\n};"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendDisabledAppEmail_38#function:sendDisabledAppEmail",
+        "unitKind": "function",
+        "name": "sendDisabledAppEmail",
+        "qualifiedName": "sendDisabledAppEmail",
+        "parentUnitId": null,
+        "startLine": 707,
+        "endLine": 723,
+        "isBehavioral": true,
+        "source": "export const sendDisabledAppEmail = async ({\n  email,\n  appName,\n  appType,\n  t,\n  title = undefined,\n  eventTypeId = undefined,\n}: {\n  email: string;\n  appName: string;\n  appType: string[];\n  t: TFunction;\n  title?: string;\n  eventTypeId?: number;\n}) => {\n  await sendEmail(() => new DisabledAppEmail(email, appName, appType, t, title, eventTypeId));\n};"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendSlugReplacementEmail_39#function:sendSlugReplacementEmail",
+        "unitKind": "function",
+        "name": "sendSlugReplacementEmail",
+        "qualifiedName": "sendSlugReplacementEmail",
+        "parentUnitId": null,
+        "startLine": 725,
+        "endLine": 739,
+        "isBehavioral": true,
+        "source": "export const sendSlugReplacementEmail = async ({\n  email,\n  name,\n  teamName,\n  t,\n  slug,\n}: {\n  email: string;\n  name: string;\n  teamName: string | null;\n  t: TFunction;\n  slug: string;\n}) => {\n  await sendEmail(() => new SlugReplacementEmail(email, name, teamName, slug, t));\n};"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendNoShowFeeChargedEmail_40#function:sendNoShowFeeChargedEmail",
+        "unitKind": "function",
+        "name": "sendNoShowFeeChargedEmail",
+        "qualifiedName": "sendNoShowFeeChargedEmail",
+        "parentUnitId": null,
+        "startLine": 741,
+        "endLine": 744,
+        "isBehavioral": true,
+        "source": "export const sendNoShowFeeChargedEmail = async (\n  attendee: Person,\n  evt: CalendarEvent,\n  eventTypeMetadata?: EventTypeMetadata"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendDailyVideoRecordingEmails_41#function:sendDailyVideoRecordingEmails",
+        "unitKind": "function",
+        "name": "sendDailyVideoRecordingEmails",
+        "qualifiedName": "sendDailyVideoRecordingEmails",
+        "parentUnitId": null,
+        "startLine": 750,
+        "endLine": 764,
+        "isBehavioral": true,
+        "source": "export const sendDailyVideoRecordingEmails = async (calEvent: CalendarEvent, downloadLink: string) => {\n  const calendarEvent = formatCalEvent(calEvent);\n  const emailsToSend: Promise<unknown>[] = [];\n\n  emailsToSend.push(\n    sendEmail(() => new OrganizerDailyVideoDownloadRecordingEmail(calendarEvent, downloadLink))\n  );\n\n  for (const attendee of calendarEvent.attendees) {\n    emailsToSend.push(\n      sendEmail(() => new AttendeeDailyVideoDownloadRecordingEmail(calendarEvent, attendee, downloadLink))\n    );\n  }\n  await Promise.all(emailsToSend);\n};"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendDailyVideoTranscriptEmails_42#function:sendDailyVideoTranscriptEmails",
+        "unitKind": "function",
+        "name": "sendDailyVideoTranscriptEmails",
+        "qualifiedName": "sendDailyVideoTranscriptEmails",
+        "parentUnitId": null,
+        "startLine": 766,
+        "endLine": 777,
+        "isBehavioral": true,
+        "source": "export const sendDailyVideoTranscriptEmails = async (calEvent: CalendarEvent, transcripts: string[]) => {\n  const emailsToSend: Promise<unknown>[] = [];\n\n  emailsToSend.push(sendEmail(() => new OrganizerDailyVideoDownloadTranscriptEmail(calEvent, transcripts)));\n\n  for (const attendee of calEvent.attendees) {\n    emailsToSend.push(\n      sendEmail(() => new AttendeeDailyVideoDownloadTranscriptEmail(calEvent, attendee, transcripts))\n    );\n  }\n  await Promise.all(emailsToSend);\n};"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendOrganizationEmailVerification_43#function:sendOrganizationEmailVerification",
+        "unitKind": "function",
+        "name": "sendOrganizationEmailVerification",
+        "qualifiedName": "sendOrganizationEmailVerification",
+        "parentUnitId": null,
+        "startLine": 779,
+        "endLine": 781,
+        "isBehavioral": true,
+        "source": "export const sendOrganizationEmailVerification = async (sendOrgInput: OrganizationEmailVerify) => {\n  await sendEmail(() => new OrganizationEmailVerification(sendOrgInput));\n};"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendMonthlyDigestEmails_44#function:sendMonthlyDigestEmails",
+        "unitKind": "function",
+        "name": "sendMonthlyDigestEmails",
+        "qualifiedName": "sendMonthlyDigestEmails",
+        "parentUnitId": null,
+        "startLine": 783,
+        "endLine": 785,
+        "isBehavioral": true,
+        "source": "export const sendMonthlyDigestEmails = async (eventData: MonthlyDigestEmailData) => {\n  await sendEmail(() => new MonthlyDigestEmail(eventData));\n};"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendAdminOrganizationNotification_45#function:sendAdminOrganizationNotification",
+        "unitKind": "function",
+        "name": "sendAdminOrganizationNotification",
+        "qualifiedName": "sendAdminOrganizationNotification",
+        "parentUnitId": null,
+        "startLine": 787,
+        "endLine": 789,
+        "isBehavioral": true,
+        "source": "export const sendAdminOrganizationNotification = async (input: OrganizationNotification) => {\n  await sendEmail(() => new AdminOrganizationNotification(input));\n};"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendBookingRedirectNotification_46#function:sendBookingRedirectNotification",
+        "unitKind": "function",
+        "name": "sendBookingRedirectNotification",
+        "qualifiedName": "sendBookingRedirectNotification",
+        "parentUnitId": null,
+        "startLine": 791,
+        "endLine": 793,
+        "isBehavioral": true,
+        "source": "export const sendBookingRedirectNotification = async (bookingRedirect: IBookingRedirect) => {\n  await sendEmail(() => new BookingRedirectEmailNotification(bookingRedirect));\n};"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendCreditBalanceLowWarningEmails_47#function:sendCreditBalanceLowWarningEmails",
+        "unitKind": "function",
+        "name": "sendCreditBalanceLowWarningEmails",
+        "qualifiedName": "sendCreditBalanceLowWarningEmails",
+        "parentUnitId": null,
+        "startLine": 795,
+        "endLine": 830,
+        "isBehavioral": true,
+        "source": "export const sendCreditBalanceLowWarningEmails = async (input: {\n  team?: {\n    name: string | null;\n    id: number;\n    adminAndOwners: {\n      id: number;\n      name: string | null;\n      email: string;\n      t: TFunction;\n    }[];\n  };\n  user?: {\n    id: number;\n    name: string | null;\n    email: string;\n    t: TFunction;\n  };\n  balance: number;\n}) => {\n  const { team, balance, user } = input;\n  if ((!team || !team.adminAndOwners.length) && !user) return;\n\n  if (team) {\n    const emailsToSend: Promise<unknown>[] = [];\n\n    for (const admin of team.adminAndOwners) {\n      emailsToSend.push(sendEmail(() => new CreditBalanceLowWarningEmail({ user: admin, balance, team })));\n    }\n\n    await Promise.all(emailsToSend);\n  }\n\n  if (user) {\n    await sendEmail(() => new CreditBalanceLowWarningEmail({ user, balance }));\n  }\n};"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendCreditBalanceLimitReachedEmails_48#function:sendCreditBalanceLimitReachedEmails",
+        "unitKind": "function",
+        "name": "sendCreditBalanceLimitReachedEmails",
+        "qualifiedName": "sendCreditBalanceLimitReachedEmails",
+        "parentUnitId": null,
+        "startLine": 832,
+        "endLine": 867,
+        "isBehavioral": true,
+        "source": "export const sendCreditBalanceLimitReachedEmails = async ({\n  team,\n  user,\n}: {\n  team?: {\n    name: string;\n    id: number;\n    adminAndOwners: {\n      id: number;\n      name: string | null;\n      email: string;\n      t: TFunction;\n    }[];\n  };\n  user?: {\n    id: number;\n    name: string | null;\n    email: string;\n    t: TFunction;\n  };\n}) => {\n  if ((!team || !team.adminAndOwners.length) && !user) return;\n\n  if (team) {\n    const emailsToSend: Promise<unknown>[] = [];\n\n    for (const admin of team.adminAndOwners) {\n      emailsToSend.push(sendEmail(() => new CreditBalanceLimitReachedEmail({ user: admin, team })));\n    }\n    await Promise.all(emailsToSend);\n  }\n\n  if (user) {\n    await sendEmail(() => new CreditBalanceLimitReachedEmail({ user }));\n  }\n};"
+      },
+      {
+        "unitId": "packages/emails/email-manager.ts__sendDelegationCredentialDisabledEmail_49#function:sendDelegationCredentialDisabledEmail",
+        "unitKind": "function",
+        "name": "sendDelegationCredentialDisabledEmail",
+        "qualifiedName": "sendDelegationCredentialDisabledEmail",
+        "parentUnitId": null,
+        "startLine": 869,
+        "endLine": 889,
+        "isBehavioral": true,
+        "source": "export const sendDelegationCredentialDisabledEmail = async ({\n  recipientEmail,\n  recipientName,\n  calendarAppName,\n  conferencingAppName,\n}: {\n  recipientEmail: string;\n  recipientName?: string;\n  calendarAppName: string;\n  conferencingAppName: string;\n}) => {\n  await sendEmail(\n    () =>\n      new DelegationCredentialDisabledEmail({\n        recipientEmail,\n        recipientName,\n        calendarAppName,\n        conferencingAppName,\n      })\n  );\n};"
+      }
+    ]
+  },
+  "out": [
+    "packages/emails/templates/organizer-daily-video-download-recording-email.ts",
+    "packages/emails/templates/organizer-attendee-cancelled-seat-email.ts",
+    "packages/emails/templates/change-account-email-verify.ts",
+    "packages/sms/attendee/event-location-changed-sms.ts",
+    "packages/emails/templates/organizer-requested-to-reschedule-email.ts",
+    "packages/sms/attendee/event-request-to-reschedule-sms.ts",
+    "packages/emails/templates/attendee-updated-email.ts",
+    "packages/emails/templates/attendee-awaiting-payment-email.ts",
+    "packages/emails/templates/organizer-scheduled-email.ts",
+    "packages/sms/attendee/event-scheduled-sms.ts",
+    "packages/emails/templates/team-invite-email.ts",
+    "packages/emails/templates/attendee-add-guests-email.ts",
+    "packages/sms/attendee/awaiting-payment-sms.ts",
+    "packages/emails/templates/attendee-verify-email.ts",
+    "packages/emails/templates/workflow-email.ts",
+    "packages/sms/attendee/event-declined-sms.ts",
+    "packages/emails/templates/attendee-daily-video-download-transcript-email.ts",
+    "packages/emails/templates/attendee-scheduled-email.ts",
+    "packages/emails/templates/disabled-app-email.ts",
+    "packages/emails/templates/admin-organization-notification.ts",
+    "packages/emails/templates/attendee-rescheduled-email.ts",
+    "packages/emails/templates/attendee-cancelled-email.ts",
+    "packages/emails/templates/credit-balance-low-warning-email.ts",
+    "packages/emails/templates/booking-redirect-notification.ts",
+    "packages/emails/templates/attendee-declined-email.ts",
+    "packages/emails/templates/forgot-password-email.ts",
+    "packages/emails/templates/broken-integration-email.ts",
+    "packages/emails/templates/attendee-request-email.ts",
+    "packages/emails/templates/organization-creation-email.ts",
+    "packages/emails/templates/attendee-location-change-email.ts",
+    "packages/emails/templates/account-verify-email.ts",
+    "packages/emails/templates/organizer-request-email.ts",
+    "packages/emails/src/templates/MonthlyDigestEmail.tsx",
+    "packages/emails/templates/no-show-fee-charged-email.ts",
+    "packages/emails/templates/organization-admin-no-slots-email.ts",
+    "packages/emails/templates/organizer-location-change-email.ts",
+    "packages/emails/templates/attendee-was-requested-to-reschedule-email.ts",
+    "packages/emails/templates/credit-balance-limit-reached-email.ts",
+    "packages/emails/templates/organizer-daily-video-download-transcript-email.ts",
+    "packages/emails/templates/organizer-add-guests-email.ts",
+    "packages/emails/templates/organizer-rescheduled-email.ts",
+    "packages/emails/templates/delegation-credential-disabled-email.ts",
+    "packages/emails/templates/organization-email-verification.ts",
+    "packages/emails/templates/organizer-cancelled-email.ts",
+    "packages/sms/attendee/event-request-sms.ts",
+    "packages/emails/templates/organizer-request-reminder-email.ts",
+    "packages/sms/attendee/event-rescheduled-sms.ts",
+    "packages/emails/templates/organizer-payment-refund-failed-email.ts",
+    "packages/emails/templates/slug-replacement-email.ts",
+    "packages/emails/templates/organizer-reassigned-email.ts",
+    "packages/emails/templates/feedback-email.ts",
+    "packages/emails/src/templates/OrganizationAdminNoSlots.tsx",
+    "packages/emails/templates/monthly-digest-email.ts",
+    "packages/emails/templates/attendee-daily-video-download-recording-email.ts",
+    "packages/emails/templates/attendee-cancelled-seat-email.ts",
+    "packages/sms/attendee/event-cancelled-sms.ts",
+    "packages/sms/attendee/cancelled-seat-sms.ts"
+  ],
+  "in": [
+    "packages/features/auth/lib/verifyEmail.ts",
+    "packages/features/ee/managed-event-types/lib/handleChildrenEventTypes.ts"
+  ],
+  "externals": [
+    "i18next",
+    "lodash/cloneDeep",
+    "zod",
+    "@calcom/dayjs",
+    "@calcom/emails/templates/_base-email",
+    "@calcom/features/eventtypes/lib/eventNaming",
+    "@calcom/lib/formatCalendarEvent",
+    "@calcom/lib/logger",
+    "@calcom/lib/safeStringify",
+    "@calcom/lib/sentryWrapper",
+    "@calcom/prisma/zod-utils",
+    "@calcom/types/Calendar"
+  ],
+  "impact": {
+    "seeds": 49,
+    "callers": 38,
+    "impactedFiles": [
+      "packages/features/auth/lib/verifyEmail.ts",
+      "packages/features/ee/managed-event-types/lib/handleChildrenEventTypes.ts"
+    ]
+  }
+}

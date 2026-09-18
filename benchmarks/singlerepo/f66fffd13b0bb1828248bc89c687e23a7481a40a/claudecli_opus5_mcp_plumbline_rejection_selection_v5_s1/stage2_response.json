@@ -1,0 +1,71 @@
+{
+  "duration_api_ms": 79047,
+  "stop_reason": "end_turn",
+  "session_id": "d001bfc4-a146-4909-bc56-c14b6aa38e69",
+  "total_cost_usd": 0.8016355000000001,
+  "usage": {
+    "input_tokens": 20,
+    "cache_creation_input_tokens": 36639,
+    "cache_read_input_tokens": 570441,
+    "output_tokens": 5997,
+    "output_tokens_details": { "thinking_tokens": 1299 },
+    "server_tool_use": { "web_search_requests": 0, "web_fetch_requests": 0 },
+    "service_tier": "standard",
+    "cache_creation": { "ephemeral_1h_input_tokens": 36639, "ephemeral_5m_input_tokens": 0 },
+    "inference_geo": "not_available",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 1374,
+        "cache_read_input_tokens": 67013,
+        "cache_creation_input_tokens": 570,
+        "cache_creation": { "ephemeral_5m_input_tokens": 0, "ephemeral_1h_input_tokens": 570 },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-opus-5": {
+      "inputTokens": 20,
+      "outputTokens": 5997,
+      "cacheReadInputTokens": 570441,
+      "cacheCreationInputTokens": 36639,
+      "webSearchRequests": 0,
+      "costUSD": 0.8016355000000001,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "canonicalModel": "claude-opus-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": { "background": 0, "foreground": 0, "unset": 0 },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": { "parent": 0, "user": 0, "system": 0 },
+    "refused": { "depth_limit": 0, "concurrency_limit": 0, "budget": 0 },
+    "by_type": {}
+  },
+  "is_error": false,
+  "num_turns": 12,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Scoring report — case `cal.com.processed/f66fffd13b0bb1828248bc89c687e23a7481a40a`, arm `claudecli_opus5_mcp_plumbline_rejection_selection_v5_s1`\n\n**Gold file:** `gold.json` (no `golden.json` in this case dir). I read `ranked.json` in full before opening the gold.\n\n**Answer shape:** flat array of 67 paths — single-repo form, which is the shape `gold.json` uses. No flattening was needed. Gold has 8 scored entries (+1 excluded).\n\n**Metrics** (from `score_arm.py`, verbatim):\n\n| metric | value |\n|---|---|\n| hits / gold_total | 6 / 8 |\n| recall@10 | 0.375 |\n| recall@20 | 0.375 |\n| recall@25 | 0.625 |\n| recall@50 | 0.625 |\n| recall@75 (full list, cap 75) | 0.750 |\n| precision@5 | 0.600 |\n| MRR | 1.000 |\n\nThe scorer does not emit precision@10, precision@20, F1@20 or F1_full_list — it computes only `recall@{10,20,25,50,75}`, `precision@5` and `MRR`. I did not hand-compute the missing ones, per the rule. It also flags `degenerate_ks: [75]` (the list of 67 is shorter than that k) and `gold_schema: \"verified-no-split\"`, so `core_recall@10` and `propagation_recall@20` are null.\n\n**found** (rank — path)\n- 1 `packages/features/ee/workflows/lib/service/EmailWorkflowService.ts`\n- 2 `packages/features/bookings/lib/service/RegularBookingService.ts`\n- 4 `packages/features/ee/workflows/api/scheduleEmailReminders.ts`\n- 22 `packages/features/tasker/tasks/sendWorkflowEmails.ts`\n- 25 `packages/features/ee/workflows/lib/types.ts`\n- 63 `packages/prisma/zod-utils.ts`\n\n**missed_gold**\n- `apps/api/v2/src/ee/bookings/2024-04-15/controllers/bookings.controller.ts`\n- `apps/api/v2/src/ee/bookings/2024-08-13/services/input.service.ts`\n\n**Surface verdict: NOT comparable.** One reason: prompt caching was active — `cache_read=2454196`, `cache_creation=220003` (warm session). The tool surface itself is clean: counted straight from `commands.log`, 43 calls — ToolSearch 2, roll_call 1, blueprint 1, rap_sheet 1, stakeout 10, collateral_damage 13, case_file 2, the_receipts 8, manhunt 3, shakedown 2. No filesystem or shell tool, and the retriever's own search tool (`stakeout`) was called 10 times, so what was measured is that retriever. My counts match the scorer's independently. Note the arm's pre-existing `cost.json` self-reported the same tallies, but the log is what the written surface block is built from.\n\n**What the misses share:** both are in the v2 platform API's versioned booking layer (`apps/api/v2/src/ee/bookings/2024-04-15/...`, `2024-08-13/...`) — a second, date-versioned entry path into booking creation that parallels the `packages/features/bookings` core the arm did land on. Every hit sits in the monorepo's shared `packages/*` core (workflow service, booking service, tasker, workflow types, prisma zod utils); the two misses are the API-edge adapters over that core. The arm did visit `apps/api/v2`, but only its team/user/org branding-input modules (`teams/inputs/update-team.input.ts`, `users.repository.ts`, `me.service.ts`, ranks 53–61) — the settings register of that app, not its bookings register. The missed files are also the only gold whose identity is carried by a version-dated directory rather than by a branding or workflow identifier, so they sit outside the lexical field every seed in this run was drawn from.",
+  "ttft_ms": 1687,
+  "type": "result",
+  "duration_ms": 80086,
+  "uuid": "47f1ee8e-255c-4352-96a4-53e278e43070",
+  "ttft_stream_ms": 1166,
+  "time_to_request_ms": 20,
+  "queued_turn_count": 0
+}

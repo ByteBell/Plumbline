@@ -1,0 +1,1533 @@
+{
+  "schema": 1,
+  "kind": "file",
+  "repoName": "db",
+  "commitHash": "7f0fa36ff6d48b0494ed5f6a1223fd18c317e41f",
+  "generatedAt": "2026-07-18T07:32:21.777Z",
+  "file": {
+    "relativePath": "packages/offline-transactions/src/outbox/TransactionSerializer.ts",
+    "language": "typescript",
+    "sizeBytes": 5238,
+    "tokenCount": 1310,
+    "model": "poolside/laguna-xs-2.1",
+    "analysedAt": "2026-07-17T15:59:03.314Z",
+    "module": {
+      "purpose": "Provides serialization and deserialization for offline transactions, including mutation data with special handling for Date objects and collection references.",
+      "summary": "The TransactionSerializer class handles converting offline transactions to and from JSON strings. It manages the serialization of mutation data, including special handling for Date objects (using a { __type: 'Date', value: ISO } marker system), and maintains a reverse lookup from collection IDs to registry keys for proper deserialization. The class also provides error serialization/deserialization capabilities.",
+      "businessContext": "Enables offline transaction persistence and recovery in distributed systems. Critical for offline-first applications that need to sync transactions when connectivity is restored. Failure breaks offline transaction reliability.",
+      "classes": [
+        "TransactionSerializer (~L7-107): Handles serialization/deserialization of offline transactions with mutation support"
+      ],
+      "functions": [
+        "serialize (~L21-29): Converts OfflineTransaction to JSON string",
+        "deserialize (~L31-48): Parses JSON string to OfflineTransaction",
+        "serializeMutation (~L50-63): Serializes a single mutation with collection key lookup",
+        "deserializeMutation (~L65-93): Reconstructs mutation from serialized data",
+        "serializeValue (~L95-106): Recursively serializes values including Date objects",
+        "deserializeValue (~L108-130): Recursively deserializes values including Date markers",
+        "serializeError (~L132-137): Converts Error to serialized form",
+        "deserializeError (~L139-144): Reconstructs Error from serialized form"
+      ],
+      "keywords": [
+        "offline transactions",
+        "mutation serialization",
+        "Date handling",
+        "JSON serialization",
+        "collection registry"
+      ],
+      "ontologyConcepts": [
+        "transaction persistence",
+        "data serialization",
+        "offline-first architecture",
+        "mutation replay",
+        "type-safe serialization"
+      ],
+      "businessEntities": ["OfflineTransaction", "PendingMutation", "Error", "SerializedMutation"],
+      "systemCapabilities": [
+        "serialize transactions to JSON",
+        "deserialize transactions from JSON",
+        "handle Date objects in JSON",
+        "maintain collection references",
+        "serialize/deserialize errors"
+      ],
+      "configDependencies": [],
+      "importsInternal": [
+        {
+          "spec": "../types",
+          "symbols": ["OfflineTransaction", "SerializedError", "SerializedMutation", "SerializedOfflineTransaction"],
+          "anchor": { "startLine": 1, "endLine": 6 },
+          "resolvedRelativePath": "packages/offline-transactions/src/types.ts",
+          "resolvedFileId": "packages/offline-transactions/src/types.ts",
+          "resolvedHint": "packages/offline-transactions/src/types.ts"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "@tanstack/db",
+          "symbols": ["Collection", "PendingMutation"],
+          "package": "@tanstack/db",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 7, "endLine": 7 }
+        }
+      ],
+      "sideEffects": {
+        "io": ["JSON.stringify() in serialize()", "JSON.parse() in deserialize()"],
+        "network": [],
+        "env": [],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": []
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "TransactionSerializer.serialize",
+          "shape": "(transaction: OfflineTransaction) => string",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "TransactionSerializer.deserialize",
+          "shape": "(data: string) => OfflineTransaction",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "TransactionSerializer.serializeError",
+          "shape": "(error: Error) => SerializedError",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "TransactionSerializer.deserializeError",
+          "shape": "(data: SerializedError) => Error",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "OfflineTransaction",
+          "shape": "type OfflineTransaction",
+          "resolvedRelativePath": "packages/offline-transactions/src/types.ts",
+          "resolvedFileId": "packages/offline-transactions/src/types.ts"
+        },
+        {
+          "name": "SerializedError",
+          "shape": "type SerializedError",
+          "resolvedRelativePath": "packages/offline-transactions/src/types.ts",
+          "resolvedFileId": "packages/offline-transactions/src/types.ts"
+        },
+        {
+          "name": "SerializedMutation",
+          "shape": "type SerializedMutation",
+          "resolvedRelativePath": "packages/offline-transactions/src/types.ts",
+          "resolvedFileId": "packages/offline-transactions/src/types.ts"
+        },
+        {
+          "name": "SerializedOfflineTransaction",
+          "shape": "type SerializedOfflineTransaction",
+          "resolvedRelativePath": "packages/offline-transactions/src/types.ts",
+          "resolvedFileId": "packages/offline-transactions/src/types.ts"
+        },
+        {
+          "name": "Collection",
+          "shape": "type Collection<any, any, any, any, any>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "PendingMutation",
+          "shape": "type PendingMutation",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "constructor-initialization",
+          "intent": "Initialize collections and create collection ID to registry key lookup map",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 11, "endLine": 19 }
+        },
+        {
+          "name": "serialize-transaction",
+          "intent": "Transform transaction with date serialization and mutation mapping to JSON string",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 21, "endLine": 29 }
+        },
+        {
+          "name": "deserialize-transaction",
+          "intent": "Parse JSON and reconstruct transaction with date deserialization and mutation reconstruction",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 31, "endLine": 48 }
+        },
+        {
+          "name": "deserialize-mutation-validation",
+          "intent": "Validate collection exists and throw if not found",
+          "structureKind": "branch",
+          "predicate": "collection === undefined",
+          "branchOutcomes": ["throw Error"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 67, "endLine": 69 }
+        },
+        {
+          "name": "serialize-value-recursive",
+          "intent": "Recursively traverse and serialize values including Date objects with type markers",
+          "structureKind": "loop",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": "for (const key in value)",
+          "terminationCondition": "Object.keys iteration complete",
+          "anchor": { "startLine": 95, "endLine": 106 }
+        },
+        {
+          "name": "deserialize-value-recursive",
+          "intent": "Recursively traverse and deserialize values including Date markers",
+          "structureKind": "loop",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": "for (const key in value)",
+          "terminationCondition": "Object.keys iteration complete",
+          "anchor": { "startLine": 108, "endLine": 130 }
+        }
+      ],
+      "representationFamily": "class-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "class",
+          "name": "TransactionSerializer",
+          "signature": "export class TransactionSerializer",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 7, "endLine": 107 }
+        },
+        {
+          "kind": "method",
+          "name": "serialize",
+          "signature": "serialize(transaction: OfflineTransaction): string",
+          "generics": null,
+          "decorators": [],
+          "returnType": "string",
+          "exported": false,
+          "anchor": { "startLine": 21, "endLine": 29 }
+        },
+        {
+          "kind": "method",
+          "name": "deserialize",
+          "signature": "deserialize(data: string): OfflineTransaction",
+          "generics": null,
+          "decorators": [],
+          "returnType": "OfflineTransaction",
+          "exported": false,
+          "anchor": { "startLine": 31, "endLine": 48 }
+        },
+        {
+          "kind": "method",
+          "name": "serializeError",
+          "signature": "serializeError(error: Error): SerializedError",
+          "generics": null,
+          "decorators": [],
+          "returnType": "SerializedError",
+          "exported": false,
+          "anchor": { "startLine": 132, "endLine": 137 }
+        },
+        {
+          "kind": "method",
+          "name": "deserializeError",
+          "signature": "deserializeError(data: SerializedError): Error",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Error",
+          "exported": false,
+          "anchor": { "startLine": 139, "endLine": 144 }
+        }
+      ],
+      "typeShapes": [],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "null or undefined values",
+          "handled": true,
+          "behavior": "Pass through without modification",
+          "anchor": { "startLine": 97, "endLine": 98 }
+        },
+        {
+          "inputShape": "Date objects",
+          "handled": true,
+          "behavior": "Convert to { __type: 'Date', value: ISO } marker",
+          "anchor": { "startLine": 100, "endLine": 102 }
+        },
+        {
+          "inputShape": "invalid Date in deserialization",
+          "handled": true,
+          "behavior": "Throw Error with descriptive message",
+          "anchor": { "startLine": 35, "endLine": 43 }
+        },
+        {
+          "inputShape": "collection not found in registry",
+          "handled": true,
+          "behavior": "Throw Error with collection ID",
+          "anchor": { "startLine": 53, "endLine": 55 }
+        },
+        {
+          "inputShape": "collection not found in deserializeMutation",
+          "handled": true,
+          "behavior": "Throw Error with collection ID",
+          "anchor": { "startLine": 67, "endLine": 69 }
+        },
+        {
+          "inputShape": "corrupted Date marker (missing value)",
+          "handled": true,
+          "behavior": "Throw Error for corrupted marker",
+          "anchor": { "startLine": 118, "endLine": 120 }
+        },
+        {
+          "inputShape": "corrupted Date marker (invalid date string)",
+          "handled": true,
+          "behavior": "Throw Error with invalid date value",
+          "anchor": { "startLine": 121, "endLine": 125 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": "==",
+          "left": "value === null || value === undefined",
+          "right": "",
+          "inclusive": true,
+          "intent": "Check for null/undefined to pass through unchanged",
+          "anchor": { "startLine": 97, "endLine": 98 }
+        },
+        {
+          "operator": "==",
+          "left": "value instanceof Date",
+          "right": "Date",
+          "inclusive": true,
+          "intent": "Identify Date objects for special serialization",
+          "anchor": { "startLine": 100, "endLine": 102 }
+        },
+        {
+          "operator": "==",
+          "left": "typeof value === 'object'",
+          "right": "'object'",
+          "inclusive": true,
+          "intent": "Check for object type to handle recursively",
+          "anchor": { "startLine": 105, "endLine": 106 }
+        },
+        {
+          "operator": "==",
+          "left": "value.__type === 'Date'",
+          "right": "'Date'",
+          "inclusive": true,
+          "intent": "Identify Date marker objects during deserialization",
+          "anchor": { "startLine": 114, "endLine": 115 }
+        },
+        {
+          "operator": "==",
+          "left": "isNaN(createdAt.getTime())",
+          "right": "true",
+          "inclusive": true,
+          "intent": "Validate parsed Date is valid (not Invalid Date)",
+          "anchor": { "startLine": 35, "endLine": 36 }
+        },
+        {
+          "operator": "==",
+          "left": "value.value === undefined || value.value === null",
+          "right": "true",
+          "inclusive": true,
+          "intent": "Validate Date marker has required value field",
+          "anchor": { "startLine": 118, "endLine": 119 }
+        },
+        {
+          "operator": "==",
+          "left": "date.getTime()",
+          "right": "NaN",
+          "inclusive": true,
+          "intent": "Validate deserialized Date marker is valid",
+          "anchor": { "startLine": 123, "endLine": 124 }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": "Error: `Failed to deserialize transaction: invalid createdAt value \"${parsed.createdAt}\"`",
+          "caught": null,
+          "action": "Throw descriptive error for invalid createdAt",
+          "fallback": null,
+          "anchor": { "startLine": 35, "endLine": 40 }
+        },
+        {
+          "thrown": "Error: `Collection with id ${mutation.collection.id} not found in registry`",
+          "caught": null,
+          "action": "Throw error when collection missing during serialization",
+          "fallback": null,
+          "anchor": { "startLine": 53, "endLine": 55 }
+        },
+        {
+          "thrown": "Error: `Collection with id ${data.collectionId} not found`",
+          "caught": null,
+          "action": "Throw error when collection missing during deserialization",
+          "fallback": null,
+          "anchor": { "startLine": 67, "endLine": 69 }
+        },
+        {
+          "thrown": "Error: `Corrupted Date marker: missing value field`",
+          "caught": null,
+          "action": "Throw error for malformed Date marker",
+          "fallback": null,
+          "anchor": { "startLine": 118, "endLine": 120 }
+        },
+        {
+          "thrown": "Error: `Failed to deserialize Date marker: invalid date value \"${value.value}\"`",
+          "caught": null,
+          "action": "Throw error for invalid date string in marker",
+          "fallback": null,
+          "anchor": { "startLine": 121, "endLine": 125 }
+        }
+      ],
+      "invariants": [
+        {
+          "kind": "postcondition",
+          "description": "Serialized transaction has createdAt as ISO string and mutations as serialized form",
+          "anchor": { "startLine": 22, "endLine": 28 }
+        },
+        {
+          "kind": "invariant",
+          "description": "collectionIdToKey map always contains all collection IDs from constructor input",
+          "anchor": { "startLine": 14, "endLine": 17 }
+        },
+        {
+          "kind": "non-null",
+          "description": "deserialize() ensures createdAt is a valid Date object",
+          "anchor": { "startLine": 35, "endLine": 43 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "Caller must provide valid OfflineTransaction with createdAt as Date and mutations array",
+          "anchor": { "startLine": 21, "endLine": 29 }
+        },
+        {
+          "kind": "caller",
+          "description": "Caller must provide valid JSON string that matches SerializedOfflineTransaction structure",
+          "anchor": { "startLine": 31, "endLine": 48 }
+        },
+        {
+          "kind": "caller",
+          "description": "Caller must ensure collection IDs in mutations exist in the provided collections map",
+          "anchor": { "startLine": 11, "endLine": 19 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "What is the exact structure of SerializedMutation and SerializedOfflineTransaction types?",
+          "affects": "public_signatures validation",
+          "anchor": { "startLine": 1, "endLine": 5 },
+          "resolution": null
+        },
+        {
+          "question": "What is the exact structure of PendingMutation type, especially the optimistic flag and metadata fields?",
+          "affects": "deserializeMutation return type accuracy",
+          "anchor": { "startLine": 65, "endLine": 93 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "sync",
+        "reentrant": true,
+        "ordering": "deterministic",
+        "notes": "Pure functions with no shared mutable state; safe for concurrent calls"
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [],
+      "language": "typescript",
+      "moduleLayout": ["type imports (~L1-5)", "class TransactionSerializer (~L7-107)"],
+      "moduleLevelCode": null,
+      "exports": [{ "name": "TransactionSerializer", "kind": "own", "fromSpec": null, "exportedAs": null }],
+      "importSymbolMap": [
+        { "symbol": "OfflineTransaction", "module": "../types", "alias": null, "kind": "internal" },
+        { "symbol": "SerializedError", "module": "../types", "alias": null, "kind": "internal" },
+        { "symbol": "SerializedMutation", "module": "../types", "alias": null, "kind": "internal" },
+        { "symbol": "SerializedOfflineTransaction", "module": "../types", "alias": null, "kind": "internal" },
+        { "symbol": "Collection", "module": "@tanstack/db", "alias": null, "kind": "external" },
+        { "symbol": "PendingMutation", "module": "@tanstack/db", "alias": null, "kind": "external" }
+      ],
+      "fileConstants": [],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer#class:TransactionSerializer",
+        "unitKind": "class",
+        "name": "TransactionSerializer",
+        "qualifiedName": "TransactionSerializer",
+        "parentUnitId": null,
+        "startLine": 7,
+        "endLine": 107,
+        "isBehavioral": true,
+        "source": "import type { Collection, PendingMutation } from '@tanstack/db'\n\nexport class TransactionSerializer {\n  private collections: Record<string, Collection<any, any, any, any, any>>\n  private collectionIdToKey: Map<string, string>\n\n  constructor(\n    collections: Record<string, Collection<any, any, any, any, any>>,\n  ) {\n    this.collections = collections\n    // Create reverse lookup from collection.id to registry key\n    this.collectionIdToKey = new Map()\n    for (const [key, collection] of Object.entries(collections)) {\n      this.collectionIdToKey.set(collection.id, key)\n    }\n  }\n\n  serialize(transaction: OfflineTransaction): string {\n    const serialized: SerializedOfflineTransaction = {\n      ...transaction,\n      createdAt: transaction.createdAt.toISOString(),\n      mutations: transaction.mutations.map((mutation) =>\n        this.serializeMutation(mutation),\n      ),\n    }\n    return JSON.stringify(serialized)\n  }\n\n  deserialize(data: string): OfflineTransaction {\n    // Parse without a reviver - let deserializeValue handle dates in mutation data\n    // using the { __type: 'Date' } marker system\n    const parsed: SerializedOfflineTransaction = JSON.parse(data)\n\n    const createdAt = new Date(parsed.createdAt)\n    if (isNaN(createdAt.getTime())) {\n      throw new Error(\n        `Failed to deserialize transaction: invalid createdAt value \"${parsed.createdAt}\"`,\n      )\n    }\n\n    return {\n      ...parsed,\n      createdAt,\n      mutations: parsed.mutations.map((mutationData) =>\n        this.deserializeMutation(mutationData),\n      ),\n    }\n  }\n\n  private serializeMutation(mutation: PendingMutation): SerializedMutation {\n    const registryKey = this.collectionIdToKey.get(mutation.collection.id)\n    if (!registryKey) {\n      throw new Error(\n        `Collection with id ${mutation.collection.id} not found in registry`,\n      )\n    }\n\n    return {\n      globalKey: mutation.globalKey,\n      type: mutation.type,\n      modified: this.serializeValue(mutation.modified),\n      original: this.serializeValue(mutation.original),\n      changes: this.serializeValue(mutation.changes),\n      collectionId: registryKey, // Store registry key instead of collection.id\n    }\n  }\n\n  private deserializeMutation(data: SerializedMutation): PendingMutation {\n    const collection = this.collections[data.collectionId]\n    if (!collection) {\n      throw new Error(`Collection with id ${data.collectionId} not found`)\n    }\n\n    const modified = this.deserializeValue(data.modified)\n\n    // Extract the key from the modified data using the collection's getKey function\n    // This is needed for optimistic state restoration to work correctly\n    const key = modified ? collection.getKeyFromItem(modified) : null\n\n    // Create a partial PendingMutation - we can't fully reconstruct it but\n    // we provide what we can. The executor will need to handle the rest.\n    return {\n      globalKey: data.globalKey,\n      type: data.type as any,\n      modified,\n      original: this.deserializeValue(data.original),\n      changes: this.deserializeValue(data.changes) ?? {},\n      collection,\n      // These fields would need to be reconstructed by the executor\n      mutationId: ``, // Will be regenerated\n      key,\n      metadata: undefined,\n      syncMetadata: {},\n      optimistic: true,\n      createdAt: new Date(),\n      updatedAt: new Date(),\n    } as PendingMutation\n  }\n\n  private serializeValue(value: any): any {\n    if (value === null || value === undefined) {",
+        "detail": {
+          "unitId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer#class:TransactionSerializer",
+          "fileId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer",
+          "unitKind": "class",
+          "name": "TransactionSerializer",
+          "qualifiedName": "TransactionSerializer",
+          "parentUnitId": null,
+          "startLine": 7,
+          "endLine": 107,
+          "signature": "export class TransactionSerializer",
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": ["export"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["Collection", "PendingMutation"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [
+            {
+              "name": "collections",
+              "kind": "field",
+              "type": "Record<string, Collection<any, any, any, any, any>>",
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "collectionIdToKey",
+              "kind": "field",
+              "type": "Map<string, string>",
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "constructor",
+              "kind": "method",
+              "type": null,
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "serialize",
+              "kind": "method",
+              "type": null,
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "deserialize",
+              "kind": "method",
+              "type": null,
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "serializeMutation",
+              "kind": "method",
+              "type": null,
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "deserializeMutation",
+              "kind": "method",
+              "type": null,
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "serializeValue",
+              "kind": "method",
+              "type": null,
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "deserializeValue",
+              "kind": "method",
+              "type": null,
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "serializeError",
+              "kind": "method",
+              "type": null,
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "deserializeError",
+              "kind": "method",
+              "type": null,
+              "default": null,
+              "visibility": "private",
+              "static": false
+            }
+          ],
+          "memberUnitIds": [
+            "TransactionSerializer.constructor",
+            "TransactionSerializer.serialize",
+            "TransactionSerializer.deserialize",
+            "TransactionSerializer.serializeMutation",
+            "TransactionSerializer.deserializeMutation",
+            "TransactionSerializer.serializeValue",
+            "TransactionSerializer.deserializeValue",
+            "TransactionSerializer.serializeError",
+            "TransactionSerializer.deserializeError"
+          ],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "TransactionSerializer provides methods to serialize and deserialize offline transactions, including mutations, values, and errors, using JSON format with custom type markers for dates and other objects.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "36ea7716d71de928f9900806a538ac68dcc50f6352dad31009bf3ad1ef646c28"
+        }
+      },
+      {
+        "unitId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer.constructor#method:TransactionSerializer.constructor",
+        "unitKind": "method",
+        "name": "constructor",
+        "qualifiedName": "TransactionSerializer.constructor",
+        "parentUnitId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer#class:TransactionSerializer",
+        "startLine": 11,
+        "endLine": 19,
+        "isBehavioral": true,
+        "source": "  private collectionIdToKey: Map<string, string>\n\n  constructor(\n    collections: Record<string, Collection<any, any, any, any, any>>,\n  ) {\n    this.collections = collections\n    // Create reverse lookup from collection.id to registry key\n    this.collectionIdToKey = new Map()\n    for (const [key, collection] of Object.entries(collections)) {",
+        "detail": {
+          "unitId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer.constructor#method:TransactionSerializer.constructor",
+          "fileId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer.constructor",
+          "unitKind": "method",
+          "name": "constructor",
+          "qualifiedName": "TransactionSerializer.constructor",
+          "parentUnitId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer#class:TransactionSerializer",
+          "startLine": 11,
+          "endLine": 19,
+          "signature": "constructor(\n    collections: Record<string, Collection<any, any, any, any, any>>,\n  )",
+          "parameters": [
+            {
+              "name": "collections",
+              "type": "Record<string, Collection<any, any, any, any, any>>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "private",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "collections is a non-null Record mapping registry keys to Collection instances",
+            "Each Collection in the record must have a stable .id property"
+          ],
+          "postconditions": [
+            "this.collections holds the same reference as the provided collections argument",
+            "this.collectionIdToKey is a Map with one entry per collection, mapping collection.id to its registry key string"
+          ],
+          "invariants": ["collectionIdToKey.size equals the number of entries in the collections record"],
+          "edgeCases": [
+            "Empty collections record: collectionIdToKey is an empty Map",
+            "Multiple collections: each collection.id is mapped to its corresponding registry key string"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [
+            "this.collections (assigned from parameter)",
+            "this.collectionIdToKey (built from iteration over collections entries)"
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "Object.entries", "source": "global", "kind": "external" }],
+          "symbolReferences": ["Map", "Object.entries"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Initializes a TransactionSerializer by storing the collections registry and building a reverse-lookup Map from each collection's id back to its registry key.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "ae2bb55e4fcc20160b9db9ae7bce327b9007b8afc2d4f7cc3379f69bac55d3b3"
+        }
+      },
+      {
+        "unitId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer.serialize#method:TransactionSerializer.serialize",
+        "unitKind": "method",
+        "name": "serialize",
+        "qualifiedName": "TransactionSerializer.serialize",
+        "parentUnitId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer#class:TransactionSerializer",
+        "startLine": 21,
+        "endLine": 29,
+        "isBehavioral": true,
+        "source": "    }\n  }\n\n  serialize(transaction: OfflineTransaction): string {\n    const serialized: SerializedOfflineTransaction = {\n      ...transaction,\n      createdAt: transaction.createdAt.toISOString(),\n      mutations: transaction.mutations.map((mutation) =>\n        this.serializeMutation(mutation),",
+        "detail": {
+          "unitId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer.serialize#method:TransactionSerializer.serialize",
+          "fileId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer.serialize",
+          "unitKind": "method",
+          "name": "serialize",
+          "qualifiedName": "TransactionSerializer.serialize",
+          "parentUnitId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer#class:TransactionSerializer",
+          "startLine": 21,
+          "endLine": 29,
+          "signature": "serialize(transaction: OfflineTransaction): string",
+          "parameters": [
+            {
+              "name": "transaction",
+              "type": "OfflineTransaction",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "string",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "non-mutating",
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The `transaction` parameter must be a defined OfflineTransaction object with a valid `createdAt` Date property and a `mutations` array."
+          ],
+          "postconditions": [
+            "Returns a valid JSON string representation of the transaction, where `createdAt` is an ISO 8601 string and each mutation is serialized according to `serializeMutation`.",
+            "The returned string is deterministic for identical input values."
+          ],
+          "invariants": [],
+          "edgeCases": [
+            "If `transaction.mutations` is an empty array, the serialized `mutations` field will be an empty JSON array."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "toISOString", "source": "Date", "kind": "external" },
+            { "name": "serializeMutation", "source": "this", "kind": "internal" }
+          ],
+          "symbolReferences": ["OfflineTransaction", "SerializedOfflineTransaction"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "The output is a JSON string. The serialized object shape includes the original transaction fields with `createdAt` as an ISO string (e.g., `2023-10-27T10:00:00.000Z`) and `mutations` as an array of serialized mutation objects.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Serializes an OfflineTransaction object into a JSON string representation, converting the Date createdAt field to an ISO string and delegating mutation serialization to the serializeMutation method.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "serialize is called with the transaction",
+              "then": "The returned string is valid JSON containing the original fields, createdAt as an ISO string, and mutations as an array with one element produced by serializeMutation",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "c5cfff3b2423109c5fe7c54aa4e0c97307bcac550714ef6aee9be6e723130eda"
+        }
+      },
+      {
+        "unitId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer.deserialize#method:TransactionSerializer.deserialize",
+        "unitKind": "method",
+        "name": "deserialize",
+        "qualifiedName": "TransactionSerializer.deserialize",
+        "parentUnitId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer#class:TransactionSerializer",
+        "startLine": 31,
+        "endLine": 48,
+        "isBehavioral": true,
+        "source": "    }\n    return JSON.stringify(serialized)\n  }\n\n  deserialize(data: string): OfflineTransaction {\n    // Parse without a reviver - let deserializeValue handle dates in mutation data\n    // using the { __type: 'Date' } marker system\n    const parsed: SerializedOfflineTransaction = JSON.parse(data)\n\n    const createdAt = new Date(parsed.createdAt)\n    if (isNaN(createdAt.getTime())) {\n      throw new Error(\n        `Failed to deserialize transaction: invalid createdAt value \"${parsed.createdAt}\"`,\n      )\n    }\n\n    return {\n      ...parsed,",
+        "detail": {
+          "unitId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer.deserialize#method:TransactionSerializer.deserialize",
+          "fileId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer.deserialize",
+          "unitKind": "method",
+          "name": "deserialize",
+          "qualifiedName": "TransactionSerializer.deserialize",
+          "parentUnitId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer#class:TransactionSerializer",
+          "startLine": 31,
+          "endLine": 48,
+          "signature": "deserialize(data: string): OfflineTransaction",
+          "parameters": [
+            { "name": "data", "type": "string", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "OfflineTransaction",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "Input must be a valid JSON string that can be parsed into a SerializedOfflineTransaction structure."
+          ],
+          "postconditions": ["Returns a valid OfflineTransaction object with a valid Date instance for createdAt."],
+          "invariants": [],
+          "edgeCases": [
+            "If the JSON string is invalid or malformed, JSON.parse throws a SyntaxError.",
+            "If the createdAt field is missing or not a valid date string, an Error is thrown with a descriptive message.",
+            "Other fields are preserved from the parsed object as per the OfflineTransaction type."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["Error"],
+            "reverts": [],
+            "onInvalidInput": "Throws an Error for invalid createdAt or JSON parsing errors.",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "JSON.parse", "source": "global", "kind": "external" },
+            { "name": "Date", "source": "global", "kind": "external" }
+          ],
+          "symbolReferences": ["OfflineTransaction", "SerializedOfflineTransaction"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Input: JSON string. Output: OfflineTransaction object with a valid Date for createdAt.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Deserializes a JSON string into an OfflineTransaction object, validating the createdAt date and throwing an error if the date is invalid.",
+          "specLiterals": [
+            {
+              "kind": "format-string",
+              "value": "Failed to deserialize transaction: invalid createdAt value \"${parsed.createdAt}\"",
+              "role": "Error message thrown for invalid createdAt date."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "deserialize is called with this JSON string.",
+              "then": "Returns an OfflineTransaction object with createdAt as a valid Date instance.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "deserialize is called with this JSON string.",
+              "then": "Throws an Error with a message containing the invalid createdAt value.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "deserialize is called with this string.",
+              "then": "Throws a SyntaxError from JSON.parse.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "9488497ba1ba3315dc9991bab761f67de8869dc73f691ccfb8f526f4036a616c"
+        }
+      },
+      {
+        "unitId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer.serializeMutation#method:TransactionSerializer.serializeMutation",
+        "unitKind": "method",
+        "name": "serializeMutation",
+        "qualifiedName": "TransactionSerializer.serializeMutation",
+        "parentUnitId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer#class:TransactionSerializer",
+        "startLine": 50,
+        "endLine": 63,
+        "isBehavioral": true,
+        "source": "      mutations: parsed.mutations.map((mutationData) =>\n        this.deserializeMutation(mutationData),\n      ),\n    }\n  }\n\n  private serializeMutation(mutation: PendingMutation): SerializedMutation {\n    const registryKey = this.collectionIdToKey.get(mutation.collection.id)\n    if (!registryKey) {\n      throw new Error(\n        `Collection with id ${mutation.collection.id} not found in registry`,\n      )\n    }\n",
+        "detail": {
+          "unitId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer.serializeMutation#method:TransactionSerializer.serializeMutation",
+          "fileId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer.serializeMutation",
+          "unitKind": "method",
+          "name": "serializeMutation",
+          "qualifiedName": "TransactionSerializer.serializeMutation",
+          "parentUnitId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer#class:TransactionSerializer",
+          "startLine": 50,
+          "endLine": 63,
+          "signature": "private serializeMutation(mutation: PendingMutation): SerializedMutation",
+          "parameters": [
+            {
+              "name": "mutation",
+              "type": "PendingMutation",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "SerializedMutation",
+          "decorators": [],
+          "modifiersApplied": ["private"],
+          "mutability": null,
+          "visibility": "private",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The input mutation must have a collection with an id that exists in the collectionIdToKey registry of the serializer instance."
+          ],
+          "postconditions": ["Returns a SerializedMutation that represents the serialized form of the input mutation."],
+          "invariants": [],
+          "edgeCases": [
+            "If mutation.collection.id is not found in the registry, throws an Error with a message containing the id."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["Error"],
+            "reverts": [],
+            "onInvalidInput": "Throws an Error with message 'Collection with id ${mutation.collection.id} not found in registry'",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "get", "source": "collectionIdToKey", "kind": "internal" }],
+          "symbolReferences": ["PendingMutation", "SerializedMutation"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Serializes a PendingMutation object into a SerializedMutation, ensuring the collection id exists in the registry.",
+          "specLiterals": [
+            {
+              "kind": "format-string",
+              "value": "Collection with id ${mutation.collection.id} not found in registry",
+              "role": "Error message format indicating missing collection in registry"
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "3dfc584be4c42afbd6c1b8cd40116a407eb755624c7b31548f8581531c37711d"
+        }
+      },
+      {
+        "unitId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer.deserializeMutation#method:TransactionSerializer.deserializeMutation",
+        "unitKind": "method",
+        "name": "deserializeMutation",
+        "qualifiedName": "TransactionSerializer.deserializeMutation",
+        "parentUnitId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer#class:TransactionSerializer",
+        "startLine": 65,
+        "endLine": 93,
+        "isBehavioral": true,
+        "source": "      globalKey: mutation.globalKey,\n      type: mutation.type,\n      modified: this.serializeValue(mutation.modified),\n      original: this.serializeValue(mutation.original),\n      changes: this.serializeValue(mutation.changes),\n      collectionId: registryKey, // Store registry key instead of collection.id\n    }\n  }\n\n  private deserializeMutation(data: SerializedMutation): PendingMutation {\n    const collection = this.collections[data.collectionId]\n    if (!collection) {\n      throw new Error(`Collection with id ${data.collectionId} not found`)\n    }\n\n    const modified = this.deserializeValue(data.modified)\n\n    // Extract the key from the modified data using the collection's getKey function\n    // This is needed for optimistic state restoration to work correctly\n    const key = modified ? collection.getKeyFromItem(modified) : null\n\n    // Create a partial PendingMutation - we can't fully reconstruct it but\n    // we provide what we can. The executor will need to handle the rest.\n    return {\n      globalKey: data.globalKey,\n      type: data.type as any,\n      modified,\n      original: this.deserializeValue(data.original),\n      changes: this.deserializeValue(data.changes) ?? {},",
+        "detail": {
+          "unitId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer.deserializeMutation#method:TransactionSerializer.deserializeMutation",
+          "fileId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer.deserializeMutation",
+          "unitKind": "method",
+          "name": "deserializeMutation",
+          "qualifiedName": "TransactionSerializer.deserializeMutation",
+          "parentUnitId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer#class:TransactionSerializer",
+          "startLine": 65,
+          "endLine": 93,
+          "signature": "private deserializeMutation(data: SerializedMutation): PendingMutation",
+          "parameters": [
+            {
+              "name": "data",
+              "type": "SerializedMutation",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "PendingMutation",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "private",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The collections registry (this.collections) must have been populated during construction or prior use",
+            "data.collectionId must correspond to a previously registered collection"
+          ],
+          "postconditions": [
+            "Returns a Partial<PendingMutation> with globalKey, type, modified, original, changes, and key fields populated",
+            "The returned type field is the string value from data.type cast to the PendingMutation type union",
+            "The changes field defaults to {} if deserialized value is null/undefined",
+            "The key field is derived from collection.getKeyFromItem(modified) when modified is non-null, otherwise null"
+          ],
+          "invariants": [],
+          "edgeCases": [
+            "data.collectionId references an unregistered collection → throws Error with message \"Collection with id ${data.collectionId} not found\"",
+            "data.modified deserializes to null → key is set to null and modified remains null",
+            "data.changes deserializes to null/undefined → changes defaults to empty object {}",
+            "data.original deserializes to null → original field is null"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["Error"],
+            "reverts": [],
+            "onInvalidInput": "Throws Error with message \"Collection with id ${data.collectionId} not found\" when collection is not found in registry",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "this.deserializeValue", "source": "TransactionSerializer", "kind": "internal" },
+            { "name": "collection.getKeyFromItem", "source": "registered collection", "kind": "internal" }
+          ],
+          "symbolReferences": ["SerializedMutation", "PendingMutation"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Deserializes a SerializedMutation back into a PendingMutation by looking up the target collection via registry key, deserializing all serialized fields (modified, original, changes), and extracting the primary key from the modified item. Throws if the collection is not registered.",
+          "specLiterals": [
+            {
+              "kind": "error-message",
+              "value": "Collection with id ${data.collectionId} not found",
+              "role": "Error message thrown when the collection registry does not contain the referenced collectionId"
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "deserializeMutation is called with the data",
+              "then": "Returns a PendingMutation whose key field equals the result of collection.getKeyFromItem on the deserialized modified, and changes defaults to {} if null",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "deserializeMutation is called with the data",
+              "then": "Throws an Error with message containing the unregistered collectionId",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "deserializeMutation is called with the data",
+              "then": "Returns a PendingMutation with key set to null and modified set to null",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "1619d1aab2832b69f932f4898136bbb47b51755edbff262e81bfc0615d39f4d3"
+        }
+      },
+      {
+        "unitId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer.serializeValue#method:TransactionSerializer.serializeValue",
+        "unitKind": "method",
+        "name": "serializeValue",
+        "qualifiedName": "TransactionSerializer.serializeValue",
+        "parentUnitId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer#class:TransactionSerializer",
+        "startLine": 95,
+        "endLine": 106,
+        "isBehavioral": true,
+        "source": "      // These fields would need to be reconstructed by the executor\n      mutationId: ``, // Will be regenerated\n      key,\n      metadata: undefined,\n      syncMetadata: {},\n      optimistic: true,\n      createdAt: new Date(),\n      updatedAt: new Date(),\n    } as PendingMutation\n  }\n\n  private serializeValue(value: any): any {",
+        "detail": {
+          "unitId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer.serializeValue#method:TransactionSerializer.serializeValue",
+          "fileId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer.serializeValue",
+          "unitKind": "method",
+          "name": "serializeValue",
+          "qualifiedName": "TransactionSerializer.serializeValue",
+          "parentUnitId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer#class:TransactionSerializer",
+          "startLine": 95,
+          "endLine": 106,
+          "signature": "private serializeValue(value: any): any",
+          "parameters": [
+            { "name": "value", "type": "any", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "any",
+          "decorators": [],
+          "modifiersApplied": ["private"],
+          "mutability": null,
+          "visibility": "private",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Serializes a given value into a format suitable for storage or transmission within the transaction outbox.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "2ac2817204ef34d58b7ea28caf03525d373307ef5ff81ff6adc6e891da3627d3"
+        }
+      },
+      {
+        "unitId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer.deserializeValue#method:TransactionSerializer.deserializeValue",
+        "unitKind": "method",
+        "name": "deserializeValue",
+        "qualifiedName": "TransactionSerializer.deserializeValue",
+        "parentUnitId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer#class:TransactionSerializer",
+        "startLine": 108,
+        "endLine": 130,
+        "isBehavioral": true,
+        "source": "      return value\n    }\n\n    if (value instanceof Date) {\n      return { __type: `Date`, value: value.toISOString() }\n    }\n\n    if (typeof value === `object`) {\n      const result: any = Array.isArray(value) ? [] : {}\n      for (const key in value) {\n        if (Object.prototype.hasOwnProperty.call(value, key)) {\n          result[key] = this.serializeValue(value[key])\n        }\n      }\n      return result\n    }\n\n    return value\n  }\n\n  private deserializeValue(value: any): any {\n    if (value === null || value === undefined) {\n      return value",
+        "detail": {
+          "unitId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer.deserializeValue#method:TransactionSerializer.deserializeValue",
+          "fileId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer.deserializeValue",
+          "unitKind": "method",
+          "name": "deserializeValue",
+          "qualifiedName": "TransactionSerializer.deserializeValue",
+          "parentUnitId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer#class:TransactionSerializer",
+          "startLine": 108,
+          "endLine": 130,
+          "signature": "private deserializeValue(value: any): any",
+          "parameters": [
+            { "name": "value", "type": "any", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "any",
+          "decorators": [],
+          "modifiersApplied": ["private"],
+          "mutability": "nonpayable",
+          "visibility": "private",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "value must be a value that was produced by serializeValue (or null/undefined/primitives)",
+            "If value is an object with a __type field, it must follow the serialization format emitted by serializeValue"
+          ],
+          "postconditions": [
+            "Returns the original domain value corresponding to the serialized representation",
+            "null and undefined are returned unchanged",
+            "Date wrapper objects { __type: 'Date', value: string } are restored to Date instances",
+            "Nested objects and arrays are recursively deserialized"
+          ],
+          "invariants": [
+            "deserializeValue(serializeValue(v)) === v for any supported value (Date, plain objects, arrays, primitives, null, undefined)"
+          ],
+          "edgeCases": [
+            "null input: returns null directly",
+            "undefined input: returns undefined directly",
+            "Primitive values (string, number, boolean): returned as-is with no transformation",
+            "Objects with __type 'Date': deserialized to a Date instance from the stored ISO string",
+            "Nested objects and arrays: recursively deserialized",
+            "Empty objects/arrays: returned as empty objects/arrays after recursion"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "No explicit error handling; malformed __type markers are not gracefully handled and may produce unexpected results",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "deserializeValue", "source": "TransactionSerializer", "kind": "internal" },
+            { "name": "Date", "source": null, "kind": "external" }
+          ],
+          "symbolReferences": ["Date"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Deserializes a previously serialized value by reversing the type-wrapping applied by serializeValue, restoring Date objects from their { __type: 'Date', value } representation and recursively processing nested objects and arrays.",
+          "specLiterals": [
+            {
+              "kind": "enum-value",
+              "value": "__type",
+              "role": "Discriminator field used to identify serialized type wrappers (e.g. Date) during deserialization"
+            },
+            {
+              "kind": "enum-value",
+              "value": "Date",
+              "role": "Type tag for Date objects in serialized form, matched against __type field"
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "deserializeValue(null) is called",
+              "then": "Returns null",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "deserializeValue is called",
+              "then": "Returns a Date instance with time corresponding to the ISO string",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "deserializeValue is called",
+              "then": "Returns { a: Date, b: 42 } with nested values recursively deserialized",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "1e8a58179618ee0a2a7b5f56ae9f11ffbf305845485f029ac2308169b9689194"
+        }
+      },
+      {
+        "unitId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer.serializeError#method:TransactionSerializer.serializeError",
+        "unitKind": "method",
+        "name": "serializeError",
+        "qualifiedName": "TransactionSerializer.serializeError",
+        "parentUnitId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer#class:TransactionSerializer",
+        "startLine": 132,
+        "endLine": 137,
+        "isBehavioral": true,
+        "source": "\n    if (typeof value === `object` && value.__type === `Date`) {\n      if (value.value === undefined || value.value === null) {\n        throw new Error(`Corrupted Date marker: missing value field`)\n      }\n      const date = new Date(value.value)",
+        "detail": {
+          "unitId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer.serializeError#method:TransactionSerializer.serializeError",
+          "fileId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer.serializeError",
+          "unitKind": "method",
+          "name": "serializeError",
+          "qualifiedName": "TransactionSerializer.serializeError",
+          "parentUnitId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer#class:TransactionSerializer",
+          "startLine": 132,
+          "endLine": 137,
+          "signature": "serializeError(error: Error | unknown): SerializedError",
+          "parameters": [
+            {
+              "name": "error",
+              "type": "Error | unknown",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "SerializedError",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "pure",
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [
+            "Input is an Error instance: extracts name, message, and stack",
+            "Input is a non-Error object: attempts to serialize as a plain object with type 'unknown'",
+            "Input is null/undefined: returns a serialized representation of null"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["Error"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Serializes an Error or unknown value into a structured, reversible format suitable for storage or transmission.",
+          "specLiterals": [
+            { "kind": "enum-value", "value": "unknown", "role": "type discriminator for non-Error objects" }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "serializeError is called",
+              "then": "Returns a serialized object containing the Error's name, message, and stack",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "serializeError is called",
+              "then": "Returns a serialized object with __type set to 'unknown' and the original properties preserved",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "serializeError is called",
+              "then": "Returns a serialized representation indicating null",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "add5393f59c139a9ab6e9a6999e88bc7f6aaf5803c25445bb551d5e1bd4ed73d"
+        }
+      },
+      {
+        "unitId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer.deserializeError#method:TransactionSerializer.deserializeError",
+        "unitKind": "method",
+        "name": "deserializeError",
+        "qualifiedName": "TransactionSerializer.deserializeError",
+        "parentUnitId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer#class:TransactionSerializer",
+        "startLine": 139,
+        "endLine": 144,
+        "isBehavioral": true,
+        "source": "        throw new Error(\n          `Failed to deserialize Date marker: invalid date value \"${value.value}\"`,\n        )\n      }\n      return date\n    }",
+        "detail": {
+          "unitId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer.deserializeError#method:TransactionSerializer.deserializeError",
+          "fileId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer.deserializeError",
+          "unitKind": "method",
+          "name": "deserializeError",
+          "qualifiedName": "TransactionSerializer.deserializeError",
+          "parentUnitId": "packages/offline-transactions/src/outbox/TransactionSerializer.ts__TransactionSerializer#class:TransactionSerializer",
+          "startLine": 139,
+          "endLine": 144,
+          "signature": "deserializeError(value: any): Error",
+          "parameters": [
+            { "name": "value", "type": "any", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "Error",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [
+            "Returns an Error object on successful deserialization (when value is a valid error representation)."
+          ],
+          "invariants": [],
+          "edgeCases": [
+            "When the input value represents an invalid date marker (with an invalid date string in the `value.value` property), the method throws an Error with a message containing the invalid date string.",
+            "When the input value is not a valid error representation, the behavior is not specified (the method may return an Error or throw, but the provided snippet only shows the invalid date path)."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["Error"],
+            "reverts": [],
+            "onInvalidInput": "Throws an Error with the message format 'Failed to deserialize Date marker: invalid date value \"${value.value}\"'.",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "Error", "source": "global", "kind": "external" }],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Deserializes an error from a given value. When the value represents an invalid date marker, it throws an Error with a message indicating the invalid date value.",
+          "specLiterals": [
+            {
+              "kind": "error-message",
+              "value": "Failed to deserialize Date marker: invalid date value \"${value.value}\"",
+              "role": "The exact error message format thrown when the input value contains an invalid date marker."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Calling `deserializeError` with that object.",
+              "then": "The method throws an Error with the message containing the string 'Failed to deserialize Date marker: invalid date value \"not-a-date\"'.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Calling `deserializeError` with that object.",
+              "then": "The method returns an Error object (the exact behavior for valid date markers is not specified in the provided snippet, but the method is expected to return an Error).",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Calling `deserializeError` with that value.",
+              "then": "The method's behavior is not specified (it may throw or return an Error, but the provided snippet only shows the invalid date path).",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "7ac1a3db4df1b084b2a66c1f8cdac3d9c8546e8adbbc15911811b7fd7427a95e"
+        }
+      }
+    ]
+  },
+  "out": ["packages/offline-transactions/src/types.ts"],
+  "in": [
+    "packages/offline-transactions/src/index.ts",
+    "packages/offline-transactions/src/outbox/OutboxManager.ts",
+    "packages/offline-transactions/tests/TransactionSerializer.test.ts"
+  ],
+  "externals": ["@tanstack/db"],
+  "impact": {
+    "seeds": 10,
+    "callers": 2,
+    "impactedFiles": [
+      "packages/offline-transactions/tests/TransactionSerializer.test.ts",
+      "packages/offline-transactions/src/outbox/OutboxManager.ts"
+    ]
+  }
+}

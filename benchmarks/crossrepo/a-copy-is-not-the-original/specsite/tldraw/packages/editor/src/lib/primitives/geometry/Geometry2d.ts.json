@@ -1,0 +1,2975 @@
+{
+  "schema": 2,
+  "kind": "file",
+  "repoName": "tldraw",
+  "file": {
+    "relativePath": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts",
+    "language": "typescript",
+    "sizeBytes": 16500,
+    "tokenCount": 4125,
+    "model": "us.openai.gpt-5.6-luna",
+    "analysedAt": "2026-08-24T12:20:34.787Z",
+    "module": {
+      "purpose": "Defines the abstract two-dimensional geometry contract and a matrix-backed wrapper used by editor shapes for hit testing, measurements, intersections, bounds, and SVG-related operations.",
+      "summary": "This module provides shared geometry behavior for filled and open shapes. The abstract base stores geometry metadata, lazily caches vertices, bounds, area, and length, and implements spatial queries such as point and segment hit testing, distance calculations, interpolation, polygon overlap, and intersections. A transformed wrapper delegates these operations in inverse coordinates and maps results back through a matrix while enforcing uniform scaling.",
+      "businessContext": "Supports interactive vector editing, selection, snapping, and shape layout in the editor. Failures can produce incorrect hit targets, bounds, measurements, intersections, or transformed rendering behavior.",
+      "classes": [
+        "Geometry2d (~L59-424): Abstract base contract for editor shape geometry and spatial queries",
+        "TransformedGeometry2d (~L432-580): Matrix-backed geometry wrapper preserving transformed spatial behavior"
+      ],
+      "functions": [
+        "isExcludedByFilter (~L87-91): Determines whether metadata excludes geometry from filtered operations",
+        "hitTestPoint (~L97-103): Tests containment or margin-based proximity to a point",
+        "distanceToPoint (~L105-112): Computes signed distance from geometry to a point",
+        "distanceToLineSegment (~L114-141): Computes signed minimum distance from geometry to a segment",
+        "hitTestLineSegment (~L143-145): Tests segment proximity against a distance threshold",
+        "intersectLineSegment (~L147-153): Intersects geometry edges with a line segment",
+        "intersectCircle (~L155-161): Intersects geometry edges with a circle",
+        "intersectPolygon (~L163-165): Computes intersections against a filled polygon",
+        "intersectPolyline (~L167-169): Computes intersections against an open polyline",
+        "interpolateAlongEdge (~L174-200): Finds a point at fractional distance along geometry edges",
+        "uninterpolateAlongEdge (~L206-240): Finds fractional edge distance nearest to a point",
+        "isPointInBounds (~L242-250): Checks whether a point lies within expanded geometry bounds",
+        "overlapsPolygon (~L252-290): Determines whether geometry overlaps a supplied polygon",
+        "transform (~L292-293): Creates a transformed geometry wrapper",
+        "getVertices (~L93-93): Requires subclasses to provide filtered geometry vertices",
+        "nearestPoint (~L95-95): Requires subclasses to find the nearest geometry point",
+        "getBoundsVertices (~L306-310): Returns vertices participating in shape bounds",
+        "getBounds (~L323-324): Constructs a bounding box from bounds vertices",
+        "getArea (~L352-364): Calculates signed polygon area when geometry is closed",
+        "toSimpleSvgPath (~L366-386): Serializes geometry vertices into a simple SVG path",
+        "getLength (~L398-413): Calculates open or closed geometry edge length",
+        "ignoreHit (~L419-421): Allows subclasses to reject successful hit tests",
+        "getSvgPathData (~L423-423): Requires subclasses to provide SVG path data",
+        "getVertices (~L458-460): Transforms wrapped geometry vertices into world coordinates",
+        "getBoundsVertices (~L462-464): Transforms wrapped bounds vertices into world coordinates",
+        "nearestPoint (~L466-472): Finds nearest point through inverse and forward transforms",
+        "hitTestPoint (~L474-486): Delegates point hit testing in inverse coordinates",
+        "distanceToPoint (~L488-493): Delegates and rescales point distance",
+        "distanceToLineSegment (~L495-503): Delegates and rescales segment distance",
+        "hitTestLineSegment (~L505-517): Delegates segment hit testing with scaled margin",
+        "intersectLineSegment (~L519-528): Transforms segment intersections between coordinate spaces",
+        "intersectCircle (~L530-539): Transforms circle intersections between coordinate spaces",
+        "intersectPolygon (~L541-549): Transforms polygon intersections between coordinate spaces",
+        "intersectPolyline (~L551-559): Transforms polyline intersections between coordinate spaces",
+        "ignoreHit (~L561-563): Delegates hit rejection after inverse point transformation",
+        "transform (~L565-575): Composes another transform around wrapped geometry",
+        "getSvgPathData (~L577-579): Rejects SVG path extraction for transformed geometry"
+      ],
+      "keywords": [
+        "Geometry2d",
+        "TransformedGeometry2d",
+        "hit testing",
+        "polygon intersection",
+        "polyline intersection",
+        "matrix transform",
+        "signed distance",
+        "lazy geometry cache",
+        "SVG path",
+        "shape bounds"
+      ],
+      "ontologyConcepts": [
+        "geometric representation",
+        "spatial query",
+        "coordinate transformation",
+        "collision detection",
+        "lazy evaluation",
+        "boundary measurement",
+        "selection filtering"
+      ],
+      "businessEntities": [
+        "geometry",
+        "shape",
+        "polygon",
+        "polyline",
+        "line segment",
+        "circle",
+        "bounding box",
+        "SVG path"
+      ],
+      "systemCapabilities": [
+        "Perform geometry hit testing",
+        "Calculate distances, areas, lengths, and bounds",
+        "Detect intersections and polygon overlap",
+        "Transform geometry between coordinate spaces",
+        "Filter label and internal geometry",
+        "Generate simple SVG path data"
+      ],
+      "configDependencies": [],
+      "importsInternal": [
+        {
+          "spec": "../Box",
+          "symbols": ["Box"],
+          "anchor": { "startLine": 2, "endLine": 2 },
+          "resolvedRelativePath": "packages/editor/src/lib/primitives/Box.ts",
+          "resolvedFileId": "packages/editor/src/lib/primitives/Box.ts",
+          "resolvedHint": "packages/editor/src/lib/primitives/Box.ts"
+        },
+        {
+          "spec": "../intersect",
+          "symbols": [
+            "intersectCirclePolygon",
+            "intersectCirclePolyline",
+            "intersectLineSegmentPolygon",
+            "intersectLineSegmentPolyline",
+            "intersectPolys",
+            "linesIntersect",
+            "polygonIntersectsPolyline",
+            "polygonsIntersect"
+          ],
+          "anchor": { "startLine": 3, "endLine": 12 },
+          "resolvedRelativePath": "packages/editor/src/lib/primitives/intersect.ts",
+          "resolvedFileId": "packages/editor/src/lib/primitives/intersect.ts",
+          "resolvedHint": "packages/editor/src/lib/primitives/intersect.ts"
+        },
+        {
+          "spec": "../Mat",
+          "symbols": ["Mat", "MatModel"],
+          "anchor": { "startLine": 13, "endLine": 13 },
+          "resolvedRelativePath": "packages/editor/src/lib/primitives/Mat.ts",
+          "resolvedFileId": "packages/editor/src/lib/primitives/Mat.ts",
+          "resolvedHint": "packages/editor/src/lib/primitives/Mat.ts"
+        },
+        {
+          "spec": "../utils",
+          "symbols": ["approximately", "pointInPolygon"],
+          "anchor": { "startLine": 14, "endLine": 14 },
+          "resolvedRelativePath": "packages/editor/src/lib/primitives/utils.ts",
+          "resolvedFileId": "packages/editor/src/lib/primitives/utils.ts",
+          "resolvedHint": "packages/editor/src/lib/primitives/utils.ts"
+        },
+        {
+          "spec": "../Vec",
+          "symbols": ["Vec", "VecLike"],
+          "anchor": { "startLine": 15, "endLine": 15 },
+          "resolvedRelativePath": "packages/editor/src/lib/primitives/Vec.ts",
+          "resolvedFileId": "packages/editor/src/lib/primitives/Vec.ts",
+          "resolvedHint": "packages/editor/src/lib/primitives/Vec.ts"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "@tldraw/utils",
+          "symbols": ["assert", "invLerp"],
+          "package": "@tldraw/utils",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 1 }
+        }
+      ],
+      "sideEffects": {
+        "io": [],
+        "network": [],
+        "env": [],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": [
+          "Lazily populates private cached geometry fields on the geometry instance.",
+          "Constructor and transformed options mutate inherited geometry metadata fields."
+        ]
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "Geometry2dFilters",
+          "shape": "export interface Geometry2dFilters { readonly includeLabels?: boolean; readonly includeInternal?: boolean }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "Geometry2dFilters",
+          "shape": "export const Geometry2dFilters: { EXCLUDE_NON_STANDARD: Geometry2dFilters; INCLUDE_ALL: Geometry2dFilters; EXCLUDE_LABELS: Geometry2dFilters; EXCLUDE_INTERNAL: Geometry2dFilters }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "TransformedGeometry2dOptions",
+          "shape": "export interface TransformedGeometry2dOptions { isLabel?: boolean; isEmptyLabel?: boolean; isInternal?: boolean; debugColor?: string; ignore?: boolean; excludeFromShapeBounds?: boolean }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "Geometry2dOptions",
+          "shape": "export interface Geometry2dOptions extends TransformedGeometry2dOptions { isFilled: boolean; isClosed: boolean }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "Geometry2d",
+          "shape": "export abstract class Geometry2d",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "TransformedGeometry2d",
+          "shape": "export class TransformedGeometry2d extends Geometry2d",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "assert",
+          "shape": "assert(condition: unknown, message?: string): asserts condition",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "invLerp",
+          "shape": "invLerp(a: number, b: number, c: number): number",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "Box",
+          "shape": "Box.FromPoints(points: VecLike[]): Box",
+          "resolvedRelativePath": "packages/editor/src/lib/primitives/Box.ts",
+          "resolvedFileId": "packages/editor/src/lib/primitives/Box.ts"
+        },
+        {
+          "name": "MatModel",
+          "shape": "MatModel",
+          "resolvedRelativePath": "packages/editor/src/lib/primitives/Mat.ts",
+          "resolvedFileId": "packages/editor/src/lib/primitives/Mat.ts"
+        },
+        {
+          "name": "VecLike",
+          "shape": "VecLike",
+          "resolvedRelativePath": "packages/editor/src/lib/primitives/Vec.ts",
+          "resolvedFileId": "packages/editor/src/lib/primitives/Vec.ts"
+        },
+        {
+          "name": "pointInPolygon",
+          "shape": "pointInPolygon(point: VecLike, polygon: VecLike[]): boolean",
+          "resolvedRelativePath": "packages/editor/src/lib/primitives/utils.ts",
+          "resolvedFileId": "packages/editor/src/lib/primitives/utils.ts"
+        },
+        {
+          "name": "approximately",
+          "shape": "approximately(a: number, b: number): boolean",
+          "resolvedRelativePath": "packages/editor/src/lib/primitives/utils.ts",
+          "resolvedFileId": "packages/editor/src/lib/primitives/utils.ts"
+        },
+        {
+          "name": "intersectLineSegmentPolygon",
+          "shape": "intersectLineSegmentPolygon(A: VecLike, B: VecLike, polygon: VecLike[]): VecLike[] | undefined",
+          "resolvedRelativePath": "packages/editor/src/lib/primitives/intersect.ts",
+          "resolvedFileId": "packages/editor/src/lib/primitives/intersect.ts"
+        },
+        {
+          "name": "intersectLineSegmentPolyline",
+          "shape": "intersectLineSegmentPolyline(A: VecLike, B: VecLike, polyline: VecLike[]): VecLike[] | undefined",
+          "resolvedRelativePath": "packages/editor/src/lib/primitives/intersect.ts",
+          "resolvedFileId": "packages/editor/src/lib/primitives/intersect.ts"
+        },
+        {
+          "name": "intersectCirclePolygon",
+          "shape": "intersectCirclePolygon(center: VecLike, radius: number, polygon: VecLike[]): VecLike[] | undefined",
+          "resolvedRelativePath": "packages/editor/src/lib/primitives/intersect.ts",
+          "resolvedFileId": "packages/editor/src/lib/primitives/intersect.ts"
+        },
+        {
+          "name": "intersectCirclePolyline",
+          "shape": "intersectCirclePolyline(center: VecLike, radius: number, polyline: VecLike[]): VecLike[] | undefined",
+          "resolvedRelativePath": "packages/editor/src/lib/primitives/intersect.ts",
+          "resolvedFileId": "packages/editor/src/lib/primitives/intersect.ts"
+        },
+        {
+          "name": "intersectPolys",
+          "shape": "intersectPolys(a: VecLike[], b: VecLike[], aClosed: boolean, bClosed: boolean): VecLike[]",
+          "resolvedRelativePath": "packages/editor/src/lib/primitives/intersect.ts",
+          "resolvedFileId": "packages/editor/src/lib/primitives/intersect.ts"
+        },
+        {
+          "name": "linesIntersect",
+          "shape": "linesIntersect(A: VecLike, B: VecLike, C: VecLike, D: VecLike): boolean",
+          "resolvedRelativePath": "packages/editor/src/lib/primitives/intersect.ts",
+          "resolvedFileId": "packages/editor/src/lib/primitives/intersect.ts"
+        },
+        {
+          "name": "polygonIntersectsPolyline",
+          "shape": "polygonIntersectsPolyline(polygon: VecLike[], polyline: VecLike[]): boolean",
+          "resolvedRelativePath": "packages/editor/src/lib/primitives/intersect.ts",
+          "resolvedFileId": "packages/editor/src/lib/primitives/intersect.ts"
+        },
+        {
+          "name": "polygonsIntersect",
+          "shape": "polygonsIntersect(a: VecLike[], b: VecLike[]): boolean",
+          "resolvedRelativePath": "packages/editor/src/lib/primitives/intersect.ts",
+          "resolvedFileId": "packages/editor/src/lib/primitives/intersect.ts"
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "geometry metadata and filtering",
+          "intent": "Initializes geometry flags and excludes labels or internal geometry from filtered operations.",
+          "structureKind": "branch",
+          "predicate": "if (this.isLabel && !filters.includeLabels)",
+          "branchOutcomes": ["excluded", "not excluded"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 70, "endLine": 91 }
+        },
+        {
+          "name": "point and segment hit testing",
+          "intent": "Checks containment first, then computes proximity using nearest points and margins.",
+          "structureKind": "branch",
+          "predicate": "if (this.isClosed && (this.isFilled || hitInside) && pointInPolygon(point, this.vertices))",
+          "branchOutcomes": ["inside", "distance check"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 97, "endLine": 145 }
+        },
+        {
+          "name": "segment distance traversal",
+          "intent": "Scans geometry edges for intersections and minimum endpoint-to-segment distance.",
+          "structureKind": "loop",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": "i < vertices.length",
+          "terminationCondition": null,
+          "anchor": { "startLine": 114, "endLine": 141 }
+        },
+        {
+          "name": "edge interpolation",
+          "intent": "Traverses edges until the requested fractional distance is reached.",
+          "structureKind": "loop",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": "i < (this.isClosed ? vertices.length : vertices.length - 1)",
+          "terminationCondition": null,
+          "anchor": { "startLine": 174, "endLine": 200 }
+        },
+        {
+          "name": "polygon overlap checks",
+          "intent": "Performs progressively more expensive vertex, containment, and edge intersection tests.",
+          "structureKind": "branch",
+          "predicate": "if (isClosed)",
+          "branchOutcomes": ["closed geometry checks", "open geometry checks"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 252, "endLine": 290 }
+        },
+        {
+          "name": "lazy derived geometry",
+          "intent": "Caches vertices, bounds, area, and length after first access.",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 295, "endLine": 413 }
+        },
+        {
+          "name": "transformed delegation",
+          "intent": "Maps inputs into local coordinates, delegates operations, and maps results outward.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 432, "endLine": 575 }
+        },
+        {
+          "name": "uniform scale validation",
+          "intent": "Rejects transformed geometry whose decomposed horizontal and vertical scales differ.",
+          "structureKind": "branch",
+          "predicate": "approximately(this.decomposed.scaleX, this.decomposed.scaleY)",
+          "branchOutcomes": ["accepted", "assertion failure"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 452, "endLine": 455 }
+        }
+      ],
+      "representationFamily": "class-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "interface",
+          "name": "Geometry2dFilters",
+          "signature": "export interface Geometry2dFilters {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 23, "endLine": 26 }
+        },
+        {
+          "kind": "const",
+          "name": "Geometry2dFilters",
+          "signature": "export const Geometry2dFilters: {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "{\n\tEXCLUDE_NON_STANDARD: Geometry2dFilters\n\tINCLUDE_ALL: Geometry2dFilters\n\tEXCLUDE_LABELS: Geometry2dFilters\n\tEXCLUDE_INTERNAL: Geometry2dFilters\n}",
+          "exported": true,
+          "anchor": { "startLine": 29, "endLine": 39 }
+        },
+        {
+          "kind": "interface",
+          "name": "TransformedGeometry2dOptions",
+          "signature": "export interface TransformedGeometry2dOptions {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 42, "endLine": 50 }
+        },
+        {
+          "kind": "interface",
+          "name": "Geometry2dOptions",
+          "signature": "export interface Geometry2dOptions extends TransformedGeometry2dOptions {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 53, "endLine": 56 }
+        },
+        {
+          "kind": "class",
+          "name": "Geometry2d",
+          "signature": "export abstract class Geometry2d {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 59, "endLine": 424 }
+        },
+        {
+          "kind": "class",
+          "name": "TransformedGeometry2d",
+          "signature": "export class TransformedGeometry2d extends Geometry2d {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 432, "endLine": 580 }
+        },
+        {
+          "kind": "constructor",
+          "name": "constructor",
+          "signature": "constructor(opts: Geometry2dOptions) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 70, "endLine": 85 }
+        },
+        {
+          "kind": "method",
+          "name": "hitTestPoint",
+          "signature": "hitTestPoint(point: VecLike, margin = 0, hitInside = false, _filters?: Geometry2dFilters) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 97, "endLine": 103 }
+        },
+        {
+          "kind": "method",
+          "name": "distanceToLineSegment",
+          "signature": "distanceToLineSegment(A: VecLike, B: VecLike, filters?: Geometry2dFilters) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 114, "endLine": 141 }
+        },
+        {
+          "kind": "method",
+          "name": "interpolateAlongEdge",
+          "signature": "interpolateAlongEdge(t: number, _filters?: Geometry2dFilters): Vec {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Vec",
+          "exported": false,
+          "anchor": { "startLine": 174, "endLine": 200 }
+        },
+        {
+          "kind": "method",
+          "name": "uninterpolateAlongEdge",
+          "signature": "uninterpolateAlongEdge(point: VecLike, _filters?: Geometry2dFilters): number {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "number",
+          "exported": false,
+          "anchor": { "startLine": 206, "endLine": 240 }
+        },
+        {
+          "kind": "method",
+          "name": "overlapsPolygon",
+          "signature": "overlapsPolygon(_polygon: VecLike[]): boolean {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "boolean",
+          "exported": false,
+          "anchor": { "startLine": 252, "endLine": 290 }
+        },
+        {
+          "kind": "method",
+          "name": "getArea",
+          "signature": "getArea() {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 352, "endLine": 364 }
+        },
+        {
+          "kind": "method",
+          "name": "getLength",
+          "signature": "getLength(_filters?: Geometry2dFilters) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 398, "endLine": 413 }
+        },
+        {
+          "kind": "constructor",
+          "name": "constructor",
+          "signature": "constructor(\n\t\tprivate readonly geometry: Geometry2d,\n\t\tprivate readonly matrix: MatModel,\n\t\topts?: TransformedGeometry2dOptions\n\t) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 436, "endLine": 456 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "interface",
+          "name": "Geometry2dFilters",
+          "shape": "{\n\treadonly includeLabels?: boolean\n\treadonly includeInternal?: boolean\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 23, "endLine": 26 }
+        },
+        {
+          "kind": "interface",
+          "name": "TransformedGeometry2dOptions",
+          "shape": "{\n\tisLabel?: boolean\n\tisEmptyLabel?: boolean\n\tisInternal?: boolean\n\tdebugColor?: string\n\tignore?: boolean\n\texcludeFromShapeBounds?: boolean\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 42, "endLine": 50 }
+        },
+        {
+          "kind": "interface",
+          "name": "Geometry2dOptions",
+          "shape": "{\n\tisFilled: boolean\n\tisClosed: boolean\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 53, "endLine": 56 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "empty vertex list",
+          "handled": true,
+          "behavior": "Returns the origin for edge interpolation, zero for edge fraction and length, and an empty SVG path.",
+          "anchor": { "startLine": 177, "endLine": 179 }
+        },
+        {
+          "inputShape": "single vertex",
+          "handled": true,
+          "behavior": "Uses the vertex directly for interpolation and returns its distance from segment start.",
+          "anchor": { "startLine": 178, "endLine": 179 }
+        },
+        {
+          "inputShape": "degenerate line segment with identical endpoints",
+          "handled": true,
+          "behavior": "Delegates to point distance rather than scanning geometry edges.",
+          "anchor": { "startLine": 115, "endLine": 115 }
+        },
+        {
+          "inputShape": "geometry with no vertices during segment distance",
+          "handled": true,
+          "behavior": "Throws an error indicating that a nearest point was not found.",
+          "anchor": { "startLine": 117, "endLine": 117 }
+        },
+        {
+          "inputShape": "zero-length edge",
+          "handled": true,
+          "behavior": "Returns the current vertex during interpolation without dividing by edge length.",
+          "anchor": { "startLine": 188, "endLine": 190 }
+        },
+        {
+          "inputShape": "empty label geometry",
+          "handled": true,
+          "behavior": "Never overlaps a polygon.",
+          "anchor": { "startLine": 259, "endLine": 259 }
+        },
+        {
+          "inputShape": "zero total geometry length",
+          "handled": true,
+          "behavior": "Returns zero for the uninterpolated edge fraction.",
+          "anchor": { "startLine": 237, "endLine": 239 }
+        },
+        {
+          "inputShape": "non-uniform transform",
+          "handled": true,
+          "behavior": "Raises an assertion error stating that non-uniform scaling is unsupported.",
+          "anchor": { "startLine": 452, "endLine": 455 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": "<",
+          "left": "i",
+          "right": "nextLimit",
+          "inclusive": false,
+          "intent": "Only closed edges or valid open-polyline segments are tested for intersection.",
+          "anchor": { "startLine": 125, "endLine": 127 }
+        },
+        {
+          "operator": "<",
+          "left": "d",
+          "right": "dist",
+          "inclusive": false,
+          "intent": "Replaces the current nearest distance when a shorter candidate is found.",
+          "anchor": { "startLine": 133, "endLine": 136 }
+        },
+        {
+          "operator": "<=",
+          "left": "t",
+          "right": "0",
+          "inclusive": true,
+          "intent": "Clamps non-positive edge fractions to the first vertex.",
+          "anchor": { "startLine": 179, "endLine": 179 }
+        },
+        {
+          "operator": "<",
+          "left": "i",
+          "right": "(this.isClosed ? vertices.length : vertices.length - 1)",
+          "inclusive": false,
+          "intent": "Traverses each closed edge or each open-polyline segment.",
+          "anchor": { "startLine": 184, "endLine": 184 }
+        },
+        {
+          "operator": ">=",
+          "left": "newDistanceTraveled",
+          "right": "distanceToTravel",
+          "inclusive": true,
+          "intent": "Selects the edge containing the requested travel distance.",
+          "anchor": { "startLine": 188, "endLine": 188 }
+        },
+        {
+          "operator": "<",
+          "left": "i",
+          "right": "(this.isClosed ? vertices.length : vertices.length - 1)",
+          "inclusive": false,
+          "intent": "Searches all eligible edges for the nearest point.",
+          "anchor": { "startLine": 214, "endLine": 214 }
+        },
+        {
+          "operator": "<",
+          "left": "distance",
+          "right": "closestDistance",
+          "inclusive": false,
+          "intent": "Updates the nearest segment when a closer projected point is found.",
+          "anchor": { "startLine": 221, "endLine": 229 }
+        },
+        {
+          "operator": "<",
+          "left": "point.x",
+          "right": "bounds.minX - margin",
+          "inclusive": false,
+          "intent": "Rejects points left of the margin-expanded bounds.",
+          "anchor": { "startLine": 244, "endLine": 245 }
+        },
+        {
+          "operator": "<",
+          "left": "point.y",
+          "right": "bounds.minY - margin",
+          "inclusive": false,
+          "intent": "Rejects points above the margin-expanded bounds.",
+          "anchor": { "startLine": 244, "endLine": 246 }
+        },
+        {
+          "operator": ">",
+          "left": "point.x",
+          "right": "bounds.maxX + margin",
+          "inclusive": false,
+          "intent": "Rejects points right of the margin-expanded bounds.",
+          "anchor": { "startLine": 244, "endLine": 247 }
+        },
+        {
+          "operator": ">",
+          "left": "point.y",
+          "right": "bounds.maxY + margin",
+          "inclusive": false,
+          "intent": "Rejects points below the margin-expanded bounds.",
+          "anchor": { "startLine": 244, "endLine": 248 }
+        },
+        {
+          "operator": "<",
+          "left": "i",
+          "right": "n",
+          "inclusive": false,
+          "intent": "Serializes each vertex after the first into the SVG path.",
+          "anchor": { "startLine": 377, "endLine": 378 }
+        },
+        {
+          "operator": "!=",
+          "left": "opts.isLabel",
+          "right": "null",
+          "inclusive": false,
+          "intent": "Overrides inherited label metadata only when an option is supplied.",
+          "anchor": { "startLine": 446, "endLine": 446 }
+        },
+        {
+          "operator": "!=",
+          "left": "opts.isInternal",
+          "right": "null",
+          "inclusive": false,
+          "intent": "Overrides inherited internal metadata only when an option is supplied.",
+          "anchor": { "startLine": 447, "endLine": 447 }
+        },
+        {
+          "operator": "!=",
+          "left": "opts.debugColor",
+          "right": "null",
+          "inclusive": false,
+          "intent": "Overrides inherited debug color only when an option is supplied.",
+          "anchor": { "startLine": 448, "endLine": 448 }
+        },
+        {
+          "operator": "!=",
+          "left": "opts.ignore",
+          "right": "null",
+          "inclusive": false,
+          "intent": "Overrides inherited hit-ignore behavior only when an option is supplied.",
+          "anchor": { "startLine": 449, "endLine": 449 }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": "Error('nearest point not found')",
+          "caught": null,
+          "action": "Aborts distance calculation when geometry has no vertices.",
+          "fallback": null,
+          "anchor": { "startLine": 117, "endLine": 117 }
+        },
+        {
+          "thrown": "Error('nearest point not found')",
+          "caught": null,
+          "action": "Aborts distance calculation if no nearest candidate was produced.",
+          "fallback": null,
+          "anchor": { "startLine": 138, "endLine": 138 }
+        },
+        {
+          "thrown": "assert(closestSegment)",
+          "caught": null,
+          "action": "Asserts that a nearest segment exists after scanning non-degenerate geometry.",
+          "fallback": null,
+          "anchor": { "startLine": 235, "endLine": 235 }
+        },
+        {
+          "thrown": "assert(approximately(this.decomposed.scaleX, this.decomposed.scaleY), 'non-uniform scaling is not yet supported')",
+          "caught": null,
+          "action": "Rejects transformed geometry with unsupported non-uniform scaling.",
+          "fallback": null,
+          "anchor": { "startLine": 452, "endLine": 455 }
+        },
+        {
+          "thrown": "new Error('Cannot get SVG path data for transformed geometry.')",
+          "caught": null,
+          "action": "Rejects SVG path extraction from transformed geometry.",
+          "fallback": null,
+          "anchor": { "startLine": 577, "endLine": 579 }
+        }
+      ],
+      "invariants": [
+        {
+          "kind": "invariant",
+          "description": "Closed geometry uses polygon semantics while open geometry uses polyline semantics.",
+          "anchor": { "startLine": 147, "endLine": 169 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "Intersection methods return an empty array when the underlying intersection helper returns nullish results.",
+          "anchor": { "startLine": 147, "endLine": 161 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Cached vertices exclude labels through Geometry2dFilters.EXCLUDE_LABELS.",
+          "anchor": { "startLine": 298, "endLine": 304 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Geometry length includes the closing edge only when geometry is closed.",
+          "anchor": { "startLine": 398, "endLine": 413 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Transformed operations use inverse coordinates for delegation and forward coordinates for results.",
+          "anchor": { "startLine": 466, "endLine": 559 }
+        },
+        {
+          "kind": "precondition",
+          "description": "Transformed geometry requires approximately equal horizontal and vertical scale components.",
+          "anchor": { "startLine": 452, "endLine": 455 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "Concrete subclasses must implement vertex generation, nearest-point lookup, and SVG path data.",
+          "anchor": { "startLine": 93, "endLine": 95 }
+        },
+        {
+          "kind": "caller",
+          "description": "Callers provide geometry options containing required filled and closed flags.",
+          "anchor": { "startLine": 53, "endLine": 56 }
+        },
+        {
+          "kind": "schema",
+          "description": "Matrix decomposition exposes scaleX and scaleY values suitable for uniform-scale validation.",
+          "anchor": { "startLine": 452, "endLine": 455 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "Should transformed geometry preserve isEmptyLabel and excludeFromShapeBounds overrides from transformation options?",
+          "affects": "TransformedGeometry2d metadata behavior",
+          "anchor": { "startLine": 445, "endLine": 449 },
+          "resolution": null
+        },
+        {
+          "question": "Is signed area orientation intentionally exposed, or should consumers normalize its sign?",
+          "affects": "getArea result contract",
+          "anchor": { "startLine": 352, "endLine": 364 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "sync",
+        "reentrant": true,
+        "ordering": "deterministic",
+        "notes": "All operations are synchronous and deterministic; lazy caches mutate instance state but do not use shared asynchronous state."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "filled-point-inside-hit",
+          "scenario": "A filled closed geometry is tested with a point inside its vertices.",
+          "given": [
+            "geometry.isClosed === true",
+            "geometry.isFilled === true",
+            "pointInPolygon(point, geometry.vertices) === true"
+          ],
+          "when": "geometry.hitTestPoint(point)",
+          "then": "result === true",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "empty-label-does-not-overlap",
+          "scenario": "An empty label geometry is tested against any polygon.",
+          "given": ["geometry.isEmptyLabel === true"],
+          "when": "geometry.overlapsPolygon(polygon)",
+          "then": "result === false",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "open-geometry-has-zero-area",
+          "scenario": "An open geometry has any number of vertices.",
+          "given": ["geometry.isClosed === false"],
+          "when": "geometry.getArea()",
+          "then": "result === 0",
+          "targets": [],
+          "oracleKind": "invariant-check",
+          "rationale": ""
+        },
+        {
+          "testId": "empty-geometry-interpolation-origin",
+          "scenario": "A geometry without vertices is interpolated along its edge.",
+          "given": ["geometry.vertices.length === 0"],
+          "when": "geometry.interpolateAlongEdge(t)",
+          "then": "result equals new Vec(0, 0)",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "transformed-point-test-uses-inverse",
+          "scenario": "A transformed geometry receives a point in transformed coordinates.",
+          "given": [
+            "transformedGeometry = geometry.transform(matrix)",
+            "point === Mat.applyToPoint(matrix, localPoint)"
+          ],
+          "when": "transformedGeometry.hitTestPoint(point)",
+          "then": "result equals geometry.hitTestPoint(localPoint)",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Transformed hit testing must evaluate points in the wrapped geometry's coordinate space."
+        },
+        {
+          "testId": "nonuniform-transform-rejected",
+          "scenario": "A transform has unequal scale factors on its axes.",
+          "given": ["Mat.Decompose(matrix).scaleX !== Mat.Decompose(matrix).scaleY"],
+          "when": "new TransformedGeometry2d(geometry, matrix)",
+          "then": "throws Error('non-uniform scaling is not yet supported')",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "import declarations",
+        "Geometry2dFilters interface",
+        "Geometry2dFilters filter constants",
+        "TransformedGeometry2dOptions interface",
+        "Geometry2dOptions interface",
+        "Geometry2d abstract class",
+        "TransformedGeometry2d concrete class"
+      ],
+      "moduleLevelCode": "import { assert, invLerp } from '@tldraw/utils'\nimport { Box } from '../Box'\nimport {\n\tintersectCirclePolygon,\n\tintersectCirclePolyline,\n\tintersectLineSegmentPolygon,\n\tintersectLineSegmentPolyline,\n\tintersectPolys,\n\tlinesIntersect,\n\tpolygonIntersectsPolyline,\n\tpolygonsIntersect,\n} from '../intersect'\nimport { Mat, MatModel } from '../Mat'\nimport { approximately, pointInPolygon } from '../utils'\nimport { Vec, VecLike } from '../Vec'",
+      "exports": [
+        { "name": "Geometry2dFilters", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "Geometry2dFilters", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "TransformedGeometry2dOptions", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "Geometry2dOptions", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "Geometry2d", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "TransformedGeometry2d", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "assert", "module": "@tldraw/utils", "alias": null, "kind": "external" },
+        { "symbol": "invLerp", "module": "@tldraw/utils", "alias": null, "kind": "external" },
+        { "symbol": "Box", "module": "../Box", "alias": null, "kind": "internal" },
+        { "symbol": "intersectCirclePolygon", "module": "../intersect", "alias": null, "kind": "internal" },
+        { "symbol": "intersectCirclePolyline", "module": "../intersect", "alias": null, "kind": "internal" },
+        { "symbol": "intersectLineSegmentPolygon", "module": "../intersect", "alias": null, "kind": "internal" },
+        { "symbol": "intersectLineSegmentPolyline", "module": "../intersect", "alias": null, "kind": "internal" },
+        { "symbol": "intersectPolys", "module": "../intersect", "alias": null, "kind": "internal" },
+        { "symbol": "linesIntersect", "module": "../intersect", "alias": null, "kind": "internal" },
+        { "symbol": "polygonIntersectsPolyline", "module": "../intersect", "alias": null, "kind": "internal" },
+        { "symbol": "polygonsIntersect", "module": "../intersect", "alias": null, "kind": "internal" },
+        { "symbol": "Mat", "module": "../Mat", "alias": null, "kind": "internal" },
+        { "symbol": "MatModel", "module": "../Mat", "alias": null, "kind": "internal" },
+        { "symbol": "approximately", "module": "../utils", "alias": null, "kind": "internal" },
+        { "symbol": "pointInPolygon", "module": "../utils", "alias": null, "kind": "internal" },
+        { "symbol": "Vec", "module": "../Vec", "alias": null, "kind": "internal" },
+        { "symbol": "VecLike", "module": "../Vec", "alias": null, "kind": "internal" }
+      ],
+      "fileConstants": [
+        {
+          "name": "Geometry2dFilters",
+          "value": "{\n\tEXCLUDE_NON_STANDARD: {\n\t\tincludeLabels: false,\n\t\tincludeInternal: false,\n\t},\n\tINCLUDE_ALL: { includeLabels: true, includeInternal: true },\n\tEXCLUDE_LABELS: { includeLabels: false, includeInternal: true },\n\tEXCLUDE_INTERNAL: { includeLabels: true, includeInternal: false },\n}",
+          "kind": "filter preset object"
+        }
+      ],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__Geometry2d#class:Geometry2d",
+        "unitKind": "class",
+        "name": "Geometry2d",
+        "qualifiedName": "Geometry2d",
+        "parentUnitId": null,
+        "startLine": 59,
+        "endLine": 424,
+        "isBehavioral": true,
+        "source": "\tisClosed: boolean\n}\n\n/** @public */\nexport abstract class Geometry2d {\n\t// todo: consider making accessors for these too, so that they can be overridden in subclasses by geometries with more complex logic\n\tisFilled = false\n\tisClosed = true\n\tisLabel = false\n\tisEmptyLabel = false\n\tisInternal = false\n\texcludeFromShapeBounds = false\n\tdebugColor?: string\n\tignore?: boolean\n\n\tconstructor(opts: Geometry2dOptions) {\n\t\tconst {\n\t\t\tisLabel = false,\n\t\t\tisEmptyLabel = false,\n\t\t\tisInternal = false,\n\t\t\texcludeFromShapeBounds = false,\n\t\t} = opts\n\t\tthis.isFilled = opts.isFilled\n\t\tthis.isClosed = opts.isClosed\n\t\tthis.debugColor = opts.debugColor\n\t\tthis.ignore = opts.ignore\n\t\tthis.isLabel = isLabel\n\t\tthis.isEmptyLabel = isEmptyLabel\n\t\tthis.isInternal = isInternal\n\t\tthis.excludeFromShapeBounds = excludeFromShapeBounds\n\t}\n\n\tisExcludedByFilter(filters?: Geometry2dFilters) {\n\t\tif (!filters) return false\n\t\tif (this.isLabel && !filters.includeLabels) return true\n\t\tif (this.isInternal && !filters.includeInternal) return true\n\t\treturn false\n\t}\n\n\tabstract getVertices(filters: Geometry2dFilters): Vec[]\n\n\tabstract nearestPoint(point: VecLike, _filters?: Geometry2dFilters): Vec\n\n\thitTestPoint(point: VecLike, margin = 0, hitInside = false, _filters?: Geometry2dFilters) {\n\t\t// First check whether the point is inside\n\t\tif (this.isClosed && (this.isFilled || hitInside) && pointInPolygon(point, this.vertices)) {\n\t\t\treturn true\n\t\t}\n\t\t// Then check whether the distance is within the margin\n\t\treturn Vec.Dist2(point, this.nearestPoint(point)) <= margin * margin\n\t}\n\n\tdistanceToPoint(point: VecLike, hitInside = false, filters?: Geometry2dFilters) {\n\t\treturn (\n\t\t\tVec.Dist(point, this.nearestPoint(point, filters)) *\n\t\t\t(this.isClosed && (this.isFilled || hitInside) && pointInPolygon(point, this.vertices)\n\t\t\t\t? -1\n\t\t\t\t: 1)\n\t\t)\n\t}\n\n\tdistanceToLineSegment(A: VecLike, B: VecLike, filters?: Geometry2dFilters) {\n\t\tif (Vec.Equals(A, B)) return this.distanceToPoint(A, false, filters)\n\t\tconst { vertices } = this\n\t\tif (vertices.length === 0) throw Error('nearest point not found')\n\t\tif (vertices.length === 1) return Vec.Dist(A, vertices[0])\n\t\tlet nearest: Vec | undefined\n\t\tlet dist = Infinity\n\t\tlet d: number, p: Vec, q: Vec\n\t\tconst nextLimit = this.isClosed ? vertices.length : vertices.length - 1\n\t\tfor (let i = 0; i < vertices.length; i++) {\n\t\t\tp = vertices[i]\n\t\t\tif (i < nextLimit) {\n\t\t\t\tconst next = vertices[(i + 1) % vertices.length]\n\t\t\t\tif (linesIntersect(A, B, p, next)) return 0\n\t\t\t}\n\t\t\tq = Vec.NearestPointOnLineSegment(A, B, p, true)\n\t\t\td = Vec.Dist2(p, q)\n\t\t\tif (d < dist) {\n\t\t\t\tdist = d\n\t\t\t\tnearest = q\n\t\t\t}\n\t\t}\n\t\tif (!nearest) throw Error('nearest point not found')\n\t\tdist = Math.sqrt(dist) // return the actual distance, not the squared distance\n\t\treturn this.isClosed && this.isFilled && pointInPolygon(nearest, this.vertices) ? -dist : dist\n\t}\n\n\thitTestLineSegment(A: VecLike, B: VecLike, distance = 0, filters?: Geometry2dFilters): boolean {\n\t\treturn this.distanceToLineSegment(A, B, filters) <= distance\n\t}\n\n\tintersectLineSegment(A: VecLike, B: VecLike, _filters?: Geometry2dFilters): VecLike[] {\n\t\tconst intersections = this.isClosed\n\t\t\t? intersectLineSegmentPolygon(A, B, this.vertices)\n\t\t\t: intersectLineSegmentPolyline(A, B, this.vertices)\n\n\t\treturn intersections ?? []\n\t}\n\n\tintersectCircle(center: VecLike, radius: number, _filters?: Geometry2dFilters): VecLike[] {\n\t\tconst intersections = this.isClosed\n\t\t\t? intersectCirclePolygon(center, radius, this.vertices)\n\t\t\t: intersectCirclePolyline(center, radius, this.vertices)\n\n\t\treturn intersections ?? []\n\t}\n\n\tintersectPolygon(polygon: VecLike[], _filters?: Geometry2dFilters): VecLike[] {\n\t\treturn intersectPolys(polygon, this.vertices, true, this.isClosed)\n\t}\n\n\tintersectPolyline(polyline: VecLike[], _filters?: Geometry2dFilters): VecLike[] {\n\t\treturn intersectPolys(polyline, this.vertices, false, this.isClosed)\n\t}\n\n\t/**\n\t * Find a point along the edge of the geometry that is a fraction `t` along the entire way round.\n\t */\n\tinterpolateAlongEdge(t: number, _filters?: Geometry2dFilters): Vec {\n\t\tconst { vertices } = this\n\n\t\tif (vertices.length === 0) return new Vec(0, 0)\n\t\tif (vertices.length === 1) return vertices[0]\n\t\tif (t <= 0) return vertices[0]\n\n\t\tconst distanceToTravel = t * this.length\n\t\tlet distanceTraveled = 0\n\n\t\tfor (let i = 0; i < (this.isClosed ? vertices.length : vertices.length - 1); i++) {\n\t\t\tconst curr = vertices[i]\n\t\t\tconst next = vertices[(i + 1) % vertices.length]\n\t\t\tconst dist = Vec.Dist(curr, next)\n\t\t\tconst newDistanceTraveled = distanceTraveled + dist\n\t\t\tif (newDistanceTraveled >= distanceToTravel) {\n\t\t\t\tif (dist === 0) return curr\n\t\t\t\tconst p = Vec.Lrp(\n\t\t\t\t\tcurr,\n\t\t\t\t\tnext,\n\t\t\t\t\tinvLerp(distanceTraveled, newDistanceTraveled, distanceToTravel)\n\t\t\t\t)\n\t\t\t\treturn p\n\t\t\t}\n\t\t\tdistanceTraveled = newDistanceTraveled\n\t\t}\n\n\t\treturn this.isClosed ? vertices[0] : vertices[vertices.length - 1]\n\t}\n\n\t/**\n\t * Take `point`, find the closest point to it on the edge of the geometry, and return how far\n\t * along the edge it is as a fraction of the total length.\n\t */\n\tuninterpolateAlongEdge(point: VecLike, _filters?: Geometry2dFilters): number {\n\t\tconst { vertices, length } = this\n\t\tlet closestSegment = null\n\t\tlet closestDistance = Infinity\n\t\tlet distanceTraveled = 0\n\n\t\tif (vertices.length === 0 || vertices.length === 1) return 0\n\n\t\tfor (let i = 0; i < (this.isClosed ? vertices.length : vertices.length - 1); i++) {\n\t\t\tconst curr = vertices[i]\n\t\t\tconst next = vertices[(i + 1) % vertices.length]\n\n\t\t\tconst nearestPoint = Vec.NearestPointOnLineSegment(curr, next, point, true)\n\t\t\tconst distance = Vec.Dist(nearestPoint, point)\n\n\t\t\tif (distance < closestDistance) {\n\t\t\t\tclosestDistance = distance\n\t\t\t\tclosestSegment = {\n\t\t\t\t\tstart: curr,\n\t\t\t\t\tend: next,\n\t\t\t\t\tnearestPoint,\n\t\t\t\t\tdistanceToStart: distanceTraveled,\n\t\t\t\t}\n\t\t\t}\n\n\t\t\tdistanceTraveled += Vec.Dist(curr, next)\n\t\t}\n\n\t\tassert(closestSegment)\n\n\t\tconst distanceAlongRoute =\n\t\t\tclosestSegment.distanceToStart + Vec.Dist(closestSegment.start, closestSegment.nearestPoint)\n\n\t\treturn length === 0 ? 0 : distanceAlongRoute / length\n\t}\n\n\tisPointInBounds(point: VecLike, margin = 0) {\n\t\tconst { bounds } = this\n\t\treturn !(\n\t\t\tpoint.x < bounds.minX - margin ||\n\t\t\tpoint.y < bounds.minY - margin ||\n\t\t\tpoint.x > bounds.maxX + margin ||\n\t\t\tpoint.y > bounds.maxY + margin\n\t\t)\n\t}\n\n\toverlapsPolygon(_polygon: VecLike[]): boolean {\n\t\tconst polygon = _polygon.map((v) => Vec.From(v))\n\n\t\t// Otherwise, check if the geometry itself overlaps the polygon\n\t\tconst { vertices, center, isFilled, isEmptyLabel, isClosed } = this\n\n\t\t// We'll do things in order of cheapest to most expensive checks\n\n\t\t// Skip empty labels\n\t\tif (isEmptyLabel) return false\n\n\t\t// If any of the geometry's vertices are inside the polygon, it's inside\n\t\tif (vertices.some((v) => pointInPolygon(v, polygon))) {\n\t\t\treturn true\n\t\t}\n\n\t\t// If the geometry is filled and closed and its center is inside the polygon, it's inside\n\t\tif (isClosed) {\n\t\t\tif (isFilled) {\n\t\t\t\t// If closed and filled, check if the center is inside the polygon\n\t\t\t\tif (pointInPolygon(center, polygon)) {\n\t\t\t\t\treturn true\n\t\t\t\t}\n\n\t\t\t\t// ..then, slightly more expensive check, see the geometry covers the entire polygon but not its center\n\t\t\t\tif (polygon.every((v) => pointInPolygon(v, vertices))) {\n\t\t\t\t\treturn true\n\t\t\t\t}\n\t\t\t}\n\n\t\t\t// If any the geometry's vertices intersect the edge of the polygon, it's inside.\n\t\t\t// for example when a rotated rectangle is moved over the corner of a parent rectangle\n\t\t\t// If the geometry is closed, intersect as a polygon\n\t\t\tif (polygonsIntersect(polygon, vertices)) {\n\t\t\t\treturn true\n\t\t\t}\n\t\t} else {\n\t\t\t// If the geometry is not closed, intersect as a polyline\n\t\t\tif (polygonIntersectsPolyline(polygon, vertices)) {\n\t\t\t\treturn true\n\t\t\t}\n\t\t}\n\n\t\t// If none of the above checks passed, the geometry is outside the polygon\n\t\treturn false\n\t}\n\n\ttransform(transform: MatModel, opts?: TransformedGeometry2dOptions): Geometry2d {\n\t\treturn new TransformedGeometry2d(this, transform, opts)\n\t}\n\n\tprivate _vertices: Vec[] | undefined\n\n\t// eslint-disable-next-line tldraw/no-setter-getter\n\tget vertices(): Vec[] {\n\t\tif (!this._vertices) {\n\t\t\tthis._vertices = this.getVertices(Geometry2dFilters.EXCLUDE_LABELS)\n\t\t}\n\n\t\treturn this._vertices\n\t}\n\n\tgetBoundsVertices(): Vec[] {\n\t\tif (this.excludeFromShapeBounds) return []\n\t\treturn this.vertices\n\t}\n\n\tprivate _boundsVertices: Vec[] | undefined\n\n\t// eslint-disable-next-line tldraw/no-setter-getter\n\tget boundsVertices(): Vec[] {\n\t\tif (!this._boundsVertices) {\n\t\t\tthis._boundsVertices = this.getBoundsVertices()\n\t\t}\n\t\treturn this._boundsVertices\n\t}\n\n\tgetBounds() {\n\t\treturn Box.FromPoints(this.boundsVertices)\n\t}\n\n\tprivate _bounds: Box | undefined\n\n\t// eslint-disable-next-line tldraw/no-setter-getter\n\tget bounds(): Box {\n\t\tif (!this._bounds) {\n\t\t\tthis._bounds = this.getBounds()\n\t\t}\n\t\treturn this._bounds\n\t}\n\n\t// eslint-disable-next-line tldraw/no-setter-getter\n\tget center() {\n\t\treturn this.bounds.center\n\t}\n\n\tprivate _area: number | undefined\n\n\t// eslint-disable-next-line tldraw/no-setter-getter\n\tget area() {\n\t\tif (!this._area) {\n\t\t\tthis._area = this.getArea()\n\t\t}\n\t\treturn this._area\n\t}\n\n\tgetArea() {\n\t\tif (!this.isClosed) {\n\t\t\treturn 0\n\t\t}\n\t\tconst { vertices } = this\n\t\tlet area = 0\n\t\tfor (let i = 0, n = vertices.length; i < n; i++) {\n\t\t\tconst curr = vertices[i]\n\t\t\tconst next = vertices[(i + 1) % n]\n\t\t\tarea += curr.x * next.y - next.x * curr.y\n\t\t}\n\t\treturn area / 2\n\t}\n\n\ttoSimpleSvgPath() {\n\t\tlet path = ''\n\n\t\tconst { vertices } = this\n\t\tconst n = vertices.length\n\n\t\tif (n === 0) return path\n\n\t\tpath += `M${vertices[0].x},${vertices[0].y}`\n\n\t\tfor (let i = 1; i < n; i++) {\n\t\t\tpath += `L${vertices[i].x},${vertices[i].y}`\n\t\t}\n\n\t\tif (this.isClosed) {\n\t\t\tpath += 'Z'\n\t\t}\n\n\t\treturn path\n\t}\n\n\tprivate _length?: number\n\n\t// eslint-disable-next-line tldraw/no-setter-getter\n\tget length() {\n\t\tif (this._length) return this._length\n\t\tthis._length = this.getLength(Geometry2dFilters.EXCLUDE_LABELS)\n\t\treturn this._length\n\t}\n\n\tgetLength(_filters?: Geometry2dFilters) {\n\t\tconst vertices = this.getVertices(_filters ?? Geometry2dFilters.EXCLUDE_LABELS)\n\t\tif (vertices.length === 0) return 0\n\t\tlet prev = vertices[0]\n\t\tlet length = 0\n\t\tfor (let i = 1; i < vertices.length; i++) {\n\t\t\tconst next = vertices[i]\n\t\t\tlength += Vec.Dist(prev, next)\n\t\t\tprev = next\n\t\t}\n\t\tif (this.isClosed) {\n\t\t\tlength += Vec.Dist(vertices[vertices.length - 1], vertices[0])\n\t\t}\n\t\treturn length\n\t}\n\n\t/**",
+        "detail": {
+          "unitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__Geometry2d#class:Geometry2d",
+          "fileId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__Geometry2d",
+          "unitKind": "class",
+          "name": "Geometry2d",
+          "qualifiedName": "Geometry2d",
+          "parentUnitId": null,
+          "startLine": 59,
+          "endLine": 424,
+          "signature": "export abstract class Geometry2d",
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": true,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [
+            {
+              "name": "isFilled",
+              "kind": "property",
+              "type": "boolean",
+              "default": "false",
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "isClosed",
+              "kind": "property",
+              "type": "boolean",
+              "default": "true",
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "isLabel",
+              "kind": "property",
+              "type": "boolean",
+              "default": "false",
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "isEmptyLabel",
+              "kind": "property",
+              "type": "boolean",
+              "default": "false",
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "isInternal",
+              "kind": "property",
+              "type": "boolean",
+              "default": "false",
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "excludeFromShapeBounds",
+              "kind": "property",
+              "type": "boolean",
+              "default": "false",
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "debugColor",
+              "kind": "property",
+              "type": "string | undefined",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "ignore",
+              "kind": "property",
+              "type": "boolean | undefined",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "_vertices",
+              "kind": "property",
+              "type": "Vec[] | undefined",
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "_boundsVertices",
+              "kind": "property",
+              "type": "Vec[] | undefined",
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "_bounds",
+              "kind": "property",
+              "type": "Box | undefined",
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "_area",
+              "kind": "property",
+              "type": "number | undefined",
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "_length",
+              "kind": "property",
+              "type": "number | undefined",
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "constructor",
+              "kind": "constructor",
+              "type": "(opts: Geometry2dOptions)",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "getVertices",
+              "kind": "abstract method",
+              "type": "(filters: Geometry2dFilters) => Vec[]",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "nearestPoint",
+              "kind": "abstract method",
+              "type": "(point: VecLike, _filters?: Geometry2dFilters) => Vec",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "isExcludedByFilter",
+              "kind": "method",
+              "type": "(filters?: Geometry2dFilters) => boolean",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "hitTestPoint",
+              "kind": "method",
+              "type": "(point: VecLike, margin?: number, hitInside?: boolean, _filters?: Geometry2dFilters) => boolean",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "distanceToPoint",
+              "kind": "method",
+              "type": "(point: VecLike, hitInside?: boolean, filters?: Geometry2dFilters) => number",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "distanceToLineSegment",
+              "kind": "method",
+              "type": "(A: VecLike, B: VecLike, filters?: Geometry2dFilters) => number",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "hitTestLineSegment",
+              "kind": "method",
+              "type": "(A: VecLike, B: VecLike, distance?: number, filters?: Geometry2dFilters) => boolean",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "intersectLineSegment",
+              "kind": "method",
+              "type": "(A: VecLike, B: VecLike, _filters?: Geometry2dFilters) => VecLike[]",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "intersectCircle",
+              "kind": "method",
+              "type": "(center: VecLike, radius: number, _filters?: Geometry2dFilters) => VecLike[]",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "intersectPolygon",
+              "kind": "method",
+              "type": "(polygon: VecLike[], _filters?: Geometry2dFilters) => VecLike[]",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "intersectPolyline",
+              "kind": "method",
+              "type": "(polyline: VecLike[], _filters?: Geometry2dFilters) => VecLike[]",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "interpolateAlongEdge",
+              "kind": "method",
+              "type": "(t: number, _filters?: Geometry2dFilters) => Vec",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "uninterpolateAlongEdge",
+              "kind": "method",
+              "type": "(point: VecLike, _filters?: Geometry2dFilters) => number",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "isPointInBounds",
+              "kind": "method",
+              "type": "(point: VecLike, margin?: number) => boolean",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "overlapsPolygon",
+              "kind": "method",
+              "type": "(_polygon: VecLike[]) => boolean",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "transform",
+              "kind": "method",
+              "type": "(transform: MatModel, opts?: TransformedGeometry2dOptions) => Geometry2d",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "vertices",
+              "kind": "getter",
+              "type": "Vec[]",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "getBoundsVertices",
+              "kind": "method",
+              "type": "() => Vec[]",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "boundsVertices",
+              "kind": "getter",
+              "type": "Vec[]",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "getBounds",
+              "kind": "method",
+              "type": "() => Box",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "bounds",
+              "kind": "getter",
+              "type": "Box",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "center",
+              "kind": "getter",
+              "type": "Vec",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "area",
+              "kind": "getter",
+              "type": "number",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "getArea",
+              "kind": "method",
+              "type": "() => number",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "toSimpleSvgPath",
+              "kind": "method",
+              "type": "() => string",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "length",
+              "kind": "getter",
+              "type": "number",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "getLength",
+              "kind": "method",
+              "type": "(_filters?: Geometry2dFilters) => number",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            }
+          ],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Geometry2d is the abstract base contract for two-dimensional geometries, defining shared geometric state, vertex access, spatial queries, intersections, measurements, and transformations.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "0ad709858020306d3a5dc9fbde700e2d70f0fe5c75cf5f65302bfcdbff108f5a"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__Geometry2d.distanceToLineSegment#method:Geometry2d.distanceToLineSegment",
+        "unitKind": "method",
+        "name": "distanceToLineSegment",
+        "qualifiedName": "Geometry2d.distanceToLineSegment",
+        "parentUnitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__Geometry2d#class:Geometry2d",
+        "startLine": 114,
+        "endLine": 141,
+        "isBehavioral": true,
+        "source": "\t\t\t(this.isClosed && (this.isFilled || hitInside) && pointInPolygon(point, this.vertices)\n\t\t\t\t? -1\n\t\t\t\t: 1)\n\t\t)\n\t}\n\n\tdistanceToLineSegment(A: VecLike, B: VecLike, filters?: Geometry2dFilters) {\n\t\tif (Vec.Equals(A, B)) return this.distanceToPoint(A, false, filters)\n\t\tconst { vertices } = this\n\t\tif (vertices.length === 0) throw Error('nearest point not found')\n\t\tif (vertices.length === 1) return Vec.Dist(A, vertices[0])\n\t\tlet nearest: Vec | undefined\n\t\tlet dist = Infinity\n\t\tlet d: number, p: Vec, q: Vec\n\t\tconst nextLimit = this.isClosed ? vertices.length : vertices.length - 1\n\t\tfor (let i = 0; i < vertices.length; i++) {\n\t\t\tp = vertices[i]\n\t\t\tif (i < nextLimit) {\n\t\t\t\tconst next = vertices[(i + 1) % vertices.length]\n\t\t\t\tif (linesIntersect(A, B, p, next)) return 0\n\t\t\t}\n\t\t\tq = Vec.NearestPointOnLineSegment(A, B, p, true)\n\t\t\td = Vec.Dist2(p, q)\n\t\t\tif (d < dist) {\n\t\t\t\tdist = d\n\t\t\t\tnearest = q\n\t\t\t}\n\t\t}",
+        "detail": {
+          "unitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__Geometry2d.distanceToLineSegment#method:Geometry2d.distanceToLineSegment",
+          "fileId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__Geometry2d.distanceToLineSegment",
+          "unitKind": "method",
+          "name": "distanceToLineSegment",
+          "qualifiedName": "Geometry2d.distanceToLineSegment",
+          "parentUnitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__Geometry2d#class:Geometry2d",
+          "startLine": 114,
+          "endLine": 141,
+          "signature": "distanceToLineSegment(A: VecLike, B: VecLike, filters?: Geometry2dFilters)",
+          "parameters": [
+            { "name": "A", "type": "VecLike", "default": null, "optional": false, "variadic": false, "order": 0 },
+            { "name": "B", "type": "VecLike", "default": null, "optional": false, "variadic": false, "order": 1 },
+            {
+              "name": "filters",
+              "type": "Geometry2dFilters",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 2
+            }
+          ],
+          "returnType": "number",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["A and B are VecLike values.", "The geometry's vertices are available."],
+          "postconditions": [
+            "Returns a non-negative numeric distance on normal completion.",
+            "Returns 0 when the queried segment intersects a relevant geometry edge.",
+            "For a geometry with one vertex, returns the distance from A to that vertex."
+          ],
+          "invariants": [
+            "The smallest encountered squared distance is retained while iterating through geometry vertices.",
+            "Closed geometries test the closing edge from the final vertex to the first vertex; open geometries do not."
+          ],
+          "edgeCases": [
+            "When A equals B, delegates to distanceToPoint(A, false, filters).",
+            "When the geometry has no vertices, throws Error with message 'nearest point not found'.",
+            "When the geometry has exactly one vertex, returns Vec.Dist(A, vertices[0]) and does not use B.",
+            "When the segment intersects a tested geometry edge, returns 0 immediately.",
+            "When the geometry has multiple vertices and no edge intersection, returns the square root of the minimum squared distance from a geometry vertex to the queried segment."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["Error"],
+            "reverts": [],
+            "onInvalidInput": "Throws Error('nearest point not found') when the geometry has no vertices.",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "Vec.Equals", "source": "Vec", "kind": "external" },
+            { "name": "distanceToPoint", "source": "Geometry2d", "kind": "internal" },
+            { "name": "Vec.Dist", "source": "Vec", "kind": "external" },
+            { "name": "linesIntersect", "source": null, "kind": "external" },
+            { "name": "Vec.NearestPointOnLineSegment", "source": "Vec", "kind": "external" },
+            { "name": "Vec.Dist2", "source": "Vec", "kind": "external" }
+          ],
+          "symbolReferences": ["VecLike", "Geometry2dFilters", "Vec", "vertices", "isClosed"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Computes the distance from a geometry to the line segment defined by A and B. It returns zero when the segment intersects a geometry edge and throws when no nearest point can be determined for an empty geometry.",
+          "specLiterals": [
+            {
+              "kind": "error-message",
+              "value": "nearest point not found",
+              "role": "Error message thrown when the geometry has no vertices."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "distanceToLineSegment(A, B) is called.",
+              "then": "It throws an Error whose message is exactly 'nearest point not found'.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "distanceToLineSegment(A, B) is called.",
+              "then": "It returns Vec.Dist(A, V), regardless of the value of B.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "distanceToLineSegment(A, B) is called.",
+              "then": "It returns 0.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "494d5d50ace31ac9b1996867fa4d7067ea26706fe3304b019b6a919e66bef8cf"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__Geometry2d.interpolateAlongEdge#method:Geometry2d.interpolateAlongEdge",
+        "unitKind": "method",
+        "name": "interpolateAlongEdge",
+        "qualifiedName": "Geometry2d.interpolateAlongEdge",
+        "parentUnitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__Geometry2d#class:Geometry2d",
+        "startLine": 174,
+        "endLine": 200,
+        "isBehavioral": true,
+        "source": "\n\t/**\n\t * Find a point along the edge of the geometry that is a fraction `t` along the entire way round.\n\t */\n\tinterpolateAlongEdge(t: number, _filters?: Geometry2dFilters): Vec {\n\t\tconst { vertices } = this\n\n\t\tif (vertices.length === 0) return new Vec(0, 0)\n\t\tif (vertices.length === 1) return vertices[0]\n\t\tif (t <= 0) return vertices[0]\n\n\t\tconst distanceToTravel = t * this.length\n\t\tlet distanceTraveled = 0\n\n\t\tfor (let i = 0; i < (this.isClosed ? vertices.length : vertices.length - 1); i++) {\n\t\t\tconst curr = vertices[i]\n\t\t\tconst next = vertices[(i + 1) % vertices.length]\n\t\t\tconst dist = Vec.Dist(curr, next)\n\t\t\tconst newDistanceTraveled = distanceTraveled + dist\n\t\t\tif (newDistanceTraveled >= distanceToTravel) {\n\t\t\t\tif (dist === 0) return curr\n\t\t\t\tconst p = Vec.Lrp(\n\t\t\t\t\tcurr,\n\t\t\t\t\tnext,\n\t\t\t\t\tinvLerp(distanceTraveled, newDistanceTraveled, distanceToTravel)\n\t\t\t\t)\n\t\t\t\treturn p",
+        "detail": {
+          "unitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__Geometry2d.interpolateAlongEdge#method:Geometry2d.interpolateAlongEdge",
+          "fileId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__Geometry2d.interpolateAlongEdge",
+          "unitKind": "method",
+          "name": "interpolateAlongEdge",
+          "qualifiedName": "Geometry2d.interpolateAlongEdge",
+          "parentUnitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__Geometry2d#class:Geometry2d",
+          "startLine": 174,
+          "endLine": 200,
+          "signature": "interpolateAlongEdge(t: number, _filters?: Geometry2dFilters): Vec",
+          "parameters": [
+            { "name": "t", "type": "number", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "_filters",
+              "type": "Geometry2dFilters",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "Vec",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["The geometry's vertices and length are available."],
+          "postconditions": [
+            "Returns a Vec representing the interpolated point along the geometry edge.",
+            "For a non-degenerate geometry and a traversed edge of non-zero length, the returned point is linearly interpolated between that edge's endpoints."
+          ],
+          "invariants": [
+            "Traversal follows vertex order.",
+            "For closed geometry, traversal includes the segment from the final vertex back to the first vertex.",
+            "For open geometry, traversal stops at the final vertex and does not add a closing segment.",
+            "The optional _filters argument does not affect the result."
+          ],
+          "edgeCases": [
+            "If the geometry has no vertices, returns a new Vec(0, 0).",
+            "If the geometry has exactly one vertex, returns that vertex.",
+            "If t is less than or equal to 0, returns the first vertex.",
+            "If the requested distance falls on an edge with zero length, returns that edge's current vertex.",
+            "If the requested distance falls within an edge, returns the linear interpolation between the edge's endpoints.",
+            "If traversal reaches the end without selecting an edge, returns the final vertex."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "Vec.Dist", "source": "Vec", "kind": "internal" },
+            { "name": "Vec.Lrp", "source": "Vec", "kind": "internal" },
+            { "name": "invLerp", "source": null, "kind": "internal" }
+          ],
+          "symbolReferences": ["Vec", "Geometry2dFilters"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Returns the point located at fraction t of the geometry's edge traversal. Empty and degenerate geometries, boundary fractions, and distances spanning individual edges are handled deterministically.",
+          "specLiterals": [
+            {
+              "kind": "magic-number",
+              "value": "0",
+              "role": "Defines the empty-geometry return coordinates and the non-positive interpolation boundary."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "interpolateAlongEdge(0.5) is called.",
+              "then": "The result is the midpoint Vec(5, 0).",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "interpolateAlongEdge(0.5) is called.",
+              "then": "The result is a new Vec(0, 0).",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "interpolateAlongEdge(0) or interpolateAlongEdge(-1) is called.",
+              "then": "The result is the first vertex Vec(0, 0).",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "584ad4876e5f79d42cf0d50250417c738f900b8949802641c3e9f070ef462f3e"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__Geometry2d.uninterpolateAlongEdge#method:Geometry2d.uninterpolateAlongEdge",
+        "unitKind": "method",
+        "name": "uninterpolateAlongEdge",
+        "qualifiedName": "Geometry2d.uninterpolateAlongEdge",
+        "parentUnitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__Geometry2d#class:Geometry2d",
+        "startLine": 206,
+        "endLine": 240,
+        "isBehavioral": true,
+        "source": "\t}\n\n\t/**\n\t * Take `point`, find the closest point to it on the edge of the geometry, and return how far\n\t * along the edge it is as a fraction of the total length.\n\t */\n\tuninterpolateAlongEdge(point: VecLike, _filters?: Geometry2dFilters): number {\n\t\tconst { vertices, length } = this\n\t\tlet closestSegment = null\n\t\tlet closestDistance = Infinity\n\t\tlet distanceTraveled = 0\n\n\t\tif (vertices.length === 0 || vertices.length === 1) return 0\n\n\t\tfor (let i = 0; i < (this.isClosed ? vertices.length : vertices.length - 1); i++) {\n\t\t\tconst curr = vertices[i]\n\t\t\tconst next = vertices[(i + 1) % vertices.length]\n\n\t\t\tconst nearestPoint = Vec.NearestPointOnLineSegment(curr, next, point, true)\n\t\t\tconst distance = Vec.Dist(nearestPoint, point)\n\n\t\t\tif (distance < closestDistance) {\n\t\t\t\tclosestDistance = distance\n\t\t\t\tclosestSegment = {\n\t\t\t\t\tstart: curr,\n\t\t\t\t\tend: next,\n\t\t\t\t\tnearestPoint,\n\t\t\t\t\tdistanceToStart: distanceTraveled,\n\t\t\t\t}\n\t\t\t}\n\n\t\t\tdistanceTraveled += Vec.Dist(curr, next)\n\t\t}\n\n\t\tassert(closestSegment)",
+        "detail": {
+          "unitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__Geometry2d.uninterpolateAlongEdge#method:Geometry2d.uninterpolateAlongEdge",
+          "fileId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__Geometry2d.uninterpolateAlongEdge",
+          "unitKind": "method",
+          "name": "uninterpolateAlongEdge",
+          "qualifiedName": "Geometry2d.uninterpolateAlongEdge",
+          "parentUnitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__Geometry2d#class:Geometry2d",
+          "startLine": 206,
+          "endLine": 240,
+          "signature": "uninterpolateAlongEdge(point: VecLike, _filters?: Geometry2dFilters): number",
+          "parameters": [
+            { "name": "point", "type": "VecLike", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "_filters",
+              "type": "Geometry2dFilters",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "number",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["The point is a VecLike value.", "The geometry's vertices and length are available."],
+          "postconditions": [
+            "For a geometry with zero or one vertex, returns 0.",
+            "For a geometry with at least two vertices, returns the nearest point's distance along the traversed edge path divided by the geometry length.",
+            "The nearest point considered on each segment is constrained to that segment."
+          ],
+          "invariants": [
+            "Open geometries traverse only consecutive vertex segments.",
+            "Closed geometries also traverse the segment from the final vertex back to the first vertex.",
+            "The first segment encountered is retained when multiple segments have equal nearest distance."
+          ],
+          "edgeCases": [
+            "Zero vertices: returns 0.",
+            "One vertex: returns 0.",
+            "Closed geometry: includes the closing segment between the last and first vertices.",
+            "Open geometry: excludes the closing segment.",
+            "A point outside a segment is evaluated against the closest point constrained to the segment.",
+            "The optional filters argument does not affect the calculation in this method."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [
+              "AssertionError if no closest segment exists after processing a geometry expected to have at least two vertices."
+            ],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "Vec.NearestPointOnLineSegment", "source": "Vec", "kind": "external" },
+            { "name": "Vec.Dist", "source": "Vec", "kind": "external" },
+            { "name": "assert", "source": null, "kind": "external" }
+          ],
+          "symbolReferences": ["VecLike", "Geometry2dFilters", "Vec"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Returns the fractional position along the geometry edge that is nearest to the supplied point. Empty and single-vertex geometries return zero.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "uninterpolateAlongEdge(point) is called",
+              "then": "The result is 0.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "uninterpolateAlongEdge(point) is called",
+              "then": "The result equals the distance from the path start to the nearest point divided by the geometry's total length.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "uninterpolateAlongEdge(point) is called",
+              "then": "The closing segment is considered and its corresponding fractional position is returned.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "ce3f6205d351f777703ace2a5cb16cb13164ea3603db1b3bab6df01bb762d941"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__Geometry2d.overlapsPolygon#method:Geometry2d.overlapsPolygon",
+        "unitKind": "method",
+        "name": "overlapsPolygon",
+        "qualifiedName": "Geometry2d.overlapsPolygon",
+        "parentUnitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__Geometry2d#class:Geometry2d",
+        "startLine": 252,
+        "endLine": 290,
+        "isBehavioral": true,
+        "source": "\t\t\tpoint.y < bounds.minY - margin ||\n\t\t\tpoint.x > bounds.maxX + margin ||\n\t\t\tpoint.y > bounds.maxY + margin\n\t\t)\n\t}\n\n\toverlapsPolygon(_polygon: VecLike[]): boolean {\n\t\tconst polygon = _polygon.map((v) => Vec.From(v))\n\n\t\t// Otherwise, check if the geometry itself overlaps the polygon\n\t\tconst { vertices, center, isFilled, isEmptyLabel, isClosed } = this\n\n\t\t// We'll do things in order of cheapest to most expensive checks\n\n\t\t// Skip empty labels\n\t\tif (isEmptyLabel) return false\n\n\t\t// If any of the geometry's vertices are inside the polygon, it's inside\n\t\tif (vertices.some((v) => pointInPolygon(v, polygon))) {\n\t\t\treturn true\n\t\t}\n\n\t\t// If the geometry is filled and closed and its center is inside the polygon, it's inside\n\t\tif (isClosed) {\n\t\t\tif (isFilled) {\n\t\t\t\t// If closed and filled, check if the center is inside the polygon\n\t\t\t\tif (pointInPolygon(center, polygon)) {\n\t\t\t\t\treturn true\n\t\t\t\t}\n\n\t\t\t\t// ..then, slightly more expensive check, see the geometry covers the entire polygon but not its center\n\t\t\t\tif (polygon.every((v) => pointInPolygon(v, vertices))) {\n\t\t\t\t\treturn true\n\t\t\t\t}\n\t\t\t}\n\n\t\t\t// If any the geometry's vertices intersect the edge of the polygon, it's inside.\n\t\t\t// for example when a rotated rectangle is moved over the corner of a parent rectangle\n\t\t\t// If the geometry is closed, intersect as a polygon",
+        "detail": {
+          "unitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__Geometry2d.overlapsPolygon#method:Geometry2d.overlapsPolygon",
+          "fileId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__Geometry2d.overlapsPolygon",
+          "unitKind": "method",
+          "name": "overlapsPolygon",
+          "qualifiedName": "Geometry2d.overlapsPolygon",
+          "parentUnitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__Geometry2d#class:Geometry2d",
+          "startLine": 252,
+          "endLine": 290,
+          "signature": "overlapsPolygon(_polygon: VecLike[]): boolean",
+          "parameters": [
+            {
+              "name": "_polygon",
+              "type": "VecLike[]",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "boolean",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["The argument is an array of polygon vertices representable as VecLike values."],
+          "postconditions": [
+            "Returns true when the geometry overlaps the polygon according to vertex containment, center containment, polygon containment, or boundary intersection checks.",
+            "Returns false when none of the overlap checks succeed."
+          ],
+          "invariants": [
+            "The input polygon vertices are converted to Vec instances before geometric checks.",
+            "The geometry's empty-label status is evaluated before other overlap checks."
+          ],
+          "edgeCases": [
+            "If the geometry is marked as an empty label, returns false without reporting an overlap.",
+            "If any geometry vertex lies inside the supplied polygon, returns true.",
+            "If the geometry is closed and filled and its center lies inside the supplied polygon, returns true.",
+            "If the geometry is closed and filled and every supplied polygon vertex lies inside the geometry polygon, returns true even when the geometry center is outside the supplied polygon.",
+            "If a closed geometry has a vertex intersecting an edge of the supplied polygon, reports an overlap.",
+            "For inputs that do not satisfy any overlap condition, returns false."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "Vec.From", "source": "Vec", "kind": "internal" },
+            { "name": "pointInPolygon", "source": null, "kind": "external" }
+          ],
+          "symbolReferences": ["VecLike", "Vec", "pointInPolygon"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Determines whether this geometry overlaps the supplied polygon. Empty-label geometries do not overlap, while filled or closed geometry can overlap through contained points, containment, or boundary intersection.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "overlapsPolygon is called.",
+              "then": "The result is false.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "overlapsPolygon is called.",
+              "then": "The result is true.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "overlapsPolygon is called.",
+              "then": "The result is true.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "11da2ae9e6d3d5db47b5e1b4cad07648b43b12ac65d15a2f59e649619144539e"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__Geometry2d.getArea#method:Geometry2d.getArea",
+        "unitKind": "method",
+        "name": "getArea",
+        "qualifiedName": "Geometry2d.getArea",
+        "parentUnitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__Geometry2d#class:Geometry2d",
+        "startLine": 352,
+        "endLine": 364,
+        "isBehavioral": true,
+        "source": "\t}\n\n\tprivate _area: number | undefined\n\n\t// eslint-disable-next-line tldraw/no-setter-getter\n\tget area() {\n\t\tif (!this._area) {\n\t\t\tthis._area = this.getArea()\n\t\t}\n\t\treturn this._area\n\t}\n\n\tgetArea() {",
+        "detail": {
+          "unitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__Geometry2d.getArea#method:Geometry2d.getArea",
+          "fileId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__Geometry2d.getArea",
+          "unitKind": "method",
+          "name": "getArea",
+          "qualifiedName": "Geometry2d.getArea",
+          "parentUnitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__Geometry2d#class:Geometry2d",
+          "startLine": 352,
+          "endLine": 364,
+          "signature": "getArea()",
+          "parameters": [],
+          "returnType": "number",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": ["Returns a number representing the geometry's area."],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Returns the area represented by this geometry as a numeric value.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "42280ac03fd8e990c4c7d37ece679aad2e012db4693325b63ec111dc8a71e972"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__Geometry2d.toSimpleSvgPath#method:Geometry2d.toSimpleSvgPath",
+        "unitKind": "method",
+        "name": "toSimpleSvgPath",
+        "qualifiedName": "Geometry2d.toSimpleSvgPath",
+        "parentUnitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__Geometry2d#class:Geometry2d",
+        "startLine": 366,
+        "endLine": 386,
+        "isBehavioral": true,
+        "source": "\t\t\treturn 0\n\t\t}\n\t\tconst { vertices } = this\n\t\tlet area = 0\n\t\tfor (let i = 0, n = vertices.length; i < n; i++) {\n\t\t\tconst curr = vertices[i]\n\t\t\tconst next = vertices[(i + 1) % n]\n\t\t\tarea += curr.x * next.y - next.x * curr.y\n\t\t}\n\t\treturn area / 2\n\t}\n\n\ttoSimpleSvgPath() {\n\t\tlet path = ''\n\n\t\tconst { vertices } = this\n\t\tconst n = vertices.length\n\n\t\tif (n === 0) return path\n\n\t\tpath += `M${vertices[0].x},${vertices[0].y}`",
+        "detail": {
+          "unitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__Geometry2d.toSimpleSvgPath#method:Geometry2d.toSimpleSvgPath",
+          "fileId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__Geometry2d.toSimpleSvgPath",
+          "unitKind": "method",
+          "name": "toSimpleSvgPath",
+          "qualifiedName": "Geometry2d.toSimpleSvgPath",
+          "parentUnitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__Geometry2d#class:Geometry2d",
+          "startLine": 366,
+          "endLine": 386,
+          "signature": "toSimpleSvgPath()",
+          "parameters": [],
+          "returnType": "string",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The geometry's vertices are available as an ordered collection of points with numeric x and y coordinates."
+          ],
+          "postconditions": [
+            "Returns an SVG path beginning with the first vertex using an M command, followed by L commands for subsequent vertices, and ending with Z when at least one vertex exists.",
+            "Returns an empty string when there are no vertices.",
+            "Does not mutate the geometry or its vertices."
+          ],
+          "invariants": [
+            "Vertex coordinates are emitted in their existing order.",
+            "The path is closed for every non-empty geometry."
+          ],
+          "edgeCases": [
+            "Zero vertices produce an empty string.",
+            "One vertex produces a move command for that vertex followed by the path-close command.",
+            "Multiple vertices produce one move command followed by one line command per remaining vertex and then the path-close command.",
+            "Negative, fractional, or otherwise numeric coordinates are emitted using their string representations without geometric transformation."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["Geometry2d.vertices"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Returns a compact SVG path-data string: for non-empty vertices, `M{x0},{y0}L{x1},{y1}...L{xN},{yN}Z`; for empty vertices, `''`.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Returns the geometry's vertices as a simple closed SVG path string. An empty geometry produces an empty string.",
+          "specLiterals": [
+            { "kind": "format-string", "value": "M", "role": "SVG move-to command for the first vertex" },
+            { "kind": "format-string", "value": "L", "role": "SVG line-to command for each subsequent vertex" },
+            { "kind": "format-string", "value": "Z", "role": "SVG close-path command for non-empty geometries" }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "toSimpleSvgPath() is called.",
+              "then": "It returns `M0,0L10,0L10,5Z`.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "toSimpleSvgPath() is called.",
+              "then": "It returns the empty string.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "toSimpleSvgPath() is called.",
+              "then": "It returns `M-2.5,3.25Z`.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "6e505e8def0b1d01bc5326be3d5d7579ec46dc7b333ab27bcf8691b4ec36eb61"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__Geometry2d.getLength#method:Geometry2d.getLength",
+        "unitKind": "method",
+        "name": "getLength",
+        "qualifiedName": "Geometry2d.getLength",
+        "parentUnitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__Geometry2d#class:Geometry2d",
+        "startLine": 398,
+        "endLine": 413,
+        "isBehavioral": true,
+        "source": "\n\tprivate _length?: number\n\n\t// eslint-disable-next-line tldraw/no-setter-getter\n\tget length() {\n\t\tif (this._length) return this._length\n\t\tthis._length = this.getLength(Geometry2dFilters.EXCLUDE_LABELS)\n\t\treturn this._length\n\t}\n\n\tgetLength(_filters?: Geometry2dFilters) {\n\t\tconst vertices = this.getVertices(_filters ?? Geometry2dFilters.EXCLUDE_LABELS)\n\t\tif (vertices.length === 0) return 0\n\t\tlet prev = vertices[0]\n\t\tlet length = 0\n\t\tfor (let i = 1; i < vertices.length; i++) {",
+        "detail": {
+          "unitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__Geometry2d.getLength#method:Geometry2d.getLength",
+          "fileId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__Geometry2d.getLength",
+          "unitKind": "method",
+          "name": "getLength",
+          "qualifiedName": "Geometry2d.getLength",
+          "parentUnitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__Geometry2d#class:Geometry2d",
+          "startLine": 398,
+          "endLine": 413,
+          "signature": "getLength(_filters?: Geometry2dFilters)",
+          "parameters": [
+            {
+              "name": "_filters",
+              "type": "Geometry2dFilters",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "number",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["The geometry can provide a vertex list for the selected Geometry2dFilters value."],
+          "postconditions": ["Returns a numeric path length.", "Returns 0 when the filtered vertex list is empty."],
+          "invariants": [
+            "Length is accumulated from the ordered vertices returned by getVertices.",
+            "The supplied filter is replaced by Geometry2dFilters.EXCLUDE_LABELS when omitted."
+          ],
+          "edgeCases": [
+            "When _filters is omitted or undefined, vertices are requested with Geometry2dFilters.EXCLUDE_LABELS.",
+            "When the filtered vertex list is empty, returns 0 without measuring any segments.",
+            "When the vertex list contains one or more vertices, accumulates the distances between successive vertices."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "getVertices", "source": "Geometry2d", "kind": "internal" }],
+          "symbolReferences": ["Geometry2dFilters", "Geometry2dFilters.EXCLUDE_LABELS"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Computes the total length of the geometry's vertex path using the requested geometry filters. An empty filtered vertex set has length zero.",
+          "specLiterals": [
+            {
+              "kind": "enum-value",
+              "value": "EXCLUDE_LABELS",
+              "role": "Default filter used when no filter argument is supplied."
+            },
+            {
+              "kind": "magic-number",
+              "value": "0",
+              "role": "Returned for an empty vertex list and used as the initial accumulated length."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "getLength() is called.",
+              "then": "The method returns 0.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "4861e698df13a8264f77c7cc3fb3279271824bf4b96845a69c65f6821950c8e1"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__TransformedGeometry2d#class:TransformedGeometry2d",
+        "unitKind": "class",
+        "name": "TransformedGeometry2d",
+        "qualifiedName": "TransformedGeometry2d",
+        "parentUnitId": null,
+        "startLine": 432,
+        "endLine": 580,
+        "isBehavioral": true,
+        "source": "\tabstract getSvgPathData(first: boolean): string\n}\n\n// =================================================================================================\n// Because Geometry2d.transform depends on TransformedGeometry2d, we need to define it here instead\n// of in its own files. This prevents a circular import error.\n// =================================================================================================\n\n/** @public */\nexport class TransformedGeometry2d extends Geometry2d {\n\tprivate readonly inverse: MatModel\n\tprivate readonly decomposed\n\n\tconstructor(\n\t\tprivate readonly geometry: Geometry2d,\n\t\tprivate readonly matrix: MatModel,\n\t\topts?: TransformedGeometry2dOptions\n\t) {\n\t\tsuper(geometry)\n\t\tthis.inverse = Mat.Inverse(matrix)\n\t\tthis.decomposed = Mat.Decompose(matrix)\n\n\t\tif (opts) {\n\t\t\tif (opts.isLabel != null) this.isLabel = opts.isLabel\n\t\t\tif (opts.isInternal != null) this.isInternal = opts.isInternal\n\t\t\tif (opts.debugColor != null) this.debugColor = opts.debugColor\n\t\t\tif (opts.ignore != null) this.ignore = opts.ignore\n\t\t}\n\n\t\tassert(\n\t\t\tapproximately(this.decomposed.scaleX, this.decomposed.scaleY),\n\t\t\t'non-uniform scaling is not yet supported'\n\t\t)\n\t}\n\n\tgetVertices(filters: Geometry2dFilters): Vec[] {\n\t\treturn this.geometry.getVertices(filters).map((v) => Mat.applyToPoint(this.matrix, v))\n\t}\n\n\tgetBoundsVertices(): Vec[] {\n\t\treturn this.geometry.getBoundsVertices().map((v) => Mat.applyToPoint(this.matrix, v))\n\t}\n\n\tnearestPoint(point: VecLike, filters?: Geometry2dFilters): Vec {\n\t\treturn Mat.applyToPoint(\n\t\t\tthis.matrix,\n\t\t\tthis.geometry.nearestPoint(Mat.applyToPoint(this.inverse, point), filters)\n\t\t)\n\t}\n\n\toverride hitTestPoint(\n\t\tpoint: VecLike,\n\t\tmargin = 0,\n\t\thitInside?: boolean,\n\t\tfilters?: Geometry2dFilters\n\t): boolean {\n\t\treturn this.geometry.hitTestPoint(\n\t\t\tMat.applyToPoint(this.inverse, point),\n\t\t\tmargin / this.decomposed.scaleX,\n\t\t\thitInside,\n\t\t\tfilters\n\t\t)\n\t}\n\n\toverride distanceToPoint(point: VecLike, hitInside = false, filters?: Geometry2dFilters) {\n\t\treturn (\n\t\t\tthis.geometry.distanceToPoint(Mat.applyToPoint(this.inverse, point), hitInside, filters) *\n\t\t\tthis.decomposed.scaleX\n\t\t)\n\t}\n\n\toverride distanceToLineSegment(A: VecLike, B: VecLike, filters?: Geometry2dFilters) {\n\t\treturn (\n\t\t\tthis.geometry.distanceToLineSegment(\n\t\t\t\tMat.applyToPoint(this.inverse, A),\n\t\t\t\tMat.applyToPoint(this.inverse, B),\n\t\t\t\tfilters\n\t\t\t) * this.decomposed.scaleX\n\t\t)\n\t}\n\n\toverride hitTestLineSegment(\n\t\tA: VecLike,\n\t\tB: VecLike,\n\t\tdistance = 0,\n\t\tfilters?: Geometry2dFilters\n\t): boolean {\n\t\treturn this.geometry.hitTestLineSegment(\n\t\t\tMat.applyToPoint(this.inverse, A),\n\t\t\tMat.applyToPoint(this.inverse, B),\n\t\t\tdistance / this.decomposed.scaleX,\n\t\t\tfilters\n\t\t)\n\t}\n\n\toverride intersectLineSegment(A: VecLike, B: VecLike, filters?: Geometry2dFilters) {\n\t\treturn Mat.applyToPoints(\n\t\t\tthis.matrix,\n\t\t\tthis.geometry.intersectLineSegment(\n\t\t\t\tMat.applyToPoint(this.inverse, A),\n\t\t\t\tMat.applyToPoint(this.inverse, B),\n\t\t\t\tfilters\n\t\t\t)\n\t\t)\n\t}\n\n\toverride intersectCircle(center: VecLike, radius: number, filters?: Geometry2dFilters) {\n\t\treturn Mat.applyToPoints(\n\t\t\tthis.matrix,\n\t\t\tthis.geometry.intersectCircle(\n\t\t\t\tMat.applyToPoint(this.inverse, center),\n\t\t\t\tradius / this.decomposed.scaleX,\n\t\t\t\tfilters\n\t\t\t)\n\t\t)\n\t}\n\n\toverride intersectPolygon(polygon: VecLike[], filters?: Geometry2dFilters): VecLike[] {\n\t\treturn Mat.applyToPoints(\n\t\t\tthis.matrix,\n\t\t\tthis.geometry.intersectPolygon(Mat.applyToPoints(this.inverse, polygon), filters)\n\t\t)\n\t}\n\n\toverride intersectPolyline(polyline: VecLike[], filters?: Geometry2dFilters): VecLike[] {\n\t\treturn Mat.applyToPoints(\n\t\t\tthis.matrix,\n\t\t\tthis.geometry.intersectPolyline(Mat.applyToPoints(this.inverse, polyline), filters)\n\t\t)\n\t}\n\n\toverride ignoreHit(point: VecLike): boolean {\n\t\treturn this.geometry.ignoreHit(Mat.applyToPoint(this.inverse, point))\n\t}\n\n\toverride transform(transform: MatModel, opts?: TransformedGeometry2dOptions): Geometry2d {\n\t\treturn new TransformedGeometry2d(this.geometry, Mat.Multiply(transform, this.matrix), {\n\t\t\tisLabel: opts?.isLabel ?? this.isLabel,\n\t\t\tisInternal: opts?.isInternal ?? this.isInternal,\n\t\t\tdebugColor: opts?.debugColor ?? this.debugColor,\n\t\t\tignore: opts?.ignore ?? this.ignore,\n\t\t})\n\t}\n\n\tgetSvgPathData(): string {\n\t\tthrow new Error('Cannot get SVG path data for transformed geometry.')\n\t}\n}\n",
+        "detail": {
+          "unitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__TransformedGeometry2d#class:TransformedGeometry2d",
+          "fileId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__TransformedGeometry2d",
+          "unitKind": "class",
+          "name": "TransformedGeometry2d",
+          "qualifiedName": "TransformedGeometry2d",
+          "parentUnitId": null,
+          "startLine": 432,
+          "endLine": 580,
+          "signature": "export class TransformedGeometry2d extends Geometry2d",
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": ["Geometry2d"],
+          "implementsTypes": [],
+          "members": [
+            {
+              "name": "geometry",
+              "kind": "property",
+              "type": "Geometry2d",
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "matrix",
+              "kind": "property",
+              "type": "MatModel",
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "inverse",
+              "kind": "property",
+              "type": "MatModel",
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "decomposed",
+              "kind": "property",
+              "type": null,
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "constructor",
+              "kind": "constructor",
+              "type": "(geometry: Geometry2d, matrix: MatModel, opts?: TransformedGeometry2dOptions)",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "getVertices",
+              "kind": "method",
+              "type": "(filters: Geometry2dFilters): Vec[]",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "getBoundsVertices",
+              "kind": "method",
+              "type": "(): Vec[]",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "nearestPoint",
+              "kind": "method",
+              "type": "(point: VecLike, filters?: Geometry2dFilters): Vec",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "hitTestPoint",
+              "kind": "method",
+              "type": "(point: VecLike, margin?: number, hitInside?: boolean, filters?: Geometry2dFilters): boolean",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "distanceToPoint",
+              "kind": "method",
+              "type": "(point: VecLike, hitInside?: boolean, filters?: Geometry2dFilters)",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "distanceToLineSegment",
+              "kind": "method",
+              "type": "(A: VecLike, B: VecLike, filters?: Geometry2dFilters)",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "hitTestLineSegment",
+              "kind": "method",
+              "type": "(A: VecLike, B: VecLike, distance?: number, filters?: Geometry2dFilters): boolean",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "intersectLineSegment",
+              "kind": "method",
+              "type": "(A: VecLike, B: VecLike, filters?: Geometry2dFilters)",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "intersectCircle",
+              "kind": "method",
+              "type": "(center: VecLike, radius: number, filters?: Geometry2dFilters)",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "intersectPolygon",
+              "kind": "method",
+              "type": "(polygon: VecLike[], filters?: Geometry2dFilters): VecLike[]",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "intersectPolyline",
+              "kind": "method",
+              "type": "(polyline: VecLike[], filters?: Geometry2dFilters): VecLike[]",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "ignoreHit",
+              "kind": "method",
+              "type": "(point: VecLike): boolean",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "transform",
+              "kind": "method",
+              "type": "(transform: MatModel, opts?: TransformedGeometry2dOptions): Geometry2d",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "getSvgPathData",
+              "kind": "method",
+              "type": "(): string",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            }
+          ],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "A Geometry2d implementation that applies a matrix transformation to an underlying geometry while preserving the Geometry2d interface. It supports only approximately uniform scaling and carries selected geometry metadata through transformations.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "38cfc4f4ea8ec1de945d464fefd701b6ea515081654d1021a76bb62208ce4e16"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__TransformedGeometry2d.constructor#method:TransformedGeometry2d.constructor",
+        "unitKind": "method",
+        "name": "constructor",
+        "qualifiedName": "TransformedGeometry2d.constructor",
+        "parentUnitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__TransformedGeometry2d#class:TransformedGeometry2d",
+        "startLine": 436,
+        "endLine": 456,
+        "isBehavioral": true,
+        "source": "// Because Geometry2d.transform depends on TransformedGeometry2d, we need to define it here instead\n// of in its own files. This prevents a circular import error.\n// =================================================================================================\n\n/** @public */\nexport class TransformedGeometry2d extends Geometry2d {\n\tprivate readonly inverse: MatModel\n\tprivate readonly decomposed\n\n\tconstructor(\n\t\tprivate readonly geometry: Geometry2d,\n\t\tprivate readonly matrix: MatModel,\n\t\topts?: TransformedGeometry2dOptions\n\t) {\n\t\tsuper(geometry)\n\t\tthis.inverse = Mat.Inverse(matrix)\n\t\tthis.decomposed = Mat.Decompose(matrix)\n\n\t\tif (opts) {\n\t\t\tif (opts.isLabel != null) this.isLabel = opts.isLabel\n\t\t\tif (opts.isInternal != null) this.isInternal = opts.isInternal",
+        "detail": {
+          "unitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__TransformedGeometry2d.constructor#method:TransformedGeometry2d.constructor",
+          "fileId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__TransformedGeometry2d.constructor",
+          "unitKind": "method",
+          "name": "constructor",
+          "qualifiedName": "TransformedGeometry2d.constructor",
+          "parentUnitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__TransformedGeometry2d#class:TransformedGeometry2d",
+          "startLine": 436,
+          "endLine": 456,
+          "signature": "constructor(\n\t\tprivate readonly geometry: Geometry2d,\n\t\tprivate readonly matrix: MatModel,\n\t\topts?: TransformedGeometry2dOptions\n\t)",
+          "parameters": [
+            {
+              "name": "geometry",
+              "type": "Geometry2d",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            { "name": "matrix", "type": "MatModel", "default": null, "optional": false, "variadic": false, "order": 1 },
+            {
+              "name": "opts",
+              "type": "TransformedGeometry2dOptions",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 2
+            }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "geometry is a Geometry2d instance.",
+            "matrix is a valid MatModel accepted by Mat.Inverse and Mat.Decompose."
+          ],
+          "postconditions": [
+            "The base Geometry2d state is initialized from geometry.",
+            "The readonly geometry and matrix references are assigned.",
+            "inverse contains Mat.Inverse(matrix).",
+            "decomposed contains Mat.Decompose(matrix).",
+            "If opts.isLabel is not null, the instance isLabel value equals opts.isLabel.",
+            "If opts.isInternal is not null, the instance isInternal value equals opts.isInternal."
+          ],
+          "invariants": [
+            "The geometry, matrix, inverse, and decomposed fields remain unchanged after construction.",
+            "Optional flags are only overridden when their corresponding option is not null or undefined."
+          ],
+          "edgeCases": [
+            "When opts is omitted, no optional flags are overridden.",
+            "When opts is provided with isLabel or isInternal equal to null, the corresponding inherited flag retains its existing value.",
+            "When opts contains only one supported flag, only that flag is overridden.",
+            "An invalid matrix causes construction to fail according to Mat.Inverse or Mat.Decompose rather than producing a transformed geometry."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["Any error thrown by the Geometry2d base constructor, Mat.Inverse, or Mat.Decompose."],
+            "reverts": [],
+            "onInvalidInput": "Construction fails if the geometry or matrix cannot be processed by the base constructor or matrix utilities.",
+            "returnsOnError": null
+          },
+          "stateMutations": [
+            "Initializes inherited Geometry2d state from geometry.",
+            "Assigns readonly geometry.",
+            "Assigns readonly matrix.",
+            "Assigns readonly inverse from Mat.Inverse(matrix).",
+            "Assigns readonly decomposed from Mat.Decompose(matrix).",
+            "May assign inherited isLabel and isInternal from non-null option values."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "super", "source": "Geometry2d", "kind": "internal" },
+            { "name": "Mat.Inverse", "source": "Mat", "kind": "external" },
+            { "name": "Mat.Decompose", "source": "Mat", "kind": "external" }
+          ],
+          "symbolReferences": ["Geometry2d", "MatModel", "TransformedGeometry2dOptions", "Mat"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Constructs a transformed geometry wrapper from a source geometry and transformation matrix, preparing the inverse and decomposed matrix needed by later operations. Optional label and internal-state flags are applied when provided.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "7e649237b60cc1a7fb2b8e22a0bd42ae7504ebe3c9a034129a1f2561b6cea632"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__TransformedGeometry2d.nearestPoint#method:TransformedGeometry2d.nearestPoint",
+        "unitKind": "method",
+        "name": "nearestPoint",
+        "qualifiedName": "TransformedGeometry2d.nearestPoint",
+        "parentUnitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__TransformedGeometry2d#class:TransformedGeometry2d",
+        "startLine": 466,
+        "endLine": 472,
+        "isBehavioral": true,
+        "source": "\n\tgetVertices(filters: Geometry2dFilters): Vec[] {\n\t\treturn this.geometry.getVertices(filters).map((v) => Mat.applyToPoint(this.matrix, v))\n\t}\n\n\tgetBoundsVertices(): Vec[] {\n\t\treturn this.geometry.getBoundsVertices().map((v) => Mat.applyToPoint(this.matrix, v))",
+        "detail": {
+          "unitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__TransformedGeometry2d.nearestPoint#method:TransformedGeometry2d.nearestPoint",
+          "fileId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__TransformedGeometry2d.nearestPoint",
+          "unitKind": "method",
+          "name": "nearestPoint",
+          "qualifiedName": "TransformedGeometry2d.nearestPoint",
+          "parentUnitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__TransformedGeometry2d#class:TransformedGeometry2d",
+          "startLine": 466,
+          "endLine": 472,
+          "signature": "nearestPoint(point: Vec, hitInside?: boolean): Vec",
+          "parameters": [
+            { "name": "point", "type": "Vec", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "hitInside",
+              "type": "boolean",
+              "default": "false",
+              "optional": true,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "Vec",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The supplied point is a finite Vec.",
+            "The transformation matrix is invertible for the coordinate conversion."
+          ],
+          "postconditions": [
+            "Returns a Vec representing the nearest point on the transformed geometry.",
+            "The result is in transformed/world coordinate space.",
+            "The hitInside option is forwarded to the underlying geometry nearest-point calculation."
+          ],
+          "invariants": [
+            "Nearest-point computation is performed in the underlying geometry's local coordinate space and transformed back to the caller's coordinate space.",
+            "The transformation matrix is applied consistently to the returned point."
+          ],
+          "edgeCases": [
+            "When hitInside is omitted, the underlying nearest-point calculation uses false.",
+            "When hitInside is true, a point inside the geometry may be returned according to the underlying geometry's hit-inside semantics.",
+            "Points outside the geometry are converted to local space, evaluated against the underlying geometry, and converted back to transformed space."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Behavior for non-finite points or a non-invertible transformation is delegated to the matrix and underlying geometry operations.",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "Mat.Inverse", "source": "Mat", "kind": "external" },
+            { "name": "Mat.applyToPoint", "source": "Mat", "kind": "external" },
+            { "name": "geometry.nearestPoint", "source": "TransformedGeometry2d.geometry", "kind": "internal" }
+          ],
+          "symbolReferences": ["Vec", "Mat", "Geometry2d"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Returns the point on the transformed geometry nearest to the supplied point, preserving the geometry's hit-inside behavior. The result is expressed in the transformed geometry's coordinate space.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "nearestPoint is called without specifying hitInside.",
+              "then": "The point is converted into local coordinates, the underlying geometry's nearest point is computed with hitInside=false, and that result is transformed back into world coordinates.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "nearestPoint is called with hitInside=true.",
+              "then": "The underlying geometry receives hitInside=true and the returned nearest point is transformed back into world coordinates.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "08c01d9f1b9ea002d4b132ee14991c94c31621a24f5bd639b47a2c919085b0e5"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__TransformedGeometry2d.distanceToLineSegment#method:TransformedGeometry2d.distanceToLineSegment",
+        "unitKind": "method",
+        "name": "distanceToLineSegment",
+        "qualifiedName": "TransformedGeometry2d.distanceToLineSegment",
+        "parentUnitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__TransformedGeometry2d#class:TransformedGeometry2d",
+        "startLine": 495,
+        "endLine": 503,
+        "isBehavioral": true,
+        "source": "\n\toverride distanceToPoint(point: VecLike, hitInside = false, filters?: Geometry2dFilters) {\n\t\treturn (\n\t\t\tthis.geometry.distanceToPoint(Mat.applyToPoint(this.inverse, point), hitInside, filters) *\n\t\t\tthis.decomposed.scaleX\n\t\t)\n\t}\n\n\toverride distanceToLineSegment(A: VecLike, B: VecLike, filters?: Geometry2dFilters) {",
+        "detail": {
+          "unitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__TransformedGeometry2d.distanceToLineSegment#method:TransformedGeometry2d.distanceToLineSegment",
+          "fileId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__TransformedGeometry2d.distanceToLineSegment",
+          "unitKind": "method",
+          "name": "distanceToLineSegment",
+          "qualifiedName": "TransformedGeometry2d.distanceToLineSegment",
+          "parentUnitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__TransformedGeometry2d#class:TransformedGeometry2d",
+          "startLine": 495,
+          "endLine": 503,
+          "signature": "override distanceToLineSegment(A: VecLike, B: VecLike, filters?: Geometry2dFilters)",
+          "parameters": [
+            { "name": "A", "type": "VecLike", "default": null, "optional": false, "variadic": false, "order": 0 },
+            { "name": "B", "type": "VecLike", "default": null, "optional": false, "variadic": false, "order": 1 },
+            {
+              "name": "filters",
+              "type": "Geometry2dFilters",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 2
+            }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": ["override"],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "A and B are VecLike values representing the line-segment endpoints.",
+            "Any supplied filters must conform to Geometry2dFilters."
+          ],
+          "postconditions": [
+            "Returns the geometry-to-segment distance according to the transformed geometry's distance contract."
+          ],
+          "invariants": [
+            "The input endpoint values and filters are not part of the method's documented mutable state."
+          ],
+          "edgeCases": [
+            "An optional filters argument may be omitted.",
+            "Degenerate or coincident endpoints are handled according to the underlying geometry distance implementation."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["VecLike", "Geometry2dFilters"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Computes the distance from the transformed geometry to the line segment defined by endpoints A and B, optionally applying geometry filters.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "1730aa863704103fbf484d7df9b97150845a45e2585d546713eabbcb8705c5ed"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__TransformedGeometry2d.intersectLineSegment#method:TransformedGeometry2d.intersectLineSegment",
+        "unitKind": "method",
+        "name": "intersectLineSegment",
+        "qualifiedName": "TransformedGeometry2d.intersectLineSegment",
+        "parentUnitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__TransformedGeometry2d#class:TransformedGeometry2d",
+        "startLine": 519,
+        "endLine": 528,
+        "isBehavioral": true,
+        "source": "\t\treturn this.geometry.hitTestLineSegment(\n\t\t\tMat.applyToPoint(this.inverse, A),\n\t\t\tMat.applyToPoint(this.inverse, B),\n\t\t\tdistance / this.decomposed.scaleX,\n\t\t\tfilters\n\t\t)\n\t}\n\n\toverride intersectLineSegment(A: VecLike, B: VecLike, filters?: Geometry2dFilters) {\n\t\treturn Mat.applyToPoints(",
+        "detail": {
+          "unitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__TransformedGeometry2d.intersectLineSegment#method:TransformedGeometry2d.intersectLineSegment",
+          "fileId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__TransformedGeometry2d.intersectLineSegment",
+          "unitKind": "method",
+          "name": "intersectLineSegment",
+          "qualifiedName": "TransformedGeometry2d.intersectLineSegment",
+          "parentUnitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__TransformedGeometry2d#class:TransformedGeometry2d",
+          "startLine": 519,
+          "endLine": 528,
+          "signature": "override intersectLineSegment(A: VecLike, B: VecLike, filters?: Geometry2dFilters)",
+          "parameters": [
+            { "name": "A", "type": "VecLike", "default": null, "optional": false, "variadic": false, "order": 0 },
+            { "name": "B", "type": "VecLike", "default": null, "optional": false, "variadic": false, "order": 1 },
+            {
+              "name": "filters",
+              "type": "Geometry2dFilters",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 2
+            }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": ["override"],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "A and B are valid VecLike points.",
+            "The transformed geometry has a valid inverse transform."
+          ],
+          "postconditions": [
+            "The returned intersection points are expressed in the transformed geometry's coordinate space.",
+            "The supplied filters are applied by the underlying geometry intersection operation.",
+            "The underlying geometry and transform state are not mutated."
+          ],
+          "invariants": [
+            "The input segment is transformed into local coordinates before intersection testing.",
+            "Every intersection point returned by the underlying geometry is transformed back using the forward transform.",
+            "The order and cardinality of the underlying intersection results are preserved."
+          ],
+          "edgeCases": [
+            "If the segment does not intersect the geometry, returns the underlying geometry's empty intersection result.",
+            "If the segment intersects at one or more points, returns those points transformed into world coordinates.",
+            "If filters are omitted, delegates without a filter restriction.",
+            "If the underlying geometry or matrix operations reject invalid input, the resulting error propagates."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Propagates errors produced by coordinate transformation or the underlying geometry intersection operation.",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "Mat.applyToPoint", "source": "Mat", "kind": "internal" },
+            { "name": "geometry.intersectLineSegment", "source": "underlying Geometry2d instance", "kind": "internal" },
+            { "name": "Mat.applyToPoints", "source": "Mat", "kind": "internal" }
+          ],
+          "symbolReferences": ["VecLike", "Geometry2dFilters", "Mat"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Computes the intersections between a world-space line segment and the transformed geometry. It evaluates the intersection in the underlying geometry's local coordinates and returns the resulting points in world coordinates.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "intersectLineSegment(A, B) is called",
+              "then": "The method delegates intersection testing using the inverse-transformed endpoints and returns the intersection points transformed back into world coordinates.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "intersectLineSegment(A, B) is called",
+              "then": "The method returns an empty collection of intersection points.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "5e3e6c2010fc7126fcf791e142af3baa6a8a90023e591ed73f3d5229aa2d8373"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__TransformedGeometry2d.intersectCircle#method:TransformedGeometry2d.intersectCircle",
+        "unitKind": "method",
+        "name": "intersectCircle",
+        "qualifiedName": "TransformedGeometry2d.intersectCircle",
+        "parentUnitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__TransformedGeometry2d#class:TransformedGeometry2d",
+        "startLine": 530,
+        "endLine": 539,
+        "isBehavioral": true,
+        "source": "\t\t\tthis.geometry.intersectLineSegment(\n\t\t\t\tMat.applyToPoint(this.inverse, A),\n\t\t\t\tMat.applyToPoint(this.inverse, B),\n\t\t\t\tfilters\n\t\t\t)\n\t\t)\n\t}\n\n\toverride intersectCircle(center: VecLike, radius: number, filters?: Geometry2dFilters) {\n\t\treturn Mat.applyToPoints(",
+        "detail": {
+          "unitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__TransformedGeometry2d.intersectCircle#method:TransformedGeometry2d.intersectCircle",
+          "fileId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__TransformedGeometry2d.intersectCircle",
+          "unitKind": "method",
+          "name": "intersectCircle",
+          "qualifiedName": "TransformedGeometry2d.intersectCircle",
+          "parentUnitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__TransformedGeometry2d#class:TransformedGeometry2d",
+          "startLine": 530,
+          "endLine": 539,
+          "signature": "override intersectCircle(center: VecLike, radius: number, filters?: Geometry2dFilters)",
+          "parameters": [
+            { "name": "center", "type": "VecLike", "default": null, "optional": false, "variadic": false, "order": 0 },
+            { "name": "radius", "type": "number", "default": null, "optional": false, "variadic": false, "order": 1 },
+            {
+              "name": "filters",
+              "type": "Geometry2dFilters",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 2
+            }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": ["override"],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "center must be a valid VecLike value.",
+            "radius must be a valid numeric radius.",
+            "The transform and its inverse must be valid for mapping between coordinate spaces."
+          ],
+          "postconditions": [
+            "Returns the underlying geometry's circle-intersection points expressed in transformed coordinates.",
+            "The supplied filters are forwarded to the underlying geometry intersection operation."
+          ],
+          "invariants": [
+            "The returned points correspond to the underlying geometry's intersection result under the configured transform.",
+            "The input geometry, transform, and filters are not mutated."
+          ],
+          "edgeCases": [
+            "When there are no intersections, returns the underlying geometry's empty intersection result after coordinate mapping.",
+            "When filters are omitted, uses the underlying geometry's default filtering behavior.",
+            "Boundary and degenerate cases are delegated to the underlying geometry's intersectCircle implementation."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "geometry.intersectCircle", "source": "TransformedGeometry2d.geometry", "kind": "internal" },
+            { "name": "Mat.applyToPoint", "source": "Mat", "kind": "external" },
+            { "name": "Mat.applyToPoints", "source": "Mat", "kind": "external" }
+          ],
+          "symbolReferences": ["VecLike", "Geometry2dFilters", "Mat"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Computes the transformed geometry's intersections with a circle by evaluating the corresponding query in the underlying geometry and mapping resulting points into transformed coordinates.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "intersectCircle is called.",
+              "then": "The circle center is mapped into the underlying geometry's coordinate space, the underlying intersection operation is invoked with the radius and filters, and every resulting point is mapped back through the transform.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "f030699d4394dd082d46775d0da2fb26744953b9c533183aa6794b7b464b0041"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__TransformedGeometry2d.transform#method:TransformedGeometry2d.transform",
+        "unitKind": "method",
+        "name": "transform",
+        "qualifiedName": "TransformedGeometry2d.transform",
+        "parentUnitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__TransformedGeometry2d#class:TransformedGeometry2d",
+        "startLine": 565,
+        "endLine": 575,
+        "isBehavioral": true,
+        "source": "\t}\n\n\toverride transform(transform: MatModel, opts?: TransformedGeometry2dOptions): Geometry2d {\n\t\treturn new TransformedGeometry2d(this.geometry, Mat.Multiply(transform, this.matrix), {\n\t\t\tisLabel: opts?.isLabel ?? this.isLabel,\n\t\t\tisInternal: opts?.isInternal ?? this.isInternal,\n\t\t\tdebugColor: opts?.debugColor ?? this.debugColor,\n\t\t\tignore: opts?.ignore ?? this.ignore,\n\t\t})\n\t}\n",
+        "detail": {
+          "unitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__TransformedGeometry2d.transform#method:TransformedGeometry2d.transform",
+          "fileId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__TransformedGeometry2d.transform",
+          "unitKind": "method",
+          "name": "transform",
+          "qualifiedName": "TransformedGeometry2d.transform",
+          "parentUnitId": "packages/editor/src/lib/primitives/geometry/Geometry2d.ts__TransformedGeometry2d#class:TransformedGeometry2d",
+          "startLine": 565,
+          "endLine": 575,
+          "signature": "override transform(transform: MatModel, opts?: TransformedGeometry2dOptions): Geometry2d",
+          "parameters": [
+            {
+              "name": "transform",
+              "type": "MatModel",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "opts",
+              "type": "TransformedGeometry2dOptions",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "Geometry2d",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["The transform argument is a valid MatModel accepted by Mat.Multiply."],
+          "postconditions": [
+            "Returns a new TransformedGeometry2d instance typed as Geometry2d.",
+            "The returned geometry retains the same underlying geometry object.",
+            "The returned transformation matrix is Mat.Multiply(transform, this.matrix).",
+            "Each metadata option uses its supplied non-nullish value, or the corresponding value from the current instance when omitted or nullish."
+          ],
+          "invariants": [
+            "The current TransformedGeometry2d instance is not mutated.",
+            "The underlying geometry is not replaced."
+          ],
+          "edgeCases": [
+            "When opts is omitted, all metadata values are inherited from the current instance.",
+            "When an individual option is undefined or nullish, its corresponding current-instance metadata value is retained.",
+            "When an individual option is provided, including a falsy value such as false or an empty string where its type permits it, that value overrides the current metadata value."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "Mat.Multiply", "source": "Mat", "kind": "external" },
+            { "name": "TransformedGeometry2d", "source": "TransformedGeometry2d", "kind": "internal" }
+          ],
+          "symbolReferences": ["MatModel", "TransformedGeometry2dOptions", "Geometry2d", "Mat"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Creates and returns a new transformed geometry by composing the supplied matrix with the current transformation matrix. Optional metadata overrides are applied when provided; otherwise the current geometry metadata is preserved.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "transform(T) is called.",
+              "then": "A new geometry is returned with geometry G, matrix Mat.Multiply(T, M), and all metadata values equal to those of the original instance; the original instance remains unchanged.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "transform(T, { isLabel: false }) is called.",
+              "then": "The returned geometry uses Mat.Multiply(T, M), has isLabel set to false, and preserves the original isInternal, debugColor, and ignore values.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "34c5561b6e4c279ac87e7e55d408d850747dcf4211e2d6a9f366050f532da883"
+        }
+      }
+    ]
+  },
+  "out": [
+    "packages/editor/src/lib/primitives/utils.ts",
+    "packages/editor/src/lib/primitives/Box.ts",
+    "packages/editor/src/lib/primitives/Vec.ts",
+    "packages/editor/src/lib/primitives/intersect.ts",
+    "packages/editor/src/lib/primitives/Mat.ts"
+  ],
+  "in": [
+    "packages/editor/src/lib/primitives/geometry/Group2d.ts",
+    "packages/editor/src/lib/primitives/geometry/Polygon2d.ts",
+    "packages/editor/src/lib/primitives/geometry/CubicSpline2d.ts",
+    "packages/editor/src/lib/primitives/geometry/Point2d.ts",
+    "packages/editor/src/lib/primitives/geometry/Ellipse2d.ts",
+    "packages/editor/src/lib/primitives/geometry/Arc2d.ts",
+    "packages/editor/src/lib/primitives/geometry/Circle2d.ts",
+    "packages/editor/src/lib/primitives/geometry/Rectangle2d.ts",
+    "packages/editor/src/lib/primitives/geometry/Geometry2d.test.ts",
+    "packages/editor/src/lib/primitives/geometry/Edge2d.ts",
+    "packages/editor/src/lib/primitives/geometry/CubicBezier2d.ts",
+    "packages/editor/src/lib/primitives/geometry/Polyline2d.ts",
+    "packages/editor/src/lib/primitives/geometry/Stadium2d.ts",
+    "packages/editor/src/lib/components/default-components/CanvasOverlays.tsx",
+    "packages/editor/src/lib/editor/overlays/OverlayManager.ts",
+    "packages/editor/src/lib/editor/overlays/OverlayUtil.ts",
+    "packages/editor/src/lib/editor/managers/SnapManager/HandleSnaps.ts",
+    "packages/editor/src/lib/editor/shapes/ShapeUtil.ts",
+    "packages/editor/src/lib/editor/shapes/group/GroupShapeUtil.tsx",
+    "packages/editor/src/lib/editor/shapes/BaseBoxShapeUtil.tsx"
+  ],
+  "externals": ["@tldraw/utils"],
+  "impact": { "seeds": 15, "callers": 1, "impactedFiles": [] }
+}

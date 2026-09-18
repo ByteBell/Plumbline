@@ -1,0 +1,590 @@
+{
+  "relativePath": "packages/trpc/server/routers/viewer/auth/resendVerifyEmail.handler.ts",
+  "language": "typescript",
+  "sha256": "c9e5110da7095f86d8529b14c7efd7a535e79128eff43ffe3b1a6f9fed81f55c",
+  "sizeBytes": 1967,
+  "tokenCount": 492,
+  "lineCount": 69,
+  "analysedAt": "2026-09-02T19:55:43.800Z",
+  "analysis": {
+    "module": {
+      "purpose": "This file implements an authenticated tRPC handler that rate-limits email verification requests, validates secondary-email ownership, and dispatches verification messages.",
+      "summary": "The handler processes requests from authenticated users who need an email verification message resent. It supports both the account's primary email and verified ownership of secondary emails, rejects unknown secondary addresses, skips already verified addresses, applies per-user rate limiting, and delegates message delivery to the authentication email service.",
+      "businessContext": "This supports account onboarding and email ownership verification in the scheduling product.\nFailure can prevent users from activating accounts or verifying alternate addresses, while rate limiting protects the email channel from abuse.",
+      "classes": [
+        "ResendEmailOptions (~L12-18): Defines authenticated context and schema input for verification email requests"
+      ],
+      "functions": [
+        "resendVerifyEmail (~L22-68): Rate-limits requests and sends verification messages for primary or secondary emails"
+      ],
+      "keywords": [
+        "email verification",
+        "secondary email",
+        "tRPC authentication",
+        "rate limiting",
+        "Prisma lookup",
+        "verification email delivery"
+      ],
+      "ontologyConcepts": [
+        "authentication",
+        "email ownership verification",
+        "rate limiting",
+        "request validation",
+        "conditional processing",
+        "notification delivery"
+      ],
+      "businessEntities": ["User", "Email", "SecondaryEmail", "Verification Message"],
+      "systemCapabilities": [
+        "Resend email verification messages",
+        "Verify secondary email ownership",
+        "Enforce per-user rate limits",
+        "Reject unknown secondary addresses",
+        "Skip already verified addresses"
+      ],
+      "configDependencies": [],
+      "importsInternal": [
+        {
+          "spec": "../../../createContext",
+          "symbols": ["TRPCContext"],
+          "anchor": {
+            "startLine": 8,
+            "endLine": 8
+          },
+          "resolvedRelativePath": "packages/trpc/server/createContext.ts",
+          "resolvedFileId": "packages/trpc/server/createContext.ts",
+          "resolvedHint": "packages/trpc/server/createContext.ts"
+        },
+        {
+          "spec": "../../../types",
+          "symbols": ["TrpcSessionUser"],
+          "anchor": {
+            "startLine": 9,
+            "endLine": 9
+          },
+          "resolvedRelativePath": "packages/trpc/server/types.ts",
+          "resolvedFileId": "packages/trpc/server/types.ts",
+          "resolvedHint": "packages/trpc/server/types.ts"
+        },
+        {
+          "spec": "./resendVerifyEmail.schema",
+          "symbols": ["TResendVerifyEmailSchema"],
+          "anchor": {
+            "startLine": 10,
+            "endLine": 10
+          },
+          "resolvedRelativePath": "packages/trpc/server/routers/viewer/auth/resendVerifyEmail.schema.ts",
+          "resolvedFileId": "packages/trpc/server/routers/viewer/auth/resendVerifyEmail.schema.ts",
+          "resolvedHint": "packages/trpc/server/routers/viewer/auth/resendVerifyEmail.schema.ts"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "@calcom/features/auth/lib/verifyEmail",
+          "symbols": ["sendEmailVerification"],
+          "package": "@calcom/features",
+          "subpath": "auth/lib/verifyEmail",
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 1,
+            "endLine": 1
+          }
+        },
+        {
+          "spec": "@calcom/lib/checkRateLimitAndThrowError",
+          "symbols": ["checkRateLimitAndThrowError"],
+          "package": "@calcom/lib",
+          "subpath": "checkRateLimitAndThrowError",
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 2,
+            "endLine": 2
+          }
+        },
+        {
+          "spec": "@calcom/lib/logger",
+          "symbols": ["logger"],
+          "package": "@calcom/lib",
+          "subpath": "logger",
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 3,
+            "endLine": 3
+          }
+        },
+        {
+          "spec": "@calcom/prisma",
+          "symbols": ["prisma"],
+          "package": "@calcom/prisma",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 4,
+            "endLine": 4
+          }
+        },
+        {
+          "spec": "@trpc/server",
+          "symbols": ["TRPCError"],
+          "package": "@trpc/server",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 6,
+            "endLine": 6
+          }
+        }
+      ],
+      "sideEffects": {
+        "io": [
+          "Checks the core rate limit using identifier `resendVerifyEmail.${ctx.user.id}`.",
+          "Reads a secondary email record from the database when a different email is requested.",
+          "Logs that the user's email is already verified when resending is skipped."
+        ],
+        "network": ["Sends a verification email through `sendEmailVerification` when the target email is unverified."],
+        "env": [],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": []
+      },
+      "integrationSurface": [
+        {
+          "kind": "table",
+          "role": "consumes",
+          "address": "secondaryEmail",
+          "payloadRef": null,
+          "rawKind": null
+        }
+      ],
+      "contractsProvided": [
+        {
+          "name": "resendVerifyEmail",
+          "shape": "export const resendVerifyEmail = async ({ input, ctx }: ResendEmailOptions) => {",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "sendEmailVerification",
+          "shape": "sendEmailVerification({ email: emailToVerify, username: ctx.user?.username ?? undefined, language: ctx.user.locale, secondaryEmailId: secondaryEmail?.id })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "checkRateLimitAndThrowError",
+          "shape": "checkRateLimitAndThrowError({ rateLimitingType: \"core\", identifier: `resendVerifyEmail.${ctx.user.id}` })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "prisma.secondaryEmail.findUnique",
+          "shape": "prisma.secondaryEmail.findUnique({ where: { email: input.email, userId: ctx.user.id } })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "TRPCError",
+          "shape": "new TRPCError({ code: \"BAD_REQUEST\", message: \"Email not found\" })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "TResendVerifyEmailSchema",
+          "shape": "input: TResendVerifyEmailSchema",
+          "resolvedRelativePath": "packages/trpc/server/routers/viewer/auth/resendVerifyEmail.schema.ts",
+          "resolvedFileId": "packages/trpc/server/routers/viewer/auth/resendVerifyEmail.schema.ts"
+        },
+        {
+          "name": "TRPCContext",
+          "shape": "req: TRPCContext[\"req\"] | undefined",
+          "resolvedRelativePath": "packages/trpc/server/createContext.ts",
+          "resolvedFileId": "packages/trpc/server/createContext.ts"
+        },
+        {
+          "name": "TrpcSessionUser",
+          "shape": "user: NonNullable<TrpcSessionUser>",
+          "resolvedRelativePath": "packages/trpc/server/types.ts",
+          "resolvedFileId": "packages/trpc/server/types.ts"
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "request initialization and rate limiting",
+          "intent": "Select the current email and enforce the core resend rate limit.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 22,
+            "endLine": 30
+          }
+        },
+        {
+          "name": "secondary email lookup",
+          "intent": "Look up a requested email when it differs from the current user email.",
+          "structureKind": "branch",
+          "predicate": "input?.email && input?.email !== ctx.user.email",
+          "branchOutcomes": ["different email supplied", "no different email supplied"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 32,
+            "endLine": 51
+          }
+        },
+        {
+          "name": "missing secondary email rejection",
+          "intent": "Reject a different email when no matching secondary email exists.",
+          "structureKind": "branch",
+          "predicate": "!secondaryEmail",
+          "branchOutcomes": ["secondary email missing", "secondary email found"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 41,
+            "endLine": 43
+          }
+        },
+        {
+          "name": "secondary email verification status",
+          "intent": "Choose whether the found secondary email requires verification.",
+          "structureKind": "branch",
+          "predicate": "secondaryEmail.emailVerified",
+          "branchOutcomes": ["secondary email already verified", "secondary email unverified"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 45,
+            "endLine": 50
+          }
+        },
+        {
+          "name": "verified email skip",
+          "intent": "Return a skipped success result when the target email is verified.",
+          "structureKind": "branch",
+          "predicate": "emailVerified",
+          "branchOutcomes": ["email already verified", "email requires verification"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 52,
+            "endLine": 58
+          }
+        },
+        {
+          "name": "verification email dispatch",
+          "intent": "Send verification using the selected email and user metadata.",
+          "structureKind": "io",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 60,
+            "endLine": 67
+          }
+        }
+      ],
+      "representationFamily": "function-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "function",
+          "name": "resendVerifyEmail",
+          "signature": "export const resendVerifyEmail = async ({ input, ctx }: ResendEmailOptions) => {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": {
+            "startLine": 22,
+            "endLine": 68
+          }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "type",
+          "name": "ResendEmailOptions",
+          "shape": "{\n  ctx: {\n    user: NonNullable<TrpcSessionUser>;\n    req: TRPCContext[\"req\"] | undefined;\n  };\n  input: TResendVerifyEmailSchema;\n}",
+          "discriminant": null,
+          "anchor": {
+            "startLine": 12,
+            "endLine": 18
+          }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": {
+        "paragraph": "",
+        "tokenEstimate": 0
+      },
+      "edgeCases": [
+        {
+          "inputShape": "Input has no email or specifies the current user's email.",
+          "handled": true,
+          "behavior": "Uses the user's current email and does not query secondary emails.",
+          "anchor": {
+            "startLine": 23,
+            "endLine": 33
+          }
+        },
+        {
+          "inputShape": "Input specifies a different email that is not a matching secondary email.",
+          "handled": true,
+          "behavior": "Throws a TRPC BAD_REQUEST error with message `Email not found`.",
+          "anchor": {
+            "startLine": 33,
+            "endLine": 43
+          }
+        },
+        {
+          "inputShape": "Input specifies a verified secondary email.",
+          "handled": true,
+          "behavior": "Treats the target as verified, logs the skip, and returns `{ ok: true, skipped: true }`.",
+          "anchor": {
+            "startLine": 45,
+            "endLine": 58
+          }
+        },
+        {
+          "inputShape": "Input specifies an unverified secondary email.",
+          "handled": true,
+          "behavior": "Sends verification to the secondary email with its secondary email ID.",
+          "anchor": {
+            "startLine": 47,
+            "endLine": 65
+          }
+        },
+        {
+          "inputShape": "The user's current email is already verified.",
+          "handled": true,
+          "behavior": "Logs the skip and returns `{ ok: true, skipped: true }` without sending an email.",
+          "anchor": {
+            "startLine": 30,
+            "endLine": 58
+          }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": "new TRPCError({ code: \"BAD_REQUEST\", message: \"Email not found\" })",
+          "caught": null,
+          "action": "Throws when a requested different email has no matching secondary email.",
+          "fallback": null,
+          "anchor": {
+            "startLine": 41,
+            "endLine": 43
+          }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "The caller supplies an authenticated non-null user with id, email, emailVerified, username, and locale properties.",
+          "anchor": {
+            "startLine": 12,
+            "endLine": 18
+          }
+        },
+        {
+          "kind": "schema",
+          "description": "The input may be absent or may contain an optional email value.",
+          "anchor": {
+            "startLine": 17,
+            "endLine": 17
+          }
+        },
+        {
+          "kind": "init-order",
+          "description": "The rate-limit check completes before database lookup, verification decisions, or email dispatch.",
+          "anchor": {
+            "startLine": 25,
+            "endLine": 28
+          }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "What errors or return behavior do `checkRateLimitAndThrowError`, the database lookup, and `sendEmailVerification` produce on failure?",
+          "affects": "error_handling",
+          "anchor": {
+            "startLine": 25,
+            "endLine": 28
+          },
+          "resolution": null
+        },
+        {
+          "question": "What exact value or shape does `sendEmailVerification` return?",
+          "affects": "output behavior",
+          "anchor": {
+            "startLine": 60,
+            "endLine": 67
+          },
+          "resolution": null
+        }
+      ],
+      "stateModel": null,
+      "fileFingerprint": {
+        "lineCount": 0,
+        "declarationCount": 0,
+        "maxNestingDepth": 0,
+        "roughCyclomatic": 0
+      },
+      "reconstructionHints": {
+        "namingStyle": "unknown",
+        "returnStyle": "n/a",
+        "commentStyle": "none",
+        "dialect": ""
+      },
+      "moduleContractTests": [
+        {
+          "testId": "skips-already-verified-primary-email",
+          "scenario": "A user whose primary email is already verified requests verification again.",
+          "given": ["ctx.user.emailVerified === true", "input.email === undefined"],
+          "when": "resendVerifyEmail({ input, ctx })",
+          "then": "resolves to { ok: true, skipped: true } and does not send a verification email",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Verified users must not receive redundant verification messages."
+        },
+        {
+          "testId": "rejects-unknown-secondary-email",
+          "scenario": "A user requests verification for an email that is neither their primary email nor a registered secondary email.",
+          "given": ["input.email !== ctx.user.email", "prisma.secondaryEmail.findUnique(...) === null"],
+          "when": "resendVerifyEmail({ input, ctx })",
+          "then": "throws a TRPCError with code \"BAD_REQUEST\" and message \"Email not found\"",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Verification must not be sent to an email address not belonging to the user."
+        },
+        {
+          "testId": "sends-secondary-email-verification",
+          "scenario": "A user requests verification for an unverified registered secondary email.",
+          "given": ["input.email !== ctx.user.email", "secondaryEmail.emailVerified === false"],
+          "when": "resendVerifyEmail({ input, ctx })",
+          "then": "calls sendEmailVerification with email equal to input.email and secondaryEmailId equal to secondaryEmail.id",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Secondary-email verification must preserve the target address and secondary record identity."
+        },
+        {
+          "testId": "applies-core-rate-limit",
+          "scenario": "Any resend verification request is made by an authenticated user.",
+          "given": ["ctx.user.id === \"user-123\""],
+          "when": "resendVerifyEmail({ input, ctx })",
+          "then": "calls checkRateLimitAndThrowError with rateLimitingType \"core\" and identifier \"resendVerifyEmail.user-123\" before continuing",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "All resend attempts must be protected by the core rate limiter."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": ["ResendEmailOptions", "log", "resendVerifyEmail"],
+      "moduleLevelCode": "import { sendEmailVerification } from \"@calcom/features/auth/lib/verifyEmail\";\nimport { checkRateLimitAndThrowError } from \"@calcom/lib/checkRateLimitAndThrowError\";\nimport logger from \"@calcom/lib/logger\";\nimport { prisma } from \"@calcom/prisma\";\n\nimport { TRPCError } from \"@trpc/server\";\n\nimport type { TRPCContext } from \"../../../createContext\";\nimport type { TrpcSessionUser } from \"../../../types\";\nimport type { TResendVerifyEmailSchema } from \"./resendVerifyEmail.schema\";",
+      "exports": [
+        {
+          "name": "resendVerifyEmail",
+          "kind": "own",
+          "fromSpec": null,
+          "exportedAs": null
+        }
+      ],
+      "importSymbolMap": [
+        {
+          "symbol": "sendEmailVerification",
+          "module": "@calcom/features/auth/lib/verifyEmail",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "checkRateLimitAndThrowError",
+          "module": "@calcom/lib/checkRateLimitAndThrowError",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "logger",
+          "module": "@calcom/lib/logger",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "prisma",
+          "module": "@calcom/prisma",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "TRPCError",
+          "module": "@trpc/server",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "TRPCContext",
+          "module": "../../../createContext",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "TrpcSessionUser",
+          "module": "../../../types",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "TResendVerifyEmailSchema",
+          "module": "./resendVerifyEmail.schema",
+          "alias": null,
+          "kind": "internal"
+        }
+      ],
+      "fileConstants": [
+        {
+          "name": "log",
+          "value": "logger.getSubLogger({ prefix: [`[[Auth] `] })",
+          "kind": "const"
+        }
+      ],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/trpc/server/routers/viewer/auth/resendVerifyEmail.handler.ts__ResendEmailOptions_1#type_alias:ResendEmailOptions",
+        "unitKind": "type_alias",
+        "name": "ResendEmailOptions",
+        "qualifiedName": "ResendEmailOptions",
+        "parentUnitId": null,
+        "startLine": 12,
+        "endLine": 18,
+        "isBehavioral": false,
+        "source": "type ResendEmailOptions = {\n  ctx: {\n    user: NonNullable<TrpcSessionUser>;\n    req: TRPCContext[\"req\"] | undefined;\n  };\n  input: TResendVerifyEmailSchema;\n};"
+      },
+      {
+        "unitId": "packages/trpc/server/routers/viewer/auth/resendVerifyEmail.handler.ts__resendVerifyEmail_2#function:resendVerifyEmail",
+        "unitKind": "function",
+        "name": "resendVerifyEmail",
+        "qualifiedName": "resendVerifyEmail",
+        "parentUnitId": null,
+        "startLine": 22,
+        "endLine": 68,
+        "isBehavioral": true,
+        "source": "export const resendVerifyEmail = async ({ input, ctx }: ResendEmailOptions) => {\n  let emailToVerify = ctx.user.email;\n\n  await checkRateLimitAndThrowError({\n    rateLimitingType: \"core\",\n    identifier: `resendVerifyEmail.${ctx.user.id}`,\n  });\n\n  let emailVerified = Boolean(ctx.user.emailVerified);\n  let secondaryEmail;\n  // If the input which is coming is not the current user's email, it could be a secondary email\n  if (input?.email && input?.email !== ctx.user.email) {\n    secondaryEmail = await prisma.secondaryEmail.findUnique({\n      where: {\n        email: input.email,\n        userId: ctx.user.id,\n      },\n    });\n\n    if (!secondaryEmail) {\n      throw new TRPCError({ code: \"BAD_REQUEST\", message: \"Email not found\" });\n    }\n\n    if (secondaryEmail.emailVerified) {\n      emailVerified = true;\n    } else {\n      emailToVerify = input.email;\n      emailVerified = false;\n    }\n  }\n  if (emailVerified) {\n    log.info(`User ${ctx.user.id} already verified email`);\n    return {\n      ok: true,\n      skipped: true,\n    };\n  }\n\n  const email = await sendEmailVerification({\n    email: emailToVerify,\n    username: ctx.user?.username ?? undefined,\n    language: ctx.user.locale,\n    secondaryEmailId: secondaryEmail?.id,\n  });\n\n  return email;\n};"
+      }
+    ],
+    "extractedUnitCount": 2,
+    "unreconciledUnitNames": []
+  },
+  "tokenUsage": {
+    "inputTokens": 8799,
+    "outputTokens": 7551,
+    "costUsd": 0
+  },
+  "model": "us.openai.gpt-5.6-luna"
+}

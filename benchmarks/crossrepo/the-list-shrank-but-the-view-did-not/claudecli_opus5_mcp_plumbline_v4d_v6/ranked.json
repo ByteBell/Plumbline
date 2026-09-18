@@ -1,0 +1,88 @@
+[
+  {
+    "repo": "query",
+    "files": ["packages/solid-query/src/useQueries.ts", "packages/query-core/src/queriesObserver.ts"],
+    "pinpoints": [
+      {
+        "path": "packages/solid-query/src/useQueries.ts",
+        "symbol": "useQueries",
+        "lines": "232-292",
+        "change": "The createRenderEffect at 232-244 calls setState(wholeArray) \u2014 a Solid store merge that overwrites keys 0..n-1 and appends, never shortening \u2014 and the observer.subscribe loop at 276-283 does `setState(index, unwrap(unwrappedResult))` per slot; both must make the store equal the new result array (reconcile/explicit truncation) so removed queries drop out."
+      },
+      {
+        "path": "packages/solid-query/src/useQueries.ts",
+        "symbol": "dataResources",
+        "lines": "246-259",
+        "change": "Memo is keyed `on(() => state.length)`, so once the store length can only grow, the resource array and the proxies built from it at 334-340 keep rendering the stale tail."
+      },
+      {
+        "path": "packages/query-core/src/queriesObserver.ts",
+        "symbol": "QueriesObserver.setQueries",
+        "lines": "88-158",
+        "change": "Owns the both-directions rule the adapter must mirror: #findMatchingObservers (263-296) re-matches observers to the new options list and unmatched observers are destroyed, so the core result array does shrink \u2014 the adapter projection must follow it."
+      }
+    ]
+  },
+  {
+    "repo": "tldraw",
+    "files": [
+      "packages/store/src/lib/IncrementalSetConstructor.ts",
+      "packages/editor/src/lib/editor/derivations/shapeIdsInCurrentPage.ts",
+      "packages/store/src/lib/StoreQueries.ts"
+    ],
+    "pinpoints": [
+      {
+        "path": "packages/store/src/lib/IncrementalSetConstructor.ts",
+        "symbol": "IncrementalSetConstructor",
+        "lines": "21-198",
+        "change": "The explicit statement of the contract: add (122-137) and remove (182-197) are symmetric, opposing operations cancel, and get (66-76) still yields the whole value plus its diff \u2014 the reference shape the query projection has to be brought in line with."
+      },
+      {
+        "path": "packages/editor/src/lib/editor/derivations/shapeIdsInCurrentPage.ts",
+        "symbol": "shapeIdsInCurrentPage",
+        "lines": "1-40",
+        "change": "Incremental derivation of a collection that both adds and removes as the source changes (and rescans wholesale on RESET_VALUE); no change needed beyond it being the in-folder exemplar of converge-in-both-directions."
+      }
+    ]
+  },
+  {
+    "repo": "react",
+    "files": ["packages/react-reconciler/src/ReactChildFiber.js"],
+    "pinpoints": [
+      {
+        "path": "packages/react-reconciler/src/ReactChildFiber.js",
+        "symbol": "deleteRemainingChildren",
+        "lines": "448-454",
+        "change": "The keyed-pass side of the contract: reconcileChildrenArray calls it at 1266-1268 \u2014 'We've reached the end of the new children. We can delete the rest.' \u2014 so a shorter new list drops the tail instead of leaving it mounted."
+      }
+    ]
+  },
+  {
+    "repo": "db",
+    "files": [
+      "packages/solid-db/src/useLiveQuery.ts",
+      "packages/vue-db/src/useLiveQuery.ts",
+      "packages/svelte-db/src/useLiveQuery.svelte.ts"
+    ],
+    "pinpoints": [
+      {
+        "path": "packages/solid-db/src/useLiveQuery.ts",
+        "symbol": "syncDataFromCollection",
+        "lines": "345-351",
+        "change": "Correct sibling: setData((prev) => reconcile(Array.from(currentCollection.values()))(prev).filter(Boolean)) makes the projection equal the collection; this is the Solid-store idiom solid-query's useQueries is missing."
+      },
+      {
+        "path": "packages/vue-db/src/useLiveQuery.ts",
+        "symbol": "syncDataFromCollection",
+        "lines": "359-364",
+        "change": "Correct sibling: internalData.length = 0 then push(...) \u2014 rebuilds rather than overwrite-and-append."
+      },
+      {
+        "path": "packages/svelte-db/src/useLiveQuery.svelte.ts",
+        "symbol": "syncDataFromCollection",
+        "lines": "376-383",
+        "change": "Correct sibling: internalData = [] then push(...) inside untrack \u2014 same converge-in-both-directions rebuild."
+      }
+    ]
+  }
+]

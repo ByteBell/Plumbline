@@ -1,0 +1,271 @@
+{
+  "contract": "Every public booking surface must resolve its visual identity \u2014 brandColor, darkBrandColor and the light/dark theme preference \u2014 from the same entity hierarchy: the organisation that owns the entity being booked takes precedence over (or at minimum supplies the fallback for) the individual member's own appearance settings, exactly as it already does for a team's events via the team's parent organisation. Any query that feeds a public page must therefore select the organisation's branding columns, any type that carries an organisation onto a user profile must declare them, and any page or hook that applies theme/brand must take them from that resolved profile rather than from the member record alone.",
+  "defect_location": {
+    "repo": "calcom/cal.com",
+    "summary": "The branding hierarchy is implemented only on the team path. packages/features/eventtypes/lib/getPublicEvent.ts:585-614 computes `styleProfile = team || event.parent?.team || nonTeamProfile`, so a team event inherits the parent organisation's brandColor/darkBrandColor/theme (lines 606-608), while a personal event type falls through to `nonTeamProfile` \u2014 the user \u2014 and the user's organisation is never consulted. The organisation branding is not even fetched on that path: the user select at packages/features/eventtypes/lib/getPublicEvent.ts:31-48 pulls `organization: { id, name, slug, bannerUrl }` with no brand or theme columns. The same omission repeats upstream: packages/features/users/repositories/UserRepository.ts:71-80 (`teamSelect`, used by `findUsersByUsername` at :169-179 for the personal pages) and packages/features/profile/repositories/ProfileRepository.ts:44-53 (`organizationSelect`) both stop at logoUrl/bannerUrl/hideBranding, and the shared type packages/types/UserProfile.d.ts:3-5 declares the attached organisation as Pick<Team, \"name\"|\"id\"|\"slug\"|\"calVideoLogo\"|\"bannerUrl\"> only. Consequently apps/web/server/lib/[user]/getServerSideProps.ts:133-145 builds the personal-link profile as `theme: user.theme, brandColor: user.brandColor ?? DEFAULT_LIGHT_BRAND_COLOR, darkBrandColor: user.darkBrandColor ?? DEFAULT_DARK_BRAND_COLOR`, and apps/web/modules/users/views/users-public-view.tsx:29 applies only `useTheme(profile.theme)` with no brand colours at all. The personal event-type page inherits the same wrong values because apps/web/server/lib/[user]/[type]/getServerSideProps.ts:247-282 passes the eventData straight through from packages/features/eventtypes/repositories/EventRepository.ts, and packages/platform/atoms/booker/BookerWebWrapper.tsx:203-207 feeds `event.data.profile.brandColor/darkBrandColor/theme` into packages/features/bookings/Booker/utils/use-brand-colors.tsx:5-21. By contrast apps/web/modules/team/team-view.tsx:36 uses `useTheme(team.theme)`, which is why the team links look right and the personal links do not.",
+    "repo_relative_note": "all line references are at commit 9d4522825bc39621a4d6385f7c13643e64142e10"
+  },
+  "retained": [
+    {
+      "area": "apps/web",
+      "relevance": 0.95,
+      "depth": 3,
+      "folds": [
+        "apps/web/server/lib/[user]/getServerSideProps.ts",
+        "apps/web/server/lib/[user]/[type]/getServerSideProps.ts",
+        "apps/web/modules/users/views/users-public-view.tsx"
+      ],
+      "note": ""
+    },
+    {
+      "area": "packages/features",
+      "relevance": 0.9,
+      "depth": 3,
+      "folds": [
+        "packages/features/eventtypes/lib/getPublicEvent.ts",
+        "packages/features/bookings/Booker/utils/use-brand-colors.tsx",
+        "packages/features/profile/repositories/ProfileRepository.ts",
+        "packages/features/eventtypes/repositories/EventRepository.ts",
+        "packages/features/users/repositories/UserRepository.ts"
+      ],
+      "note": ""
+    },
+    {
+      "area": "packages/lib",
+      "relevance": 0.7,
+      "depth": 3,
+      "folds": [
+        "packages/lib/getBrandColours.tsx",
+        "packages/lib/hooks/useTheme.ts",
+        "packages/lib/server/repository/teamUtils.ts"
+      ],
+      "note": ""
+    },
+    {
+      "area": "packages/trpc",
+      "relevance": 0.6,
+      "depth": 2,
+      "folds": [
+        "packages/trpc/server/routers/viewer/organizations/update.handler.ts",
+        "packages/trpc/server/routers/viewer/teams/update.schema.ts"
+      ],
+      "note": ""
+    },
+    {
+      "area": "packages/ui",
+      "relevance": 0.5,
+      "depth": 2,
+      "folds": ["packages/ui/styles/useCalcomTheme.tsx", "packages/ui/styles/index.ts"],
+      "note": ""
+    },
+    {
+      "area": "packages/prisma",
+      "relevance": 0.4,
+      "depth": 2,
+      "folds": ["packages/prisma/zod-utils.ts", "packages/prisma/selects/payment.ts"],
+      "note": ""
+    },
+    {
+      "area": "packages/types",
+      "relevance": 0.4,
+      "depth": 2,
+      "folds": ["packages/types/UserProfile.d.ts", "packages/types/next-auth.d.ts"],
+      "note": "added back under 2.2a/4.2a \u2014 omitted at 0.3 without a verdict, then found to declare the organisation shape carried on a user profile"
+    },
+    {
+      "area": "packages/embeds",
+      "relevance": 0.35,
+      "depth": 1,
+      "folds": ["packages/embeds/embed-core/src/embed-iframe.ts"],
+      "note": ""
+    },
+    {
+      "area": "packages/platform",
+      "relevance": 0.35,
+      "depth": 1,
+      "folds": ["packages/platform/atoms/booker/BookerWebWrapper.tsx"],
+      "note": ""
+    },
+    {
+      "area": "apps/api",
+      "relevance": 0.2,
+      "depth": 1,
+      "folds": ["apps/api/v2/src/modules/teams/event-types/teams-event-types.repository.ts"],
+      "note": ""
+    },
+    {
+      "area": "packages/app-store",
+      "relevance": 0.15,
+      "depth": 1,
+      "folds": ["packages/app-store/_utils/bulkUpdateTeamEventsToDefaultLocation.ts"],
+      "note": ""
+    }
+  ],
+  "dropped": [
+    {
+      "area": "apps/storybook",
+      "verdict": "isolated component gallery; renders components with fixture props and never resolves an organisation profile for a public booking page"
+    },
+    {
+      "area": "apps/ai",
+      "verdict": "chat-driven booking agent; produces no rendered page and carries no theme or brand values"
+    },
+    {
+      "area": "packages/emails",
+      "verdict": "transactional email templates; the symptom is about rendered web pages, and email branding is a separate surface"
+    },
+    {
+      "area": "packages/core",
+      "verdict": "slot computation and booking pipeline; carries availability data, not brand colours or theme, to any page"
+    },
+    {
+      "area": "packages/app-store-cli",
+      "verdict": "scaffolding CLI for new apps; build-time tooling only"
+    },
+    {
+      "area": "packages/config",
+      "verdict": "Tailwind/theme token configuration consumed at build time; defines CSS variables but never chooses which entity supplies them"
+    },
+    {
+      "area": "packages/tsconfig",
+      "verdict": "TypeScript project configuration only"
+    },
+    {
+      "area": "packages/eslint-plugin",
+      "verdict": "lint rules only"
+    },
+    {
+      "area": "packages/dayjs",
+      "verdict": "date/time primitives"
+    },
+    {
+      "area": "packages/kysely",
+      "verdict": "SQL query-builder plumbing with no branding selects on the public page path"
+    }
+  ],
+  "obligations": [
+    {
+      "id": "OB-1",
+      "phrase": "user booking page theme brandColor",
+      "status": "CLOSED",
+      "closers": [
+        "apps/web/server/lib/[user]/getServerSideProps.ts",
+        "apps/web/modules/users/views/users-public-view.tsx",
+        "apps/web/server/lib/[user]/[type]/getServerSideProps.ts",
+        "packages/features/eventtypes/lib/getPublicEvent.ts"
+      ]
+    },
+    {
+      "id": "OB-2",
+      "phrase": "team event page organization brand colors theme",
+      "status": "CLOSED",
+      "closers": [
+        "packages/features/eventtypes/lib/getPublicEvent.ts",
+        "apps/web/modules/team/team-view.tsx",
+        "apps/web/lib/team/[slug]/getServerSideProps.tsx"
+      ]
+    },
+    {
+      "id": "OB-3",
+      "phrase": "organization brandColor darkBrandColor theme settings",
+      "status": "CLOSED",
+      "closers": [
+        "packages/types/UserProfile.d.ts",
+        "packages/features/users/repositories/UserRepository.ts",
+        "packages/features/profile/repositories/ProfileRepository.ts"
+      ]
+    },
+    {
+      "id": "OB-4",
+      "phrase": "useTheme brand colors booking page",
+      "status": "CLOSED",
+      "closers": [
+        "packages/features/bookings/Booker/utils/use-brand-colors.tsx",
+        "packages/platform/atoms/booker/BookerWebWrapper.tsx"
+      ]
+    }
+  ],
+  "counts": {
+    "seen": 155,
+    "confirmed": 10,
+    "ruled_out": 1,
+    "candidates": 144
+  },
+  "answer": [
+    "packages/features/eventtypes/lib/getPublicEvent.ts",
+    "apps/web/server/lib/[user]/getServerSideProps.ts",
+    "packages/types/UserProfile.d.ts",
+    "packages/platform/atoms/booker/BookerWebWrapper.tsx",
+    "packages/features/users/repositories/UserRepository.ts",
+    "apps/web/modules/users/views/users-public-view.tsx",
+    "packages/features/profile/repositories/ProfileRepository.ts",
+    "apps/web/server/lib/[user]/[type]/getServerSideProps.ts",
+    "packages/features/eventtypes/repositories/EventRepository.ts",
+    "packages/features/bookings/Booker/utils/use-brand-colors.tsx",
+    "apps/web/modules/users/views/users-type-public-view.tsx",
+    "packages/features/eventtypes/lib/defaultEvents.ts",
+    "packages/lib/hooks/useTheme.ts",
+    "packages/trpc/server/routers/publicViewer/event.schema.ts",
+    "packages/prisma/schema.prisma",
+    "packages/embeds/embed-core/src/embed-iframe.ts",
+    "packages/platform/atoms/booker/index.ts",
+    "apps/api/v2/src/modules/atoms/services/event-types-atom.service.ts",
+    "packages/ui/styles/useCalcomTheme.tsx",
+    "packages/app-store/_utils/bulkUpdateTeamEventsToDefaultLocation.ts",
+    "packages/types/next-auth.d.ts",
+    "apps/web/lib/org/[orgSlug]/[user]/getServerSideProps.tsx",
+    "packages/features/ee/organizations/repositories/OrganizationRepository.ts",
+    "packages/lib/server/repository/teamUtils.ts",
+    "packages/trpc/server/routers/viewer/organizations/update.handler.ts",
+    "packages/prisma/zod-utils.ts",
+    "packages/embeds/embed-core/src/types.ts",
+    "packages/platform/libraries/event-types.ts",
+    "apps/api/v2/src/modules/teams/event-types/teams-event-types.repository.ts",
+    "packages/ui/styles/index.ts",
+    "apps/web/lib/org/[orgSlug]/[user]/[type]/getServerSideProps.tsx",
+    "packages/features/ee/teams/repositories/TeamRepository.ts",
+    "packages/lib/constants.ts",
+    "packages/trpc/server/routers/viewer/teams/update.schema.ts",
+    "apps/web/app/(booking-page-wrapper)/[user]/page.tsx",
+    "packages/features/eventtypes/lib/getEventTypesPublic.ts",
+    "apps/web/app/(booking-page-wrapper)/[user]/[type]/page.tsx",
+    "packages/features/ee/organizations/context/provider.ts",
+    "apps/web/app/(booking-page-wrapper)/org/[orgSlug]/[user]/page.tsx",
+    "packages/features/ee/organizations/lib/orgDomains.ts",
+    "apps/web/app/(booking-page-wrapper)/org/[orgSlug]/[user]/[type]/page.tsx",
+    "packages/features/bookings/types.ts",
+    "apps/web/modules/team/team-view.tsx",
+    "packages/features/ee/organizations/pages/settings/appearance.tsx",
+    "apps/web/lib/team/[slug]/getServerSideProps.tsx",
+    "packages/features/ee/teams/pages/team-appearance-view.tsx",
+    "apps/web/lib/team/[slug]/[type]/getServerSideProps.tsx",
+    "packages/features/ee/components/BrandColorsForm.tsx",
+    "apps/web/app/(booking-page-wrapper)/team/[slug]/[type]/queries.ts",
+    "packages/features/eventtypes/lib/getTeamEventType.ts",
+    "apps/web/app/(booking-page-wrapper)/team/[slug]/[type]/pageWithCachedData.tsx",
+    "packages/features/bookings/Booker/Booker.tsx",
+    "apps/web/lib/getThemeProviderProps.ts",
+    "packages/features/embed/lib/buildCssVarsPerTheme.ts",
+    "apps/web/modules/team/type-view.tsx",
+    "packages/features/shell/useAppTheme.ts",
+    "apps/web/modules/team/type-view-cached.tsx",
+    "packages/features/embed/Embed.tsx",
+    "apps/web/app/(booking-page-wrapper)/[user]/embed/page.tsx",
+    "apps/web/app/(booking-page-wrapper)/[user]/[type]/embed/page.tsx",
+    "apps/web/app/(booking-page-wrapper)/org/[orgSlug]/[user]/embed/page.tsx",
+    "apps/web/app/(booking-page-wrapper)/org/[orgSlug]/[user]/[type]/embed/page.tsx",
+    "apps/web/lib/d/[link]/[slug]/getServerSideProps.tsx",
+    "apps/web/modules/d/[link]/d-type-view.tsx",
+    "apps/web/lib/org/[orgSlug]/instant-meeting/team/[slug]/[type]/getServerSideProps.ts",
+    "apps/web/components/PageWrapper.tsx",
+    "apps/web/components/PageWrapperAppDir.tsx",
+    "apps/web/modules/bookings/views/bookings-single-view.tsx",
+    "apps/web/modules/settings/my-account/appearance-view.tsx",
+    "apps/web/app/(use-page-wrapper)/apps/routing-forms/[...pages]/RoutingLink.tsx",
+    "packages/features/membership/repositories/MembershipRepository.ts",
+    "packages/features/ee/teams/lib/queries.ts",
+    "packages/features/eventtypes/lib/getEventTypeById.ts",
+    "apps/api/v2/src/modules/organizations/event-types/services/output.service.ts",
+    "packages/platform/libraries/index.ts"
+  ]
+}

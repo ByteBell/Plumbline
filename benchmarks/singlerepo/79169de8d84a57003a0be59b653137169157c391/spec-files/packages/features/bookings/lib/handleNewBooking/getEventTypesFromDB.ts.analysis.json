@@ -1,0 +1,779 @@
+{
+  "relativePath": "packages/features/bookings/lib/handleNewBooking/getEventTypesFromDB.ts",
+  "language": "typescript",
+  "sha256": "0204783f8ec90fefaada7926384454fcaa31d08aac90982fc454128919fb8cd3",
+  "sizeBytes": 5745,
+  "tokenCount": 1437,
+  "lineCount": 226,
+  "analysedAt": "2026-09-04T19:28:01.631Z",
+  "analysis": {
+    "module": {
+      "purpose": "Provides the booking flow with a fully-loaded, validated EventType record from the database, including hosts, users, workflows, availability, credentials, and parsed metadata, as an input prerequisite for handleNewBooking.",
+      "summary": "This module fetches an event type by ID for the new-booking flow. It defines a large Prisma select object (getEventTypesFromDBSelect) covering scheduling settings, booking limits, seats, recurring events, locations, workflows, hosts with credentials and schedules, availability, and team/organization relations. The exported async function getEventTypesFromDB queries Prisma's eventType with findUniqueOrThrow, throws ErrorCode.EventTypeNotFound if missing, then transforms the result: annotates hosts and users with their selected calendars, parses metadata, recurringEvent, customInputs, and rrSegmentQueryValue with Zod schemas, normalizes locations, and derives booking fields (with system fields) alongside an isOrgTeamEvent flag. It returns a normalized object marked isDynamic: false. Exported types getEventTypeResponse and NewBookingEventType are consumed by the booking handler to unify dynamic-listing and database-backed event types.",
+      "businessContext": "Core of Cal.com's scheduling engine: every new booking needs the event type's configuration (hosts, limits, workflows, availability). If this fails or returns malformed data, bookings cannot be created and scheduling rules may be bypassed.",
+      "classes": [],
+      "functions": [
+        "getEventTypesFromDB (~L185-221): Fetches and normalizes event type data for booking creation",
+        "getEventTypeResponse (~L223): Type alias of awaited booking event type response",
+        "NewBookingEventType (~L225): Union type of dynamic or DB-backed event type"
+      ],
+      "keywords": [
+        "event type",
+        "Prisma select",
+        "booking fields",
+        "round robin hosts",
+        "recurring event",
+        "workflow select",
+        "selected calendars",
+        "Zod validation",
+        "organization team event",
+        "seat booking"
+      ],
+      "ontologyConcepts": [
+        "EventType",
+        "Host",
+        "Availability",
+        "BookingLimit",
+        "RecurringEvent",
+        "Credential",
+        "Team",
+        "Data normalization"
+      ],
+      "businessEntities": ["EventType", "Host", "User", "Team", "Workflow", "Schedule", "BookingField", "Credential"],
+      "systemCapabilities": [
+        "Retrieve event type configuration by ID",
+        "Validate and normalize event type metadata",
+        "Resolve hosts and users with selected calendars",
+        "Derive org-team event context"
+      ],
+      "configDependencies": [],
+      "importsInternal": [],
+      "importsExternal": [
+        {
+          "spec": "@calcom/app-store/locations",
+          "symbols": ["LocationObject"],
+          "package": "@calcom/app-store",
+          "subpath": "locations",
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 1,
+            "endLine": 1
+          }
+        },
+        {
+          "spec": "@calcom/ee/workflows/lib/getAllWorkflows",
+          "symbols": ["workflowSelect"],
+          "package": "@calcom/ee",
+          "subpath": "workflows/lib/getAllWorkflows",
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 2,
+            "endLine": 2
+          }
+        },
+        {
+          "spec": "@calcom/features/bookings/lib/getBookingFields",
+          "symbols": ["getBookingFieldsWithSystemFields"],
+          "package": "@calcom/features",
+          "subpath": "bookings/lib/getBookingFields",
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 3,
+            "endLine": 3
+          }
+        },
+        {
+          "spec": "@calcom/lib/defaultEvents",
+          "symbols": ["DefaultEvent"],
+          "package": "@calcom/lib",
+          "subpath": "defaultEvents",
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 4,
+            "endLine": 4
+          }
+        },
+        {
+          "spec": "@calcom/lib/errorCodes",
+          "symbols": ["ErrorCode"],
+          "package": "@calcom/lib",
+          "subpath": "errorCodes",
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 5,
+            "endLine": 5
+          }
+        },
+        {
+          "spec": "@calcom/lib/isRecurringEvent",
+          "symbols": ["parseRecurringEvent"],
+          "package": "@calcom/lib",
+          "subpath": "isRecurringEvent",
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 6,
+            "endLine": 6
+          }
+        },
+        {
+          "spec": "@calcom/lib/server/repository/user",
+          "symbols": ["withSelectedCalendars"],
+          "package": "@calcom/lib",
+          "subpath": "server/repository/user",
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 7,
+            "endLine": 7
+          }
+        },
+        {
+          "spec": "@calcom/prisma",
+          "symbols": ["prisma"],
+          "package": "@calcom/prisma",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 8,
+            "endLine": 8
+          }
+        },
+        {
+          "spec": "@calcom/prisma/client",
+          "symbols": ["Prisma"],
+          "package": "@calcom/prisma",
+          "subpath": "client",
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 9,
+            "endLine": 9
+          }
+        },
+        {
+          "spec": "@calcom/prisma/selects/credential",
+          "symbols": ["credentialForCalendarServiceSelect"],
+          "package": "@calcom/prisma",
+          "subpath": "selects/credential",
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 10,
+            "endLine": 10
+          }
+        },
+        {
+          "spec": "@calcom/prisma/selects/user",
+          "symbols": ["userSelect"],
+          "package": "@calcom/prisma",
+          "subpath": "selects/user",
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 11,
+            "endLine": 11
+          }
+        },
+        {
+          "spec": "@calcom/prisma/zod-utils",
+          "symbols": ["EventTypeMetaDataSchema", "customInputSchema", "rrSegmentQueryValueSchema"],
+          "package": "@calcom/prisma",
+          "subpath": "zod-utils",
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 12,
+            "endLine": 15
+          }
+        }
+      ],
+      "sideEffects": {
+        "io": [],
+        "network": ["Queries database via prisma.eventType.findUniqueOrThrow (network/db call)"],
+        "env": [],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": []
+      },
+      "integrationSurface": [
+        {
+          "kind": "table",
+          "role": "consumes",
+          "address": "EventType",
+          "payloadRef": "Prisma.EventTypeSelect",
+          "rawKind": null
+        }
+      ],
+      "contractsProvided": [
+        {
+          "name": "getEventTypesFromDB",
+          "shape": "async (eventTypeId: number) => Promise<{ ...restEventType, hosts, users, metadata, recurringEvent, customInputs, locations: LocationObject[], bookingFields, rrSegmentQueryValue, isDynamic: false, hostGroups }>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "getEventTypeResponse",
+          "shape": "type getEventTypeResponse = Awaited<ReturnType<typeof getEventTypesFromDB>>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "NewBookingEventType",
+          "shape": "type NewBookingEventType = DefaultEvent | getEventTypeResponse",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "prisma.eventType.findUniqueOrThrow",
+          "shape": "(args: { where: { id: number }, select: Prisma.EventTypeSelect }) => Promise<EventType>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "getBookingFieldsWithSystemFields",
+          "shape": "({ ...restEventType, isOrgTeamEvent }) => bookingFields",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "withSelectedCalendars",
+          "shape": "(user) => user with selected calendars",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "EventTypeMetaDataSchema.parse",
+          "shape": "(metadata || {}) => parsed metadata",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "parseRecurringEvent",
+          "shape": "(recurringEvent) => parsed recurringEvent",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "customInputSchema.array().parse",
+          "shape": "(customInputs || []) => parsed customInputs[]",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "rrSegmentQueryValueSchema.parse",
+          "shape": "(rrSegmentQueryValue) => parsed rrSegmentQueryValue ?? null",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "ErrorCode.EventTypeNotFound",
+          "shape": "ErrorCode enum value thrown when eventType is missing",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "getEventTypesFromDBSelect",
+          "intent": "Define Prisma select shape for event type query",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 18,
+            "endLine": 183
+          }
+        },
+        {
+          "name": "getEventTypesFromDB",
+          "intent": "Fetch event type by id and normalize/parse its fields",
+          "structureKind": "async",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 185,
+            "endLine": 221
+          }
+        },
+        {
+          "name": "db-query",
+          "intent": "Fetch event type record by id, throwing if absent",
+          "structureKind": "io",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 186,
+            "endLine": 191
+          }
+        },
+        {
+          "name": "not-found-check",
+          "intent": "Throw EventTypeNotFound if record missing",
+          "structureKind": "branch",
+          "predicate": "if (!eventType)",
+          "branchOutcomes": ["found: continue", "not found: throw"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 193,
+            "endLine": 195
+          }
+        },
+        {
+          "name": "transform-and-return",
+          "intent": "Map selected calendars onto hosts/users and parse schema-validated fields",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 197,
+            "endLine": 220
+          }
+        },
+        {
+          "name": "type-exports",
+          "intent": "Export response type and NewBookingEventType union",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 223,
+            "endLine": 225
+          }
+        }
+      ],
+      "representationFamily": "function-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "const",
+          "name": "getEventTypesFromDB",
+          "signature": "export const getEventTypesFromDB = async (eventTypeId: number) => {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": {
+            "startLine": 185,
+            "endLine": 221
+          }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "type",
+          "name": "getEventTypeResponse",
+          "shape": "export type getEventTypeResponse = Awaited<ReturnType<typeof getEventTypesFromDB>>;",
+          "discriminant": null,
+          "anchor": {
+            "startLine": 223,
+            "endLine": 223
+          }
+        },
+        {
+          "kind": "union",
+          "name": "NewBookingEventType",
+          "shape": "export type NewBookingEventType = DefaultEvent | getEventTypeResponse;",
+          "discriminant": null,
+          "anchor": {
+            "startLine": 225,
+            "endLine": 225
+          }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": {
+        "paragraph": "",
+        "tokenEstimate": 0
+      },
+      "edgeCases": [
+        {
+          "inputShape": "eventTypeId with no matching DB record",
+          "handled": false,
+          "behavior": "findUniqueOrThrow throws Prisma error; the subsequent !eventType check is unreachable dead code",
+          "anchor": {
+            "startLine": 186,
+            "endLine": 195
+          }
+        },
+        {
+          "inputShape": "null/absent metadata, customInputs, locations, hostGroups",
+          "handled": true,
+          "behavior": "Defaulted to {} / [] respectively",
+          "anchor": {
+            "startLine": 212,
+            "endLine": 219
+          }
+        },
+        {
+          "inputShape": "null recurringEvent",
+          "handled": true,
+          "behavior": "parseRecurringEvent applied, presumably returning null",
+          "anchor": {
+            "startLine": 213,
+            "endLine": 213
+          }
+        },
+        {
+          "inputShape": "null rrSegmentQueryValue",
+          "handled": true,
+          "behavior": "Schema-parsed then coalesced to null",
+          "anchor": {
+            "startLine": 217,
+            "endLine": 217
+          }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": "Prisma error from findUniqueOrThrow when no record matches id",
+          "caught": null,
+          "action": "Propagates to caller uncaught",
+          "fallback": null,
+          "anchor": {
+            "startLine": 186,
+            "endLine": 191
+          }
+        },
+        {
+          "thrown": "Error(ErrorCode.EventTypeNotFound)",
+          "caught": null,
+          "action": "Thrown when eventType is falsy (unreachable given findUniqueOrThrow)",
+          "fallback": null,
+          "anchor": {
+            "startLine": 194,
+            "endLine": 194
+          }
+        },
+        {
+          "thrown": "Zod parse errors (EventTypeMetaDataSchema, customInputSchema, rrSegmentQueryValueSchema)",
+          "caught": null,
+          "action": "Propagate uncaught if stored data invalid",
+          "fallback": null,
+          "anchor": {
+            "startLine": 212,
+            "endLine": 217
+          }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "env",
+          "description": "Prisma client is configured and database reachable",
+          "anchor": {
+            "startLine": 186,
+            "endLine": 191
+          }
+        },
+        {
+          "kind": "schema",
+          "description": "Stored metadata/customInputs/rrSegmentQueryValue conform to their Zod schemas",
+          "anchor": {
+            "startLine": 212,
+            "endLine": 217
+          }
+        },
+        {
+          "kind": "caller",
+          "description": "Caller supplies a numeric eventTypeId",
+          "anchor": {
+            "startLine": 185,
+            "endLine": 185
+          }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "Is the !eventType throw intended to be reachable (e.g. should findFirst be used instead of findUniqueOrThrow)?",
+          "affects": "error_handling / not-found behavior",
+          "anchor": {
+            "startLine": 193,
+            "endLine": 195
+          },
+          "resolution": null
+        },
+        {
+          "question": "parseRecurringEvent's null-handling behavior is defined in another file",
+          "affects": "recurringEvent output shape",
+          "anchor": {
+            "startLine": 213,
+            "endLine": 213
+          },
+          "resolution": null
+        }
+      ],
+      "stateModel": null,
+      "fileFingerprint": {
+        "lineCount": 0,
+        "declarationCount": 0,
+        "maxNestingDepth": 0,
+        "roughCyclomatic": 0
+      },
+      "reconstructionHints": {
+        "namingStyle": "unknown",
+        "returnStyle": "n/a",
+        "commentStyle": "none",
+        "dialect": ""
+      },
+      "moduleContractTests": [
+        {
+          "testId": "fetches-event-type-by-id",
+          "scenario": "Requesting an existing event type returns its fully-shaped booking data",
+          "given": ["a persisted EventType with id 42"],
+          "when": "getEventTypesFromDB(42)",
+          "then": "returns object with metadata parsed via EventTypeMetaDataSchema, recurringEvent parsed, customInputs as array, locations as array, bookingFields computed, isDynamic === false",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Pins the response shape that new-booking consumers depend on"
+        },
+        {
+          "testId": "throws-not-found-for-missing-event-type",
+          "scenario": "Requesting a nonexistent event type id raises EventTypeNotFound",
+          "given": ["no EventType with the given id"],
+          "when": "getEventTypesFromDB(999999)",
+          "then": "throws Error(ErrorCode.EventTypeNotFound)",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Guards the not-found error contract for callers"
+        },
+        {
+          "testId": "defaults-empty-metadata-and-custom-inputs",
+          "scenario": "Event type with null metadata/customInputs yields empty defaults",
+          "given": ["EventType with metadata = null, customInputs = null"],
+          "when": "getEventTypesFromDB(id)",
+          "then": "metadata === EventTypeMetaDataSchema.parse({}) and customInputs === []",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Null-tolerance invariant for optional JSON columns"
+        },
+        {
+          "testId": "null-locations-become-empty-array",
+          "scenario": "Event type with null locations returns empty locations array",
+          "given": ["EventType with locations = null"],
+          "when": "getEventTypesFromDB(id)",
+          "then": "locations === [] cast as LocationObject[]",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Booking page expects a list, never null"
+        },
+        {
+          "testId": "hosts-and-users-enriched-with-selected-calendars",
+          "scenario": "Hosts and users in the response include selected calendars via withSelectedCalendars",
+          "given": ["EventType with one host and one user having credentials"],
+          "when": "getEventTypesFromDB(id)",
+          "then": "every element of hosts.user and users has selectedCalendars applied by withSelectedCalendars",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Calendar availability of hosts/users is part of the returned contract"
+        },
+        {
+          "testId": "dynamic-flag-always-false",
+          "scenario": "DB-sourced event types are never marked dynamic",
+          "given": ["any persisted EventType"],
+          "when": "getEventTypesFromDB(id)",
+          "then": "result.isDynamic === false",
+          "targets": [],
+          "oracleKind": "invariant-check",
+          "rationale": "Distinguishes DB event types from dynamic /user/event-type slugs"
+        },
+        {
+          "testId": "booking-fields-include-system-fields",
+          "scenario": "bookingFields in the response are merged with system fields",
+          "given": ["EventType with bookingFields stored in DB"],
+          "when": "getEventTypesFromDB(id)",
+          "then": "result.bookingFields === getBookingFieldsWithSystemFields({ ...restEventType, isOrgTeamEvent })",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "System field merge is required by downstream booking form validation"
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "import block",
+        "getEventTypesFromDBSelect (module-private const)",
+        "getEventTypesFromDB",
+        "getEventTypeResponse (type)",
+        "NewBookingEventType (type)"
+      ],
+      "moduleLevelCode": "import block (lines 1-16): type/value imports from @calcom/app-store/locations, @calcom/ee/workflows/lib/getAllWorkflows, @calcom/features/bookings/lib/getBookingFields, @calcom/lib/defaultEvents, @calcom/lib/errorCodes, @calcom/lib/isRecurringEvent, @calcom/lib/server/repository/user, @calcom/prisma, @calcom/prisma/client, @calcom/prisma/selects/credential, @calcom/prisma/selects/user, @calcom/prisma/zod-utils",
+      "exports": [
+        {
+          "name": "getEventTypesFromDB",
+          "kind": "own",
+          "fromSpec": null,
+          "exportedAs": null
+        },
+        {
+          "name": "getEventTypeResponse",
+          "kind": "own",
+          "fromSpec": null,
+          "exportedAs": null
+        },
+        {
+          "name": "NewBookingEventType",
+          "kind": "own",
+          "fromSpec": null,
+          "exportedAs": null
+        }
+      ],
+      "importSymbolMap": [
+        {
+          "symbol": "LocationObject",
+          "module": "@calcom/app-store/locations",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "workflowSelect",
+          "module": "@calcom/ee/workflows/lib/getAllWorkflows",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "getBookingFieldsWithSystemFields",
+          "module": "@calcom/features/bookings/lib/getBookingFields",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "DefaultEvent",
+          "module": "@calcom/lib/defaultEvents",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "ErrorCode",
+          "module": "@calcom/lib/errorCodes",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "parseRecurringEvent",
+          "module": "@calcom/lib/isRecurringEvent",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "withSelectedCalendars",
+          "module": "@calcom/lib/server/repository/user",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "prisma",
+          "module": "@calcom/prisma",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "Prisma",
+          "module": "@calcom/prisma/client",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "credentialForCalendarServiceSelect",
+          "module": "@calcom/prisma/selects/credential",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "userSelect",
+          "module": "@calcom/prisma/selects/user",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "EventTypeMetaDataSchema",
+          "module": "@calcom/prisma/zod-utils",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "customInputSchema",
+          "module": "@calcom/prisma/zod-utils",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "rrSegmentQueryValueSchema",
+          "module": "@calcom/prisma/zod-utils",
+          "alias": null,
+          "kind": "external"
+        }
+      ],
+      "fileConstants": [
+        {
+          "name": "getEventTypesFromDBSelect",
+          "value": "satisfies Prisma.EventTypeSelect",
+          "kind": "prisma select object (module-private const)"
+        }
+      ],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/features/bookings/lib/handleNewBooking/getEventTypesFromDB.ts__getEventTypesFromDBSelect_1#const:getEventTypesFromDBSelect",
+        "unitKind": "const",
+        "name": "getEventTypesFromDBSelect",
+        "qualifiedName": "getEventTypesFromDBSelect",
+        "parentUnitId": null,
+        "startLine": 18,
+        "endLine": 183,
+        "isBehavioral": false,
+        "source": "const getEventTypesFromDBSelect = {\n  id: true,\n  customInputs: true,\n  disableGuests: true,\n  restrictionScheduleId: true,\n  useBookerTimezone: true,\n  disableRescheduling: true,\n  disableCancelling: true,\n  users: {\n    select: {\n      credentials: {\n        select: credentialForCalendarServiceSelect,\n      },\n      ...userSelect,\n    },\n  },\n  slug: true,\n  profile: {\n    select: {\n      organizationId: true,\n    },\n  },\n  teamId: true,\n  team: {\n    select: {\n      id: true,\n      name: true,\n      parentId: true,\n      bookingLimits: true,\n      includeManagedEventsInLimits: true,\n      rrResetInterval: true,\n      rrTimestampBasis: true,\n    },\n  },\n  bookingFields: true,\n  title: true,\n  length: true,\n  eventName: true,\n  schedulingType: true,\n  description: true,\n  periodType: true,\n  periodStartDate: true,\n  periodEndDate: true,\n  periodDays: true,\n  periodCountCalendarDays: true,\n  lockTimeZoneToggleOnBookingPage: true,\n  lockedTimeZone: true,\n  requiresConfirmation: true,\n  requiresConfirmationForFreeEmail: true,\n  requiresBookerEmailVerification: true,\n  maxLeadThreshold: true,\n  includeNoShowInRRCalculation: true,\n  minimumBookingNotice: true,\n  maxActiveBookingsPerBooker: true,\n  maxActiveBookingPerBookerOfferReschedule: true,\n  userId: true,\n  price: true,\n  currency: true,\n  metadata: true,\n  destinationCalendar: true,\n  hideCalendarNotes: true,\n  hideCalendarEventDetails: true,\n  hideOrganizerEmail: true,\n  seatsPerTimeSlot: true,\n  recurringEvent: true,\n  seatsShowAttendees: true,\n  seatsShowAvailabilityCount: true,\n  bookingLimits: true,\n  durationLimits: true,\n  rescheduleWithSameRoundRobinHost: true,\n  assignAllTeamMembers: true,\n  isRRWeightsEnabled: true,\n  beforeEventBuffer: true,\n  customReplyToEmail: true,\n  afterEventBuffer: true,\n  parentId: true,\n  parent: {\n    select: {\n      teamId: true,\n      team: {\n        select: {\n          id: true,\n          bookingLimits: true,\n          includeManagedEventsInLimits: true,\n        },\n      },\n    },\n  },\n  useEventTypeDestinationCalendarEmail: true,\n  owner: {\n    select: {\n      hideBranding: true,\n    },\n  },\n  workflows: {\n    select: {\n      workflow: {\n        select: workflowSelect,\n      },\n    },\n  },\n  locations: true,\n  timeZone: true,\n  schedule: {\n    select: {\n      id: true,\n      availability: true,\n      timeZone: true,\n    },\n  },\n  hosts: {\n    select: {\n      isFixed: true,\n      priority: true,\n      weight: true,\n      createdAt: true,\n      groupId: true,\n      user: {\n        select: {\n          credentials: {\n            select: credentialForCalendarServiceSelect,\n          },\n          ...userSelect,\n        },\n      },\n      schedule: {\n        select: {\n          availability: {\n            select: {\n              date: true,\n              startTime: true,\n              endTime: true,\n              days: true,\n            },\n          },\n          timeZone: true,\n          id: true,\n        },\n      },\n    },\n  },\n  availability: {\n    select: {\n      date: true,\n      startTime: true,\n      endTime: true,\n      days: true,\n    },\n  },\n  secondaryEmailId: true,\n  secondaryEmail: {\n    select: {\n      id: true,\n      email: true,\n    },\n  },\n  assignRRMembersUsingSegment: true,\n  rrSegmentQueryValue: true,\n  useEventLevelSelectedCalendars: true,\n  hostGroups: {\n    select: {\n      id: true,\n      name: true,\n    },\n  },\n} satisfies Prisma.EventTypeSelect;"
+      },
+      {
+        "unitId": "packages/features/bookings/lib/handleNewBooking/getEventTypesFromDB.ts__getEventTypesFromDB_2#function:getEventTypesFromDB",
+        "unitKind": "function",
+        "name": "getEventTypesFromDB",
+        "qualifiedName": "getEventTypesFromDB",
+        "parentUnitId": null,
+        "startLine": 185,
+        "endLine": 221,
+        "isBehavioral": true,
+        "source": "export const getEventTypesFromDB = async (eventTypeId: number) => {\n  const eventType = await prisma.eventType.findUniqueOrThrow({\n    where: {\n      id: eventTypeId,\n    },\n    select: getEventTypesFromDBSelect,\n  });\n\n  if (!eventType) {\n    throw new Error(ErrorCode.EventTypeNotFound);\n  }\n\n  const { profile, hosts, users, ...restEventType } = eventType;\n\n  const isOrgTeamEvent = !!eventType?.team && !!profile?.organizationId;\n\n  const hostsWithSelectedCalendars = hosts.map((host) => ({\n    ...host,\n    user: withSelectedCalendars(host.user),\n  }));\n\n  const usersWithSelectedCalendars = users.map((user) => withSelectedCalendars(user));\n\n  return {\n    ...restEventType,\n    hosts: hostsWithSelectedCalendars,\n    users: usersWithSelectedCalendars,\n    metadata: EventTypeMetaDataSchema.parse(eventType?.metadata || {}),\n    recurringEvent: parseRecurringEvent(eventType?.recurringEvent),\n    customInputs: customInputSchema.array().parse(eventType?.customInputs || []),\n    locations: (eventType?.locations ?? []) as LocationObject[],\n    bookingFields: getBookingFieldsWithSystemFields({ ...restEventType, isOrgTeamEvent }),\n    rrSegmentQueryValue: rrSegmentQueryValueSchema.parse(eventType.rrSegmentQueryValue) ?? null,\n    isDynamic: false,\n    hostGroups: eventType.hostGroups || [],\n  };\n};"
+      },
+      {
+        "unitId": "packages/features/bookings/lib/handleNewBooking/getEventTypesFromDB.ts__getEventTypeResponse_3#type_alias:getEventTypeResponse",
+        "unitKind": "type_alias",
+        "name": "getEventTypeResponse",
+        "qualifiedName": "getEventTypeResponse",
+        "parentUnitId": null,
+        "startLine": 223,
+        "endLine": 223,
+        "isBehavioral": false,
+        "source": "export type getEventTypeResponse = Awaited<ReturnType<typeof getEventTypesFromDB>>;"
+      },
+      {
+        "unitId": "packages/features/bookings/lib/handleNewBooking/getEventTypesFromDB.ts__NewBookingEventType_4#type_alias:NewBookingEventType",
+        "unitKind": "type_alias",
+        "name": "NewBookingEventType",
+        "qualifiedName": "NewBookingEventType",
+        "parentUnitId": null,
+        "startLine": 225,
+        "endLine": 225,
+        "isBehavioral": false,
+        "source": "export type NewBookingEventType = DefaultEvent | getEventTypeResponse;"
+      }
+    ],
+    "extractedUnitCount": 4,
+    "unreconciledUnitNames": []
+  },
+  "tokenUsage": {
+    "inputTokens": 15041,
+    "outputTokens": 5479,
+    "costUsd": 0.004615009999999999
+  },
+  "model": "z-ai/glm-5.3-flash"
+}

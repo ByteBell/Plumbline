@@ -1,0 +1,71 @@
+{
+  "duration_api_ms": 84236,
+  "stop_reason": "end_turn",
+  "session_id": "b895c362-9de4-44c4-a4cd-b4525be5a0bc",
+  "total_cost_usd": 0.785767,
+  "usage": {
+    "input_tokens": 18,
+    "cache_creation_input_tokens": 37955,
+    "cache_read_input_tokens": 498304,
+    "output_tokens": 6279,
+    "output_tokens_details": { "thinking_tokens": 1751 },
+    "server_tool_use": { "web_search_requests": 0, "web_fetch_requests": 0 },
+    "service_tier": "standard",
+    "cache_creation": { "ephemeral_1h_input_tokens": 37955, "ephemeral_5m_input_tokens": 0 },
+    "inference_geo": "not_available",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 1713,
+        "cache_read_input_tokens": 68016,
+        "cache_creation_input_tokens": 883,
+        "cache_creation": { "ephemeral_5m_input_tokens": 0, "ephemeral_1h_input_tokens": 883 },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-opus-5": {
+      "inputTokens": 18,
+      "outputTokens": 6279,
+      "cacheReadInputTokens": 498304,
+      "cacheCreationInputTokens": 37955,
+      "webSearchRequests": 0,
+      "costUSD": 0.785767,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "canonicalModel": "claude-opus-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": { "background": 0, "foreground": 0, "unset": 0 },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": { "parent": 0, "user": 0, "system": 0 },
+    "refused": { "depth_limit": 0, "concurrency_limit": 0, "budget": 0 },
+    "by_type": {}
+  },
+  "is_error": false,
+  "num_turns": 11,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Scored and written. Report:\n\n**Gold file:** `gold.json` (no `golden.json` in this case dir). I read `ranked.json` in full before opening the gold — its 73 paths were on record first.\n\n**Answer shape:** flat array — single-repo form, matching `gold.json`'s flat `gold` list. No flattening needed.\n\n**Scorer:** `python3 score_arm.py cal.com.processed/f66fffd13b0bb1828248bc89c687e23a7481a40a claudecli_opus5_mcp_plumbline_rejection_selection_v5_s3`, exit 0. Output written verbatim into `result.json` (scorer's own surface block preserved under `scorer_surface`).\n\n**Metrics**\n\n| metric | value |\n|---|---|\n| hits / gold_total | 5 / 8 |\n| recall@10 | 0.375 |\n| recall@20 | 0.375 |\n| recall@full (73, cap 75) | 0.625 |\n| precision@5 | 0.600 |\n| precision@10, @20 | not emitted by scorer |\n| F1@20, F1_full_list | not emitted by scorer |\n| MRR | 1.000 |\n\n`score_arm.py` computes only `precision@5` and `MRR` alongside the recall@k family (lines 210–211). I did not substitute hand arithmetic for the missing precision and F1 figures.\n\n**Found (5):** `packages/features/ee/workflows/lib/service/EmailWorkflowService.ts` (r1), `packages/features/ee/workflows/api/scheduleEmailReminders.ts` (r2), `packages/features/bookings/lib/service/RegularBookingService.ts` (r5), `packages/features/ee/workflows/lib/types.ts` (r30), `packages/features/tasker/tasks/sendWorkflowEmails.ts` (r52).\n\n**Missed (3):** `apps/api/v2/src/ee/bookings/2024-04-15/controllers/bookings.controller.ts`, `apps/api/v2/src/ee/bookings/2024-08-13/services/input.service.ts`, `packages/prisma/zod-utils.ts`.\n\n**Surface verdict: NOT comparable.** One reason, and it is not a tool violation: prompt caching was active — `cache_read=3685805`, `cache_creation=185180` (warm run). Tool counts derived from `commands.log` (29 calls) agree exactly with the scorer's table and with `cost.json`'s self-report: stakeout 8, collateral_damage 7, the_receipts 6, ToolSearch 2, shakedown 2, roll_call/blueprint/case_file/manhunt 1 each. Every non-`ToolSearch` call is a `mcp__plumbline__*` tool — no filesystem or shell tool, and the retriever's own search tool (`stakeout`) was called 8 times, so what was measured is that retriever. The scorer printed `comparable: true`; it does not check the cache fields, so the derived block in `result.json` overrides it to `false`.\n\n**What the misses share:** all three sit in the request-ingress and type-declaration register, upstream of anything that reads branding at runtime — the v2 API booking controller and its input service, where an inbound booking payload is parsed and normalized, and the shared zod schema module that types that payload. The arm's trace ran the other direction: it anchored on the branding resolver and walked the email/reminder execution path downstream through services, managers and templates, so its `apps/api/v2` coverage came out as an atoms service and a team-update DTO rather than the bookings controller chain. Declaration files were not excluded on principle — `workflows/lib/types.ts` was returned at rank 30 — but the declarations it reached were the workflow package's own, not the boundary schemas the fix also had to change.",
+  "ttft_ms": 1303,
+  "type": "result",
+  "duration_ms": 85060,
+  "uuid": "459766da-ef44-4a91-ab7b-3362bfec0a5d",
+  "ttft_stream_ms": 846,
+  "time_to_request_ms": 23,
+  "queued_turn_count": 0
+}

@@ -1,0 +1,536 @@
+{
+  "schema": 2,
+  "kind": "file",
+  "repoName": "cal.diy",
+  "file": {
+    "relativePath": "packages/trpc/server/routers/viewer/auth/verifyCodeUnAuthenticated.handler.ts",
+    "language": "typescript",
+    "sizeBytes": 893,
+    "tokenCount": 224,
+    "model": "us.openai.gpt-5.6-luna",
+    "analysedAt": "2026-09-04T15:42:48.199Z",
+    "module": {
+      "purpose": "Validates unauthenticated verification codes by deriving an email-bound TOTP secret and rejecting missing or invalid credentials.",
+      "summary": "This authentication router handler accepts a typed email and verification code, validates required input, derives a deterministic secret using the email and configured encryption key, and checks the code as a time-based token with a fifteen-minute step. Invalid requests produce BAD_REQUEST errors, while successful validation returns the verification result.",
+      "businessContext": "Supports passwordless or unauthenticated account verification flows using emailed or otherwise issued codes.\nFailure blocks users from completing authentication or verification, while weak validation could permit unauthorized access.",
+      "classes": [
+        "VerifyTokenOptions (~L8-10): Types the input payload accepted by unauthenticated code verification."
+      ],
+      "functions": [
+        "verifyCodeUnAuthenticatedHandler (~L12-14): Delegates unauthenticated verification requests to the token validation routine.",
+        "verifyCodeUnAuthenticated (~L16-30): Validates input and checks an email-derived time-based authentication code."
+      ],
+      "keywords": [
+        "TOTP",
+        "unauthenticated verification",
+        "verification code",
+        "time-based token",
+        "email-derived secret",
+        "MD5 hash",
+        "TRPCError",
+        "BAD_REQUEST",
+        "passwordless authentication"
+      ],
+      "ontologyConcepts": [
+        "authentication",
+        "identity verification",
+        "token validation",
+        "credential derivation",
+        "input validation",
+        "error handling"
+      ],
+      "businessEntities": ["Email", "Verification Code", "Authentication Token", "User"],
+      "systemCapabilities": [
+        "Validate unauthenticated verification requests",
+        "Derive deterministic authentication secrets",
+        "Check time-based verification tokens",
+        "Reject malformed authentication input",
+        "Report invalid verification codes"
+      ],
+      "configDependencies": ["CALENDSO_ENCRYPTION_KEY"],
+      "importsInternal": [],
+      "importsExternal": [
+        {
+          "spec": "crypto",
+          "symbols": ["createHash"],
+          "package": "crypto",
+          "subpath": null,
+          "isBuiltin": true,
+          "anchor": { "startLine": 1, "endLine": 1 }
+        },
+        {
+          "spec": "@calcom/lib/totp",
+          "symbols": ["totpRawCheck"],
+          "package": "@calcom/lib",
+          "subpath": "totp",
+          "isBuiltin": false,
+          "anchor": { "startLine": 3, "endLine": 3 }
+        },
+        {
+          "spec": "@calcom/prisma/zod-utils",
+          "symbols": ["ZVerifyCodeInputSchema"],
+          "package": "@calcom/prisma",
+          "subpath": "zod-utils",
+          "isBuiltin": false,
+          "anchor": { "startLine": 4, "endLine": 4 }
+        },
+        {
+          "spec": "@trpc/server",
+          "symbols": ["TRPCError"],
+          "package": "@trpc/server",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 6, "endLine": 6 }
+        }
+      ],
+      "sideEffects": {
+        "io": [],
+        "network": [],
+        "env": ["Reads process.env.CALENDSO_ENCRYPTION_KEY when deriving the TOTP secret."],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": []
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "verifyCodeUnAuthenticatedHandler",
+          "shape": "export const verifyCodeUnAuthenticatedHandler = async ({ input }: VerifyTokenOptions) =>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "verifyCodeUnAuthenticated",
+          "shape": "export const verifyCodeUnAuthenticated = async (input: ZVerifyCodeInputSchema) =>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "ZVerifyCodeInputSchema",
+          "shape": "ZVerifyCodeInputSchema",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "totpRawCheck",
+          "shape": "totpRawCheck(code, secret, { step: 900 })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "TRPCError",
+          "shape": "new TRPCError({ code: \"BAD_REQUEST\" })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "createHash",
+          "shape": "createHash(\"md5\").update(email + process.env.CALENDSO_ENCRYPTION_KEY).digest(\"hex\")",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "verifyCodeUnAuthenticatedHandler",
+          "intent": "Delegates handler input verification to the unauthenticated verifier.",
+          "structureKind": "async",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 12, "endLine": 14 }
+        },
+        {
+          "name": "input validation",
+          "intent": "Rejects requests missing an email or verification code.",
+          "structureKind": "branch",
+          "predicate": "!email || !code",
+          "branchOutcomes": ["throws BAD_REQUEST", "continues"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 17, "endLine": 19 }
+        },
+        {
+          "name": "secret derivation",
+          "intent": "Derives an MD5 hexadecimal secret from email and encryption key.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 21, "endLine": 23 }
+        },
+        {
+          "name": "TOTP verification",
+          "intent": "Checks the supplied code against the derived secret using a 900-second step.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 25, "endLine": 25 }
+        },
+        {
+          "name": "invalid token handling",
+          "intent": "Rejects codes that fail the TOTP check.",
+          "structureKind": "branch",
+          "predicate": "!isValidToken",
+          "branchOutcomes": ["throws BAD_REQUEST with invalid_code", "returns validation result"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 27, "endLine": 29 }
+        }
+      ],
+      "representationFamily": "function-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "type",
+          "name": "VerifyTokenOptions",
+          "signature": "type VerifyTokenOptions = {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 8, "endLine": 10 }
+        },
+        {
+          "kind": "function",
+          "name": "verifyCodeUnAuthenticatedHandler",
+          "signature": "export const verifyCodeUnAuthenticatedHandler = async ({ input }: VerifyTokenOptions) => {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 12, "endLine": 14 }
+        },
+        {
+          "kind": "function",
+          "name": "verifyCodeUnAuthenticated",
+          "signature": "export const verifyCodeUnAuthenticated = async (input: ZVerifyCodeInputSchema) => {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 16, "endLine": 30 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "type",
+          "name": "VerifyTokenOptions",
+          "shape": "{\n  input: ZVerifyCodeInputSchema;\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 8, "endLine": 10 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "Missing or falsy email",
+          "handled": true,
+          "behavior": "Throws TRPCError with code BAD_REQUEST before deriving the secret.",
+          "anchor": { "startLine": 17, "endLine": 19 }
+        },
+        {
+          "inputShape": "Missing or falsy code",
+          "handled": true,
+          "behavior": "Throws TRPCError with code BAD_REQUEST before deriving the secret.",
+          "anchor": { "startLine": 17, "endLine": 19 }
+        },
+        {
+          "inputShape": "Code that fails TOTP validation",
+          "handled": true,
+          "behavior": "Throws TRPCError with code BAD_REQUEST and message invalid_code.",
+          "anchor": { "startLine": 25, "endLine": 27 }
+        },
+        {
+          "inputShape": "Code accepted by totpRawCheck",
+          "handled": true,
+          "behavior": "Returns the truthy validation result.",
+          "anchor": { "startLine": 25, "endLine": 29 }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": "TRPCError",
+          "caught": null,
+          "action": "Rejects input when email or code is falsy.",
+          "fallback": null,
+          "anchor": { "startLine": 19, "endLine": 19 }
+        },
+        {
+          "thrown": "TRPCError",
+          "caught": null,
+          "action": "Rejects an invalid verification code.",
+          "fallback": null,
+          "anchor": { "startLine": 27, "endLine": 27 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "schema",
+          "description": "input provides email and code properties compatible with ZVerifyCodeInputSchema.",
+          "anchor": { "startLine": 8, "endLine": 10 }
+        },
+        {
+          "kind": "env",
+          "description": "CALENDSO_ENCRYPTION_KEY is available as the encryption-key component of the derived secret.",
+          "anchor": { "startLine": 21, "endLine": 23 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "What exact validity rules and return values does totpRawCheck apply for the supplied code and secret?",
+          "affects": "TOTP verification and invalid-code behavior",
+          "anchor": { "startLine": 25, "endLine": 25 },
+          "resolution": null
+        }
+      ],
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "rejects-missing-email-or-code",
+          "scenario": "A verification request is missing either the email or the code.",
+          "given": ["input = { email: \"\", code: \"123456\" }"],
+          "when": "verifyCodeUnAuthenticated(input)",
+          "then": "rejects with TRPCError code \"BAD_REQUEST\"",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Ensures incomplete unauthenticated verification requests are rejected before token validation."
+        },
+        {
+          "testId": "rejects-invalid-code",
+          "scenario": "A request has an email and code, but TOTP validation fails.",
+          "given": ["input = { email: \"user@example.com\", code: \"123456\" }", "totpRawCheck = () => false"],
+          "when": "verifyCodeUnAuthenticated(input)",
+          "then": "rejects with TRPCError code \"BAD_REQUEST\" and message \"invalid_code\"",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins the public error contract for invalid verification codes."
+        },
+        {
+          "testId": "returns-true-for-valid-code",
+          "scenario": "A request has an email and code that pass TOTP validation.",
+          "given": ["input = { email: \"user@example.com\", code: \"123456\" }", "totpRawCheck = () => true"],
+          "when": "verifyCodeUnAuthenticated(input)",
+          "then": "resolves to true",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Ensures successful verification returns the validator result."
+        },
+        {
+          "testId": "handler-delegates-verification",
+          "scenario": "The unauthenticated handler receives a wrapped input object.",
+          "given": ["input = { email: \"user@example.com\", code: \"123456\" }"],
+          "when": "verifyCodeUnAuthenticatedHandler({ input })",
+          "then": "produces the same result or error as verifyCodeUnAuthenticated(input)",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Guards the handler's delegation contract and input unwrapping."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": ["VerifyTokenOptions", "verifyCodeUnAuthenticatedHandler", "verifyCodeUnAuthenticated"],
+      "moduleLevelCode": "import { createHash } from \"crypto\";\n\nimport { totpRawCheck } from \"@calcom/lib/totp\";\nimport type { ZVerifyCodeInputSchema } from \"@calcom/prisma/zod-utils\";\n\nimport { TRPCError } from \"@trpc/server\";",
+      "exports": [
+        { "name": "verifyCodeUnAuthenticatedHandler", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "verifyCodeUnAuthenticated", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "createHash", "module": "crypto", "alias": null, "kind": "external" },
+        { "symbol": "totpRawCheck", "module": "@calcom/lib/totp", "alias": null, "kind": "external" },
+        { "symbol": "ZVerifyCodeInputSchema", "module": "@calcom/prisma/zod-utils", "alias": null, "kind": "external" },
+        { "symbol": "TRPCError", "module": "@trpc/server", "alias": null, "kind": "external" }
+      ],
+      "fileConstants": [],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/trpc/server/routers/viewer/auth/verifyCodeUnAuthenticated.handler.ts__VerifyTokenOptions_1#type_alias:VerifyTokenOptions",
+        "unitKind": "type_alias",
+        "name": "VerifyTokenOptions",
+        "qualifiedName": "VerifyTokenOptions",
+        "parentUnitId": null,
+        "startLine": 8,
+        "endLine": 10,
+        "isBehavioral": false,
+        "source": "type VerifyTokenOptions = {\n  input: ZVerifyCodeInputSchema;\n};"
+      },
+      {
+        "unitId": "packages/trpc/server/routers/viewer/auth/verifyCodeUnAuthenticated.handler.ts__verifyCodeUnAuthenticatedHandler_2#function:verifyCodeUnAuthenticatedHandler",
+        "unitKind": "function",
+        "name": "verifyCodeUnAuthenticatedHandler",
+        "qualifiedName": "verifyCodeUnAuthenticatedHandler",
+        "parentUnitId": null,
+        "startLine": 12,
+        "endLine": 14,
+        "isBehavioral": true,
+        "source": "export const verifyCodeUnAuthenticatedHandler = async ({ input }: VerifyTokenOptions) => {\n  return verifyCodeUnAuthenticated(input);\n};",
+        "detail": {
+          "unitId": "packages/trpc/server/routers/viewer/auth/verifyCodeUnAuthenticated.handler.ts__verifyCodeUnAuthenticatedHandler_2#function:verifyCodeUnAuthenticatedHandler",
+          "fileId": "packages/trpc/server/routers/viewer/auth/verifyCodeUnAuthenticated.handler.ts__verifyCodeUnAuthenticatedHandler_2",
+          "unitKind": "function",
+          "name": "verifyCodeUnAuthenticatedHandler",
+          "qualifiedName": "verifyCodeUnAuthenticatedHandler",
+          "parentUnitId": null,
+          "startLine": 12,
+          "endLine": 14,
+          "signature": "async ({ input }: VerifyTokenOptions) => Promise<any>",
+          "parameters": [
+            {
+              "name": "input",
+              "type": "VerifyTokenOptions",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "Promise<any>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "pure",
+          "visibility": "public",
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["The `input` argument must conform to the `VerifyTokenOptions` contract."],
+          "postconditions": ["Returns the exact result of `verifyCodeUnAuthenticated(input)`."],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "verifyCodeUnAuthenticated", "source": null, "kind": "internal" }],
+          "symbolReferences": ["VerifyTokenOptions"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Forwards the verification request by delegating to verifyCodeUnAuthenticated with the provided input.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "sourceHash": "",
+          "semanticFingerprint": "223839f0580860a51f28af39640e44d57ffd03c5ee050e1dc291aa20cef50d71"
+        }
+      },
+      {
+        "unitId": "packages/trpc/server/routers/viewer/auth/verifyCodeUnAuthenticated.handler.ts__verifyCodeUnAuthenticated_3#function:verifyCodeUnAuthenticated",
+        "unitKind": "function",
+        "name": "verifyCodeUnAuthenticated",
+        "qualifiedName": "verifyCodeUnAuthenticated",
+        "parentUnitId": null,
+        "startLine": 16,
+        "endLine": 30,
+        "isBehavioral": true,
+        "source": "export const verifyCodeUnAuthenticated = async (input: ZVerifyCodeInputSchema) => {\n  const { email, code } = input;\n\n  if (!email || !code) throw new TRPCError({ code: \"BAD_REQUEST\" });\n\n  const secret = createHash(\"md5\")\n    .update(email + process.env.CALENDSO_ENCRYPTION_KEY)\n    .digest(\"hex\");\n\n  const isValidToken = totpRawCheck(code, secret, { step: 900 });\n\n  if (!isValidToken) throw new TRPCError({ code: \"BAD_REQUEST\", message: \"invalid_code\" });\n\n  return isValidToken;\n};",
+        "detail": {
+          "unitId": "packages/trpc/server/routers/viewer/auth/verifyCodeUnAuthenticated.handler.ts__verifyCodeUnAuthenticated_3#function:verifyCodeUnAuthenticated",
+          "fileId": "packages/trpc/server/routers/viewer/auth/verifyCodeUnAuthenticated.handler.ts__verifyCodeUnAuthenticated_3",
+          "unitKind": "function",
+          "name": "verifyCodeUnAuthenticated",
+          "qualifiedName": "verifyCodeUnAuthenticated",
+          "parentUnitId": null,
+          "startLine": 16,
+          "endLine": 30,
+          "signature": "export const verifyCodeUnAuthenticated = async (input: ZVerifyCodeInputSchema) => Promise<boolean>",
+          "parameters": [
+            {
+              "name": "input",
+              "type": "ZVerifyCodeInputSchema",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "Promise<boolean>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The `input` object must contain non‑empty `email` and `code` fields.",
+            "Environment variable `CALENDSO_ENCRYPTION_KEY` must be defined."
+          ],
+          "postconditions": ["If the provided code is valid, the function resolves to `true`."],
+          "invariants": [],
+          "edgeCases": [
+            "If `email` or `code` is missing or empty, a TRPCError with code `BAD_REQUEST` is thrown.",
+            "If the code does not match the generated token, a TRPCError with code `BAD_REQUEST` and message `invalid_code` is thrown."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["TRPCError"],
+            "reverts": [],
+            "onInvalidInput": "throws TRPCError with code BAD_REQUEST",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "createHash", "source": "crypto", "kind": "internal" },
+            { "name": "totpRawCheck", "source": "otplib", "kind": "internal" },
+            { "name": "process.env.CALENDSO_ENCRYPTION_KEY", "source": null, "kind": "internal" }
+          ],
+          "symbolReferences": ["ZVerifyCodeInputSchema", "TRPCError"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Verifies a one‑time code for an unauthenticated user; returns true when the code matches the generated TOTP, otherwise throws a BAD_REQUEST error.",
+          "specLiterals": [
+            { "kind": "error-message", "value": "BAD_REQUEST", "role": "TRPC error code for invalid request" },
+            {
+              "kind": "error-message",
+              "value": "invalid_code",
+              "role": "Specific error message when the provided code is incorrect"
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [],
+          "sourceHash": "",
+          "semanticFingerprint": "79315db1c3135088199caf6a83e8deb383d0a1a703ea8e6303aee550cb232297"
+        }
+      }
+    ]
+  },
+  "out": [],
+  "in": ["packages/trpc/server/routers/viewer/auth/_router.tsx"],
+  "externals": ["crypto", "@calcom/lib/totp", "@calcom/prisma/zod-utils", "@trpc/server"],
+  "impact": { "seeds": 3, "callers": 2, "impactedFiles": ["packages/trpc/server/routers/viewer/auth/_router.tsx"] }
+}

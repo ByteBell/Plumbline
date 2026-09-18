@@ -1,0 +1,71 @@
+{
+  "duration_api_ms": 47655,
+  "stop_reason": "end_turn",
+  "session_id": "15d902a5-96a7-4869-97ca-f6deddda71f6",
+  "total_cost_usd": 1.3275855,
+  "usage": {
+    "input_tokens": 12,
+    "cache_creation_input_tokens": 112081,
+    "cache_read_input_tokens": 228281,
+    "output_tokens": 3703,
+    "output_tokens_details": { "thinking_tokens": 661 },
+    "server_tool_use": { "web_search_requests": 0, "web_fetch_requests": 0 },
+    "service_tier": "standard",
+    "cache_creation": { "ephemeral_1h_input_tokens": 112081, "ephemeral_5m_input_tokens": 0 },
+    "inference_geo": "not_available",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 1171,
+        "cache_read_input_tokens": 66185,
+        "cache_creation_input_tokens": 1754,
+        "cache_creation": { "ephemeral_5m_input_tokens": 0, "ephemeral_1h_input_tokens": 1754 },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-opus-5": {
+      "inputTokens": 12,
+      "outputTokens": 3703,
+      "cacheReadInputTokens": 228281,
+      "cacheCreationInputTokens": 112081,
+      "webSearchRequests": 0,
+      "costUSD": 1.3275855,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "canonicalModel": "claude-opus-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": { "background": 0, "foreground": 0, "unset": 0 },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": { "parent": 0, "user": 0, "system": 0 },
+    "refused": { "depth_limit": 0, "concurrency_limit": 0, "budget": 0 },
+    "by_type": {}
+  },
+  "is_error": false,
+  "num_turns": 8,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Scored. Both files written.\n\n**Gold file:** `gold.json` (no `golden.json` present). I read `ranked.json` in full before opening the gold.\n\n**Shape:** flat array of 64 paths — single-repo, matching gold's flat `gold` list. No flattening needed.\n\n**Metrics** (from `score_arm.py`, exit 0):\n\n| metric | value |\n|---|---|\n| hits / gold_total | 4 / 7 |\n| recall@10 | 0.286 |\n| recall@20 | 0.429 |\n| recall@25 | 0.429 |\n| recall@50 | 0.571 |\n| recall@75 (full list, 64 ≤ 75) | 0.571 |\n| precision@5 | 0.400 |\n| MRR | 0.250 |\n\nThe scorer does not emit precision@10, precision@20, F1@20 or F1_full_list, and per the rules I did not hand-compute them. What it emits instead is recall@25/@50/@75 and a `degenerate_ks: [75]` flag (the list is shorter than that cutoff).\n\n**found (4):**\n- `packages/platform/atoms/booker/BookerPlatformWrapper.tsx` (rank 4)\n- `packages/platform/atoms/calendar-view/EventTypeCalendarViewComponent.tsx` (rank 5)\n- `apps/web/modules/schedules/hooks/useEvent.ts` (rank 12)\n- `packages/features/eventtypes/lib/getPublicEvent.ts` (rank 36)\n\n**missed_gold (3):**\n- `apps/web/modules/bookings/components/BookerWebWrapper.tsx`\n- `packages/features/bookings/types.ts`\n- `packages/trpc/server/routers/publicViewer/event.handler.ts`\n\n**Surface verdict: NOT COMPARABLE.** One reason, and only one: prompt caching was active (cache_read 1,756,008; cache_creation 161,709), so the $2.90 is a warm-cache figure. The tool surface itself is clean — 21 plumbline calls plus 2 `ToolSearch` (exempt), no filesystem or shell tool, and the retriever's own search tool `stakeout` was called 8 times. Note the run's self-report differs from the log on `the_receipts`: it claims three traces and eight grounded files, and the log shows 3 `collateral_damage` and 3 `the_receipts`; the counts in `result.json` come from the log.\n\n**What the misses share:** all three sit on the *event-definition* side of the boundary, not the *slots-request* side. `event.handler.ts` and `getPublicEvent.ts` are the publicViewer event pipeline; `BookerWebWrapper.tsx` is the web twin of the platform wrapper; `packages/features/bookings/types.ts` is the shared Booker prop/type spine that both wrappers consume. The answer committed hard to the availability-fetch register — query keys, slots DTOs, v1/v2 slots controllers, dayjs and timezone utilities — and the two gold files it did catch at rank 4/5 are the platform-side wrapper and calendar view, i.e. exactly the event-definition files reachable from the atoms it was already reading. The one gold file in that register it reached late (`getPublicEvent.ts`, rank 36) and the web-side sibling it never reached confirm the pattern: the layer carrying the event's *shape and its types* to both booker surfaces was under-weighted relative to the layer carrying the *request*.",
+  "ttft_ms": 1582,
+  "type": "result",
+  "duration_ms": 47999,
+  "uuid": "27426f45-3550-4a9a-b961-9a7c353e61ea",
+  "ttft_stream_ms": 1059,
+  "time_to_request_ms": 27,
+  "queued_turn_count": 0
+}

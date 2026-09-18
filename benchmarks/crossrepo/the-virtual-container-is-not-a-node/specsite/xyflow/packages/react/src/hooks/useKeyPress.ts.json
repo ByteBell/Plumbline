@@ -1,0 +1,880 @@
+{
+  "schema": 1,
+  "kind": "file",
+  "repoName": "xyflow",
+  "commitHash": "360f5b13e2bc6899ea06b4be1a49b068d86926cf",
+  "generatedAt": "2026-08-03T07:44:04.757Z",
+  "file": {
+    "relativePath": "packages/react/src/hooks/useKeyPress.ts",
+    "language": "typescript",
+    "sizeBytes": 6921,
+    "tokenCount": 1648,
+    "model": "openai/gpt-5.6-luna",
+    "analysedAt": "2026-08-03T07:38:20.521Z",
+    "module": {
+      "purpose": "Provides a React hook that tracks whether configured keyboard keys or key combinations are currently pressed.",
+      "summary": "This module parses individual keys and combinations, selects event.key or event.code based on the requested values, and maintains pressed-key state through keyboard and browser lifecycle events. It supports configurable event targets, input-field behavior, default prevention, modifier keys, alternative combinations, and reset handling for blur, context-menu, and macOS Command-key behavior.",
+      "businessContext": "Supports keyboard shortcuts and interaction controls in the React product UI. Failure prevents reliable shortcut activation or leaves pressed-state indicators stale.",
+      "classes": [],
+      "functions": [
+        "useKeyPress (~L46-161): Tracks configured keyboard keys and combinations through React state.",
+        "isMatchingKey (~L165-179): Determines whether pressed keys satisfy a configured combination.",
+        "useKeyOrCode (~L181-183): Selects keyboard event key or physical code representation."
+      ],
+      "keywords": [
+        "keyboard shortcuts",
+        "key combinations",
+        "KeyboardEvent",
+        "pressed-key tracking",
+        "modifier keys",
+        "event.preventDefault",
+        "ShadowRoot",
+        "input DOM nodes",
+        "composedPath",
+        "React hook"
+      ],
+      "ontologyConcepts": [
+        "event handling",
+        "state synchronization",
+        "keyboard input",
+        "shortcut matching",
+        "lifecycle cleanup",
+        "input filtering"
+      ],
+      "businessEntities": [
+        "keyboard shortcut",
+        "key combination",
+        "input element",
+        "interactive element",
+        "event target"
+      ],
+      "systemCapabilities": [
+        "Track active keyboard shortcuts",
+        "Support alternative key combinations",
+        "Prevent browser default actions",
+        "Filter shortcuts inside inputs",
+        "Reset keyboard state on browser events",
+        "Attach listeners to configurable DOM targets"
+      ],
+      "configDependencies": [],
+      "importsInternal": [],
+      "importsExternal": [
+        {
+          "spec": "react",
+          "symbols": ["useState", "useEffect", "useRef", "useMemo"],
+          "package": "react",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 1 }
+        },
+        {
+          "spec": "@xyflow/system",
+          "symbols": ["isInputDOMNode", "KeyCode"],
+          "package": "@xyflow/system",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 2, "endLine": 2 }
+        }
+      ],
+      "sideEffects": {
+        "io": ["Registers and unregisters keydown, keyup, blur, and contextmenu event listeners."],
+        "network": [],
+        "env": [],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": [
+          "Mutates internal pressed-key and modifier state held in refs.",
+          "Calls event.preventDefault() for matching key presses under configured conditions."
+        ]
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "UseKeyPressOptions",
+          "shape": "export type UseKeyPressOptions = { target?: Window | Document | HTMLElement | ShadowRoot | null; actInsideInputWithModifier?: boolean; preventDefault?: boolean; }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "useKeyPress",
+          "shape": "useKeyPress(keyCode: KeyCode | null = null, options: UseKeyPressOptions = { target: defaultDoc, actInsideInputWithModifier: true }): boolean",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "isInputDOMNode",
+          "shape": "isInputDOMNode(event)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        { "name": "KeyCode", "shape": "KeyCode", "resolvedRelativePath": null, "resolvedFileId": null },
+        { "name": "React.useState", "shape": "useState(false)", "resolvedRelativePath": null, "resolvedFileId": null },
+        {
+          "name": "React.useEffect",
+          "shape": "useEffect(() => { ... }, [keyCode, setKeyPressed])",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        { "name": "React.useRef", "shape": "useRef(false)", "resolvedRelativePath": null, "resolvedFileId": null },
+        {
+          "name": "React.useMemo",
+          "shape": "useMemo<[Array<Keys>, Keys>>(() => { ... }, [keyCode])",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "key-code parsing",
+          "intent": "Normalizes one or more key specifications into combinations and watched keys.",
+          "structureKind": "branch",
+          "predicate": "if (keyCode !== null)",
+          "branchOutcomes": ["configured key code parsed", "empty key collections returned"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 74, "endLine": 93 }
+        },
+        {
+          "name": "listener setup",
+          "intent": "Installs keyboard and browser lifecycle listeners when a key code is configured.",
+          "structureKind": "io",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 95, "endLine": 158 }
+        },
+        {
+          "name": "keydown processing",
+          "intent": "Records pressed keys and updates state for matching combinations.",
+          "structureKind": "branch",
+          "predicate": "if (preventAction)",
+          "branchOutcomes": ["input action prevented", "key recorded and matching evaluated"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 100, "endLine": 120 }
+        },
+        {
+          "name": "keyup processing",
+          "intent": "Removes released keys and clears active state when combinations stop matching.",
+          "structureKind": "branch",
+          "predicate": "if (isMatchingKey(keyCodes, pressedKeys.current, true))",
+          "branchOutcomes": ["matching combination released", "individual key removed"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 122, "endLine": 139 }
+        },
+        {
+          "name": "global reset",
+          "intent": "Clears pressed state after focus loss or context-menu activity.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 141, "endLine": 144 }
+        },
+        {
+          "name": "combination matching",
+          "intent": "Checks size-compatible alternatives and requires every key in one combination.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 165, "endLine": 179 }
+        }
+      ],
+      "representationFamily": "function-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "type",
+          "name": "UseKeyPressOptions",
+          "signature": "export type UseKeyPressOptions = {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 8, "endLine": 16 }
+        },
+        {
+          "kind": "function",
+          "name": "useKeyPress",
+          "signature": "export function useKeyPress(\n  /**\n   * The key code (string or array of strings) specifies which key(s) should trigger\n   * an action.\n   *\n   * A **string** can represent:\n   * - A **single key**, e.g. `'a'`\n   * - A **key combination**, using `'+'` to separate keys, e.g. `'a+d'`\n   *\n   * An  **array of strings** represents **multiple possible key inputs**. For example, `['a', 'd+s']`\n   * means the user can press either the single key `'a'` or the combination of `'d'` and `'s'`.\n   * @default null\n   */\n  keyCode: KeyCode | null = null,\n  options: UseKeyPressOptions = { target: defaultDoc, actInsideInputWithModifier: true }\n): boolean {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "boolean",
+          "exported": true,
+          "anchor": { "startLine": 46, "endLine": 58 }
+        },
+        {
+          "kind": "function",
+          "name": "isMatchingKey",
+          "signature": "function isMatchingKey(keyCodes: Array<Keys>, pressedKeys: PressedKeys, isUp: boolean): boolean {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "boolean",
+          "exported": false,
+          "anchor": { "startLine": 165, "endLine": 165 }
+        },
+        {
+          "kind": "function",
+          "name": "useKeyOrCode",
+          "signature": "function useKeyOrCode(eventCode: string, keysToWatch: KeyCode): KeyOrCode {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "KeyOrCode",
+          "exported": false,
+          "anchor": { "startLine": 181, "endLine": 181 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "type",
+          "name": "Keys",
+          "shape": "Array<string>",
+          "discriminant": null,
+          "anchor": { "startLine": 4, "endLine": 4 }
+        },
+        {
+          "kind": "type",
+          "name": "PressedKeys",
+          "shape": "Set<string>",
+          "discriminant": null,
+          "anchor": { "startLine": 5, "endLine": 5 }
+        },
+        {
+          "kind": "union",
+          "name": "KeyOrCode",
+          "shape": "'key' | 'code'",
+          "discriminant": null,
+          "anchor": { "startLine": 6, "endLine": 6 }
+        },
+        {
+          "kind": "type",
+          "name": "UseKeyPressOptions",
+          "shape": "{\n  /**\n   * Listen to key presses on a specific element.\n   * @default document\n   */\n  target?: Window | Document | HTMLElement | ShadowRoot | null;\n  /**\n   * You can use this flag to prevent triggering the key press hook when an input field is focused.\n   * @default true\n   */\n  actInsideInputWithModifier?: boolean;\n  preventDefault?: boolean;\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 8, "endLine": 16 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "null keyCode",
+          "handled": true,
+          "behavior": "Returns empty key collections and does not install listeners.",
+          "anchor": { "startLine": 74, "endLine": 92 }
+        },
+        {
+          "inputShape": "array of alternative key specifications",
+          "handled": true,
+          "behavior": "Parses each alternative and matches any one complete combination.",
+          "anchor": { "startLine": 76, "endLine": 86 }
+        },
+        {
+          "inputShape": "key combination containing literal plus characters",
+          "handled": true,
+          "behavior": "Uses newline substitution to preserve combinations containing plus keys.",
+          "anchor": { "startLine": 79, "endLine": 85 }
+        },
+        {
+          "inputShape": "keyboard event from an input DOM node with modifier",
+          "handled": true,
+          "behavior": "Returns early when configured to suppress input interactions.",
+          "anchor": { "startLine": 102, "endLine": 107 }
+        },
+        {
+          "inputShape": "interactive BUTTON or A target",
+          "handled": true,
+          "behavior": "Preserves the browser default when no modifier is pressed.",
+          "anchor": { "startLine": 112, "endLine": 117 }
+        },
+        {
+          "inputShape": "Meta key release on macOS",
+          "handled": true,
+          "behavior": "Clears all tracked keys because other keyup events may be missing.",
+          "anchor": { "startLine": 132, "endLine": 136 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": "!=",
+          "left": "keyCode",
+          "right": "null",
+          "inclusive": false,
+          "intent": "Enables parsing and listener setup only when a key specification exists.",
+          "anchor": { "startLine": 75, "endLine": 75 }
+        },
+        {
+          "operator": "!=",
+          "left": "keyCode",
+          "right": "null",
+          "inclusive": false,
+          "intent": "Installs event handlers only for configured key specifications.",
+          "anchor": { "startLine": 99, "endLine": 99 }
+        },
+        {
+          "operator": "==",
+          "left": "keys.length",
+          "right": "pressedKeys.size",
+          "inclusive": true,
+          "intent": "Requires equal combination and pressed-key sizes during keydown matching.",
+          "anchor": { "startLine": 173, "endLine": 173 }
+        },
+        {
+          "operator": "!=",
+          "left": "options.preventDefault",
+          "right": "false",
+          "inclusive": false,
+          "intent": "Allows default prevention unless explicitly disabled.",
+          "anchor": { "startLine": 115, "endLine": 115 }
+        },
+        {
+          "operator": "==",
+          "left": "target?.nodeName",
+          "right": "'BUTTON'",
+          "inclusive": true,
+          "intent": "Identifies button targets as interactive elements.",
+          "anchor": { "startLine": 113, "endLine": 113 }
+        },
+        {
+          "operator": "==",
+          "left": "target?.nodeName",
+          "right": "'A'",
+          "inclusive": true,
+          "intent": "Identifies anchor targets as interactive elements.",
+          "anchor": { "startLine": 113, "endLine": 113 }
+        },
+        {
+          "operator": "==",
+          "left": "event.key",
+          "right": "'Meta'",
+          "inclusive": true,
+          "intent": "Detects Meta release to reset stale pressed-key state.",
+          "anchor": { "startLine": 134, "endLine": 134 }
+        }
+      ],
+      "errorHandling": [],
+      "invariants": [
+        {
+          "kind": "invariant",
+          "description": "Only configured key combinations can set the returned pressed state to true.",
+          "anchor": { "startLine": 111, "endLine": 119 }
+        },
+        {
+          "kind": "ordering",
+          "description": "A combination matches only when its configured key count equals the pressed-key count during keydown.",
+          "anchor": { "startLine": 173, "endLine": 173 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "Blur and context-menu events clear all tracked keys and return state to false.",
+          "anchor": { "startLine": 141, "endLine": 143 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Configured event listeners are removed during effect cleanup.",
+          "anchor": { "startLine": 151, "endLine": 155 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "Callers provide keyboard names or codes matching KeyboardEvent key or code values.",
+          "anchor": { "startLine": 46, "endLine": 58 }
+        },
+        {
+          "kind": "platform",
+          "description": "The hook runs where window is available when a non-null key specification installs listeners.",
+          "anchor": { "startLine": 148, "endLine": 149 }
+        },
+        {
+          "kind": "schema",
+          "description": "The configured key-code input is expected to contain strings or arrays of strings.",
+          "anchor": { "startLine": 77, "endLine": 85 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "Should non-string values in a KeyCode array be ignored permanently or rejected by callers?",
+          "affects": "key-code parsing and public input contract",
+          "anchor": { "startLine": 79, "endLine": 85 },
+          "resolution": null
+        },
+        {
+          "question": "Is global window availability guaranteed for every supported rendering environment?",
+          "affects": "listener setup and server-side rendering",
+          "anchor": { "startLine": 148, "endLine": 149 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "sync",
+        "reentrant": true,
+        "ordering": "deterministic",
+        "notes": "Event callbacks synchronously mutate refs and schedule React state updates; listener registration follows effect lifecycle."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "tracks-single-key-press",
+          "scenario": "A configured single key is pressed and released on the target.",
+          "given": [
+            "useKeyPress('Space')",
+            "target.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', code: 'Space' }))"
+          ],
+          "when": "target.dispatchEvent(new KeyboardEvent('keyup', { key: ' ', code: 'Space' }))",
+          "then": "the hook returns true after keydown and false after keyup",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins the basic pressed-state lifecycle for a single configured key."
+        },
+        {
+          "testId": "requires-all-combination-keys",
+          "scenario": "A configured key combination is entered one key at a time.",
+          "given": [
+            "useKeyPress('Meta+s')",
+            "target.dispatchEvent(new KeyboardEvent('keydown', { key: 'Meta', code: 'MetaLeft', metaKey: true }))"
+          ],
+          "when": "target.dispatchEvent(new KeyboardEvent('keydown', { key: 's', code: 'KeyS', metaKey: true }))",
+          "then": "the hook returns true only after both configured keys are pressed",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Guards combination matching and prevents partial combinations from triggering."
+        },
+        {
+          "testId": "supports-alternative-key-combinations",
+          "scenario": "Multiple alternative key definitions are configured and one alternative is pressed.",
+          "given": ["useKeyPress(['a', 'd+s'])"],
+          "when": "the key sequence for 'd+s' is pressed",
+          "then": "the hook returns true",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins the contract that any one configured combination may satisfy the hook."
+        },
+        {
+          "testId": "ignores-input-without-allowed-modifier",
+          "scenario": "A matching key is pressed while an input element is focused and modifier activation is not allowed.",
+          "given": [
+            "useKeyPress('a', { target, actInsideInputWithModifier: false })",
+            "isInputDOMNode(event) === true"
+          ],
+          "when": "target.dispatchEvent(new KeyboardEvent('keydown', { key: 'a' }))",
+          "then": "the hook remains false",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Protects editable controls from unintended keyboard shortcut activation."
+        },
+        {
+          "testId": "resets-on-window-blur",
+          "scenario": "A configured key is currently pressed and the window loses focus.",
+          "given": ["useKeyPress('a')", "the hook returns true"],
+          "when": "window.dispatchEvent(new Event('blur'))",
+          "then": "the hook returns false and subsequent keyup processing starts with no pressed keys",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Prevents stale pressed-key state after focus leaves the window."
+        },
+        {
+          "testId": "clears-state-on-context-menu",
+          "scenario": "A configured key is currently pressed and a context-menu event occurs.",
+          "given": ["useKeyPress('a')", "the hook returns true"],
+          "when": "window.dispatchEvent(new Event('contextmenu'))",
+          "then": "the hook returns false",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins the explicit context-menu reset behavior."
+        },
+        {
+          "testId": "prevents-default-for-matching-key",
+          "scenario": "A matching key is pressed on a non-interactive element with preventDefault enabled.",
+          "given": [
+            "useKeyPress('a', { target, preventDefault: true })",
+            "event.target.nodeName !== 'BUTTON'",
+            "event.target.nodeName !== 'A'"
+          ],
+          "when": "target.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', cancelable: true }))",
+          "then": "the keyboard event is default-prevented",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Guards the default prevention contract for ordinary matching key presses."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "React and system imports",
+        "Local key-related type aliases",
+        "Exported hook options type",
+        "Default document constant",
+        "Exported keyboard state hook",
+        "Keyboard matching helper",
+        "Key-versus-code selection helper"
+      ],
+      "moduleLevelCode": "import { useState, useEffect, useRef, useMemo } from 'react';\nimport { isInputDOMNode, type KeyCode } from '@xyflow/system';",
+      "exports": [
+        { "name": "UseKeyPressOptions", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "useKeyPress", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "useState", "module": "react", "alias": null, "kind": "external" },
+        { "symbol": "useEffect", "module": "react", "alias": null, "kind": "external" },
+        { "symbol": "useRef", "module": "react", "alias": null, "kind": "external" },
+        { "symbol": "useMemo", "module": "react", "alias": null, "kind": "external" },
+        { "symbol": "isInputDOMNode", "module": "@xyflow/system", "alias": null, "kind": "external" },
+        { "symbol": "KeyCode", "module": "@xyflow/system", "alias": null, "kind": "external" }
+      ],
+      "fileConstants": [
+        {
+          "name": "defaultDoc",
+          "value": "typeof document !== 'undefined' ? document : null",
+          "kind": "document fallback"
+        }
+      ],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/react/src/hooks/useKeyPress.ts__useKeyPress#function:useKeyPress",
+        "unitKind": "function",
+        "name": "useKeyPress",
+        "qualifiedName": "useKeyPress",
+        "parentUnitId": null,
+        "startLine": 46,
+        "endLine": 161,
+        "isBehavioral": true,
+        "source": " *```\n */\nexport function useKeyPress(\n  /**\n   * The key code (string or array of strings) specifies which key(s) should trigger\n   * an action.\n   *\n   * A **string** can represent:\n   * - A **single key**, e.g. `'a'`\n   * - A **key combination**, using `'+'` to separate keys, e.g. `'a+d'`\n   *\n   * An  **array of strings** represents **multiple possible key inputs**. For example, `['a', 'd+s']`\n   * means the user can press either the single key `'a'` or the combination of `'d'` and `'s'`.\n   * @default null\n   */\n  keyCode: KeyCode | null = null,\n  options: UseKeyPressOptions = { target: defaultDoc, actInsideInputWithModifier: true }\n): boolean {\n  const [keyPressed, setKeyPressed] = useState(false);\n\n  // we need to remember if a modifier key is pressed in order to track it\n  const modifierPressed = useRef(false);\n\n  // we need to remember the pressed keys in order to support combinations\n  const pressedKeys = useRef<PressedKeys>(new Set([]));\n\n  /*\n   * keyCodes = array with single keys [['a']] or key combinations [['a', 's']]\n   * keysToWatch = array with all keys flattened ['a', 'd', 'ShiftLeft']\n   * used to check if we store event.code or event.key. When the code is in the list of keysToWatch\n   * we use the code otherwise the key. Explainer: When you press the left \"command\" key, the code is \"MetaLeft\"\n   * and the key is \"Meta\". We want users to be able to pass keys and codes so we assume that the key is meant when\n   * we can't find it in the list of keysToWatch.\n   */\n  const [keyCodes, keysToWatch] = useMemo<[Array<Keys>, Keys]>(() => {\n    if (keyCode !== null) {\n      const keyCodeArr = Array.isArray(keyCode) ? keyCode : [keyCode];\n      const keys = keyCodeArr\n        .filter((kc) => typeof kc === 'string')\n        /*\n         * we first replace all '+' with '\\n'  which we will use to split the keys on\n         * then we replace '\\n\\n' with '\\n+', this way we can also support the combination 'key++'\n         * in the end we simply split on '\\n' to get the key array\n         */\n        .map((kc) => kc.replace('+', '\\n').replace('\\n\\n', '\\n+').split('\\n'));\n      const keysFlat = keys.reduce((res: Keys, item) => res.concat(...item), []);\n\n      return [keys, keysFlat];\n    }\n\n    return [[], []];\n  }, [keyCode]);\n\n  useEffect(() => {\n    const target = options?.target ?? defaultDoc;\n    const actInsideInputWithModifier = options?.actInsideInputWithModifier ?? true;\n\n    if (keyCode !== null) {\n      const downHandler = (event: KeyboardEvent) => {\n        modifierPressed.current = event.ctrlKey || event.metaKey || event.shiftKey || event.altKey;\n        const preventAction =\n          (!modifierPressed.current || (modifierPressed.current && !actInsideInputWithModifier)) &&\n          isInputDOMNode(event);\n\n        if (preventAction) {\n          return false;\n        }\n        const keyOrCode = useKeyOrCode(event.code, keysToWatch);\n        pressedKeys.current.add(event[keyOrCode]);\n\n        if (isMatchingKey(keyCodes, pressedKeys.current, false)) {\n          const target = (event.composedPath?.()?.[0] || event.target) as Element | null;\n          const isInteractiveElement = target?.nodeName === 'BUTTON' || target?.nodeName === 'A';\n\n          if (options.preventDefault !== false && (modifierPressed.current || !isInteractiveElement)) {\n            event.preventDefault();\n          }\n\n          setKeyPressed(true);\n        }\n      };\n\n      const upHandler = (event: KeyboardEvent) => {\n        const keyOrCode = useKeyOrCode(event.code, keysToWatch);\n\n        if (isMatchingKey(keyCodes, pressedKeys.current, true)) {\n          setKeyPressed(false);\n          pressedKeys.current.clear();\n        } else {\n          pressedKeys.current.delete(event[keyOrCode]);\n        }\n\n        // fix for Mac: when cmd key is pressed, keyup is not triggered for any other key, see: https://stackoverflow.com/questions/27380018/when-cmd-key-is-kept-pressed-keyup-is-not-triggered-for-any-other-key\n        if (event.key === 'Meta') {\n          pressedKeys.current.clear();\n        }\n\n        modifierPressed.current = false;\n      };\n\n      const resetHandler = () => {\n        pressedKeys.current.clear();\n        setKeyPressed(false);\n      };\n\n      target?.addEventListener('keydown', downHandler as EventListenerOrEventListenerObject);\n      target?.addEventListener('keyup', upHandler as EventListenerOrEventListenerObject);\n      window.addEventListener('blur', resetHandler);\n      window.addEventListener('contextmenu', resetHandler);\n\n      return () => {\n        target?.removeEventListener('keydown', downHandler as EventListenerOrEventListenerObject);\n        target?.removeEventListener('keyup', upHandler as EventListenerOrEventListenerObject);\n        window.removeEventListener('blur', resetHandler);\n        window.removeEventListener('contextmenu', resetHandler);\n      };",
+        "detail": {
+          "unitId": "packages/react/src/hooks/useKeyPress.ts__useKeyPress#function:useKeyPress",
+          "fileId": "packages/react/src/hooks/useKeyPress.ts__useKeyPress",
+          "unitKind": "function",
+          "name": "useKeyPress",
+          "qualifiedName": "useKeyPress",
+          "parentUnitId": null,
+          "startLine": 46,
+          "endLine": 161,
+          "signature": "export function useKeyPress(keyCode: KeyCode | null = null, options: UseKeyPressOptions = { target: defaultDoc, actInsideInputWithModifier: true }): boolean",
+          "parameters": [
+            {
+              "name": "keyCode",
+              "type": "KeyCode | null",
+              "default": "null",
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "options",
+              "type": "UseKeyPressOptions",
+              "default": "{ target: defaultDoc, actInsideInputWithModifier: true }",
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "boolean",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The hook is invoked within a React render context.",
+            "When keyCode is non-null, the configured target and window must support keyboard and lifecycle event listener registration."
+          ],
+          "postconditions": [
+            "Returns a boolean indicating whether the configured key input is currently matched.",
+            "When keyCode is null, no configured key is tracked and the returned state remains false.",
+            "Matching keydown events set the returned state to true.",
+            "Matching keyup events, window blur, and contextmenu events reset the returned state to false."
+          ],
+          "invariants": [
+            "Pressed keys are tracked as a set, so repeated keydown events do not create duplicate entries.",
+            "A key combination matches only when the currently pressed keys satisfy one of the configured key combinations.",
+            "Event listeners are removed when the effect is cleaned up or its dependencies change.",
+            "Modifier state is cleared after keyup handling."
+          ],
+          "edgeCases": [
+            "A string keyCode represents one key or a '+'-delimited combination.",
+            "An array keyCode represents multiple alternative keys or combinations.",
+            "A keyCode containing '++' preserves '+' as a key within the parsed combination.",
+            "Keyboard events from input-like DOM nodes are ignored when no modifier is pressed, and are also ignored with a modifier when actInsideInputWithModifier is false.",
+            "For matching keydown events, default prevention is skipped for interactive BUTTON or A targets unless a modifier key is pressed; otherwise preventDefault is applied when preventDefault is not false.",
+            "A Meta keyup or a window blur/contextmenu event clears all tracked pressed keys."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Non-string entries in an array keyCode are filtered out; a null keyCode disables key tracking. No explicit exception or fallback error is produced.",
+            "returnsOnError": null
+          },
+          "stateMutations": [
+            "React state tracking whether the configured key input is pressed.",
+            "Mutable pressed-key set used to track currently held keys.",
+            "Mutable modifier-key flag used during keyboard event handling.",
+            "Keyboard and window event listener registrations on the configured target and window."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "useState", "source": "React", "kind": "external" },
+            { "name": "useRef", "source": "React", "kind": "external" },
+            { "name": "useMemo", "source": "React", "kind": "external" },
+            { "name": "useEffect", "source": "React", "kind": "external" },
+            { "name": "isMatchingKey", "source": "same module", "kind": "internal" },
+            { "name": "useKeyOrCode", "source": "same module", "kind": "internal" },
+            { "name": "isInputDOMNode", "source": "imported dependency", "kind": "external" },
+            {
+              "name": "addEventListener/removeEventListener",
+              "source": "configured target and window",
+              "kind": "external"
+            }
+          ],
+          "symbolReferences": ["KeyCode", "UseKeyPressOptions", "PressedKeys", "Keys", "defaultDoc"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Tracks keyboard input matching a single key, key combination, or one of multiple specified inputs and exposes whether a configured input is currently pressed. It manages keyboard listeners, modifier behavior, input-element filtering, and reset behavior.",
+          "specLiterals": [
+            { "kind": "format-string", "value": "+", "role": "Separates keys in a key combination." },
+            {
+              "kind": "enum-value",
+              "value": "Meta",
+              "role": "Identifies the Meta key whose keyup clears all tracked pressed keys."
+            },
+            {
+              "kind": "enum-value",
+              "value": "BUTTON",
+              "role": "Identifies an interactive target for default-prevention behavior."
+            },
+            {
+              "kind": "enum-value",
+              "value": "A",
+              "role": "Identifies an interactive target for default-prevention behavior."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "A keydown for 'a' is followed by a keydown for 'd'.",
+              "then": "The returned state becomes true only after both keys are pressed.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Either 'a' is pressed alone or both 'd' and 's' are pressed.",
+              "then": "The returned state becomes true for either alternative input.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The window receives a blur or contextmenu event.",
+              "then": "The tracked pressed keys are cleared and the returned state becomes false.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "b3507358eff8f2853aaf8282512b0fc33d2453675f7edf0013610d35db46b491"
+        }
+      },
+      {
+        "unitId": "packages/react/src/hooks/useKeyPress.ts__isMatchingKey#function:isMatchingKey",
+        "unitKind": "function",
+        "name": "isMatchingKey",
+        "qualifiedName": "isMatchingKey",
+        "parentUnitId": null,
+        "startLine": 165,
+        "endLine": 179,
+        "isBehavioral": true,
+        "source": "  return keyPressed;\n}\n\n// utils\n\nfunction isMatchingKey(keyCodes: Array<Keys>, pressedKeys: PressedKeys, isUp: boolean): boolean {\n  return (\n    keyCodes\n      /*\n       * we only want to compare same sizes of keyCode definitions\n       * and pressed keys. When the user specified 'Meta' as a key somewhere\n       * this would also be truthy without this filter when user presses 'Meta' + 'r'\n       */\n      .filter((keys) => isUp || keys.length === pressedKeys.size)\n      /*",
+        "detail": {
+          "unitId": "packages/react/src/hooks/useKeyPress.ts__isMatchingKey#function:isMatchingKey",
+          "fileId": "packages/react/src/hooks/useKeyPress.ts__isMatchingKey",
+          "unitKind": "function",
+          "name": "isMatchingKey",
+          "qualifiedName": "isMatchingKey",
+          "parentUnitId": null,
+          "startLine": 165,
+          "endLine": 179,
+          "signature": "function isMatchingKey(keyCodes: Array<Keys>, pressedKeys: PressedKeys, isUp: boolean): boolean",
+          "parameters": [
+            {
+              "name": "keyCodes",
+              "type": "Array<Keys>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "pressedKeys",
+              "type": "PressedKeys",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            { "name": "isUp", "type": "boolean", "default": null, "optional": false, "variadic": false, "order": 2 }
+          ],
+          "returnType": "boolean",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "keyCodes is an array of key combinations.",
+            "pressedKeys represents the currently pressed keys.",
+            "isUp is a boolean indicating whether the comparison is for key release."
+          ],
+          "postconditions": [
+            "Returns a boolean indicating whether a configured key combination matches the pressed keys.",
+            "When isUp is false, only key combinations whose length equals pressedKeys.size are considered."
+          ],
+          "invariants": [
+            "The input collections are not mutated.",
+            "For key-up comparisons, key-combination length is not filtered by pressedKeys.size.",
+            "For key-down comparisons, combinations with a different number of keys from pressedKeys.size are excluded before matching."
+          ],
+          "edgeCases": [
+            "When isUp is false and a configured key combination has a different length from pressedKeys.size, that combination is ignored.",
+            "When isUp is true, configured key combinations are not excluded based on their length.",
+            "Multiple configured key combinations are evaluated as alternatives."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["Keys", "PressedKeys"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Determines whether the currently pressed keys match at least one configured key combination, with key-count filtering applied for key-down matching.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "43a920177ef2eabbd590cbd4b107d4b331643baa773984c4a796a264942ffd7c"
+        }
+      },
+      {
+        "unitId": "packages/react/src/hooks/useKeyPress.ts__useKeyOrCode#function:useKeyOrCode",
+        "unitKind": "function",
+        "name": "useKeyOrCode",
+        "qualifiedName": "useKeyOrCode",
+        "parentUnitId": null,
+        "startLine": 181,
+        "endLine": 183,
+        "isBehavioral": true,
+        "source": "       * combinations need to be part of the pressed keys\n       */\n      .some((keys) => keys.every((k) => pressedKeys.has(k)))",
+        "detail": {
+          "unitId": "packages/react/src/hooks/useKeyPress.ts__useKeyOrCode#function:useKeyOrCode",
+          "fileId": "packages/react/src/hooks/useKeyPress.ts__useKeyOrCode",
+          "unitKind": "function",
+          "name": "useKeyOrCode",
+          "qualifiedName": "useKeyOrCode",
+          "parentUnitId": null,
+          "startLine": 181,
+          "endLine": 183,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Normalizes or resolves a key-or-code value for use by the key-press matching logic.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "66bc663121db01600dad75b7ec2d2a4136b2f6e2c34deea05ed62b66c7df0376"
+        }
+      }
+    ]
+  },
+  "out": [],
+  "in": [
+    "packages/react/src/container/FlowRenderer/index.tsx",
+    "packages/react/src/index.ts",
+    "packages/react/src/hooks/useGlobalKeyHandler.ts",
+    "packages/react/src/container/ZoomPane/index.tsx"
+  ],
+  "externals": ["react", "@xyflow/system"],
+  "impact": {
+    "seeds": 3,
+    "callers": 4,
+    "impactedFiles": [
+      "packages/react/src/container/ZoomPane/index.tsx",
+      "packages/react/src/hooks/useGlobalKeyHandler.ts",
+      "packages/react/src/container/FlowRenderer/index.tsx"
+    ]
+  }
+}

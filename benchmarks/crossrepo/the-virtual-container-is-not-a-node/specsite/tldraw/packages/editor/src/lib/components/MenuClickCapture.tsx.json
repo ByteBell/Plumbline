@@ -1,0 +1,1341 @@
+{
+  "schema": 2,
+  "kind": "file",
+  "repoName": "tldraw",
+  "file": {
+    "relativePath": "packages/editor/src/lib/components/MenuClickCapture.tsx",
+    "language": "typescript",
+    "sizeBytes": 6833,
+    "tokenCount": 1707,
+    "model": "us.openai.gpt-5.6-luna",
+    "analysedAt": "2026-08-24T12:20:30.234Z",
+    "module": {
+      "purpose": "Provides an overlay component that captures pointer interaction while menus are open, preventing unintended canvas actions and coordinating menu dismissal, dragging, right-click panning, and context-menu placement.",
+      "summary": "This React component conditionally mounts a transparent capture layer over the canvas whenever a menu is open or a pointer gesture is active. It tracks pointer state, captures supported buttons, delays left-drag forwarding until the configured threshold, replays the original pointer-down position, forwards movement and release events to the editor, and synthesizes release-position context menus for right-click panning. It also temporarily swallows trusted native context-menu events to prevent duplicate or flashing menus.",
+      "businessContext": "Supports editor menu interaction in a canvas-based design application. If it fails, menu clicks can alter the canvas, drag origins can be wrong, or right-click menus can flash or open at incorrect positions.",
+      "classes": [],
+      "functions": [
+        "MenuClickCapture (~L16-212): Captures pointer gestures while menus are open over the editor canvas.",
+        "swallowNextNativeContextMenu (~L47-67): Temporarily suppresses the next trusted native context-menu event.",
+        "handlePointerDown (~L69-104): Starts supported pointer gestures and dismisses open menus.",
+        "handlePointerMove (~L106-142): Applies drag thresholding and forwards pointer movement events.",
+        "handlePointerUp (~L144-194): Completes gestures and optionally dispatches a synthetic context menu."
+      ],
+      "keywords": [
+        "pointer capture",
+        "context menu",
+        "right-click panning",
+        "drag threshold",
+        "Radix DismissableLayer",
+        "synthetic PointerEvent",
+        "canvas event dispatch",
+        "flushSync"
+      ],
+      "ontologyConcepts": [
+        "event interception",
+        "gesture recognition",
+        "pointer capture",
+        "menu dismissal",
+        "event replay",
+        "state synchronization"
+      ],
+      "businessEntities": ["Menu", "Canvas", "Pointer gesture", "Context menu", "Editor"],
+      "systemCapabilities": [
+        "Block canvas interaction behind menus",
+        "Forward validated pointer gestures to the editor",
+        "Preserve drag origin coordinates",
+        "Coordinate right-click panning with menus",
+        "Suppress duplicate native context menus"
+      ],
+      "configDependencies": ["editor.options.rightClickPanning", "editor.options.dragDistanceSquared"],
+      "importsInternal": [
+        {
+          "spec": "../hooks/useCanvasEvents",
+          "symbols": ["useCanvasEvents"],
+          "anchor": { "startLine": 4, "endLine": 4 },
+          "resolvedRelativePath": "packages/editor/src/lib/hooks/useCanvasEvents.ts",
+          "resolvedFileId": "packages/editor/src/lib/hooks/useCanvasEvents.ts",
+          "resolvedHint": "packages/editor/src/lib/hooks/useCanvasEvents.ts"
+        },
+        {
+          "spec": "../hooks/useEditor",
+          "symbols": ["useEditor"],
+          "anchor": { "startLine": 5, "endLine": 5 },
+          "resolvedRelativePath": "packages/editor/src/lib/hooks/useEditor.tsx",
+          "resolvedFileId": "packages/editor/src/lib/hooks/useEditor.tsx",
+          "resolvedHint": "packages/editor/src/lib/hooks/useEditor.ts"
+        },
+        {
+          "spec": "../primitives/Vec",
+          "symbols": ["Vec"],
+          "anchor": { "startLine": 6, "endLine": 6 },
+          "resolvedRelativePath": "packages/editor/src/lib/primitives/Vec.ts",
+          "resolvedFileId": "packages/editor/src/lib/primitives/Vec.ts",
+          "resolvedHint": "packages/editor/src/lib/primitives/Vec.ts"
+        },
+        {
+          "spec": "../utils/dom",
+          "symbols": ["releasePointerCapture", "setPointerCapture"],
+          "anchor": { "startLine": 7, "endLine": 7 },
+          "resolvedRelativePath": "packages/editor/src/lib/utils/dom.ts",
+          "resolvedFileId": "packages/editor/src/lib/utils/dom.ts",
+          "resolvedHint": "packages/editor/src/lib/utils/dom.ts"
+        },
+        {
+          "spec": "../utils/getPointerInfo",
+          "symbols": ["getPointerInfo"],
+          "anchor": { "startLine": 8, "endLine": 8 },
+          "resolvedRelativePath": "packages/editor/src/lib/utils/getPointerInfo.ts",
+          "resolvedFileId": "packages/editor/src/lib/utils/getPointerInfo.ts",
+          "resolvedHint": "packages/editor/src/lib/utils/getPointerInfo.ts"
+        },
+        {
+          "spec": "../utils/pointer",
+          "symbols": ["getPointerEventButton"],
+          "anchor": { "startLine": 9, "endLine": 9 },
+          "resolvedRelativePath": "packages/editor/src/lib/utils/pointer.ts",
+          "resolvedFileId": "packages/editor/src/lib/utils/pointer.ts",
+          "resolvedHint": "packages/editor/src/lib/utils/pointer.ts"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "@tldraw/state-react",
+          "symbols": ["useValue"],
+          "package": "@tldraw/state-react",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 1 }
+        },
+        {
+          "spec": "react",
+          "symbols": ["PointerEvent", "useCallback", "useEffect", "useRef", "useState"],
+          "package": "react",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 2, "endLine": 2 }
+        },
+        {
+          "spec": "react-dom",
+          "symbols": ["flushSync"],
+          "package": "react-dom",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 3, "endLine": 3 }
+        }
+      ],
+      "sideEffects": {
+        "io": [],
+        "network": [],
+        "env": [],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": ["Mutates the pointer state object held in rPointerState.current during drag detection."]
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "MenuClickCapture",
+          "shape": "export function MenuClickCapture()",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "useEditor",
+          "shape": "useEditor()",
+          "resolvedRelativePath": "packages/editor/src/lib/hooks/useEditor.tsx",
+          "resolvedFileId": "packages/editor/src/lib/hooks/useEditor.tsx"
+        },
+        {
+          "name": "editor.menus.hasAnyOpenMenus",
+          "shape": "editor.menus.hasAnyOpenMenus()",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "editor.menus.clearOpenMenus",
+          "shape": "editor.menus.clearOpenMenus()",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "editor.dispatch",
+          "shape": "editor.dispatch({ type: 'pointer', target: 'canvas', name: 'pointer_down' | 'pointer_move' | 'pointer_up', ...getPointerInfo(editor, e) })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "editor.options.rightClickPanning",
+          "shape": "editor.options.rightClickPanning",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "editor.options.dragDistanceSquared",
+          "shape": "editor.options.dragDistanceSquared",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "editor.getContainer",
+          "shape": "editor.getContainer()",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "editor.getContainerDocument",
+          "shape": "editor.getContainerDocument()",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "editor.timers.requestAnimationFrame",
+          "shape": "editor.timers.requestAnimationFrame(() => {})",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "useCanvasEvents",
+          "shape": "useCanvasEvents()",
+          "resolvedRelativePath": "packages/editor/src/lib/hooks/useCanvasEvents.ts",
+          "resolvedFileId": "packages/editor/src/lib/hooks/useCanvasEvents.ts"
+        },
+        {
+          "name": "getPointerEventButton",
+          "shape": "getPointerEventButton(e)",
+          "resolvedRelativePath": "packages/editor/src/lib/utils/pointer.ts",
+          "resolvedFileId": "packages/editor/src/lib/utils/pointer.ts"
+        },
+        {
+          "name": "getPointerInfo",
+          "shape": "getPointerInfo(editor, e)",
+          "resolvedRelativePath": "packages/editor/src/lib/utils/getPointerInfo.ts",
+          "resolvedFileId": "packages/editor/src/lib/utils/getPointerInfo.ts"
+        },
+        {
+          "name": "setPointerCapture",
+          "shape": "setPointerCapture(e.currentTarget, e)",
+          "resolvedRelativePath": "packages/editor/src/lib/utils/dom.ts",
+          "resolvedFileId": "packages/editor/src/lib/utils/dom.ts"
+        },
+        {
+          "name": "releasePointerCapture",
+          "shape": "releasePointerCapture(e.currentTarget, e)",
+          "resolvedRelativePath": "packages/editor/src/lib/utils/dom.ts",
+          "resolvedFileId": "packages/editor/src/lib/utils/dom.ts"
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "menu-state capture visibility",
+          "intent": "Keeps the capture layer mounted while menus are open or a gesture remains active.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 17, "endLine": 24 }
+        },
+        {
+          "name": "native context-menu swallowing",
+          "intent": "Installs temporary capture-phase suppression for trusted browser context-menu events.",
+          "structureKind": "io",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 47, "endLine": 67 }
+        },
+        {
+          "name": "pointer-down filtering",
+          "intent": "Rejects unsupported buttons and delegates right-click panning to the canvas.",
+          "structureKind": "branch",
+          "predicate": "button !== 0 && button !== 2",
+          "branchOutcomes": ["unsupported button returns", "supported button continues"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 69, "endLine": 83 }
+        },
+        {
+          "name": "pointer gesture initialization",
+          "intent": "Synchronously mounts capture state, captures the pointer, records origin, and closes menus.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 85, "endLine": 103 }
+        },
+        {
+          "name": "drag threshold and replay",
+          "intent": "Waits for configured movement before replaying the original pointer-down and forwarding movement.",
+          "structureKind": "branch",
+          "predicate": "state.button !== 2 && !state.isDragging",
+          "branchOutcomes": [
+            "movement remains within threshold and returns",
+            "drag begins and pointer-down is replayed"
+          ],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 106, "endLine": 142 }
+        },
+        {
+          "name": "pointer-up completion",
+          "intent": "Dispatches release, schedules right-click context-menu placement, and resets capture state.",
+          "structureKind": "async",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 144, "endLine": 194 }
+        },
+        {
+          "name": "capture-layer rendering",
+          "intent": "Renders the event-capture element only when menu or pointer state requires it.",
+          "structureKind": "branch",
+          "predicate": "showElement &&",
+          "branchOutcomes": ["capture element rendered", "nothing rendered"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 196, "endLine": 211 }
+        }
+      ],
+      "representationFamily": "class-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "function",
+          "name": "MenuClickCapture",
+          "signature": "export function MenuClickCapture()",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 16, "endLine": 16 }
+        }
+      ],
+      "typeShapes": [],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "Unsupported pointer button",
+          "handled": true,
+          "behavior": "Pointer-down returns without capturing, tracking, or dismissing menus.",
+          "anchor": { "startLine": 71, "endLine": 72 }
+        },
+        {
+          "inputShape": "Right-click with rightClickPanning enabled",
+          "handled": true,
+          "behavior": "Forwards pointer-down to the canvas, swallows the native context menu, and leaves the canvas responsible for the gesture.",
+          "anchor": { "startLine": 74, "endLine": 83 }
+        },
+        {
+          "inputShape": "Left movement at or below drag threshold",
+          "handled": true,
+          "behavior": "Does not forward movement until squared distance exceeds the configured threshold.",
+          "anchor": { "startLine": 114, "endLine": 119 }
+        },
+        {
+          "inputShape": "Static right-click release",
+          "handled": true,
+          "behavior": "Schedules a synthetic context-menu event at the pointer release position.",
+          "anchor": { "startLine": 147, "endLine": 180 }
+        },
+        {
+          "inputShape": "Native context menu never fires",
+          "handled": true,
+          "behavior": "Removes the temporary listener on the next timer tick.",
+          "anchor": { "startLine": 61, "endLine": 66 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": "!=",
+          "left": "button",
+          "right": "0",
+          "inclusive": false,
+          "intent": "Rejects non-primary buttons unless they are handled as secondary clicks.",
+          "anchor": { "startLine": 72, "endLine": 72 }
+        },
+        {
+          "operator": "!=",
+          "left": "button",
+          "right": "2",
+          "inclusive": false,
+          "intent": "Rejects buttons other than primary and secondary pointer buttons.",
+          "anchor": { "startLine": 72, "endLine": 72 }
+        },
+        {
+          "operator": "==",
+          "left": "button",
+          "right": "2",
+          "inclusive": true,
+          "intent": "Selects the right-click panning path.",
+          "anchor": { "startLine": 74, "endLine": 74 }
+        },
+        {
+          "operator": "==",
+          "left": "rCancelContextMenuSwallow.current",
+          "right": "cancel",
+          "inclusive": true,
+          "intent": "Ensures only the currently installed cancellation callback clears the listener.",
+          "anchor": { "startLine": 63, "endLine": 66 }
+        },
+        {
+          "operator": "<=",
+          "left": "Vec.Dist2(state.start, new Vec(e.clientX, e.clientY))",
+          "right": "editor.options.dragDistanceSquared",
+          "inclusive": true,
+          "intent": "Keeps movement suppressed through the configured drag threshold.",
+          "anchor": { "startLine": 115, "endLine": 117 }
+        },
+        {
+          "operator": "==",
+          "left": "rPointerState.current.button",
+          "right": "2",
+          "inclusive": true,
+          "intent": "Identifies an unreleased secondary-button gesture.",
+          "anchor": { "startLine": 147, "endLine": 148 }
+        },
+        {
+          "operator": "==",
+          "left": "rPointerState.current.button",
+          "right": "2",
+          "inclusive": true,
+          "intent": "Preserves the tracked secondary-button value for pointer-up dispatch.",
+          "anchor": { "startLine": 153, "endLine": 153 }
+        }
+      ],
+      "errorHandling": [],
+      "invariants": [
+        {
+          "kind": "invariant",
+          "description": "The capture element remains mounted for the duration of an active pointer gesture.",
+          "anchor": { "startLine": 21, "endLine": 24 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Only primary and secondary pointer buttons are handled by the capture layer.",
+          "anchor": { "startLine": 71, "endLine": 72 }
+        },
+        {
+          "kind": "ordering",
+          "description": "Left-drag pointer-down is dispatched at the original gesture coordinates before movement.",
+          "anchor": { "startLine": 114, "endLine": 128 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "Pointer capture and local gesture state are released and reset after pointer-up.",
+          "anchor": { "startLine": 182, "endLine": 194 }
+        },
+        {
+          "kind": "ordering",
+          "description": "Synthetic context-menu dispatch occurs on the next animation frame after right-click release.",
+          "anchor": { "startLine": 165, "endLine": 179 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "The editor provides a container containing the canvas element identified by .tl-canvas when right-click panning is used.",
+          "anchor": { "startLine": 79, "endLine": 80 }
+        },
+        {
+          "kind": "caller",
+          "description": "The canvas event handler accepts a pointer-down event with a substituted currentTarget.",
+          "anchor": { "startLine": 79, "endLine": 81 }
+        },
+        {
+          "kind": "config",
+          "description": "dragDistanceSquared is expressed in squared coordinate units compatible with Vec.Dist2.",
+          "anchor": { "startLine": 114, "endLine": 117 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "Does the editor's pointer dispatcher require pointer-up after a gesture that never crosses the left-drag threshold?",
+          "affects": "pointer gesture lifecycle",
+          "anchor": { "startLine": 131, "endLine": 139 },
+          "resolution": null
+        },
+        {
+          "question": "What guarantees that the canvas parent is the correct Radix context-menu trigger?",
+          "affects": "synthetic context-menu routing",
+          "anchor": { "startLine": 163, "endLine": 164 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "mixed",
+        "reentrant": false,
+        "ordering": "deterministic",
+        "notes": "Pointer callbacks execute synchronously; cleanup and synthetic context-menu work use React effects, a zero-delay timer, and an animation-frame scheduler."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "renders-only-when-menu-open-or-pointing",
+          "scenario": "The capture element is rendered while a menu is open or an active pointer gesture is being tracked.",
+          "given": ["isMenuOpen === false", "isPointing === false"],
+          "when": "render(<MenuClickCapture />)",
+          "then": "container.querySelector('[data-testid=\"menu-click-capture.content\"]') === null",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Prevents the overlay from intercepting canvas input when no menu or pointer gesture requires it."
+        },
+        {
+          "testId": "ignores-unsupported-pointer-buttons",
+          "scenario": "A pointerdown uses a button other than primary or secondary.",
+          "given": ["getPointerEventButton(e) === 1"],
+          "when": "capture.props.onPointerDown(e)",
+          "then": "setPointerCapture and editor.menus.clearOpenMenus are not called",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Only left and right pointer gestures are owned by the capture layer."
+        },
+        {
+          "testId": "clears-menu-on-captured-pointerdown",
+          "scenario": "A primary pointerdown occurs while the capture overlay is active.",
+          "given": ["getPointerEventButton(e) === 0"],
+          "when": "capture.props.onPointerDown(e)",
+          "then": "editor.menus.clearOpenMenus() is called and pointer capture is set on e.currentTarget",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "The overlay must dismiss the menu and retain the gesture after the overlay would otherwise disappear."
+        },
+        {
+          "testId": "waits-for-left-drag-threshold",
+          "scenario": "A primary pointer moves without exceeding the configured drag threshold.",
+          "given": [
+            "rPointerState.current.isDown === true",
+            "rPointerState.current.button === 0",
+            "Vec.Dist2(state.start, new Vec(e.clientX, e.clientY)) <= editor.options.dragDistanceSquared"
+          ],
+          "when": "capture.props.onPointerMove(e)",
+          "then": "editor.dispatch is not called and the gesture remains non-dragging",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Small pointer motion must not create an editor drag."
+        },
+        {
+          "testId": "replays-left-drag-origin",
+          "scenario": "A primary pointer moves beyond the drag threshold.",
+          "given": [
+            "rPointerState.current.isDown === true",
+            "rPointerState.current.button === 0",
+            "Vec.Dist2(state.start, new Vec(e.clientX, e.clientY)) > editor.options.dragDistanceSquared"
+          ],
+          "when": "capture.props.onPointerMove(e)",
+          "then": "editor.dispatch receives pointer_down at state.start followed by pointer_move at the current pointer position",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "The editor must record the original press location as the drag origin."
+        },
+        {
+          "testId": "forwards-right-drag-immediately",
+          "scenario": "A secondary pointer is down and moves before any drag threshold is evaluated.",
+          "given": ["rPointerState.current.isDown === true", "rPointerState.current.button === 2"],
+          "when": "capture.props.onPointerMove(e)",
+          "then": "editor.dispatch receives a pointer_move event without a replayed pointer_down",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Right-click gestures forward movement immediately."
+        },
+        {
+          "testId": "dispatches-pointer-up-with-captured-button",
+          "scenario": "A captured pointer gesture ends.",
+          "given": ["rPointerState.current.isDown === true"],
+          "when": "capture.props.onPointerUp(e)",
+          "then": "editor.dispatch receives pointer_up, pointer capture is released, and the pointer state is reset",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Every owned gesture must terminate in the editor and release the overlay's pointer capture."
+        },
+        {
+          "testId": "opens-context-menu-at-right-click-release",
+          "scenario": "A static right-click completes while right-click panning is enabled.",
+          "given": [
+            "rPointerState.current.button === 2",
+            "rPointerState.current.isDragging === false",
+            "editor.options.rightClickPanning === true"
+          ],
+          "when": "capture.props.onPointerUp(e)",
+          "then": "a synthetic contextmenu PointerEvent is dispatched on the canvas parent at e.clientX and e.clientY",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "The context menu must open at release position rather than the pointerdown position."
+        },
+        {
+          "testId": "forwards-right-click-panning-to-canvas",
+          "scenario": "Right-click panning is enabled and a secondary pointerdown occurs.",
+          "given": ["getPointerEventButton(e) === 2", "editor.options.rightClickPanning === true"],
+          "when": "capture.props.onPointerDown(e)",
+          "then": "canvasEvents.onPointerDown is called with currentTarget set to the .tl-canvas element and local pointer capture is not set",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "The canvas must own right-click panning so pointer capture and consecutive gestures remain consistent."
+        },
+        {
+          "testId": "swallows-trusted-native-contextmenu",
+          "scenario": "The browser emits the trusted native contextmenu following a right-click.",
+          "given": ["swallowNextNativeContextMenu() has installed its capture listener", "event.isTrusted === true"],
+          "when": "document.dispatchEvent(event)",
+          "then": "event.preventDefault() and event.stopImmediatePropagation() are called",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "The native menu must be suppressed to avoid a duplicate flash before the synthetic release-position menu."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "React and editor utility imports",
+        "exported MenuClickCapture component",
+        "menu visibility state",
+        "pointer state and native context-menu cancellation",
+        "pointer-down callback",
+        "pointer-move callback",
+        "pointer-up callback",
+        "conditional capture-layer JSX"
+      ],
+      "moduleLevelCode": "import { useValue } from '@tldraw/state-react'\nimport { type PointerEvent, useCallback, useEffect, useRef, useState } from 'react'\nimport { flushSync } from 'react-dom'\nimport { useCanvasEvents } from '../hooks/useCanvasEvents'\nimport { useEditor } from '../hooks/useEditor'\nimport { Vec } from '../primitives/Vec'\nimport { releasePointerCapture, setPointerCapture } from '../utils/dom'\nimport { getPointerInfo } from '../utils/getPointerInfo'\nimport { getPointerEventButton } from '../utils/pointer'",
+      "exports": [{ "name": "MenuClickCapture", "kind": "own", "fromSpec": null, "exportedAs": null }],
+      "importSymbolMap": [
+        { "symbol": "useValue", "module": "@tldraw/state-react", "alias": null, "kind": "external" },
+        { "symbol": "PointerEvent", "module": "react", "alias": null, "kind": "external" },
+        { "symbol": "useCallback", "module": "react", "alias": null, "kind": "external" },
+        { "symbol": "useEffect", "module": "react", "alias": null, "kind": "external" },
+        { "symbol": "useRef", "module": "react", "alias": null, "kind": "external" },
+        { "symbol": "useState", "module": "react", "alias": null, "kind": "external" },
+        { "symbol": "flushSync", "module": "react-dom", "alias": null, "kind": "external" },
+        { "symbol": "useCanvasEvents", "module": "../hooks/useCanvasEvents", "alias": null, "kind": "internal" },
+        { "symbol": "useEditor", "module": "../hooks/useEditor", "alias": null, "kind": "internal" },
+        { "symbol": "Vec", "module": "../primitives/Vec", "alias": null, "kind": "internal" },
+        { "symbol": "releasePointerCapture", "module": "../utils/dom", "alias": null, "kind": "internal" },
+        { "symbol": "setPointerCapture", "module": "../utils/dom", "alias": null, "kind": "internal" },
+        { "symbol": "getPointerInfo", "module": "../utils/getPointerInfo", "alias": null, "kind": "internal" },
+        { "symbol": "getPointerEventButton", "module": "../utils/pointer", "alias": null, "kind": "internal" }
+      ],
+      "fileConstants": [],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/editor/src/lib/components/MenuClickCapture.tsx__MenuClickCapture#function:MenuClickCapture",
+        "unitKind": "function",
+        "name": "MenuClickCapture",
+        "qualifiedName": "MenuClickCapture",
+        "parentUnitId": null,
+        "startLine": 16,
+        "endLine": 212,
+        "isBehavioral": true,
+        "source": "export function MenuClickCapture() {\n\tconst editor = useEditor()\n\n\tconst isMenuOpen = useValue('is menu open', () => editor.menus.hasAnyOpenMenus(), [editor])\n\n\t// Keep this component mounted while the pointer is down so pointerup/move still\n\t// land here after a synchronous clearOpenMenus() flips isMenuOpen to false.\n\tconst [isPointing, setIsPointing] = useState(false)\n\tconst showElement = isMenuOpen || isPointing\n\n\tconst canvasEvents = useCanvasEvents()\n\n\tconst rPointerState = useRef({\n\t\tisDown: false,\n\t\tisDragging: false,\n\t\tbutton: 0,\n\t\tstart: new Vec(),\n\t})\n\n\t// Swallow the native contextmenu that follows a right-click pointerdown. Without\n\t// this, Radix's trigger catches the native event and opens a menu at the pointer-\n\t// DOWN position — then our own synthetic contextmenu (fired on pointerup) opens it\n\t// again at the release position, producing a visible flash.\n\tconst rCancelContextMenuSwallow = useRef<null | (() => void)>(null)\n\tuseEffect(\n\t\t() => () => {\n\t\t\trCancelContextMenuSwallow.current?.()\n\t\t\trCancelContextMenuSwallow.current = null\n\t\t},\n\t\t[]\n\t)\n\tconst swallowNextNativeContextMenu = useCallback(() => {\n\t\trCancelContextMenuSwallow.current?.()\n\t\tconst doc = editor.getContainerDocument()\n\t\tconst onContextMenu = (event: MouseEvent) => {\n\t\t\t// Skip our own synthetic contextmenu — only swallow the real browser one\n\t\t\tif (!event.isTrusted) return\n\t\t\trCancelContextMenuSwallow.current?.()\n\t\t\trCancelContextMenuSwallow.current = null\n\t\t\tevent.preventDefault()\n\t\t\tevent.stopImmediatePropagation()\n\t\t}\n\t\tconst cancel = () => doc.removeEventListener('contextmenu', onContextMenu, true)\n\t\trCancelContextMenuSwallow.current = cancel\n\t\tdoc.addEventListener('contextmenu', onContextMenu, true)\n\t\t// Drop the listener on the next tick if it never fires (e.g. pointer moved off-screen)\n\t\tdoc.defaultView?.setTimeout(() => {\n\t\t\tif (rCancelContextMenuSwallow.current === cancel) {\n\t\t\t\tcancel()\n\t\t\t\trCancelContextMenuSwallow.current = null\n\t\t\t}\n\t\t}, 0)\n\t}, [editor])\n\n\tconst handlePointerDown = useCallback(\n\t\t(e: PointerEvent) => {\n\t\t\tconst button = getPointerEventButton(e)\n\t\t\tif (button !== 0 && button !== 2) return\n\n\t\t\tif (button === 2 && editor.options.rightClickPanning) {\n\t\t\t\t// Forward right-click pointerdown through the canvas's own handler so\n\t\t\t\t// pointer capture is set on the canvas (load-bearing: without this\n\t\t\t\t// the context menu briefly flashes closed during consecutive right-clicks).\n\t\t\t\t// The canvas owns the rest of the gesture, so don't capture or mark\n\t\t\t\t// pointing here: this element's pointerup would never fire, leaving it\n\t\t\t\t// mounted over the canvas after the menu closes.\n\t\t\t\t// We don't clearOpenMenus() — Radix's DismissableLayer closes the menu\n\t\t\t\t// via outside-click detection, keeping its internal state in sync.\n\t\t\t\tconst canvas =\n\t\t\t\t\teditor.getContainer().querySelector<HTMLDivElement>('.tl-canvas') ?? e.currentTarget\n\t\t\t\tcanvasEvents.onPointerDown?.({ ...e, currentTarget: canvas })\n\t\t\t\tswallowNextNativeContextMenu()\n\t\t\t\treturn\n\t\t\t}\n\n\t\t\tflushSync(() => setIsPointing(true))\n\t\t\tsetPointerCapture(e.currentTarget, e)\n\t\t\trPointerState.current = {\n\t\t\t\tisDown: true,\n\t\t\t\tisDragging: false,\n\t\t\t\tbutton,\n\t\t\t\tstart: new Vec(e.clientX, e.clientY),\n\t\t\t}\n\n\t\t\tif (button === 2) {\n\t\t\t\t// Right-click panning off: swallow the native contextmenu that would otherwise\n\t\t\t\t// briefly open a new menu (causing a flash) once the open one closes below.\n\t\t\t\tswallowNextNativeContextMenu()\n\t\t\t}\n\n\t\t\teditor.menus.clearOpenMenus()\n\t\t},\n\t\t[canvasEvents, editor, swallowNextNativeContextMenu]\n\t)\n\n\tconst handlePointerMove = useCallback(\n\t\t(e: PointerEvent) => {\n\t\t\tconst state = rPointerState.current\n\t\t\tif (!state.isDown) return\n\n\t\t\t// Left-click: wait for the drag threshold before forwarding anything, then\n\t\t\t// replay pointerdown at the original start so the editor records the\n\t\t\t// correct drag origin. Right-click forwards moves immediately.\n\t\t\tif (state.button !== 2 && !state.isDragging) {\n\t\t\t\tif (\n\t\t\t\t\tVec.Dist2(state.start, new Vec(e.clientX, e.clientY)) <=\n\t\t\t\t\teditor.options.dragDistanceSquared\n\t\t\t\t) {\n\t\t\t\t\treturn\n\t\t\t\t}\n\t\t\t\tstate.isDragging = true\n\t\t\t\teditor.dispatch({\n\t\t\t\t\ttype: 'pointer',\n\t\t\t\t\ttarget: 'canvas',\n\t\t\t\t\tname: 'pointer_down',\n\t\t\t\t\t...getPointerInfo(editor, { ...e, clientX: state.start.x, clientY: state.start.y }),\n\t\t\t\t})\n\t\t\t}\n\n\t\t\teditor.dispatch({\n\t\t\t\ttype: 'pointer',\n\t\t\t\ttarget: 'canvas',\n\t\t\t\tname: 'pointer_move',\n\t\t\t\t...getPointerInfo(editor, e),\n\t\t\t})\n\t\t},\n\t\t[editor]\n\t)\n\n\tconst handlePointerUp = useCallback(\n\t\t(e: PointerEvent) => {\n\t\t\tconst isStaticRightClick =\n\t\t\t\trPointerState.current.button === 2 && !rPointerState.current.isDragging\n\n\t\t\teditor.dispatch({\n\t\t\t\ttype: 'pointer',\n\t\t\t\ttarget: 'canvas',\n\t\t\t\tname: 'pointer_up',\n\t\t\t\t...getPointerInfo(editor, e),\n\t\t\t\tbutton: rPointerState.current.button === 2 ? 2 : getPointerEventButton(e),\n\t\t\t})\n\n\t\t\tif (isStaticRightClick && editor.options.rightClickPanning) {\n\t\t\t\t// Dispatch contextmenu on the canvas's parent (Radix's trigger) so the\n\t\t\t\t// menu opens at the release position. Bypassing the canvas avoids its\n\t\t\t\t// own onContextMenu handler, which preventDefaults non-synthesized events.\n\t\t\t\tconst canvas = editor.getContainer().querySelector<HTMLDivElement>('.tl-canvas')\n\t\t\t\tconst trigger = canvas?.parentElement ?? e.currentTarget\n\t\t\t\teditor.timers.requestAnimationFrame(() => {\n\t\t\t\t\ttrigger.dispatchEvent(\n\t\t\t\t\t\tnew PointerEvent('contextmenu', {\n\t\t\t\t\t\t\tbubbles: true,\n\t\t\t\t\t\t\tclientX: e.clientX,\n\t\t\t\t\t\t\tclientY: e.clientY,\n\t\t\t\t\t\t\tbutton: 2,\n\t\t\t\t\t\t\tbuttons: 0,\n\t\t\t\t\t\t\tpointerId: e.pointerId,\n\t\t\t\t\t\t\tpointerType: e.pointerType,\n\t\t\t\t\t\t\tisPrimary: e.isPrimary,\n\t\t\t\t\t\t})\n\t\t\t\t\t)\n\t\t\t\t})\n\t\t\t}\n\n\t\t\treleasePointerCapture(e.currentTarget, e)\n\t\t\tsetIsPointing(false)\n\t\t\trPointerState.current = {\n\t\t\t\tisDown: false,\n\t\t\t\tisDragging: false,\n\t\t\t\tbutton: 0,\n\t\t\t\tstart: new Vec(e.clientX, e.clientY),\n\t\t\t}\n\t\t},\n\t\t[editor]\n\t)\n\n\treturn (\n\t\tshowElement && (\n\t\t\t<div\n\t\t\t\tclassName=\"tlui-menu-click-capture\"\n\t\t\t\tdata-testid=\"menu-click-capture.content\"\n\t\t\t\t{...canvasEvents}\n\t\t\t\tonPointerDown={handlePointerDown}\n\t\t\t\tonPointerMove={handlePointerMove}\n\t\t\t\tonPointerUp={handlePointerUp}\n\t\t\t\tonContextMenu={(e) => {\n\t\t\t\t\te.preventDefault()\n\t\t\t\t\te.stopPropagation()\n\t\t\t\t}}\n\t\t\t/>\n\t\t)\n\t)\n}\n",
+        "detail": {
+          "unitId": "packages/editor/src/lib/components/MenuClickCapture.tsx__MenuClickCapture#function:MenuClickCapture",
+          "fileId": "packages/editor/src/lib/components/MenuClickCapture.tsx__MenuClickCapture",
+          "unitKind": "function",
+          "name": "MenuClickCapture",
+          "qualifiedName": "MenuClickCapture",
+          "parentUnitId": null,
+          "startLine": 16,
+          "endLine": 212,
+          "signature": "export function MenuClickCapture()",
+          "parameters": [],
+          "returnType": "JSX.Element | false",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The component is rendered within the editor context required by useEditor.",
+            "The editor provides menu state, container access, timer scheduling, and pointer dispatch services."
+          ],
+          "postconditions": [
+            "When a menu is open or a pointer gesture is active, a menu click-capture div is rendered with the canvas event handlers.",
+            "When neither a menu is open nor a pointer gesture is active, the component renders no element.",
+            "On unmount, any pending native context-menu swallowing listener is removed."
+          ],
+          "invariants": [
+            "The capture element remains mounted for the duration of an active pointer gesture, even if menus are synchronously closed.",
+            "The capture element prevents and stops propagation of contextmenu events received directly by it.",
+            "At most one pending native context-menu swallowing listener is retained; replacing it cancels the previous listener."
+          ],
+          "edgeCases": [
+            "No menu is open and no pointer gesture is active: the component renders false and no capture element is present.",
+            "A menu closes while the pointer is down: the capture element remains mounted until pointerup or equivalent gesture completion.",
+            "The component unmounts while a native context-menu swallow is pending: the listener is cancelled and removed.",
+            "The editor container has no canvas element matching .tl-canvas: pointer handling falls back to the event currentTarget where implemented by the child handlers."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [
+            "Local React isPointing state is set when pointer capture begins and cleared when pointer capture ends.",
+            "A ref stores the pending native context-menu cancellation callback.",
+            "The editor's menu and pointer state may be mutated by the child pointer handlers."
+          ],
+          "eventsEmitted": [
+            "The rendered capture element exposes pointerdown, pointermove, pointerup, and contextmenu DOM event handlers.",
+            "Child handlers may dispatch editor pointer events and schedule a synthetic contextmenu event."
+          ],
+          "complexity": null,
+          "calls": [
+            { "name": "useEditor", "source": "editor context", "kind": "external" },
+            { "name": "useValue", "source": "editor state", "kind": "external" },
+            { "name": "useCanvasEvents", "source": "canvas interaction subsystem", "kind": "external" },
+            { "name": "editor.menus.hasAnyOpenMenus", "source": "editor", "kind": "external" },
+            { "name": "editor.menus.clearOpenMenus", "source": "editor", "kind": "external" },
+            { "name": "editor.getContainerDocument", "source": "editor", "kind": "external" },
+            { "name": "editor.getContainer", "source": "editor", "kind": "external" },
+            { "name": "editor.dispatch", "source": "editor", "kind": "external" },
+            { "name": "editor.timers.requestAnimationFrame", "source": "editor", "kind": "external" }
+          ],
+          "symbolReferences": [
+            "React useState",
+            "React useRef",
+            "React useEffect",
+            "React useCallback",
+            "Vec",
+            "PointerEvent"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "When active, renders a div with className=\"tlui-menu-click-capture\" and data-testid=\"menu-click-capture.content\", spreading canvas event handlers and attaching pointerdown, pointermove, pointerup, and contextmenu handlers.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Renders an invisible interaction layer while an editor menu is open or a pointer gesture is active. It captures pointer interactions around menus and coordinates them with the editor canvas and native context-menu behavior.",
+          "specLiterals": [
+            {
+              "kind": "format-string",
+              "value": "tlui-menu-click-capture",
+              "role": "Stable CSS class identifying the menu click-capture element."
+            },
+            {
+              "kind": "format-string",
+              "value": "menu-click-capture.content",
+              "role": "Stable test selector identifying the rendered capture element."
+            },
+            {
+              "kind": "format-string",
+              "value": ".tl-canvas",
+              "role": "Selector used to locate the editor canvas for pointer forwarding and context-menu targeting."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "MenuClickCapture renders.",
+              "then": "It renders no capture element.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "MenuClickCapture renders.",
+              "then": "It renders an element with className=\"tlui-menu-click-capture\" and data-testid=\"menu-click-capture.content\".",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The component updates after the menu closes.",
+              "then": "The capture element remains rendered until the pointer gesture ends.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "802d771ad2fb9b32f9d6892cd6deda935081e0982a1f0773382145d850be713f"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/components/MenuClickCapture.tsx__MenuClickCapture.swallowNextNativeContextMenu#function:MenuClickCapture.swallowNextNativeContextMenu",
+        "unitKind": "function",
+        "name": "swallowNextNativeContextMenu",
+        "qualifiedName": "MenuClickCapture.swallowNextNativeContextMenu",
+        "parentUnitId": "packages/editor/src/lib/components/MenuClickCapture.tsx__MenuClickCapture#function:MenuClickCapture",
+        "startLine": 47,
+        "endLine": 67,
+        "isBehavioral": true,
+        "source": "\tconst swallowNextNativeContextMenu = useCallback(() => {\n\t\trCancelContextMenuSwallow.current?.()\n\t\tconst doc = editor.getContainerDocument()\n\t\tconst onContextMenu = (event: MouseEvent) => {\n\t\t\t// Skip our own synthetic contextmenu — only swallow the real browser one\n\t\t\tif (!event.isTrusted) return\n\t\t\trCancelContextMenuSwallow.current?.()\n\t\t\trCancelContextMenuSwallow.current = null\n\t\t\tevent.preventDefault()\n\t\t\tevent.stopImmediatePropagation()\n\t\t}\n\t\tconst cancel = () => doc.removeEventListener('contextmenu', onContextMenu, true)\n\t\trCancelContextMenuSwallow.current = cancel\n\t\tdoc.addEventListener('contextmenu', onContextMenu, true)\n\t\t// Drop the listener on the next tick if it never fires (e.g. pointer moved off-screen)\n\t\tdoc.defaultView?.setTimeout(() => {\n\t\t\tif (rCancelContextMenuSwallow.current === cancel) {\n\t\t\t\tcancel()\n\t\t\t\trCancelContextMenuSwallow.current = null\n\t\t\t}\n\t\t}, 0)",
+        "detail": {
+          "unitId": "packages/editor/src/lib/components/MenuClickCapture.tsx__MenuClickCapture.swallowNextNativeContextMenu#function:MenuClickCapture.swallowNextNativeContextMenu",
+          "fileId": "packages/editor/src/lib/components/MenuClickCapture.tsx__MenuClickCapture.swallowNextNativeContextMenu",
+          "unitKind": "function",
+          "name": "swallowNextNativeContextMenu",
+          "qualifiedName": "MenuClickCapture.swallowNextNativeContextMenu",
+          "parentUnitId": "packages/editor/src/lib/components/MenuClickCapture.tsx__MenuClickCapture#function:MenuClickCapture",
+          "startLine": 47,
+          "endLine": 67,
+          "signature": "() => void",
+          "parameters": [],
+          "returnType": "void",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["The editor provides a container document through getContainerDocument()."],
+          "postconditions": [
+            "Any previously registered context-menu swallow cancellation is invoked before installing the new listener.",
+            "A capturing contextmenu listener is registered on the editor container document.",
+            "The active cancellation reference identifies the newly installed listener.",
+            "A zero-delay cleanup is scheduled to remove the listener if it has not handled a trusted event first."
+          ],
+          "invariants": [
+            "Only trusted contextmenu events are swallowed.",
+            "Synthetic or otherwise untrusted contextmenu events do not call preventDefault or stopImmediatePropagation.",
+            "A trusted handled event removes the active listener reference and prevents the event's default action and immediate propagation.",
+            "Cleanup only clears the active reference when it still corresponds to the listener installed by this invocation."
+          ],
+          "edgeCases": [
+            "If a prior swallow listener exists, its cancellation function is invoked before the new listener is registered.",
+            "An untrusted contextmenu event is ignored and leaves the listener active until the scheduled cleanup or a later trusted event.",
+            "If no contextmenu event occurs before the next timer tick, the listener is removed and the active cancellation reference is cleared.",
+            "If the editor container document has no defaultView, no timeout cleanup is scheduled; the listener remains available until cancellation or a trusted event."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [
+            "Mutates rCancelContextMenuSwallow.current to replace, retain, or clear the active listener cancellation function.",
+            "Adds and removes a capturing contextmenu listener on the editor container document.",
+            "Calls preventDefault() and stopImmediatePropagation() on the first trusted contextmenu event handled by the listener."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "editor.getContainerDocument", "source": "editor", "kind": "internal" },
+            { "name": "document.addEventListener", "source": "editor container document", "kind": "external" },
+            { "name": "document.removeEventListener", "source": "editor container document", "kind": "external" },
+            { "name": "window.setTimeout", "source": "editor container document defaultView", "kind": "external" },
+            { "name": "event.preventDefault", "source": "trusted contextmenu event", "kind": "external" },
+            { "name": "event.stopImmediatePropagation", "source": "trusted contextmenu event", "kind": "external" }
+          ],
+          "symbolReferences": ["editor", "MouseEvent", "rCancelContextMenuSwallow"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Installs a one-shot capturing listener on the editor container document to suppress the next trusted native context-menu event. The listener is automatically removed after handling an event or on the next timer tick if no applicable event occurs.",
+          "specLiterals": [
+            { "kind": "magic-number", "value": "0", "role": "Schedules listener cleanup on the next timer tick." }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "swallowNextNativeContextMenu() is called and then a trusted contextmenu event is dispatched",
+              "then": "The event is prevented, immediate propagation is stopped, the listener is removed, and the active cancellation reference is cleared.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "an untrusted contextmenu event is dispatched",
+              "then": "The event is not prevented or immediately stopped, and the listener remains active until timeout cleanup or a trusted event.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "swallowNextNativeContextMenu() is called and no contextmenu event occurs before the zero-delay timer runs",
+              "then": "The listener is removed and the active cancellation reference is cleared.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "129be9da3c4ef33b6f2ad297a0e47ad5f526d7489f65e9b3f527e57e6d7cf08e"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/components/MenuClickCapture.tsx__MenuClickCapture.handlePointerDown#function:MenuClickCapture.handlePointerDown",
+        "unitKind": "function",
+        "name": "handlePointerDown",
+        "qualifiedName": "MenuClickCapture.handlePointerDown",
+        "parentUnitId": "packages/editor/src/lib/components/MenuClickCapture.tsx__MenuClickCapture#function:MenuClickCapture",
+        "startLine": 69,
+        "endLine": 104,
+        "isBehavioral": true,
+        "source": "\n\tconst handlePointerDown = useCallback(\n\t\t(e: PointerEvent) => {\n\t\t\tconst button = getPointerEventButton(e)\n\t\t\tif (button !== 0 && button !== 2) return\n\n\t\t\tif (button === 2 && editor.options.rightClickPanning) {\n\t\t\t\t// Forward right-click pointerdown through the canvas's own handler so\n\t\t\t\t// pointer capture is set on the canvas (load-bearing: without this\n\t\t\t\t// the context menu briefly flashes closed during consecutive right-clicks).\n\t\t\t\t// The canvas owns the rest of the gesture, so don't capture or mark\n\t\t\t\t// pointing here: this element's pointerup would never fire, leaving it\n\t\t\t\t// mounted over the canvas after the menu closes.\n\t\t\t\t// We don't clearOpenMenus() — Radix's DismissableLayer closes the menu\n\t\t\t\t// via outside-click detection, keeping its internal state in sync.\n\t\t\t\tconst canvas =\n\t\t\t\t\teditor.getContainer().querySelector<HTMLDivElement>('.tl-canvas') ?? e.currentTarget\n\t\t\t\tcanvasEvents.onPointerDown?.({ ...e, currentTarget: canvas })\n\t\t\t\tswallowNextNativeContextMenu()\n\t\t\t\treturn\n\t\t\t}\n\n\t\t\tflushSync(() => setIsPointing(true))\n\t\t\tsetPointerCapture(e.currentTarget, e)\n\t\t\trPointerState.current = {\n\t\t\t\tisDown: true,\n\t\t\t\tisDragging: false,\n\t\t\t\tbutton,\n\t\t\t\tstart: new Vec(e.clientX, e.clientY),\n\t\t\t}\n\n\t\t\tif (button === 2) {\n\t\t\t\t// Right-click panning off: swallow the native contextmenu that would otherwise\n\t\t\t\t// briefly open a new menu (causing a flash) once the open one closes below.\n\t\t\t\tswallowNextNativeContextMenu()\n\t\t\t}",
+        "detail": {
+          "unitId": "packages/editor/src/lib/components/MenuClickCapture.tsx__MenuClickCapture.handlePointerDown#function:MenuClickCapture.handlePointerDown",
+          "fileId": "packages/editor/src/lib/components/MenuClickCapture.tsx__MenuClickCapture.handlePointerDown",
+          "unitKind": "function",
+          "name": "handlePointerDown",
+          "qualifiedName": "MenuClickCapture.handlePointerDown",
+          "parentUnitId": "packages/editor/src/lib/components/MenuClickCapture.tsx__MenuClickCapture#function:MenuClickCapture",
+          "startLine": 69,
+          "endLine": 104,
+          "signature": "(e: PointerEvent) => {",
+          "parameters": [
+            { "name": "e", "type": "PointerEvent", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "void",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The argument is a PointerEvent.",
+            "The handler executes within a MenuClickCapture instance with access to editor, canvasEvents, pointer state, and pointer-capture helpers."
+          ],
+          "postconditions": [
+            "Pointer events whose button is neither 0 nor 2 produce no state change or delegated canvas event.",
+            "When right-click panning is enabled, a secondary-button pointer-down is forwarded to the canvas handler when one exists, the next native context menu is swallowed, and local pointer-capture state is not initialized.",
+            "For an accepted non-panning pointer-down, pointing state is set to true, the current target captures the pointer, and pointer state records an active, non-dragging gesture with the button and client-coordinate start position.",
+            "For an accepted secondary-button pointer-down when right-click panning is disabled, the next native context menu is swallowed."
+          ],
+          "invariants": [
+            "Only primary-button (0) and secondary-button (2) pointer-down events are processed.",
+            "The recorded gesture start position uses e.clientX and e.clientY.",
+            "The right-click-panning branch does not locally capture the pointer or mark the layer as pointing."
+          ],
+          "edgeCases": [
+            "Unsupported buttons return immediately without changing state.",
+            "A secondary-button event with editor.options.rightClickPanning enabled delegates through the canvas element selected by .tl-canvas, falling back to e.currentTarget when no matching canvas exists.",
+            "If canvasEvents.onPointerDown is absent in the right-click-panning branch, no delegated handler is invoked, but the next native context menu is still swallowed.",
+            "A secondary-button event with right-click panning disabled follows the local capture path and swallows the next native context menu.",
+            "The local capture path records the event as down and not dragging, regardless of whether the accepted button is primary or secondary."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Unsupported pointer buttons are ignored.",
+            "returnsOnError": null
+          },
+          "stateMutations": [
+            "Sets the component pointing state to true for accepted locally handled buttons.",
+            "Captures the pointer on e.currentTarget for accepted locally handled buttons.",
+            "Replaces rPointerState.current with isDown true, isDragging false, the accepted button, and a Vec created from the event client coordinates.",
+            "Schedules the next native context menu to be swallowed for handled secondary-button events."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "getPointerEventButton", "source": "local utility/import", "kind": "internal" },
+            { "name": "editor.getContainer().querySelector", "source": "editor", "kind": "external" },
+            { "name": "canvasEvents.onPointerDown", "source": "canvasEvents", "kind": "external" },
+            {
+              "name": "swallowNextNativeContextMenu",
+              "source": "MenuClickCapture.swallowNextNativeContextMenu",
+              "kind": "internal"
+            },
+            { "name": "setIsPointing", "source": "local component state", "kind": "internal" },
+            { "name": "flushSync", "source": "React", "kind": "external" },
+            { "name": "setPointerCapture", "source": "local pointer-capture utility", "kind": "internal" },
+            { "name": "Vec", "source": "geometry utility/import", "kind": "external" }
+          ],
+          "symbolReferences": [
+            "PointerEvent",
+            "editor.options.rightClickPanning",
+            "canvasEvents.onPointerDown",
+            "rPointerState",
+            "Vec"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Handles primary- and secondary-button pointer-down events for the menu capture layer. It either delegates right-click panning to the canvas or records a captured pointer gesture and suppresses the ensuing native context menu.",
+          "specLiterals": [
+            {
+              "kind": "magic-number",
+              "value": "0",
+              "role": "Pointer button value accepted for primary-button handling."
+            },
+            {
+              "kind": "magic-number",
+              "value": "2",
+              "role": "Pointer button value accepted for secondary-button handling."
+            },
+            {
+              "kind": "enum-value",
+              "value": ".tl-canvas",
+              "role": "DOM selector used to locate the canvas target for delegated right-click pointer handling."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "handlePointerDown is called with the event.",
+              "then": "canvasEvents.onPointerDown is invoked with the event whose currentTarget is the located canvas, the next native context menu is swallowed, and local pointing/pointer-state capture is not initialized.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "handlePointerDown is called with the event.",
+              "then": "pointing is set true, the current target captures the pointer, and rPointerState records isDown true, isDragging false, button 0, and a start position of (10, 20).",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "handlePointerDown is called with the event.",
+              "then": "The handler returns without delegating the event, swallowing a context menu, capturing the pointer, or mutating the recorded pointer state.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "a2ac7e0bcd57f3e78a34a9980e3d72214a628c512869653dc6535a29f59d95b4"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/components/MenuClickCapture.tsx__MenuClickCapture.handlePointerMove#function:MenuClickCapture.handlePointerMove",
+        "unitKind": "function",
+        "name": "handlePointerMove",
+        "qualifiedName": "MenuClickCapture.handlePointerMove",
+        "parentUnitId": "packages/editor/src/lib/components/MenuClickCapture.tsx__MenuClickCapture#function:MenuClickCapture",
+        "startLine": 106,
+        "endLine": 142,
+        "isBehavioral": true,
+        "source": "\t\t\teditor.menus.clearOpenMenus()\n\t\t},\n\t\t[canvasEvents, editor, swallowNextNativeContextMenu]\n\t)\n\n\tconst handlePointerMove = useCallback(\n\t\t(e: PointerEvent) => {\n\t\t\tconst state = rPointerState.current\n\t\t\tif (!state.isDown) return\n\n\t\t\t// Left-click: wait for the drag threshold before forwarding anything, then\n\t\t\t// replay pointerdown at the original start so the editor records the\n\t\t\t// correct drag origin. Right-click forwards moves immediately.\n\t\t\tif (state.button !== 2 && !state.isDragging) {\n\t\t\t\tif (\n\t\t\t\t\tVec.Dist2(state.start, new Vec(e.clientX, e.clientY)) <=\n\t\t\t\t\teditor.options.dragDistanceSquared\n\t\t\t\t) {\n\t\t\t\t\treturn\n\t\t\t\t}\n\t\t\t\tstate.isDragging = true\n\t\t\t\teditor.dispatch({\n\t\t\t\t\ttype: 'pointer',\n\t\t\t\t\ttarget: 'canvas',\n\t\t\t\t\tname: 'pointer_down',\n\t\t\t\t\t...getPointerInfo(editor, { ...e, clientX: state.start.x, clientY: state.start.y }),\n\t\t\t\t})\n\t\t\t}\n\n\t\t\teditor.dispatch({\n\t\t\t\ttype: 'pointer',\n\t\t\t\ttarget: 'canvas',\n\t\t\t\tname: 'pointer_move',\n\t\t\t\t...getPointerInfo(editor, e),\n\t\t\t})\n\t\t},\n\t\t[editor]",
+        "detail": {
+          "unitId": "packages/editor/src/lib/components/MenuClickCapture.tsx__MenuClickCapture.handlePointerMove#function:MenuClickCapture.handlePointerMove",
+          "fileId": "packages/editor/src/lib/components/MenuClickCapture.tsx__MenuClickCapture.handlePointerMove",
+          "unitKind": "function",
+          "name": "handlePointerMove",
+          "qualifiedName": "MenuClickCapture.handlePointerMove",
+          "parentUnitId": "packages/editor/src/lib/components/MenuClickCapture.tsx__MenuClickCapture#function:MenuClickCapture",
+          "startLine": 106,
+          "endLine": 142,
+          "signature": "(e: PointerEvent) => void",
+          "parameters": [
+            { "name": "e", "type": "PointerEvent", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "void",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The event argument is a PointerEvent.",
+            "rPointerState.current is available and contains the pointer state used by the component."
+          ],
+          "postconditions": [
+            "If no pointer is down, no editor dispatch occurs.",
+            "If a left-button pointer has not crossed the drag threshold, no editor dispatch occurs.",
+            "When a left-button drag first crosses the threshold, rPointerState.current.isDragging is set to true and a canvas pointer_down event is dispatched at the original pointer-down coordinates before the current pointer_move event.",
+            "When forwarding occurs, a canvas pointer_move event is dispatched using the current pointer event coordinates.",
+            "Right-button movement is forwarded without waiting for the drag threshold or replaying pointer_down."
+          ],
+          "invariants": [
+            "The drag threshold comparison uses squared distance from the recorded start position.",
+            "The replayed pointer_down is dispatched at state.start, while pointer_move uses the current event coordinates.",
+            "A left-button pointer_down replay occurs at most once because forwarding sets isDragging to true."
+          ],
+          "edgeCases": [
+            "When isDown is false, the function returns without dispatching or changing drag state.",
+            "For a non-right-button pointer at a squared distance less than or equal to editor.options.dragDistanceSquared, the function returns without dispatching.",
+            "For a non-right-button pointer at a squared distance greater than editor.options.dragDistanceSquared, it marks the state as dragging, dispatches pointer_down at the original start coordinates, and then dispatches pointer_move at the current coordinates.",
+            "For button 2, movement is dispatched immediately even when the pointer has not crossed the configured drag threshold.",
+            "After isDragging is true for a non-right-button pointer, subsequent moves dispatch only pointer_move."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [
+            "Mutates rPointerState.current.isDragging from false to true when a non-right-button pointer first exceeds the drag threshold.",
+            "Causes editor dispatch state or event processing for forwarded pointer events."
+          ],
+          "eventsEmitted": [
+            "editor.dispatch pointer_down event targeting canvas when a left-button drag first exceeds the threshold.",
+            "editor.dispatch pointer_move event targeting canvas whenever movement is forwarded."
+          ],
+          "complexity": null,
+          "calls": [
+            { "name": "Vec.Dist2", "source": "Vec", "kind": "external" },
+            { "name": "getPointerInfo", "source": null, "kind": "internal" },
+            { "name": "editor.dispatch", "source": "editor", "kind": "external" }
+          ],
+          "symbolReferences": ["PointerEvent", "Vec", "editor.options.dragDistanceSquared", "rPointerState"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Dispatches objects with type \"pointer\", target \"canvas\", name \"pointer_down\" or \"pointer_move\", and the fields returned by getPointerInfo(editor, event). The replayed pointer_down uses the original start x/y coordinates; pointer_move uses the current event coordinates.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Handles pointer movement while a captured pointer is down. It delays left-button movement until the configured drag threshold is exceeded, then replays the original pointer-down position before forwarding movement; right-button movement is forwarded immediately.",
+          "specLiterals": [
+            { "kind": "enum-value", "value": "pointer", "role": "Dispatched event type for editor pointer events." },
+            { "kind": "enum-value", "value": "canvas", "role": "Dispatch target for forwarded pointer events." },
+            {
+              "kind": "enum-value",
+              "value": "pointer_down",
+              "role": "Event name used to replay the original drag-start pointer down."
+            },
+            {
+              "kind": "enum-value",
+              "value": "pointer_move",
+              "role": "Event name used for forwarded pointer movement."
+            },
+            {
+              "kind": "magic-number",
+              "value": "2",
+              "role": "Pointer button value identifying right-button movement, which bypasses the drag threshold."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "handlePointerMove is called with any PointerEvent.",
+              "then": "No editor pointer event is dispatched and the pointer state is not changed.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "handlePointerMove is called.",
+              "then": "No editor pointer event is dispatched and isDragging remains false.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "handlePointerMove is called.",
+              "then": "isDragging becomes true, followed by a canvas pointer_down dispatched at the recorded start coordinates and a canvas pointer_move dispatched at the current coordinates.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "54c4c242483b372e960cf127dc9f2b678d80879670553bc9bc0680f9c2188976"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/components/MenuClickCapture.tsx__MenuClickCapture.handlePointerUp#function:MenuClickCapture.handlePointerUp",
+        "unitKind": "function",
+        "name": "handlePointerUp",
+        "qualifiedName": "MenuClickCapture.handlePointerUp",
+        "parentUnitId": "packages/editor/src/lib/components/MenuClickCapture.tsx__MenuClickCapture#function:MenuClickCapture",
+        "startLine": 144,
+        "endLine": 194,
+        "isBehavioral": true,
+        "source": "\n\tconst handlePointerUp = useCallback(\n\t\t(e: PointerEvent) => {\n\t\t\tconst isStaticRightClick =\n\t\t\t\trPointerState.current.button === 2 && !rPointerState.current.isDragging\n\n\t\t\teditor.dispatch({\n\t\t\t\ttype: 'pointer',\n\t\t\t\ttarget: 'canvas',\n\t\t\t\tname: 'pointer_up',\n\t\t\t\t...getPointerInfo(editor, e),\n\t\t\t\tbutton: rPointerState.current.button === 2 ? 2 : getPointerEventButton(e),\n\t\t\t})\n\n\t\t\tif (isStaticRightClick && editor.options.rightClickPanning) {\n\t\t\t\t// Dispatch contextmenu on the canvas's parent (Radix's trigger) so the\n\t\t\t\t// menu opens at the release position. Bypassing the canvas avoids its\n\t\t\t\t// own onContextMenu handler, which preventDefaults non-synthesized events.\n\t\t\t\tconst canvas = editor.getContainer().querySelector<HTMLDivElement>('.tl-canvas')\n\t\t\t\tconst trigger = canvas?.parentElement ?? e.currentTarget\n\t\t\t\teditor.timers.requestAnimationFrame(() => {\n\t\t\t\t\ttrigger.dispatchEvent(\n\t\t\t\t\t\tnew PointerEvent('contextmenu', {\n\t\t\t\t\t\t\tbubbles: true,\n\t\t\t\t\t\t\tclientX: e.clientX,\n\t\t\t\t\t\t\tclientY: e.clientY,\n\t\t\t\t\t\t\tbutton: 2,\n\t\t\t\t\t\t\tbuttons: 0,\n\t\t\t\t\t\t\tpointerId: e.pointerId,\n\t\t\t\t\t\t\tpointerType: e.pointerType,\n\t\t\t\t\t\t\tisPrimary: e.isPrimary,\n\t\t\t\t\t\t})\n\t\t\t\t\t)\n\t\t\t\t})\n\t\t\t}\n\n\t\t\treleasePointerCapture(e.currentTarget, e)\n\t\t\tsetIsPointing(false)\n\t\t\trPointerState.current = {\n\t\t\t\tisDown: false,\n\t\t\t\tisDragging: false,\n\t\t\t\tbutton: 0,\n\t\t\t\tstart: new Vec(e.clientX, e.clientY),\n\t\t\t}\n\t\t},\n\t\t[editor]\n\t)\n\n\treturn (\n\t\tshowElement && (\n\t\t\t<div",
+        "detail": {
+          "unitId": "packages/editor/src/lib/components/MenuClickCapture.tsx__MenuClickCapture.handlePointerUp#function:MenuClickCapture.handlePointerUp",
+          "fileId": "packages/editor/src/lib/components/MenuClickCapture.tsx__MenuClickCapture.handlePointerUp",
+          "unitKind": "function",
+          "name": "handlePointerUp",
+          "qualifiedName": "MenuClickCapture.handlePointerUp",
+          "parentUnitId": "packages/editor/src/lib/components/MenuClickCapture.tsx__MenuClickCapture#function:MenuClickCapture",
+          "startLine": 144,
+          "endLine": 194,
+          "signature": "handlePointerUp(e: PointerEvent): void",
+          "parameters": [
+            { "name": "e", "type": "PointerEvent", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "void",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The pointer event argument is provided.",
+            "The enclosing editor and pointer state are available."
+          ],
+          "postconditions": [
+            "A pointer-up event targeting the canvas is dispatched through the editor.",
+            "Pointer capture is released for the event's current target.",
+            "Pointing state is set to false.",
+            "The tracked pointer state is reset to isDown=false, isDragging=false, button=0, with start set to the event's client coordinates.",
+            "For a static right-button release with rightClickPanning enabled, a contextmenu PointerEvent is scheduled for dispatch."
+          ],
+          "invariants": [
+            "The dispatched pointer-up button is 2 when the tracked pointer button is 2; otherwise it is derived from the pointer-up event.",
+            "The pointer-up dispatch includes pointer information produced from the editor and event.",
+            "The pointer state is reset after handling the release."
+          ],
+          "edgeCases": [
+            "A right-button release that is not dragging and has rightClickPanning enabled schedules a bubbling contextmenu event on the .tl-canvas parent, or on the event currentTarget when that canvas or parent is unavailable.",
+            "A right-button release while dragging does not schedule the contextmenu event.",
+            "A non-right-button release does not schedule the contextmenu event.",
+            "When rightClickPanning is disabled, no contextmenu event is scheduled even for a static right-button release."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [
+            "Editor dispatch state is updated with a canvas pointer_up event.",
+            "Pointer capture on e.currentTarget is released.",
+            "The component's isPointing state is set to false.",
+            "rPointerState.current is reset to isDown=false, isDragging=false, button=0, and a new Vec based on e.clientX and e.clientY."
+          ],
+          "eventsEmitted": [
+            "Editor pointer event with type='pointer', target='canvas', name='pointer_up'.",
+            "A bubbling PointerEvent with type='contextmenu' may be dispatched asynchronously through requestAnimationFrame."
+          ],
+          "complexity": null,
+          "calls": [
+            { "name": "editor.dispatch", "source": "editor", "kind": "external" },
+            { "name": "getPointerInfo", "source": null, "kind": "internal" },
+            { "name": "editor.getContainer", "source": "editor", "kind": "external" },
+            { "name": "querySelector", "source": "DOM Element", "kind": "external" },
+            { "name": "editor.timers.requestAnimationFrame", "source": "editor", "kind": "external" },
+            { "name": "dispatchEvent", "source": "DOM Element", "kind": "external" },
+            { "name": "releasePointerCapture", "source": null, "kind": "internal" },
+            { "name": "setIsPointing", "source": null, "kind": "internal" },
+            { "name": "Vec", "source": null, "kind": "internal" },
+            { "name": "getPointerEventButton", "source": null, "kind": "internal" }
+          ],
+          "symbolReferences": [
+            "PointerEvent",
+            "Vec",
+            "editor.options.rightClickPanning",
+            "rPointerState.current",
+            ".tl-canvas"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Dispatches an editor event object containing type='pointer', target='canvas', name='pointer_up', getPointerInfo(editor, e) fields, and button. The optional contextmenu PointerEvent bubbles and contains clientX, clientY, button=2, buttons=0, pointerId, pointerType, and isPrimary copied from the release event.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Handles pointer release by dispatching a canvas pointer-up event, releasing pointer capture, clearing pointing state, and resetting pointer tracking. A non-dragging right-button release optionally schedules a context-menu event at the release position when right-click panning is enabled.",
+          "specLiterals": [
+            { "kind": "enum-value", "value": "pointer", "role": "Editor event type for the pointer-up dispatch." },
+            { "kind": "enum-value", "value": "canvas", "role": "Editor event target for the pointer-up dispatch." },
+            { "kind": "enum-value", "value": "pointer_up", "role": "Editor event name for the pointer release." },
+            { "kind": "magic-number", "value": "2", "role": "Pointer button value identifying the right button." },
+            {
+              "kind": "enum-value",
+              "value": "contextmenu",
+              "role": "Synthetic event type used to open the context menu."
+            },
+            {
+              "kind": "magic-number",
+              "value": "0",
+              "role": "Synthetic contextmenu event buttons value and reset pointer button."
+            },
+            {
+              "kind": "string",
+              "value": ".tl-canvas",
+              "role": "Canvas selector used to locate the context-menu trigger parent."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "handlePointerUp is called with a PointerEvent at client coordinates (100, 200).",
+              "then": "The editor receives a canvas pointer_up dispatch with button 2, pointer capture is released, pointing state becomes false, pointer state is reset, and a bubbling contextmenu PointerEvent is scheduled with clientX=100, clientY=200, button=2, and buttons=0.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "handlePointerUp is called.",
+              "then": "The editor pointer_up dispatch, pointer-capture release, pointing-state clear, and pointer-state reset occur, but no contextmenu event is scheduled.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "handlePointerUp is called.",
+              "then": "The dispatched pointer_up button is obtained from getPointerEventButton(e), and no contextmenu event is scheduled.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "bed8ad7168f8b8d360b498d74ad9fa7a82c4b682299c68d4752832bf8799b550"
+        }
+      }
+    ]
+  },
+  "out": [
+    "packages/editor/src/lib/hooks/useEditor.tsx",
+    "packages/editor/src/lib/utils/pointer.ts",
+    "packages/editor/src/lib/hooks/useCanvasEvents.ts",
+    "packages/editor/src/lib/primitives/Vec.ts",
+    "packages/editor/src/lib/utils/getPointerInfo.ts",
+    "packages/editor/src/lib/utils/dom.ts"
+  ],
+  "in": ["packages/editor/src/lib/components/default-components/DefaultCanvas.tsx"],
+  "externals": ["@tldraw/state-react", "react", "react-dom"],
+  "impact": { "seeds": 5, "callers": 0, "impactedFiles": [] }
+}

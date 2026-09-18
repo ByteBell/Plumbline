@@ -1,0 +1,84 @@
+{
+  "duration_api_ms": 429671,
+  "stop_reason": "end_turn",
+  "session_id": "c2ae8ef7-a913-4621-859b-a10bc00ab0f8",
+  "total_cost_usd": 4.100160999999999,
+  "usage": {
+    "input_tokens": 46,
+    "cache_creation_input_tokens": 192189,
+    "cache_read_input_tokens": 2708332,
+    "output_tokens": 32683,
+    "output_tokens_details": { "thinking_tokens": 14332 },
+    "server_tool_use": { "web_search_requests": 0, "web_fetch_requests": 0 },
+    "service_tier": "standard",
+    "cache_creation": { "ephemeral_1h_input_tokens": 192189, "ephemeral_5m_input_tokens": 0 },
+    "inference_geo": "not_available",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 7592,
+        "cache_read_input_tokens": 196027,
+        "cache_creation_input_tokens": 25377,
+        "cache_creation": { "ephemeral_5m_input_tokens": 0, "ephemeral_1h_input_tokens": 25377 },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 6655,
+      "outputTokens": 29,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.0068000000000000005,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "claude-haiku-4-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    },
+    "claude-opus-5": {
+      "inputTokens": 46,
+      "outputTokens": 32683,
+      "cacheReadInputTokens": 2708332,
+      "cacheCreationInputTokens": 192189,
+      "webSearchRequests": 0,
+      "costUSD": 4.093360999999999,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "canonicalModel": "claude-opus-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": { "background": 0, "foreground": 0, "unset": 0 },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": { "parent": 0, "user": 0, "system": 0 },
+    "refused": { "depth_limit": 0, "concurrency_limit": 0, "budget": 0 },
+    "by_type": {}
+  },
+  "is_error": false,
+  "num_turns": 52,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## LEDGER\n\n**(a) Obligations**\n\n| ob | phrase | status | closers |\n|---|---|---|---|\n| **OB-1** VIOLATOR | \"fading trail keeps animating after switching page\" | **CLOSED** | `packages/editor/src/lib/editor/managers/ScribbleManager/ScribbleManager.ts` (tldraw) |\n| **OB-2** in-flight fetch status reset on scope change | \"transient status of an in-flight fetch reset when scope changes\" | **CLOSED** | `packages/query-core/src/queryObserver.ts` (query); `packages/db/src/query/subset-dedupe.ts` (db) |\n| **OB-3** pending selection reset on scope change | \"pending selection reset when the scope it belongs to changes\" | **CLOSED** | `packages/table-core/src/features/RowSelection.ts`, `packages/table-core/src/features/RowPagination.ts` (table) |\n| **OB-4** interaction in progress reset on scope change | \"interaction still in progress reset when the scope changes underneath it\" | **CLOSED** | `packages/editor/src/lib/editor/managers/ClickManager/ClickManager.ts`, `packages/editor/src/lib/editor/managers/SpatialIndexManager/SpatialIndexManager.ts`, `packages/editor/src/lib/editor/managers/EditorManager.ts` (tldraw); `packages/system/src/xydrag/XYDrag.ts` (xyflow) |\n\n**(b) SWEEP MATRIX**\n\n| ob | repos in SWEPT | ob.repos[] | 3.5 |\n|---|---|---|---|\n| OB-1 | tldraw, xyflow, primitives, react, redux-devtools, table | 6 | ✔ holds |\n| OB-2 | query, db, router, redux-toolkit, jotai | 7 planned (zustand, react-redux) | ✘ **short by 2** — the `stakeout` cap (3.6) hit before zustand and react-redux were swept for OB-2; both remain unswept, not ruled out |\n| OB-3 | table, tldraw | 6 planned | ✘ **short** — primitives and xyflow were reached for OB-3/OB-4 under OB-4's phrase, not OB-3's; router and db unswept for OB-3 |\n| OB-4 | tldraw, xyflow, primitives | 6 planned | ✘ **short by 3** — table, react, router unswept under OB-4's phrase |\n\n**Verdict.** `ScribbleManager.ts` is the violator, confirmed against verbatim source: `Session` (48–56) records `id, items, state, options, idleTimeoutHandle, fadeElapsed, totalPointsAtFadeStart` — **no page id**; `startSession` (74–99) never reads the current page; `tick` (355–388) ticks and republishes every session regardless of page; and `reset` (341–347) is all-or-nothing, page-blind, and nothing invokes it on a page change. The in-repo counterexample sits in the same folder: `SpatialIndexManager` explicitly tracks the current page in its computed and rebuilds when the active page changes. The cross-repo owners of the same contract, both read verbatim: `queryObserver.setOptions` (138–200) rebinds `#currentQuery` and re-derives fetch state when the key scope changes; `subset-dedupe.reset` (194–202) clears `inflightCalls` and bumps `generation` so pre-reset requests cannot repopulate state.\n\nFOLDED covers 5 of 6 CONFIRMED files (`subset-dedupe.ts` was read but not folded).\n\n[{\"repo\":\"tldraw\",\"files\":[\"packages/editor/src/lib/editor/managers/ScribbleManager/ScribbleManager.ts\",\"packages/editor/src/lib/editor/managers/ClickManager/ClickManager.ts\",\"packages/editor/src/lib/editor/managers/SpatialIndexManager/SpatialIndexManager.ts\",\"packages/editor/src/lib/editor/managers/EditorManager.ts\",\"packages/editor/src/lib/editor/Editor.ts\",\"packages/editor/src/lib/editor/managers/SnapManager/SnapManager.ts\",\"packages/editor/src/lib/editor/managers/EdgeScrollManager/EdgeScrollManager.ts\",\"packages/editor/src/lib/editor/managers/InputsManager/InputsManager.ts\",\"packages/editor/src/lib/editor/managers/CollaboratorsManager/CollaboratorsManager.ts\",\"packages/editor/src/lib/editor/managers/FontManager/FontManager.ts\",\"packages/tldraw/src/lib/tools/LaserTool/childStates/Lasering.ts\",\"packages/tldraw/src/lib/tools/LaserTool/LaserTool.ts\",\"packages/tldraw/src/lib/tools/LaserTool/childStates/Idle.ts\",\"packages/tldraw/src/lib/tools/SelectTool/childStates/ScribbleBrushing.ts\",\"packages/tldraw/src/lib/tools/SelectTool/childStates/Brushing.ts\",\"packages/tldraw/src/lib/tools/EraserTool/childStates/Erasing.ts\",\"packages/tldraw/src/lib/overlays/ScribbleOverlayUtil.ts\",\"packages/tldraw/src/lib/overlays/CollaboratorScribbleOverlayUtil.ts\",\"packages/editor/src/lib/editor/managers/SnapManager/BoundsSnaps.ts\",\"packages/editor/src/lib/editor/managers/SnapManager/HandleSnaps.ts\",\"packages/tldraw/src/lib/tools/SelectTool/DragAndDropManager.ts\",\"packages/editor/src/lib/editor/derivations/shapeIdsInCurrentPage.ts\",\"packages/editor/src/lib/editor/managers/HistoryManager/HistoryManager.ts\",\"packages/editor/src/lib/editor/managers/TickManager/TickManager.ts\",\"packages/editor/src/lib/editor/managers/FocusManager/FocusManager.ts\",\"packages/tlschema/src/records/TLInstance.ts\",\"packages/tlschema/src/misc/TLScribble.ts\",\"packages/editor/src/lib/editor/managers/PerformanceManager/PerformanceManager.ts\",\"packages/tldraw/src/lib/defaultSideEffects.ts\",\"packages/tlschema/src/records/TLPageState.ts\"],\"pinpoints\":[{\"path\":\"packages/editor/src/lib/editor/managers/ScribbleManager/ScribbleManager.ts\",\"symbol\":\"Session\",\"lines\":\"48-56\",\"change\":\"Add a pageId field so every in-flight scribble session records the page it was started on.\"},{\"path\":\"packages/editor/src/lib/editor/managers/ScribbleManager/ScribbleManager.ts\",\"symbol\":\"ScribbleManager.startSession\",\"lines\":\"74-99\",\"change\":\"Stamp the editor's current page id onto the session at creation.\"},{\"path\":\"packages/editor/src/lib/editor/managers/ScribbleManager/ScribbleManager.ts\",\"symbol\":\"ScribbleManager.reset\",\"lines\":\"341-347\",\"change\":\"Accept a page scope (or add a resetForPage) so only sessions belonging to the page being left are torn down, and call it when the current page changes.\"},{\"path\":\"packages/editor/src/lib/editor/managers/ScribbleManager/ScribbleManager.ts\",\"symbol\":\"ScribbleManager.tick\",\"lines\":\"355-388\",\"change\":\"Skip ticking and publishing sessions whose recorded page is not the current page, so off-page trails stop animating and drawing.\"},{\"path\":\"packages/editor/src/lib/editor/managers/SpatialIndexManager/SpatialIndexManager.ts\",\"symbol\":\"SpatialIndexManager.createSpatialIndexComputed\",\"lines\":\"55-90\",\"change\":\"In-repo counterexample: already tracks the current page and rebuilds on page change — the contract ScribbleManager must be brought in line with.\"},{\"path\":\"packages/editor/src/lib/editor/managers/EditorManager.ts\",\"symbol\":\"EditorManager\",\"lines\":\"28-59\",\"change\":\"Add a scope-change (page-change) reset hook alongside the existing disposal registry so every manager in the folder inherits the contract.\"},{\"path\":\"packages/editor/src/lib/editor/managers/ClickManager/ClickManager.ts\",\"symbol\":\"ClickManager._getClickTimeout\",\"lines\":\"25-52\",\"change\":\"Pending multi-click state and its timeout survive a page change; cancel and return to idle when the page scope changes.\"}]},{\"repo\":\"query\",\"files\":[\"packages/query-core/src/queryObserver.ts\",\"packages/query-core/src/infiniteQueryObserver.ts\",\"packages/query-core/src/queriesObserver.ts\",\"packages/query-core/src/query.ts\",\"packages/query-core/src/mutation.ts\",\"packages/query-core/src/retryer.ts\",\"packages/react-query/src/useBaseQuery.ts\",\"packages/vue-query/src/useBaseQuery.ts\",\"packages/solid-query/src/useBaseQuery.ts\",\"packages/preact-query/src/useBaseQuery.ts\",\"packages/svelte-query/src/createBaseQuery.svelte.ts\",\"packages/angular-query-experimental/src/create-base-query.ts\",\"packages/lit-query/src/createQueryController.ts\",\"packages/query-core/src/streamedQuery.ts\"],\"pinpoints\":[{\"path\":\"packages/query-core/src/queryObserver.ts\",\"symbol\":\"QueryObserver.setOptions\",\"lines\":\"138-200\",\"change\":\"Owner of the contract: rebinds #currentQuery and re-derives in-flight fetch state when the key scope changes under the long-lived observer.\"}]},{\"repo\":\"db\",\"files\":[\"packages/db/src/query/subset-dedupe.ts\",\"packages/react-db/src/useLiveSuspenseQuery.ts\",\"packages/db/src/query/live/collection-subscriber.ts\",\"packages/db/src/collection/events.ts\",\"packages/solid-db/src/useLiveQuery.ts\"],\"pinpoints\":[{\"path\":\"packages/db/src/query/subset-dedupe.ts\",\"symbol\":\"DeduplicatedLoadSubset.reset\",\"lines\":\"194-202\",\"change\":\"Owner of the contract: clears inflightCalls and bumps generation so requests started before the scope change cannot repopulate state.\"}]},{\"repo\":\"table\",\"files\":[\"packages/table-core/src/features/RowSelection.ts\",\"packages/table-core/src/features/RowPagination.ts\",\"packages/table-core/src/features/ColumnSizing.ts\",\"packages/table-core/src/features/RowExpanding.ts\",\"packages/table-core/src/core/table.ts\"]},{\"repo\":\"xyflow\",\"files\":[\"packages/system/src/xydrag/XYDrag.ts\",\"packages/system/src/xyhandle/XYHandle.ts\",\"packages/react/src/components/BatchProvider/useQueue.ts\",\"packages/svelte/src/lib/store/initial-store.svelte.ts\",\"packages/react/src/store/index.ts\",\"packages/react/src/hooks/useDrag.ts\",\"packages/svelte/src/lib/store/index.ts\"]},{\"repo\":\"router\",\"files\":[\"packages/router-core/src/Matches.ts\",\"packages/router-core/src/router.ts\",\"packages/router-core/src/stores.ts\",\"packages/react-router/src/useBlocker.tsx\"]},{\"repo\":\"redux-toolkit\",\"files\":[\"packages/toolkit/src/query/core/buildSlice.ts\",\"packages/toolkit/src/query/core/buildInitiate.ts\",\"packages/toolkit/src/query/core/buildMiddleware/cacheLifecycle.ts\",\"packages/toolkit/src/query/core/apiState.ts\",\"packages/toolkit/src/query/core/buildMiddleware/polling.ts\"]},{\"repo\":\"primitives\",\"files\":[\"packages/react/presence/src/presence.tsx\",\"packages/react/select/src/select.tsx\",\"packages/react/navigation-menu/src/navigation-menu.tsx\",\"packages/react/toast/src/toast.tsx\"]},{\"repo\":\"jotai\",\"files\":[\"src/vanilla/internals.ts\",\"src/vanilla/utils/loadable.ts\"]}]",
+  "ttft_ms": 1840,
+  "type": "result",
+  "duration_ms": 820289,
+  "uuid": "c04df522-6b11-458c-95e6-028ef3ddb6cc",
+  "ttft_stream_ms": 1383,
+  "time_to_request_ms": 14,
+  "queued_turn_count": 0
+}

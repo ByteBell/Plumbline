@@ -1,0 +1,719 @@
+{
+  "schema": 2,
+  "kind": "file",
+  "repoName": "cal.diy",
+  "file": {
+    "relativePath": "packages/platform/atoms/hooks/useVerifyEmail.ts",
+    "language": "typescript",
+    "sizeBytes": 3379,
+    "tokenCount": 845,
+    "model": "us.openai.gpt-5.6-luna",
+    "analysedAt": "2026-09-04T15:43:42.274Z",
+    "module": {
+      "purpose": "Provides a reusable React hook that determines whether an email requires verification, sends verification codes through platform APIs, and coordinates verification modal and Booker store state.",
+      "summary": "This hook debounces email input before querying the platform to determine verification requirements. It exposes a mutation for sending verification codes, handles success and failure responses, manages modal visibility, updates verified email state, and supports optional verification callbacks and Booker-specific requirements.",
+      "businessContext": "Supports account and booking flows that require verified email addresses before proceeding.\nFailure can block users from completing verification-dependent booking or account actions.",
+      "classes": [
+        "IUseVerifyEmailProps (~L13-18): Defines inputs for email verification UI behavior and callbacks.",
+        "UseVerifyEmailReturnType (~L20-20): Describes the hook's inferred return shape for verification controls and state.",
+        "RequestEmailVerificationInput (~L22-25): Defines payload fields sent when requesting an email verification code."
+      ],
+      "functions": [
+        "useVerifyEmail (~L27-104): Coordinates email checks, code requests, modal state, and store updates.",
+        "handleVerifyEmail (~L82-88): Triggers the optional callback and sends an email verification request."
+      ],
+      "keywords": [
+        "email verification",
+        "verification code",
+        "React Query mutation",
+        "debounced email check",
+        "Booker store",
+        "verification modal",
+        "platform HTTP API",
+        "ApiResponse status validation"
+      ],
+      "ontologyConcepts": [
+        "identity verification",
+        "conditional access",
+        "debouncing",
+        "asynchronous mutation",
+        "client state management",
+        "API response validation",
+        "callback orchestration"
+      ],
+      "businessEntities": ["Email", "User", "VerificationCode", "Booker"],
+      "systemCapabilities": [
+        "Check whether an email requires verification",
+        "Send email verification codes",
+        "Manage verification modal visibility",
+        "Persist verified email state",
+        "Coordinate booking verification requirements"
+      ],
+      "configDependencies": [],
+      "importsInternal": [
+        {
+          "spec": "../hooks/useMe",
+          "symbols": ["useMe"],
+          "anchor": { "startLine": 10, "endLine": 10 },
+          "resolvedRelativePath": "packages/platform/atoms/hooks/useMe.ts",
+          "resolvedFileId": "packages/platform/atoms/hooks/useMe.ts",
+          "resolvedHint": "packages/platform/atoms/hooks/useMe.ts"
+        },
+        {
+          "spec": "../lib/http",
+          "symbols": ["http"],
+          "anchor": { "startLine": 11, "endLine": 11 },
+          "resolvedRelativePath": "packages/platform/atoms/lib/http.ts",
+          "resolvedFileId": "packages/platform/atoms/lib/http.ts",
+          "resolvedHint": "packages/platform/atoms/lib/http.ts"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "@tanstack/react-query",
+          "symbols": ["useMutation"],
+          "package": "@tanstack/react-query",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 1 }
+        },
+        {
+          "spec": "@tanstack/react-query",
+          "symbols": ["useQuery"],
+          "package": "@tanstack/react-query",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 2, "endLine": 2 }
+        },
+        {
+          "spec": "react",
+          "symbols": ["useState"],
+          "package": "react",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 3, "endLine": 3 }
+        },
+        {
+          "spec": "@calcom/features/bookings/Booker/store",
+          "symbols": ["useBookerStore"],
+          "package": "@calcom/features",
+          "subpath": "bookings/Booker/store",
+          "isBuiltin": false,
+          "anchor": { "startLine": 5, "endLine": 5 }
+        },
+        {
+          "spec": "@calcom/lib/hooks/useDebounce",
+          "symbols": ["useDebounce"],
+          "package": "@calcom/lib",
+          "subpath": "hooks/useDebounce",
+          "isBuiltin": false,
+          "anchor": { "startLine": 6, "endLine": 6 }
+        },
+        {
+          "spec": "@calcom/platform-constants",
+          "symbols": ["SUCCESS_STATUS"],
+          "package": "@calcom/platform-constants",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 7, "endLine": 7 }
+        },
+        {
+          "spec": "@calcom/platform-types",
+          "symbols": ["ApiResponse", "ApiErrorResponse", "ApiSuccessResponseWithoutData"],
+          "package": "@calcom/platform-types",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 8, "endLine": 8 }
+        }
+      ],
+      "sideEffects": {
+        "io": ["Logs failed email-verification send errors with console.error."],
+        "network": [
+          "Queries /atoms/verification/email/check with the debounced email and current session email.",
+          "Posts to /atoms/verification/email/send-code with the email and optional username."
+        ],
+        "env": [],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": []
+      },
+      "integrationSurface": [
+        {
+          "kind": "http",
+          "role": "consumes",
+          "address": "GET /atoms/verification/email/check",
+          "payloadRef": "ApiResponse<boolean>",
+          "rawKind": null
+        },
+        {
+          "kind": "http",
+          "role": "consumes",
+          "address": "POST /atoms/verification/email/send-code",
+          "payloadRef": "ApiResponse<{ sent: boolean }>",
+          "rawKind": null
+        }
+      ],
+      "contractsProvided": [
+        {
+          "name": "IUseVerifyEmailProps",
+          "shape": "export interface IUseVerifyEmailProps { email: string; onVerifyEmail?: () => void; name?: string | { firstName: string; lastname?: string }; requiresBookerEmailVerification?: boolean; }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "UseVerifyEmailReturnType",
+          "shape": "export type UseVerifyEmailReturnType = ReturnType<typeof useVerifyEmail>;",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "useVerifyEmail",
+          "shape": "export const useVerifyEmail = ({ email, name, requiresBookerEmailVerification, onVerifyEmail }: IUseVerifyEmailProps) =>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "useMe",
+          "shape": "const { data: user } = useMe();",
+          "resolvedRelativePath": "packages/platform/atoms/hooks/useMe.ts",
+          "resolvedFileId": "packages/platform/atoms/hooks/useMe.ts"
+        },
+        {
+          "name": "useBookerStore",
+          "shape": "useBookerStore((state) => state.verifiedEmail)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "useDebounce",
+          "shape": "useDebounce(email, 600)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "GET /atoms/verification/email/check",
+          "shape": "http?.get<ApiResponse<boolean>>(\"/atoms/verification/email/check\", { params: { email: debouncedEmail, userSessionEmail: user?.data?.email || \"\" } })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "POST /atoms/verification/email/send-code",
+          "shape": "http.post<ApiResponse<{ sent: boolean }>>(\"/atoms/verification/email/send-code\", props)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "send-code success response",
+          "shape": "res.data.status === SUCCESS_STATUS",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "Hook state and dependencies",
+          "intent": "Initializes modal state, store bindings, debounced email, and current user.",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 27, "endLine": 38 }
+        },
+        {
+          "name": "Email verification requirement query",
+          "intent": "Checks whether the debounced email requires verification.",
+          "structureKind": "io",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 39, "endLine": 57 }
+        },
+        {
+          "name": "Requirement response validation",
+          "intent": "Returns successful requirement data or throws the API error message.",
+          "structureKind": "branch",
+          "predicate": "res.data.status === SUCCESS_STATUS",
+          "branchOutcomes": ["success", "failure"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 49, "endLine": 54 }
+        },
+        {
+          "name": "Send verification email mutation",
+          "intent": "Sends a verification code and updates modal or logs failure.",
+          "structureKind": "io",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 59, "endLine": 80 }
+        },
+        {
+          "name": "Send response validation",
+          "intent": "Returns successful response data or throws an explanatory error.",
+          "structureKind": "branch",
+          "predicate": "res.data.status === SUCCESS_STATUS",
+          "branchOutcomes": ["success", "failure"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 67, "endLine": 72 }
+        },
+        {
+          "name": "Verification request handler",
+          "intent": "Invokes the callback and sends verification using derived username.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 82, "endLine": 88 }
+        },
+        {
+          "name": "Confirm-without-verification condition",
+          "intent": "Allows confirmation when verification is unnecessary or the email is verified.",
+          "structureKind": "branch",
+          "predicate": "(!requiresBookerEmailVerification && !isEmailVerificationRequired) ||\n    (email && verifiedEmail && verifiedEmail === email)",
+          "branchOutcomes": ["true", "false"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 92, "endLine": 95 }
+        }
+      ],
+      "representationFamily": "function-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "interface",
+          "name": "IUseVerifyEmailProps",
+          "signature": "export interface IUseVerifyEmailProps {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 13, "endLine": 13 }
+        },
+        {
+          "kind": "type",
+          "name": "UseVerifyEmailReturnType",
+          "signature": "export type UseVerifyEmailReturnType = ReturnType<typeof useVerifyEmail>;",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 20, "endLine": 20 }
+        },
+        {
+          "kind": "interface",
+          "name": "RequestEmailVerificationInput",
+          "signature": "interface RequestEmailVerificationInput {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 22, "endLine": 22 }
+        },
+        {
+          "kind": "function",
+          "name": "useVerifyEmail",
+          "signature": "export const useVerifyEmail = ({\n  email,\n  name,\n  requiresBookerEmailVerification,\n  onVerifyEmail,\n}: IUseVerifyEmailProps) => {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 27, "endLine": 32 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "interface",
+          "name": "IUseVerifyEmailProps",
+          "shape": "{\n  email: string;\n  onVerifyEmail?: () => void;\n  name?: string | { firstName: string; lastname?: string };\n  requiresBookerEmailVerification?: boolean;\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 13, "endLine": 18 }
+        },
+        {
+          "kind": "alias",
+          "name": "UseVerifyEmailReturnType",
+          "shape": "ReturnType<typeof useVerifyEmail>",
+          "discriminant": null,
+          "anchor": { "startLine": 20, "endLine": 20 }
+        },
+        {
+          "kind": "interface",
+          "name": "RequestEmailVerificationInput",
+          "shape": "{\n  email: string;\n  username?: string;\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 22, "endLine": 25 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "Empty or falsy email after debouncing",
+          "handled": true,
+          "behavior": "Disables the email-requirement query because enabled is false.",
+          "anchor": { "startLine": 36, "endLine": 57 }
+        },
+        {
+          "inputShape": "name supplied as a string",
+          "handled": true,
+          "behavior": "Uses the string as username when sending the verification request.",
+          "anchor": { "startLine": 82, "endLine": 87 }
+        },
+        {
+          "inputShape": "name supplied as an object",
+          "handled": true,
+          "behavior": "Uses name.firstName as username and ignores lastname.",
+          "anchor": { "startLine": 82, "endLine": 87 }
+        },
+        {
+          "inputShape": "name omitted or nullish",
+          "handled": true,
+          "behavior": "Sends username as undefined.",
+          "anchor": { "startLine": 82, "endLine": 87 }
+        },
+        {
+          "inputShape": "Email equals the store's verifiedEmail",
+          "handled": true,
+          "behavior": "Sets the confirmation-without-verification condition to true when verifiedEmail is truthy.",
+          "anchor": { "startLine": 92, "endLine": 101 }
+        },
+        {
+          "inputShape": "Non-success email-check response",
+          "handled": true,
+          "behavior": "Throws an Error using res.data.error.message.",
+          "anchor": { "startLine": 49, "endLine": 54 }
+        },
+        {
+          "inputShape": "Non-success send-code response without an error message",
+          "handled": true,
+          "behavior": "Throws an Error with the fallback message \"Failed to send verification email\".",
+          "anchor": { "startLine": 67, "endLine": 72 }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": "new Error(res.data.error.message)",
+          "caught": null,
+          "action": "Rejects the email-requirement query with the API error message.",
+          "fallback": null,
+          "anchor": { "startLine": 50, "endLine": 54 }
+        },
+        {
+          "thrown": "new Error(res.data.error?.message || \"Failed to send verification email\")",
+          "caught": null,
+          "action": "Rejects the send mutation; its error callback logs the error.",
+          "fallback": "\"Failed to send verification email\"",
+          "anchor": { "startLine": 68, "endLine": 79 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "The caller supplies an email string and may provide a verification callback or name.",
+          "anchor": { "startLine": 13, "endLine": 18 }
+        },
+        {
+          "kind": "schema",
+          "description": "The email-check response contains status, data, and error.message fields.",
+          "anchor": { "startLine": 42, "endLine": 54 }
+        },
+        {
+          "kind": "schema",
+          "description": "The send-code response contains status, data, and optionally error.message fields.",
+          "anchor": { "startLine": 65, "endLine": 72 }
+        },
+        {
+          "kind": "init-order",
+          "description": "useBookerStore provides verifiedEmail and setVerifiedEmail before the returned handlers are used.",
+          "anchor": { "startLine": 34, "endLine": 35 }
+        }
+      ],
+      "ambiguities": [],
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "does-not-check-empty-email",
+          "scenario": "The hook receives an empty email and must not enable the email verification requirement query.",
+          "given": ["email === \"\""],
+          "when": "useVerifyEmail({ email: \"\" })",
+          "then": "the query for \"/atoms/verification/email/check\" is disabled",
+          "targets": [],
+          "oracleKind": "invariant-check",
+          "rationale": "The check query is explicitly gated by enabled: !!debouncedEmail."
+        },
+        {
+          "testId": "sends-verification-code",
+          "scenario": "The caller requests email verification for a named user.",
+          "given": ["email === \"person@example.com\"", "name === { firstName: \"Person\" }"],
+          "when": "result.handleVerifyEmail()",
+          "then": "onVerifyEmail is called and POST /atoms/verification/email/send-code receives { email: \"person@example.com\", username: \"Person\" }",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "This pins the callback ordering and request payload used to initiate verification."
+        },
+        {
+          "testId": "opens-modal-after-successful-send",
+          "scenario": "The send-code endpoint returns a successful response.",
+          "given": ["res.data.status === SUCCESS_STATUS"],
+          "when": "the send-code mutation resolves successfully",
+          "then": "isEmailVerificationModalVisible becomes true",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Successful delivery is the contract trigger for displaying the verification modal."
+        },
+        {
+          "testId": "allows-confirmation-for-verified-email",
+          "scenario": "The current email matches the email stored as verified.",
+          "given": ["email === \"person@example.com\"", "verifiedEmail === \"person@example.com\""],
+          "when": "useVerifyEmail({ email: \"person@example.com\" })",
+          "then": "renderConfirmNotVerifyEmailCond is true",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "A matching verified email bypasses the need to render the verification action."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "IUseVerifyEmailProps",
+        "UseVerifyEmailReturnType",
+        "RequestEmailVerificationInput",
+        "useVerifyEmail"
+      ],
+      "moduleLevelCode": "import { useMutation } from \"@tanstack/react-query\";\nimport { useQuery } from \"@tanstack/react-query\";\nimport { useState } from \"react\";\n\nimport { useBookerStore } from \"@calcom/features/bookings/Booker/store\";\nimport { useDebounce } from \"@calcom/lib/hooks/useDebounce\";\nimport { SUCCESS_STATUS } from \"@calcom/platform-constants\";\nimport type { ApiResponse, ApiErrorResponse, ApiSuccessResponseWithoutData } from \"@calcom/platform-types\";\n\nimport { useMe } from \"../hooks/useMe\";\nimport http from \"../lib/http\";",
+      "exports": [
+        { "name": "IUseVerifyEmailProps", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "UseVerifyEmailReturnType", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "useVerifyEmail", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "useMutation", "module": "@tanstack/react-query", "alias": null, "kind": "external" },
+        { "symbol": "useQuery", "module": "@tanstack/react-query", "alias": null, "kind": "external" },
+        { "symbol": "useState", "module": "react", "alias": null, "kind": "external" },
+        {
+          "symbol": "useBookerStore",
+          "module": "@calcom/features/bookings/Booker/store",
+          "alias": null,
+          "kind": "external"
+        },
+        { "symbol": "useDebounce", "module": "@calcom/lib/hooks/useDebounce", "alias": null, "kind": "external" },
+        { "symbol": "SUCCESS_STATUS", "module": "@calcom/platform-constants", "alias": null, "kind": "external" },
+        { "symbol": "ApiResponse", "module": "@calcom/platform-types", "alias": null, "kind": "external" },
+        { "symbol": "ApiErrorResponse", "module": "@calcom/platform-types", "alias": null, "kind": "external" },
+        {
+          "symbol": "ApiSuccessResponseWithoutData",
+          "module": "@calcom/platform-types",
+          "alias": null,
+          "kind": "external"
+        },
+        { "symbol": "useMe", "module": "../hooks/useMe", "alias": null, "kind": "internal" },
+        { "symbol": "http", "module": "../lib/http", "alias": null, "kind": "internal" }
+      ],
+      "fileConstants": [],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/platform/atoms/hooks/useVerifyEmail.ts__IUseVerifyEmailProps_1#interface:IUseVerifyEmailProps",
+        "unitKind": "interface",
+        "name": "IUseVerifyEmailProps",
+        "qualifiedName": "IUseVerifyEmailProps",
+        "parentUnitId": null,
+        "startLine": 13,
+        "endLine": 18,
+        "isBehavioral": false,
+        "source": "export interface IUseVerifyEmailProps {\n  email: string;\n  onVerifyEmail?: () => void;\n  name?: string | { firstName: string; lastname?: string };\n  requiresBookerEmailVerification?: boolean;\n}"
+      },
+      {
+        "unitId": "packages/platform/atoms/hooks/useVerifyEmail.ts__UseVerifyEmailReturnType_2#type_alias:UseVerifyEmailReturnType",
+        "unitKind": "type_alias",
+        "name": "UseVerifyEmailReturnType",
+        "qualifiedName": "UseVerifyEmailReturnType",
+        "parentUnitId": null,
+        "startLine": 20,
+        "endLine": 20,
+        "isBehavioral": false,
+        "source": "export type UseVerifyEmailReturnType = ReturnType<typeof useVerifyEmail>;"
+      },
+      {
+        "unitId": "packages/platform/atoms/hooks/useVerifyEmail.ts__RequestEmailVerificationInput_3#interface:RequestEmailVerificationInput",
+        "unitKind": "interface",
+        "name": "RequestEmailVerificationInput",
+        "qualifiedName": "RequestEmailVerificationInput",
+        "parentUnitId": null,
+        "startLine": 22,
+        "endLine": 25,
+        "isBehavioral": false,
+        "source": "interface RequestEmailVerificationInput {\n  email: string;\n  username?: string;\n}"
+      },
+      {
+        "unitId": "packages/platform/atoms/hooks/useVerifyEmail.ts__useVerifyEmail_4#function:useVerifyEmail",
+        "unitKind": "function",
+        "name": "useVerifyEmail",
+        "qualifiedName": "useVerifyEmail",
+        "parentUnitId": null,
+        "startLine": 27,
+        "endLine": 104,
+        "isBehavioral": true,
+        "source": "export const useVerifyEmail = ({\n  email,\n  name,\n  requiresBookerEmailVerification,\n  onVerifyEmail,\n}: IUseVerifyEmailProps) => {\n  const [isEmailVerificationModalVisible, setEmailVerificationModalVisible] = useState(false);\n  const verifiedEmail = useBookerStore((state) => state.verifiedEmail);\n  const setVerifiedEmail = useBookerStore((state) => state.setVerifiedEmail);\n  const debouncedEmail = useDebounce(email, 600);\n  const { data: user } = useMe();\n\n  const { data: isEmailVerificationRequired } = useQuery<boolean>({\n    queryKey: [\"isEmailVerificationRequired\", debouncedEmail],\n    queryFn: () => {\n      return http\n        ?.get<ApiResponse<boolean>>(\"/atoms/verification/email/check\", {\n          params: {\n            email: debouncedEmail,\n            userSessionEmail: user?.data?.email || \"\",\n          },\n        })\n        .then((res) => {\n          if (res.data.status === SUCCESS_STATUS) {\n            return res.data.data;\n          }\n          throw new Error(res.data.error.message);\n        });\n    },\n    enabled: !!debouncedEmail,\n  });\n\n  const sendEmailVerificationMutation = useMutation<\n    ApiSuccessResponseWithoutData,\n    ApiErrorResponse,\n    RequestEmailVerificationInput\n  >({\n    mutationFn: (props: RequestEmailVerificationInput) => {\n      return http\n        .post<ApiResponse<{ sent: boolean }>>(\"/atoms/verification/email/send-code\", props)\n        .then((res) => {\n          if (res.data.status === SUCCESS_STATUS) {\n            return res.data;\n          }\n          throw new Error(res.data.error?.message || \"Failed to send verification email\");\n        });\n    },\n    onSuccess: () => {\n      setEmailVerificationModalVisible(true);\n    },\n    onError: (err) => {\n      console.error(\"Failed to send verification email:\", err);\n    },\n  });\n\n  const handleVerifyEmail = () => {\n    onVerifyEmail?.();\n    sendEmailVerificationMutation.mutate({\n      email,\n      username: typeof name === \"string\" ? name : name?.firstName,\n    });\n  };\n\n  const isVerificationCodeSending = sendEmailVerificationMutation.isPending;\n\n  const renderConfirmNotVerifyEmailButtonCond =\n    (!requiresBookerEmailVerification && !isEmailVerificationRequired) ||\n    (email && verifiedEmail && verifiedEmail === email);\n\n  return {\n    handleVerifyEmail,\n    isEmailVerificationModalVisible,\n    setEmailVerificationModalVisible,\n    setVerifiedEmail,\n    renderConfirmNotVerifyEmailButtonCond: Boolean(renderConfirmNotVerifyEmailButtonCond),\n    isVerificationCodeSending,\n  };\n};",
+        "detail": {
+          "unitId": "packages/platform/atoms/hooks/useVerifyEmail.ts__useVerifyEmail_4#function:useVerifyEmail",
+          "fileId": "packages/platform/atoms/hooks/useVerifyEmail.ts__useVerifyEmail_4",
+          "unitKind": "function",
+          "name": "useVerifyEmail",
+          "qualifiedName": "useVerifyEmail",
+          "parentUnitId": null,
+          "startLine": 27,
+          "endLine": 104,
+          "signature": "export const useVerifyEmail = ({ email, name, requiresBookerEmailVerification, onVerifyEmail }: IUseVerifyEmailProps) => UseVerifyEmailReturnType",
+          "parameters": [
+            { "name": "email", "type": "string", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "name",
+              "type": "string | { firstName?: string }",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "requiresBookerEmailVerification",
+              "type": "boolean",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            },
+            {
+              "name": "onVerifyEmail",
+              "type": "() => void",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 3
+            }
+          ],
+          "returnType": "UseVerifyEmailReturnType",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "If provided, `email` must be a valid email string.",
+            "`requiresBookerEmailVerification` must reflect the platform's verification policy."
+          ],
+          "postconditions": [
+            "Returns an object containing `handleVerifyEmail`, modal visibility flags, and verification status helpers.",
+            "When `handleVerifyEmail` is invoked, a request to send a verification code is dispatched via the mutation."
+          ],
+          "invariants": [
+            "`isEmailVerificationModalVisible` is always a boolean.",
+            "`renderConfirmNotVerifyEmailButtonCond` reflects the logical combination of verification requirements and current email state."
+          ],
+          "edgeCases": [
+            "If `requiresBookerEmailVerification` is false and the backend reports no verification required, the confirm button is rendered without opening the modal.",
+            "If the user’s email is already verified (`verifiedEmail === email`), the confirm button is rendered without sending a new code.",
+            "When the mutation fails, the error is logged to console and modal visibility is unchanged."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [
+            "setEmailVerificationModalVisible (sets modal visibility)",
+            "setVerifiedEmail (may be called by consumer of returned setters)"
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "useState", "source": "react", "kind": "internal" },
+            { "name": "useBookerStore", "source": "books/store", "kind": "internal" },
+            { "name": "useDebounce", "source": "utils/debounce", "kind": "internal" },
+            { "name": "useMe", "source": "hooks/useMe", "kind": "internal" },
+            { "name": "useQuery", "source": "react-query", "kind": "internal" },
+            { "name": "useMutation", "source": "react-query", "kind": "internal" },
+            { "name": "http.get", "source": "http client", "kind": "external" },
+            { "name": "http.post", "source": "http client", "kind": "external" }
+          ],
+          "symbolReferences": [
+            "IUseVerifyEmailProps",
+            "UseVerifyEmailReturnType",
+            "RequestEmailVerificationInput",
+            "SUCCESS_STATUS",
+            "ApiResponse",
+            "ApiSuccessResponseWithoutData",
+            "ApiErrorResponse"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Provides hooks and handlers to verify a user's email address, exposing UI state and a mutation trigger.",
+          "specLiterals": [
+            {
+              "kind": "abi-fragment",
+              "value": "/atoms/verification/email/check",
+              "role": "endpoint for checking if verification is required"
+            },
+            {
+              "kind": "abi-fragment",
+              "value": "/atoms/verification/email/send-code",
+              "role": "endpoint for sending verification email code"
+            },
+            {
+              "kind": "enum-value",
+              "value": "SUCCESS_STATUS",
+              "role": "expected successful response status indicator"
+            },
+            {
+              "kind": "error-message",
+              "value": "Failed to send verification email",
+              "role": "default error message when sending verification fails"
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [],
+          "sourceHash": "",
+          "semanticFingerprint": "d6ce783578b0fcba6cc0f66971323e550bb890bcd853fe3c46a43c63deb6c344"
+        }
+      }
+    ]
+  },
+  "out": ["packages/platform/atoms/hooks/useMe.ts", "packages/platform/atoms/lib/http.ts"],
+  "in": [
+    "packages/platform/atoms/booker/BookerPlatformWrapper.tsx",
+    "packages/features/eventtypes/components/AddVerifiedEmail.tsx"
+  ],
+  "externals": [
+    "@tanstack/react-query",
+    "react",
+    "@calcom/features/bookings/Booker/store",
+    "@calcom/lib/hooks/useDebounce",
+    "@calcom/platform-constants",
+    "@calcom/platform-types"
+  ],
+  "impact": {
+    "seeds": 4,
+    "callers": 1,
+    "impactedFiles": ["packages/features/eventtypes/components/AddVerifiedEmail.tsx"]
+  }
+}

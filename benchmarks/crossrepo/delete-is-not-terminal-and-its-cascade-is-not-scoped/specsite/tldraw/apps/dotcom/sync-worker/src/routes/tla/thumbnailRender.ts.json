@@ -1,0 +1,3076 @@
+{
+  "schema": 2,
+  "kind": "file",
+  "repoName": "tldraw",
+  "file": {
+    "relativePath": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts",
+    "language": "typescript",
+    "sizeBytes": 32581,
+    "tokenCount": 8127,
+    "model": "us.openai.gpt-5.6-luna",
+    "analysedAt": "2026-08-24T12:28:52.079Z",
+    "module": {
+      "purpose": "Provides shared board resolution, snapshot loading, browser-rendered thumbnail capture, geometry measurement, cache writes, render-token lifecycle, and telemetry for thumbnail and OG-image pipelines.",
+      "summary": "This module centralizes the render pipeline used by MCP screenshots, OG-image requests, and queue consumers. It resolves published and shared-file boards under explicit access gates, loads snapshots, signs short-lived render jobs, invokes either Cloudflare Browser Rendering or a local screenshot service, enforces delivery timeouts, records browser-session spend, and cleans up render tokens and measurement artifacts. It also writes PNGs and shared request telemetry while preserving cache-version and analytics conventions.",
+      "businessContext": "Supports public previews, thumbnails, and social-image generation for tldraw boards. Failures can expose stale or private content, break previews, waste browser-rendering spend, or corrupt operational analytics.",
+      "classes": [
+        "ResolvedThumbnailBoard (~L46-60): Resolved board identity, version, access gate, and optional shared-file row",
+        "BrowserRunSessionContext (~L245-251): Browser session source, mode, and optional queue trigger reason",
+        "TimedCapture (~L374-377): Fully read screenshot bytes and elapsed capture duration"
+      ],
+      "functions": [
+        "resolveThumbnailBoard (~L73-109): Resolves a board slug and applies its requested visibility gate",
+        "loadBoardSnapshot (~L116-139): Loads a resolved board snapshot and wraps reader failures",
+        "mintRecordedRenderToken (~L151-155): Mints and durably records a render token atomically",
+        "buildThumbnailRenderUrl (~L157-161): Builds a render-page URL containing the signed token",
+        "getRenderOrigin (~L163-171): Reads and validates the configured render-page origin",
+        "captureThumbnailScreenshot (~L177-238): Creates a signed screenshot job and captures one board page",
+        "writeBrowserRunSessionTelemetry (~L264-286): Records browser session spend and outcome dimensions",
+        "renderThumbnailScreenshot (~L294-367): Selects a capture transport and records render outcomes",
+        "callBrowserRun (~L383-423): Invokes Cloudflare Browser Rendering and reads its response",
+        "abandonAtRenderTimeout (~L431-464): Bounds screenshot delivery with a worker-side timeout",
+        "readBrowserErrorDetail (~L474-484): Extracts bounded diagnostic text from failed responses",
+        "extractBrowserErrorMessages (~L489-501): Extracts readable messages from Cloudflare error JSON",
+        "truncate (~L503-507): Caps browser error detail at a configured character limit",
+        "callLocalScreenshotService (~L514-544): Sends a screenshot request to the local development service",
+        "getRenderResultKey (~L553-555): Derives the object-storage key for measured bounds",
+        "putRenderResult (~L557-565): Stores shape measurements in the thumbnail bucket",
+        "measurePageShapes (~L573-636): Renders a page, retrieves shape measurements, and cleans up",
+        "putThumbnailPng (~L638-650): Decodes and stores a PNG with version metadata",
+        "writeScreenshotTelemetry (~L674-742): Writes shared request-level screenshot analytics"
+      ],
+      "keywords": [
+        "Cloudflare Browser Rendering",
+        "thumbnail screenshot",
+        "shared-file access gate",
+        "render token",
+        "OG image",
+        "R2 snapshot",
+        "shape measurement",
+        "Analytics Engine",
+        "screenshot timeout",
+        "thumbnail cache"
+      ],
+      "ontologyConcepts": [
+        "access control",
+        "content versioning",
+        "render orchestration",
+        "resource cleanup",
+        "timeout enforcement",
+        "observability",
+        "cache invalidation",
+        "ephemeral rendezvous"
+      ],
+      "businessEntities": [
+        "board",
+        "room snapshot",
+        "shared file",
+        "thumbnail",
+        "render token",
+        "shape",
+        "PNG",
+        "browser session"
+      ],
+      "systemCapabilities": [
+        "Resolve gated board references",
+        "Render board thumbnails",
+        "Measure page geometry",
+        "Persist thumbnail artifacts",
+        "Track rendering spend",
+        "Enforce render delivery deadlines"
+      ],
+      "configDependencies": [
+        "THUMBNAIL_RENDER_TOKEN_TTL_MS",
+        "MCP_SCREENSHOT_RENDER_ORIGIN",
+        "LOCAL_SCREENSHOT_SERVICE_URL",
+        "THUMBNAIL_RENDER_TIMEOUT_MS",
+        "DEFAULT_THUMBNAIL_WIDTH",
+        "DEFAULT_THUMBNAIL_HEIGHT"
+      ],
+      "importsInternal": [
+        {
+          "spec": "../../config",
+          "symbols": ["THUMBNAIL_RENDER_TOKEN_TTL_MS"],
+          "anchor": { "startLine": 9, "endLine": 9 },
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/config.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/config.ts",
+          "resolvedHint": "apps/dotcom/sync-worker/src/config.ts"
+        },
+        {
+          "spec": "../../r2",
+          "symbols": ["getR2KeyForRoom"],
+          "anchor": { "startLine": 10, "endLine": 10 },
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/r2.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/r2.ts",
+          "resolvedHint": "apps/dotcom/sync-worker/src/r2.ts"
+        },
+        {
+          "spec": "../../types",
+          "symbols": [
+            "Environment",
+            "OgImageRenderReason",
+            "ThumbnailBoardAccess",
+            "ThumbnailBoardKind",
+            "ThumbnailBoardRef",
+            "ThumbnailRenderSurface"
+          ],
+          "anchor": { "startLine": 11, "endLine": 17 },
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/types.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/types.ts",
+          "resolvedHint": "apps/dotcom/sync-worker/src/types.ts"
+        },
+        {
+          "spec": "../../utils/analytics",
+          "symbols": ["writeDataPoint"],
+          "anchor": { "startLine": 18, "endLine": 18 },
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/utils/analytics.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/utils/analytics.ts",
+          "resolvedHint": "apps/dotcom/sync-worker/src/utils/analytics.ts"
+        },
+        {
+          "spec": "../../utils/base64",
+          "symbols": ["arrayBufferToBase64", "base64ToArrayBuffer"],
+          "anchor": { "startLine": 19, "endLine": 19 },
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/utils/base64.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/utils/base64.ts",
+          "resolvedHint": "apps/dotcom/sync-worker/src/utils/base64.ts"
+        },
+        {
+          "spec": "../../utils/renderTokens",
+          "symbols": [
+            "ThumbnailRenderJob",
+            "deleteMintedRenderToken",
+            "mintThumbnailRenderToken",
+            "recordMintedRenderToken"
+          ],
+          "anchor": { "startLine": 20, "endLine": 25 },
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/utils/renderTokens.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/utils/renderTokens.ts",
+          "resolvedHint": "apps/dotcom/sync-worker/src/utils/renderTokens.ts"
+        },
+        {
+          "spec": "./boardTools",
+          "symbols": ["ShapeMeasurement"],
+          "anchor": { "startLine": 26, "endLine": 26 },
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/routes/tla/boardTools.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/routes/tla/boardTools.ts",
+          "resolvedHint": "apps/dotcom/sync-worker/src/routes/tla/boardTools.ts"
+        },
+        {
+          "spec": "./getPublishedFile",
+          "symbols": ["getPublishedFileInfo", "getPublishedRoomSnapshot"],
+          "anchor": { "startLine": 27, "endLine": 27 },
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/routes/tla/getPublishedFile.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/routes/tla/getPublishedFile.ts",
+          "resolvedHint": "apps/dotcom/sync-worker/src/routes/tla/getPublishedFile.ts"
+        },
+        {
+          "spec": "./getSharedFile",
+          "symbols": ["SharedFileInfo", "getSharedFileInfo", "getSharedFileRoomSnapshot", "isFileViewableFor"],
+          "anchor": { "startLine": 28, "endLine": 29 },
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/routes/tla/getSharedFile.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/routes/tla/getSharedFile.ts",
+          "resolvedHint": "apps/dotcom/sync-worker/src/routes/tla/getSharedFile.ts"
+        },
+        {
+          "spec": "./thumbnailShared",
+          "symbols": ["BoardSnapshotReadError", "BrowserRenderError", "classifyScreenshotFailure"],
+          "anchor": { "startLine": 30, "endLine": 34 },
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/routes/tla/thumbnailShared.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailShared.ts",
+          "resolvedHint": "apps/dotcom/sync-worker/src/routes/tla/thumbnailShared.ts"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "@tldraw/dotcom-shared",
+          "symbols": [
+            "DEFAULT_THUMBNAIL_HEIGHT",
+            "DEFAULT_THUMBNAIL_WIDTH",
+            "THUMBNAIL_RENDER_PATH",
+            "THUMBNAIL_RENDER_TIMEOUT_MS",
+            "getThumbnailScreenshotRequestBody"
+          ],
+          "package": "@tldraw/dotcom-shared",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 7 }
+        },
+        {
+          "spec": "@tldraw/sync-core",
+          "symbols": ["RoomSnapshot"],
+          "package": "@tldraw/sync-core",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 8, "endLine": 8 }
+        }
+      ],
+      "sideEffects": {
+        "io": [
+          "Writes browser session and screenshot telemetry datapoints.",
+          "Reads and writes R2 objects for snapshots, measurements, and thumbnails.",
+          "Invokes the local screenshot HTTP service when configured."
+        ],
+        "network": [
+          "Calls Cloudflare Browser Rendering through the BROWSER binding.",
+          "POSTs screenshot requests to the configured local screenshot service."
+        ],
+        "env": [
+          "Reads rendering origin, local screenshot URL, Browser Rendering binding, R2 buckets, and analytics bindings."
+        ],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": []
+      },
+      "integrationSurface": [
+        {
+          "kind": "blob",
+          "role": "consumes",
+          "address": "ROOMS/{getR2KeyForRoom({ slug, isApp: true })}",
+          "payloadRef": "RoomSnapshot",
+          "rawKind": null
+        },
+        {
+          "kind": "blob",
+          "role": "provides",
+          "address": "THUMBNAILS/render-result/{encodeURIComponent(token)}.json",
+          "payloadRef": "Record<string, ShapeMeasurement>",
+          "rawKind": null
+        },
+        {
+          "kind": "blob",
+          "role": "provides",
+          "address": "THUMBNAILS/{key}",
+          "payloadRef": "image/png",
+          "rawKind": null
+        },
+        {
+          "kind": "http",
+          "role": "consumes",
+          "address": "POST {LOCAL_SCREENSHOT_SERVICE_URL}",
+          "payloadRef": "ThumbnailScreenshotRequestBody",
+          "rawKind": null
+        },
+        {
+          "kind": "other",
+          "role": "consumes",
+          "address": "Browser Rendering quickAction screenshot",
+          "payloadRef": "ThumbnailScreenshotRequestBody",
+          "rawKind": "other"
+        },
+        {
+          "kind": "event",
+          "role": "provides",
+          "address": "browser_run_session",
+          "payloadRef": "BrowserRunSessionContext",
+          "rawKind": null
+        },
+        {
+          "kind": "event",
+          "role": "provides",
+          "address": "mcp_shared_board_screenshot",
+          "payloadRef": "writeScreenshotTelemetry data",
+          "rawKind": null
+        }
+      ],
+      "contractsProvided": [
+        {
+          "name": "ResolvedThumbnailBoard",
+          "shape": "interface ResolvedThumbnailBoard extends ThumbnailBoardRef { version: string | number; access: ThumbnailBoardAccess; file?: SharedFileInfo }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "ResolveThumbnailBoardResult",
+          "shape": "type ResolveThumbnailBoardResult = { ok: true; board: ResolvedThumbnailBoard } | { ok: false; reason: 'not_found' | 'board_empty' }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "resolveThumbnailBoard",
+          "shape": "async function resolveThumbnailBoard(env: Environment, kind: ThumbnailBoardKind, slug: string, { access, file: knownFile }: { access: ThumbnailBoardAccess; file?: SharedFileInfo }): Promise<ResolveThumbnailBoardResult>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "loadBoardSnapshot",
+          "shape": "async function loadBoardSnapshot(env: Environment, board: ThumbnailBoardRef, { access, file }: { access: ThumbnailBoardAccess; file?: SharedFileInfo }): Promise<RoomSnapshot | null>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "buildThumbnailRenderUrl",
+          "shape": "function buildThumbnailRenderUrl(renderOrigin: string, token: string)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "captureThumbnailScreenshot",
+          "shape": "async function captureThumbnailScreenshot(env: Environment, board: ResolvedThumbnailBoard, { surface, pageId, shapeIds, theme, width, height, telemetry }: { surface: ThumbnailRenderSurface; pageId?: string; shapeIds?: string[]; theme: 'light' | 'dark'; width: number; height: number; telemetry: { source: BrowserRunSessionContext['source']; reason?: OgImageRenderReason } }): Promise<{ base64: string; durationMs: number }>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "BrowserRunSessionContext",
+          "shape": "interface BrowserRunSessionContext { source: 'mcp' | 'og' | 'queue'; mode: 'measure' | 'screenshot'; reason?: OgImageRenderReason }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "putRenderResult",
+          "shape": "async function putRenderResult(env: Environment, token: string, bounds: Record<string, ShapeMeasurement>)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "measurePageShapes",
+          "shape": "async function measurePageShapes(env: Environment, board: ResolvedThumbnailBoard, pageId: string, { surface }: { surface: ThumbnailRenderSurface }): Promise<Record<string, ShapeMeasurement>>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "putThumbnailPng",
+          "shape": "async function putThumbnailPng(bucket: R2Bucket, key: string, base64: string, version: string | number, extraMetadata?: Record<string, string>)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "writeScreenshotTelemetry",
+          "shape": "function writeScreenshotTelemetry(env: Environment, data: { source: 'mcp' | 'og' | 'queue'; reason?: OgImageRenderReason; followUp?: boolean; cacheStatus: 'hit' | 'stale' | 'miss' | 'none'; callerHash?: string; failureReason?: string; rateLimitAllowed?: boolean })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "getThumbnailScreenshotRequestBody",
+          "shape": "getThumbnailScreenshotRequestBody({ renderUrl, width, height, timeoutMs })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "getPublishedFileInfo",
+          "shape": "getPublishedFileInfo(env, slug)",
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/routes/tla/getPublishedFile.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/routes/tla/getPublishedFile.ts"
+        },
+        {
+          "name": "getPublishedRoomSnapshot",
+          "shape": "getPublishedRoomSnapshot(env, board.slug)",
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/routes/tla/getPublishedFile.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/routes/tla/getPublishedFile.ts"
+        },
+        {
+          "name": "getSharedFileInfo",
+          "shape": "getSharedFileInfo(env, slug)",
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/routes/tla/getSharedFile.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/routes/tla/getSharedFile.ts"
+        },
+        {
+          "name": "getSharedFileRoomSnapshot",
+          "shape": "getSharedFileRoomSnapshot(env, board.slug, { access, file })",
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/routes/tla/getSharedFile.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/routes/tla/getSharedFile.ts"
+        },
+        {
+          "name": "isFileViewableFor",
+          "shape": "isFileViewableFor(file, access)",
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/routes/tla/getSharedFile.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/routes/tla/getSharedFile.ts"
+        },
+        {
+          "name": "getR2KeyForRoom",
+          "shape": "getR2KeyForRoom({ slug, isApp: true })",
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/r2.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/r2.ts"
+        },
+        {
+          "name": "mintThumbnailRenderToken",
+          "shape": "mintThumbnailRenderToken(env, job)",
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/utils/renderTokens.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/utils/renderTokens.ts"
+        },
+        {
+          "name": "recordMintedRenderToken",
+          "shape": "recordMintedRenderToken(env, job, token)",
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/utils/renderTokens.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/utils/renderTokens.ts"
+        },
+        {
+          "name": "deleteMintedRenderToken",
+          "shape": "deleteMintedRenderToken(env, job, token)",
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/utils/renderTokens.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/utils/renderTokens.ts"
+        },
+        {
+          "name": "writeDataPoint",
+          "shape": "writeDataPoint(undefined, env.MEASURE, env, dataset, { blobs, doubles })",
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/utils/analytics.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/utils/analytics.ts"
+        },
+        {
+          "name": "classifyScreenshotFailure",
+          "shape": "classifyScreenshotFailure(error)",
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/routes/tla/thumbnailShared.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailShared.ts"
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "board resolution",
+          "intent": "Resolve published or shared boards under the requested access gate.",
+          "structureKind": "branch",
+          "predicate": "if (kind === 'published')",
+          "branchOutcomes": ["published board path", "shared-file board path"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 73, "endLine": 109 }
+        },
+        {
+          "name": "snapshot loading",
+          "intent": "Read the board snapshot and translate reader failures into a domain error.",
+          "structureKind": "try",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 116, "endLine": 139 }
+        },
+        {
+          "name": "render transport selection",
+          "intent": "Choose local or Cloudflare capture and apply the delivery deadline.",
+          "structureKind": "async",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 294, "endLine": 367 }
+        },
+        {
+          "name": "browser timeout race",
+          "intent": "Reject non-measure captures once the shared render timeout expires.",
+          "structureKind": "try",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 431, "endLine": 464 }
+        },
+        {
+          "name": "measurement cleanup",
+          "intent": "Read measured bounds and remove token and result artifacts.",
+          "structureKind": "try",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 573, "endLine": 636 }
+        },
+        {
+          "name": "telemetry emission",
+          "intent": "Emit stable-dimensional browser-session and request-level analytics.",
+          "structureKind": "io",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 264, "endLine": 286 }
+        }
+      ],
+      "representationFamily": "module",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "interface",
+          "name": "ResolvedThumbnailBoard",
+          "signature": "export interface ResolvedThumbnailBoard extends ThumbnailBoardRef",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 46, "endLine": 46 }
+        },
+        {
+          "kind": "type",
+          "name": "ResolveThumbnailBoardResult",
+          "signature": "export type ResolveThumbnailBoardResult =",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 62, "endLine": 64 }
+        },
+        {
+          "kind": "function",
+          "name": "resolveThumbnailBoard",
+          "signature": "export async function resolveThumbnailBoard(\n\tenv: Environment,\n\tkind: ThumbnailBoardKind,\n\tslug: string,\n\t{\n\t\taccess,\n\t\tfile: knownFile,\n\t}: {\n\t\taccess: ThumbnailBoardAccess",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Promise<ResolveThumbnailBoardResult>",
+          "exported": true,
+          "anchor": { "startLine": 73, "endLine": 90 }
+        },
+        {
+          "kind": "function",
+          "name": "loadBoardSnapshot",
+          "signature": "export async function loadBoardSnapshot(\n\tenv: Environment,\n\tboard: ThumbnailBoardRef,\n\t{\n\t\taccess,\n\t\tfile,\n\t}: {\n\t\taccess: ThumbnailBoardAccess",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Promise<RoomSnapshot | null>",
+          "exported": true,
+          "anchor": { "startLine": 116, "endLine": 133 }
+        },
+        {
+          "kind": "function",
+          "name": "buildThumbnailRenderUrl",
+          "signature": "export function buildThumbnailRenderUrl(renderOrigin: string, token: string)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 157, "endLine": 157 }
+        },
+        {
+          "kind": "function",
+          "name": "captureThumbnailScreenshot",
+          "signature": "export async function captureThumbnailScreenshot(\n\tenv: Environment,\n\tboard: ResolvedThumbnailBoard,\n\t{\n\t\tsurface,\n\t\tpageId,\n\t\tshapeIds,\n\t\ttheme,\n\t\twidth,\n\t\theight,\n\t\ttelemetry,\n\t}: {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Promise<{ base64: string; durationMs: number }>",
+          "exported": true,
+          "anchor": { "startLine": 177, "endLine": 238 }
+        },
+        {
+          "kind": "interface",
+          "name": "BrowserRunSessionContext",
+          "signature": "export interface BrowserRunSessionContext",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 245, "endLine": 251 }
+        },
+        {
+          "kind": "function",
+          "name": "putRenderResult",
+          "signature": "export async function putRenderResult(\n\tenv: Environment,\n\ttoken: string,\n\tbounds: Record<string, ShapeMeasurement>\n)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 557, "endLine": 565 }
+        },
+        {
+          "kind": "function",
+          "name": "measurePageShapes",
+          "signature": "export async function measurePageShapes(\n\tenv: Environment,\n\tboard: ResolvedThumbnailBoard,\n\tpageId: string,\n\t{ surface }: { surface: ThumbnailRenderSurface }\n)",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Promise<Record<string, ShapeMeasurement>>",
+          "exported": true,
+          "anchor": { "startLine": 573, "endLine": 636 }
+        },
+        {
+          "kind": "function",
+          "name": "putThumbnailPng",
+          "signature": "export async function putThumbnailPng(\n\tbucket: R2Bucket,\n\tkey: string,\n\tbase64: string,\n\tversion: string | number,\n\textraMetadata?: Record<string, string>\n)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 638, "endLine": 650 }
+        },
+        {
+          "kind": "function",
+          "name": "writeScreenshotTelemetry",
+          "signature": "export function writeScreenshotTelemetry(\n\tenv: Environment,\n\tdata: {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 674, "endLine": 706 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "interface",
+          "name": "ResolvedThumbnailBoard",
+          "shape": " {\n\tversion: string | number\n\t/**\n\t * The gate this board was resolved under, carried so a render cannot be minted under a weaker one\n\t * than the resolution used. `captureThumbnailScreenshot` signs it into the job, and the snapshot\n\t * route reads the board back under it.\n\t */\n\taccess: ThumbnailBoardAccess\n\t/**\n\t * The `file` row this resolution gated on, for `shared_file` boards only. Carried so a caller that\n\t * reads the snapshot in the same breath can hand it back to `loadBoardSnapshot` instead of asking\n\t * Postgres the same question twice — see the `file` option on `getSharedFileRoomSnapshot` for when\n\t * that is and is not appropriate. Never signed into a render job: the job carries the gate, and a\n\t * row that travelled inside a token could not be re-checked on the way back.\n\t */\n\tfile?: SharedFileInfo\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 46, "endLine": 60 }
+        },
+        {
+          "kind": "union",
+          "name": "ResolveThumbnailBoardResult",
+          "shape": " { ok: true; board: ResolvedThumbnailBoard }\n\t| { ok: false; reason: 'not_found' | 'board_empty' }",
+          "discriminant": "ok",
+          "anchor": { "startLine": 62, "endLine": 64 }
+        },
+        {
+          "kind": "interface",
+          "name": "BrowserRunSessionContext",
+          "shape": " {\n\tsource: 'mcp' | 'og' | 'queue'\n\tmode: 'measure' | 'screenshot'\n\t/** The queue trigger, on sessions the queue runs. Request-path sessions have none. */\n\treason?: OgImageRenderReason\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 245, "endLine": 251 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "Unpublished published-board slug",
+          "handled": true,
+          "behavior": "Returns ok false with reason not_found.",
+          "anchor": { "startLine": 92, "endLine": 97 }
+        },
+        {
+          "inputShape": "Shared board with no persisted room object",
+          "handled": true,
+          "behavior": "Returns ok false with reason board_empty.",
+          "anchor": { "startLine": 104, "endLine": 106 }
+        },
+        {
+          "inputShape": "Snapshot reader throws",
+          "handled": true,
+          "behavior": "Wraps the original failure in BoardSnapshotReadError.",
+          "anchor": { "startLine": 135, "endLine": 139 }
+        },
+        {
+          "inputShape": "Missing Browser Rendering binding",
+          "handled": true,
+          "behavior": "Throws a configuration error before invoking the browser.",
+          "anchor": { "startLine": 385, "endLine": 390 }
+        },
+        {
+          "inputShape": "Empty screenshot body",
+          "handled": true,
+          "behavior": "Records empty_render telemetry and throws an error.",
+          "anchor": { "startLine": 345, "endLine": 353 }
+        },
+        {
+          "inputShape": "Malformed or unreadable browser error body",
+          "handled": true,
+          "behavior": "Falls back to undefined detail or raw text without replacing the primary failure.",
+          "anchor": { "startLine": 474, "endLine": 501 }
+        },
+        {
+          "inputShape": "Local service response that is not image/png",
+          "handled": true,
+          "behavior": "Throws an error instead of accepting the response as a thumbnail.",
+          "anchor": { "startLine": 533, "endLine": 541 }
+        },
+        {
+          "inputShape": "Missing THUMBNAILS bucket during measurement",
+          "handled": true,
+          "behavior": "Throws before spending a browser-rendering session.",
+          "anchor": { "startLine": 597, "endLine": 598 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": ">",
+          "left": "text.length",
+          "right": "MAX_BROWSER_ERROR_DETAIL_LENGTH",
+          "inclusive": false,
+          "intent": "Truncate browser error text only when it exceeds the maximum detail length.",
+          "anchor": { "startLine": 504, "endLine": 506 }
+        },
+        {
+          "operator": ">",
+          "left": "messages.length",
+          "right": "0",
+          "inclusive": false,
+          "intent": "Return joined error messages only when at least one readable message exists.",
+          "anchor": { "startLine": 498, "endLine": 499 }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": "Board snapshot reader failure",
+          "caught": "error",
+          "action": "Wraps it in BoardSnapshotReadError while preserving the cause and message.",
+          "fallback": null,
+          "anchor": { "startLine": 135, "endLine": 139 }
+        },
+        {
+          "thrown": "BrowserRenderError",
+          "caught": "error instanceof BrowserRenderError",
+          "action": "Writes bounded browser-session failure telemetry and rethrows.",
+          "fallback": null,
+          "anchor": { "startLine": 329, "endLine": 342 }
+        },
+        {
+          "thrown": "Browser HTTP failure",
+          "caught": null,
+          "action": "Reads diagnostic detail and throws BrowserRenderError.",
+          "fallback": null,
+          "anchor": { "startLine": 395, "endLine": 402 }
+        },
+        {
+          "thrown": "Screenshot body read failure",
+          "caught": "error",
+          "action": "Wraps the stream failure in BrowserRenderError.",
+          "fallback": null,
+          "anchor": { "startLine": 408, "endLine": 417 }
+        },
+        {
+          "thrown": "Render timeout",
+          "caught": null,
+          "action": "Rejects with BrowserRenderError after the whole-call timeout.",
+          "fallback": null,
+          "anchor": { "startLine": 445, "endLine": 459 }
+        },
+        {
+          "thrown": "Browser error-detail read or parse failure",
+          "caught": "catch",
+          "action": "Suppresses the secondary failure.",
+          "fallback": "undefined",
+          "anchor": { "startLine": 474, "endLine": 484 }
+        },
+        {
+          "thrown": "Measurement result cleanup failure",
+          "caught": "catch",
+          "action": "Ignores deletion failure so it cannot replace the measurement result or render error.",
+          "fallback": null,
+          "anchor": { "startLine": 632, "endLine": 635 }
+        }
+      ],
+      "invariants": [
+        {
+          "kind": "invariant",
+          "description": "A render job carries the access gate used to resolve its board.",
+          "anchor": { "startLine": 191, "endLine": 197 }
+        },
+        {
+          "kind": "ordering",
+          "description": "Minted render tokens are recorded before the browser receives the token.",
+          "anchor": { "startLine": 151, "endLine": 155 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "Every capture removes its minted token in a finally block.",
+          "anchor": { "startLine": 232, "endLine": 238 }
+        },
+        {
+          "kind": "non-null",
+          "description": "A configured render origin is required before constructing the render URL.",
+          "anchor": { "startLine": 163, "endLine": 171 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Successful screenshot captures must contain a non-empty response body.",
+          "anchor": { "startLine": 345, "endLine": 353 }
+        },
+        {
+          "kind": "ordering",
+          "description": "Measurement results are read after the render completes and deleted during cleanup.",
+          "anchor": { "startLine": 609, "endLine": 636 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "Callers supply a board already resolved with the intended access gate when capturing or measuring.",
+          "anchor": { "startLine": 177, "endLine": 197 }
+        },
+        {
+          "kind": "env",
+          "description": "Production capture requires the BROWSER binding and a configured MCP_SCREENSHOT_RENDER_ORIGIN.",
+          "anchor": { "startLine": 163, "endLine": 171 }
+        },
+        {
+          "kind": "config",
+          "description": "Measurement requires the THUMBNAILS bucket before starting a browser session.",
+          "anchor": { "startLine": 597, "endLine": 598 }
+        },
+        {
+          "kind": "schema",
+          "description": "The render page writes measurement JSON under the token-specific result key before signaling readiness.",
+          "anchor": { "startLine": 609, "endLine": 620 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "Which callers provide stale shared-file rows through the optional file parameter?",
+          "affects": "resolveThumbnailBoard and loadBoardSnapshot access freshness",
+          "anchor": { "startLine": 77, "endLine": 89 },
+          "resolution": null
+        },
+        {
+          "question": "What external component guarantees that render tokens and result objects eventually expire after abandoned captures?",
+          "affects": "render-token and R2 cleanup lifecycle",
+          "anchor": { "startLine": 625, "endLine": 635 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "async",
+        "reentrant": true,
+        "ordering": "deterministic",
+        "notes": "Operations are asynchronous and each render or measurement uses a token-specific key. Concurrent measurements do not overwrite one another; timeout races abandon delivery while the underlying browser operation may continue."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "rejects-unpublished-board",
+          "scenario": "A published slug does not resolve when its published file is absent or unpublished.",
+          "given": ["getPublishedFileInfo(env, slug) returns { published: false }"],
+          "when": "resolveThumbnailBoard(env, 'published', slug, { access: 'public' })",
+          "then": "the result is { ok: false, reason: 'not_found' }",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "rejects-inaccessible-shared-file",
+          "scenario": "A shared file that fails the requested access gate is treated as not found.",
+          "given": ["isFileViewableFor(file, access) returns false"],
+          "when": "resolveThumbnailBoard(env, 'shared_file', slug, { access, file })",
+          "then": "the result is { ok: false, reason: 'not_found' }",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "detects-empty-shared-board",
+          "scenario": "An accessible shared file with no persisted room object is distinguished from an access failure.",
+          "given": [
+            "isFileViewableFor(file, access) returns true",
+            "env.ROOMS.head(getR2KeyForRoom({ slug, isApp: true })) returns null"
+          ],
+          "when": "resolveThumbnailBoard(env, 'shared_file', slug, { access, file })",
+          "then": "the result is { ok: false, reason: 'board_empty' }",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "wraps-snapshot-read-failure",
+          "scenario": "A snapshot reader failure is surfaced as a board snapshot read error rather than an empty snapshot.",
+          "given": ["getPublishedRoomSnapshot(env, board.slug) throws error"],
+          "when": "loadBoardSnapshot(env, board, { access })",
+          "then": "the promise rejects with BoardSnapshotReadError whose message starts with 'Could not read board snapshot: '",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "builds-tokenized-render-url",
+          "scenario": "A render origin and token produce the configured render path with the token query parameter.",
+          "given": ["renderOrigin = 'https://client.example'"],
+          "when": "buildThumbnailRenderUrl(renderOrigin, 'abc')",
+          "then": "the result is 'https://client.example{THUMBNAIL_RENDER_PATH}?token=abc'",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "rejects-empty-screenshot",
+          "scenario": "A completed screenshot session that returns an empty body is not accepted as a thumbnail.",
+          "given": ["render transport returns { buffer: new ArrayBuffer(0), durationMs }"],
+          "when": "renderThumbnailScreenshot(env, renderUrl, { width, height, session })",
+          "then": "the promise rejects with Error('Render produced an empty screenshot')",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "rejects-non-png-local-response",
+          "scenario": "The local screenshot service returns a successful non-PNG response.",
+          "given": ["response.ok is true", "response.headers.get('content-type') returns 'text/html'"],
+          "when": "callLocalScreenshotService(serviceUrl, requestBody)",
+          "then": "the promise rejects with an error stating 'expected image/png'",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "times-out-screenshot-delivery",
+          "scenario": "A screenshot capture remains pending beyond the configured render timeout.",
+          "given": ["capture is a pending Promise<TimedCapture>"],
+          "when": "abandonAtRenderTimeout(capture, startedAt)",
+          "then": "the promise rejects with BrowserRenderError whose status is 0 and detail contains 'Capture abandoned by the worker'",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Pins the whole-call delivery deadline independently of the browser transport."
+        },
+        {
+          "testId": "truncates-browser-error-detail",
+          "scenario": "A Browser Rendering error body contains a message longer than the retained detail limit.",
+          "given": ["response.text() returns a JSON error body with a message longer than 500 characters"],
+          "when": "readBrowserErrorDetail(response)",
+          "then": "the returned detail is at most 501 characters and ends with '…' when truncated",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "cleans-up-measurement-artifacts",
+          "scenario": "A page measurement succeeds or fails after minting a token and creating a result key.",
+          "given": ["env.THUMBNAILS is configured", "mintRecordedRenderToken(env, job) returns token"],
+          "when": "measurePageShapes(env, board, pageId, { surface })",
+          "then": "deleteMintedRenderToken(env, job, token) and env.THUMBNAILS.delete(getRenderResultKey(token)) are attempted",
+          "targets": [],
+          "oracleKind": "invariant-check",
+          "rationale": "Prevents orphaned render tokens and measurement objects on both success and failure paths."
+        },
+        {
+          "testId": "writes-png-metadata",
+          "scenario": "A base64 PNG is stored in the thumbnail bucket.",
+          "given": ["base64 contains PNG bytes", "version = 'etag-1'"],
+          "when": "putThumbnailPng(bucket, key, base64, version, { source: 'mcp' })",
+          "then": "bucket.put is called with contentType 'image/png' and custom metadata containing version 'etag-1' and source 'mcp'",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "records-rate-limit-telemetry",
+          "scenario": "A screenshot request is blocked by rate limiting and has a caller hash.",
+          "given": ["data = { source: 'mcp', cacheStatus: 'none', callerHash: 'hash', rateLimitAllowed: false }"],
+          "when": "writeScreenshotTelemetry(env, data)",
+          "then": "writeDataPoint records rate_limit:blocked and caller:hash in mcp_shared_board_screenshot",
+          "targets": [],
+          "oracleKind": "fingerprint",
+          "rationale": ""
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "shared and local module imports",
+        "resolved-board interfaces and result union",
+        "board resolution and snapshot loading",
+        "render-token minting and render URL construction",
+        "screenshot capture orchestration",
+        "browser-session context and telemetry",
+        "Browser Rendering and local screenshot transports",
+        "browser error parsing and truncation",
+        "measurement result storage and page measurement",
+        "thumbnail PNG storage",
+        "shared screenshot telemetry"
+      ],
+      "moduleLevelCode": "Import declarations and explanatory comments; no executable top-level statements.",
+      "exports": [
+        { "name": "ResolvedThumbnailBoard", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "ResolveThumbnailBoardResult", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "resolveThumbnailBoard", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "loadBoardSnapshot", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "buildThumbnailRenderUrl", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "captureThumbnailScreenshot", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "BrowserRunSessionContext", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "putRenderResult", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "measurePageShapes", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "putThumbnailPng", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "writeScreenshotTelemetry", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "DEFAULT_THUMBNAIL_HEIGHT", "module": "@tldraw/dotcom-shared", "alias": null, "kind": "external" },
+        { "symbol": "DEFAULT_THUMBNAIL_WIDTH", "module": "@tldraw/dotcom-shared", "alias": null, "kind": "external" },
+        { "symbol": "THUMBNAIL_RENDER_PATH", "module": "@tldraw/dotcom-shared", "alias": null, "kind": "external" },
+        {
+          "symbol": "THUMBNAIL_RENDER_TIMEOUT_MS",
+          "module": "@tldraw/dotcom-shared",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "getThumbnailScreenshotRequestBody",
+          "module": "@tldraw/dotcom-shared",
+          "alias": null,
+          "kind": "external"
+        },
+        { "symbol": "RoomSnapshot", "module": "@tldraw/sync-core", "alias": null, "kind": "external" },
+        { "symbol": "THUMBNAIL_RENDER_TOKEN_TTL_MS", "module": "../../config", "alias": null, "kind": "internal" },
+        { "symbol": "getR2KeyForRoom", "module": "../../r2", "alias": null, "kind": "internal" },
+        { "symbol": "Environment", "module": "../../types", "alias": null, "kind": "internal" },
+        { "symbol": "OgImageRenderReason", "module": "../../types", "alias": null, "kind": "internal" },
+        { "symbol": "ThumbnailBoardAccess", "module": "../../types", "alias": null, "kind": "internal" },
+        { "symbol": "ThumbnailBoardKind", "module": "../../types", "alias": null, "kind": "internal" },
+        { "symbol": "ThumbnailBoardRef", "module": "../../types", "alias": null, "kind": "internal" },
+        { "symbol": "ThumbnailRenderSurface", "module": "../../types", "alias": null, "kind": "internal" },
+        { "symbol": "writeDataPoint", "module": "../../utils/analytics", "alias": null, "kind": "internal" },
+        { "symbol": "arrayBufferToBase64", "module": "../../utils/base64", "alias": null, "kind": "internal" },
+        { "symbol": "base64ToArrayBuffer", "module": "../../utils/base64", "alias": null, "kind": "internal" },
+        { "symbol": "ThumbnailRenderJob", "module": "../../utils/renderTokens", "alias": null, "kind": "internal" },
+        {
+          "symbol": "deleteMintedRenderToken",
+          "module": "../../utils/renderTokens",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "mintThumbnailRenderToken",
+          "module": "../../utils/renderTokens",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "recordMintedRenderToken",
+          "module": "../../utils/renderTokens",
+          "alias": null,
+          "kind": "internal"
+        },
+        { "symbol": "ShapeMeasurement", "module": "./boardTools", "alias": null, "kind": "internal" },
+        { "symbol": "getPublishedFileInfo", "module": "./getPublishedFile", "alias": null, "kind": "internal" },
+        { "symbol": "getPublishedRoomSnapshot", "module": "./getPublishedFile", "alias": null, "kind": "internal" },
+        { "symbol": "SharedFileInfo", "module": "./getSharedFile", "alias": null, "kind": "internal" },
+        { "symbol": "getSharedFileInfo", "module": "./getSharedFile", "alias": null, "kind": "internal" },
+        { "symbol": "getSharedFileRoomSnapshot", "module": "./getSharedFile", "alias": null, "kind": "internal" },
+        { "symbol": "isFileViewableFor", "module": "./getSharedFile", "alias": null, "kind": "internal" },
+        { "symbol": "BoardSnapshotReadError", "module": "./thumbnailShared", "alias": null, "kind": "internal" },
+        { "symbol": "BrowserRenderError", "module": "./thumbnailShared", "alias": null, "kind": "internal" },
+        { "symbol": "classifyScreenshotFailure", "module": "./thumbnailShared", "alias": null, "kind": "internal" }
+      ],
+      "fileConstants": [{ "name": "MAX_BROWSER_ERROR_DETAIL_LENGTH", "value": "500", "kind": "number" }],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__resolveThumbnailBoard#function:resolveThumbnailBoard",
+        "unitKind": "function",
+        "name": "resolveThumbnailBoard",
+        "qualifiedName": "resolveThumbnailBoard",
+        "parentUnitId": null,
+        "startLine": 73,
+        "endLine": 109,
+        "isBehavioral": true,
+        "source": "\t| { ok: true; board: ResolvedThumbnailBoard }\n\t| { ok: false; reason: 'not_found' | 'board_empty' }\n\n/**\n * Resolves a board slug of a known kind, applying the gate the caller asked for (see\n * `ThumbnailBoardAccess`). `access: 'public'` is the only thing standing between a private board and\n * the public internet, and it is re-applied per request rather than inferred from what is in R2 —\n * necessarily, since nothing deletes a thumbnail when a board stops being public.\n *\n * `board_empty` means the board passed its gate but has no persisted room content; `not_found` covers\n * everything the gate refused.\n */\nexport async function resolveThumbnailBoard(\n\tenv: Environment,\n\tkind: ThumbnailBoardKind,\n\tslug: string,\n\t{\n\t\taccess,\n\t\tfile: knownFile,\n\t}: {\n\t\taccess: ThumbnailBoardAccess\n\t\t/**\n\t\t * The row a caller has *just* read for this same file, to be gated again rather than fetched a\n\t\t * second time. The MCP path's access check reads `file` and this then selects a strict subset of\n\t\t * the same columns microseconds later, so without this every tool call opens two Postgres pools\n\t\t * for one row — three when the published fallback runs. Opt in per call site, like the same\n\t\t * option on `loadBoardSnapshot`: the gate below is applied either way, so what a caller takes on\n\t\t * is the staleness of the row, not a weaker check.\n\t\t */\n\t\tfile?: SharedFileInfo\n\t}\n): Promise<ResolveThumbnailBoardResult> {\n\tif (kind === 'published') {\n\t\t// A published board's whole identity is its published slug, so there is no weaker gate to\n\t\t// apply: an unpublished board has no published snapshot to render in the first place.\n\t\tconst publishedFile = await getPublishedFileInfo(env, slug)\n\t\tif (!publishedFile?.published) return { ok: false, reason: 'not_found' }",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__resolveThumbnailBoard#function:resolveThumbnailBoard",
+          "fileId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__resolveThumbnailBoard",
+          "unitKind": "function",
+          "name": "resolveThumbnailBoard",
+          "qualifiedName": "resolveThumbnailBoard",
+          "parentUnitId": null,
+          "startLine": 73,
+          "endLine": 109,
+          "signature": "export async function resolveThumbnailBoard(\n\tenv: Environment,\n\tkind: ThumbnailBoardKind,\n\tslug: string,\n\t{\n\t\taccess,\n\t\tfile: knownFile,\n\t}: {\n\t\taccess: ThumbnailBoardAccess\n\t\tfile?: SharedFileInfo\n\t}\n): Promise<ResolveThumbnailBoardResult>",
+          "parameters": [
+            { "name": "env", "type": "Environment", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "kind",
+              "type": "ThumbnailBoardKind",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            { "name": "slug", "type": "string", "default": null, "optional": false, "variadic": false, "order": 2 },
+            {
+              "name": "{ access, file: knownFile }",
+              "type": "{ access: ThumbnailBoardAccess; file?: SharedFileInfo }",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 3
+            }
+          ],
+          "returnType": "Promise<ResolveThumbnailBoardResult>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "kind is a supported ThumbnailBoardKind.",
+            "slug identifies the board lookup key.",
+            "access specifies the gate that must be applied for the request."
+          ],
+          "postconditions": [
+            "On success, returns { ok: true, board: ResolvedThumbnailBoard }.",
+            "A board that passes its access gate but has no persisted room content is reported as { ok: false, reason: 'board_empty' }.",
+            "A board rejected by the access gate or otherwise unavailable is reported as { ok: false, reason: 'not_found' }."
+          ],
+          "invariants": [
+            "The requested access gate is applied for each resolution request rather than inferred from stored thumbnail data.",
+            "For published boards, the published slug is used as the board identity and an unpublished result does not resolve."
+          ],
+          "edgeCases": [
+            "When kind is 'published' and getPublishedFileInfo returns no file or a file whose published flag is false, returns { ok: false, reason: 'not_found' }.",
+            "When a board passes its access gate but contains no persisted room content, returns { ok: false, reason: 'board_empty' }.",
+            "When the access gate refuses the board, returns { ok: false, reason: 'not_found' }."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Returns { ok: false, reason: 'not_found' } when the requested board is unavailable or fails the applicable access gate.",
+            "returnsOnError": "{ ok: false, reason: 'not_found' }"
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "getPublishedFileInfo", "source": null, "kind": "external" },
+            { "name": "loadBoardSnapshot", "source": "thumbnailRender.ts", "kind": "internal" }
+          ],
+          "symbolReferences": [
+            "Environment",
+            "ThumbnailBoardKind",
+            "ThumbnailBoardAccess",
+            "SharedFileInfo",
+            "ResolveThumbnailBoardResult",
+            "ResolvedThumbnailBoard"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Resolves a thumbnail-renderable board by slug and board kind while reapplying the requested access gate. It distinguishes a gated board with no persisted room content from a board that is unavailable or fails the gate.",
+          "specLiterals": [
+            { "kind": "enum-value", "value": "published", "role": "Selects the published-board resolution path." },
+            {
+              "kind": "enum-value",
+              "value": "not_found",
+              "role": "Result reason for an unavailable board or a board rejected by its access gate."
+            },
+            {
+              "kind": "enum-value",
+              "value": "board_empty",
+              "role": "Result reason for a board that passes its gate but has no persisted room content."
+            },
+            {
+              "kind": "enum-value",
+              "value": "public",
+              "role": "Access mode whose gate controls whether a private board may be exposed to the public internet."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "resolveThumbnailBoard is called",
+              "then": "It resolves to { ok: false, reason: 'not_found' }.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "resolveThumbnailBoard is called",
+              "then": "It resolves to { ok: false, reason: 'board_empty' }.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "295ca2bdb541bba31f4d9fe397f73fae46668da30a0cccaa2cae186776b765bc"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__loadBoardSnapshot#function:loadBoardSnapshot",
+        "unitKind": "function",
+        "name": "loadBoardSnapshot",
+        "qualifiedName": "loadBoardSnapshot",
+        "parentUnitId": null,
+        "startLine": 116,
+        "endLine": 139,
+        "isBehavioral": true,
+        "source": "\t// The persisted room's R2 etag rotates when the board content changes, so it keys the\n\t// thumbnail cache without a separate content-version field.\n\tconst persisted = await env.ROOMS.head(getR2KeyForRoom({ slug, isApp: true }))\n\tif (!persisted) return { ok: false, reason: 'board_empty' }\n\n\treturn { ok: true, board: { kind, slug, version: persisted.etag, access, file } }\n}\n\n// Reads a resolved board's snapshot, keeping the two outcomes callers must tell apart distinct.\n// `null` means one thing only: an empty board, with no persisted room content. Anything the readers\n// throw — Postgres, R2, a malformed payload, or the gate they re-check as they read — is wrapped as a\n// BoardSnapshotReadError, so a database outage reaches telemetry under its own reason code instead of\n// as an empty board.\nexport async function loadBoardSnapshot(\n\tenv: Environment,\n\tboard: ThumbnailBoardRef,\n\t{\n\t\taccess,\n\t\tfile,\n\t}: {\n\t\taccess: ThumbnailBoardAccess\n\t\t/**\n\t\t * The row a caller has *just* resolved this board against, to be gated again rather than\n\t\t * re-fetched. Opt in per call site rather than reading it off `board`, so a surface takes the",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__loadBoardSnapshot#function:loadBoardSnapshot",
+          "fileId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__loadBoardSnapshot",
+          "unitKind": "function",
+          "name": "loadBoardSnapshot",
+          "qualifiedName": "loadBoardSnapshot",
+          "parentUnitId": null,
+          "startLine": 116,
+          "endLine": 139,
+          "signature": "export async function loadBoardSnapshot(\n  env: Environment,\n  board: ThumbnailBoardRef,\n  {\n    access,\n    file,\n  }: {\n    access: ThumbnailBoardAccess\n    file: /* source-defined type */\n  },\n)",
+          "parameters": [
+            { "name": "env", "type": "Environment", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "board",
+              "type": "ThumbnailBoardRef",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "access",
+              "type": "ThumbnailBoardAccess",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            },
+            { "name": "file", "type": null, "default": null, "optional": false, "variadic": false, "order": 3 }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "env provides the storage and database dependencies required to read the board snapshot.",
+            "board identifies a previously resolved board.",
+            "access and file describe the access context and resolved file to use for the read."
+          ],
+          "postconditions": [
+            "When no persisted room content exists, the function returns null.",
+            "When persisted content exists and all reads and validation succeed, the function returns the board snapshot.",
+            "Failures from Postgres, R2, malformed payloads, or the read-time gate are surfaced as BoardSnapshotReadError."
+          ],
+          "invariants": [
+            "null represents only an empty board with no persisted room content.",
+            "A read failure is never converted into the empty-board result."
+          ],
+          "edgeCases": [
+            "A board with no persisted room content returns null.",
+            "A Postgres or R2 failure is wrapped as BoardSnapshotReadError rather than treated as an empty board.",
+            "A malformed snapshot payload is wrapped as BoardSnapshotReadError.",
+            "A failure in the gate re-checked during reading is wrapped as BoardSnapshotReadError."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["BoardSnapshotReadError"],
+            "reverts": [],
+            "onInvalidInput": "Read-time failures, including malformed payloads and gate failures, are wrapped as BoardSnapshotReadError; an empty persisted board is represented by null.",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["Environment", "ThumbnailBoardRef", "ThumbnailBoardAccess", "BoardSnapshotReadError"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Reads the resolved board snapshot while preserving the distinction between an empty board and a failed read. Read failures are wrapped as BoardSnapshotReadError so operational failures remain distinguishable from empty-board results.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "loadBoardSnapshot is called with the environment, board reference, access context, and file.",
+              "then": "The result is null, identifying an empty board rather than a read failure.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "loadBoardSnapshot is called.",
+              "then": "The thrown failure is surfaced as BoardSnapshotReadError and is not returned as null.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "loadBoardSnapshot reads the snapshot.",
+              "then": "The condition is surfaced as BoardSnapshotReadError rather than being treated as an empty board.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "de97c68f57e3084e96ef546104a5d363818a29e2509268c464ec272d33156eb9"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__mintRecordedRenderToken#function:mintRecordedRenderToken",
+        "unitKind": "function",
+        "name": "mintRecordedRenderToken",
+        "qualifiedName": "mintRecordedRenderToken",
+        "parentUnitId": null,
+        "startLine": 151,
+        "endLine": 155,
+        "isBehavioral": true,
+        "source": "\t} catch (error) {\n\t\t// Keep the original message in the wrapper's own text as well as its `cause`, so the Sentry\n\t\t// event title still names the real failure rather than reading as a generic read error.\n\t\tthrow new BoardSnapshotReadError(\n\t\t\t`Could not read board snapshot: ${error instanceof Error ? error.message : String(error)}`,",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__mintRecordedRenderToken#function:mintRecordedRenderToken",
+          "fileId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__mintRecordedRenderToken",
+          "unitKind": "function",
+          "name": "mintRecordedRenderToken",
+          "qualifiedName": "mintRecordedRenderToken",
+          "parentUnitId": null,
+          "startLine": 151,
+          "endLine": 155,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Mints a recorded render token for use by the thumbnail rendering workflow.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "5370ee44c2ba278df3305ca50968598b8efd7da0464b4c5fb243a6c35896d301"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__buildThumbnailRenderUrl#function:buildThumbnailRenderUrl",
+        "unitKind": "function",
+        "name": "buildThumbnailRenderUrl",
+        "qualifiedName": "buildThumbnailRenderUrl",
+        "parentUnitId": null,
+        "startLine": 157,
+        "endLine": 161,
+        "isBehavioral": true,
+        "source": "\t\t)\n\t}\n}\n\n/**",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__buildThumbnailRenderUrl#function:buildThumbnailRenderUrl",
+          "fileId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__buildThumbnailRenderUrl",
+          "unitKind": "function",
+          "name": "buildThumbnailRenderUrl",
+          "qualifiedName": "buildThumbnailRenderUrl",
+          "parentUnitId": null,
+          "startLine": 157,
+          "endLine": 161,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Builds the URL used to access a thumbnail render.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "5a243d0cf5276ee40b2f31ddde317a3e4825fbdade2feb759a1ccfddb2872db2"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__getRenderOrigin#function:getRenderOrigin",
+        "unitKind": "function",
+        "name": "getRenderOrigin",
+        "qualifiedName": "getRenderOrigin",
+        "parentUnitId": null,
+        "startLine": 163,
+        "endLine": 171,
+        "isBehavioral": true,
+        "source": " * separable.\n *\n * A token minted without a record fails its own check at the snapshot route and surfaces as a generic\n * render failure — and the way that arrived the first time was exactly this: a second mint site that\n * did the first half only, leaving every measure token unrecorded. Both mint sites go through here so\n * a third cannot repeat it.\n *\n * Recorded before the browser can present the token, so the snapshot route can tell one we minted from\n * one merely signed with our secret. Awaited, not fired off: the render is about to depend on it",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__getRenderOrigin#function:getRenderOrigin",
+          "fileId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__getRenderOrigin",
+          "unitKind": "function",
+          "name": "getRenderOrigin",
+          "qualifiedName": "getRenderOrigin",
+          "parentUnitId": null,
+          "startLine": 163,
+          "endLine": 171,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Determines the origin used for thumbnail rendering requests.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "6919e44e14a18700e8ff74b04e7c85087c7a34cefda7cd58a76537c433b38897"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__captureThumbnailScreenshot#function:captureThumbnailScreenshot",
+        "unitKind": "function",
+        "name": "captureThumbnailScreenshot",
+        "qualifiedName": "captureThumbnailScreenshot",
+        "parentUnitId": null,
+        "startLine": 177,
+        "endLine": 238,
+        "isBehavioral": true,
+        "source": "\treturn token\n}\n\nexport function buildThumbnailRenderUrl(renderOrigin: string, token: string) {\n\tconst url = new URL(THUMBNAIL_RENDER_PATH, renderOrigin)\n\turl.searchParams.set('token', token)\n\treturn url.toString()\n}\n\nfunction getRenderOrigin(env: Environment) {\n\t// Staging and production set this in wrangler.toml to their own client origin. Local dev sets it\n\t// to the local client; previews configure it explicitly when they need to exercise this path.\n\tif (!env.MCP_SCREENSHOT_RENDER_ORIGIN) {\n\t\tthrow new Error(\n\t\t\t`MCP_SCREENSHOT_RENDER_ORIGIN is not configured. It must point at an origin that serves the ${THUMBNAIL_RENDER_PATH} render page.`\n\t\t)\n\t}\n\treturn env.MCP_SCREENSHOT_RENDER_ORIGIN\n}\n\n// Renders one content-fit page of a resolved board through the render page and returns the PNG.\n// Mints the short-lived signed render job, so the browser session only ever visits the\n// tldraw-owned render page; callers decide where (and whether) to cache the result.\nexport async function captureThumbnailScreenshot(\n\tenv: Environment,\n\tboard: ResolvedThumbnailBoard,\n\t{\n\t\tsurface,\n\t\tpageId,\n\t\tshapeIds,\n\t\ttheme,\n\t\twidth,\n\t\theight,\n\t\ttelemetry,\n\t}: {\n\t\t/** Which pipeline is asking. Signed into the job; namespaces the minted-token record. */\n\t\tsurface: ThumbnailRenderSurface\n\t\t/**\n\t\t * The single page to render. When omitted, the render page exports whichever page the\n\t\t * snapshot opens to (used by OG images).\n\t\t */\n\t\tpageId?: string\n\t\t/**\n\t\t * Restricts the export to these shapes rather than the whole page: the render page fits the\n\t\t * camera to their common bounds and draws only them.\n\t\t */\n\t\tshapeIds?: string[]\n\t\ttheme: 'light' | 'dark'\n\t\twidth: number\n\t\theight: number\n\t\t/**\n\t\t * Who this session is for on the spend ledger. Required so a new caller cannot create\n\t\t * browser sessions that never appear on it; `mode` is stamped here, since this path is by\n\t\t * definition a screenshot render.\n\t\t */\n\t\ttelemetry: { source: BrowserRunSessionContext['source']; reason?: OgImageRenderReason }\n\t}\n): Promise<{ base64: string; durationMs: number }> {\n\tconst job: ThumbnailRenderJob = {\n\t\tv: 1,\n\t\tkind: board.kind,\n\t\tslug: board.slug,",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__captureThumbnailScreenshot#function:captureThumbnailScreenshot",
+          "fileId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__captureThumbnailScreenshot",
+          "unitKind": "function",
+          "name": "captureThumbnailScreenshot",
+          "qualifiedName": "captureThumbnailScreenshot",
+          "parentUnitId": null,
+          "startLine": 177,
+          "endLine": 238,
+          "signature": "export async function captureThumbnailScreenshot(env: Environment, board: ResolvedThumbnailBoard, { surface, pageId, shapeIds, theme, width, height, telemetry }: { surface: ThumbnailRenderSurface; pageId?: string; shapeIds?: string[]; theme: 'light' | 'dark'; width: number; height: number; telemetry: { source: BrowserRunSessionContext['source']; reason?: OgImageRenderReason } }): Promise<{ base64: string; durationMs: number }>",
+          "parameters": [
+            { "name": "env", "type": "Environment", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "board",
+              "type": "ResolvedThumbnailBoard",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "surface",
+              "type": "ThumbnailRenderSurface",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            },
+            { "name": "pageId", "type": "string", "default": null, "optional": true, "variadic": false, "order": 3 },
+            {
+              "name": "shapeIds",
+              "type": "string[]",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 4
+            },
+            {
+              "name": "theme",
+              "type": "'light' | 'dark'",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 5
+            },
+            { "name": "width", "type": "number", "default": null, "optional": false, "variadic": false, "order": 6 },
+            { "name": "height", "type": "number", "default": null, "optional": false, "variadic": false, "order": 7 },
+            {
+              "name": "telemetry",
+              "type": "{ source: BrowserRunSessionContext['source']; reason?: OgImageRenderReason }",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 8
+            }
+          ],
+          "returnType": "Promise<{ base64: string; durationMs: number }>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "env and board describe a resolvable thumbnail render.",
+            "surface identifies the requesting thumbnail pipeline.",
+            "theme is either 'light' or 'dark'.",
+            "width and height specify the requested render dimensions.",
+            "telemetry identifies the browser-run session source."
+          ],
+          "postconditions": [
+            "On success, returns a base64-encoded PNG and the render duration in milliseconds.",
+            "The render job includes the board identity and version 1 metadata.",
+            "The browser session visits the configured tldraw-owned thumbnail render page rather than an arbitrary caller-provided page."
+          ],
+          "invariants": [
+            "A render job is short-lived and signed before the browser render is started.",
+            "The requested surface is preserved in the minted job and telemetry is associated with the browser session."
+          ],
+          "edgeCases": [
+            "When pageId is omitted, the render uses the page opened by the snapshot.",
+            "When shapeIds is provided, the render is restricted to those shapes and fits the camera to their common bounds.",
+            "An empty shapeIds array is passed as the caller's shape restriction; no fallback behaviour is specified by this unit's visible contract.",
+            "Invalid render configuration or a failed browser render follows the underlying dependency error behaviour."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [
+              "Errors from render-job minting, URL construction, browser execution, or PNG capture are propagated to the caller."
+            ],
+            "reverts": [],
+            "onInvalidInput": "No local validation or fallback behaviour is specified; invalid values are handled by the underlying render dependencies.",
+            "returnsOnError": null
+          },
+          "stateMutations": [
+            "Creates or records a short-lived signed thumbnail render job.",
+            "Creates or accounts for the browser-run session identified by telemetry."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "mintRecordedRenderToken", "source": "same module", "kind": "internal" },
+            { "name": "buildThumbnailRenderUrl", "source": "same module", "kind": "internal" }
+          ],
+          "symbolReferences": [
+            "Environment",
+            "ResolvedThumbnailBoard",
+            "ThumbnailRenderSurface",
+            "BrowserRunSessionContext['source']",
+            "OgImageRenderReason",
+            "ThumbnailRenderJob",
+            "THUMBNAIL_RENDER_PATH"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Resolves to an object with shape { base64: string; durationMs: number }, where base64 contains the rendered PNG encoded as base64 and durationMs is the capture duration in milliseconds.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Mints a short-lived thumbnail render job and captures the requested board view through the tldraw-owned render page. Returns the rendered PNG as base64 together with the capture duration.",
+          "specLiterals": [
+            { "kind": "magic-number", "value": "1", "role": "Version identifier for the minted thumbnail render job." },
+            { "kind": "enum-value", "value": "'light'", "role": "Supported light theme value." },
+            { "kind": "enum-value", "value": "'dark'", "role": "Supported dark theme value." }
+          ],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "c44fed669f9ab0a3b10b5067d37f5f75e93b6a5ce50670ecc342bf692f2491d3"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__writeBrowserRunSessionTelemetry#function:writeBrowserRunSessionTelemetry",
+        "unitKind": "function",
+        "name": "writeBrowserRunSessionTelemetry",
+        "qualifiedName": "writeBrowserRunSessionTelemetry",
+        "parentUnitId": null,
+        "startLine": 264,
+        "endLine": 286,
+        "isBehavioral": true,
+        "source": "\t\t\t\theight,\n\t\t\t\tsession: { source: telemetry.source, mode: 'screenshot', reason: telemetry.reason },\n\t\t\t}\n\t\t)\n\t} finally {\n\t\t// The MCP surface keys its records by token, so nothing later overwrites this one and it has to\n\t\t// be dropped here — the same cleanup a measure gets, for the same reason. In `finally` because a\n\t\t// failed render leaves exactly the orphan a successful one would, and the snapshot fetch the\n\t\t// record guards is over either way by the time the session ends. A no-op for OG, whose per-board\n\t\t// key must outlive the capture; see deleteMintedRenderToken.\n\t\tawait deleteMintedRenderToken(env, job, token)\n\t}\n}\n\n/** What a browser session was created for, stamped on its `browser_run_session` datapoint. */\nexport interface BrowserRunSessionContext {\n\tsource: 'mcp' | 'og' | 'queue'\n\tmode: 'measure' | 'screenshot'\n\t/** The queue trigger, on sessions the queue runs. Request-path sessions have none. */\n\treason?: OgImageRenderReason\n}\n\n// The Browser Run spend ledger: one datapoint per browser session actually created, written here at",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__writeBrowserRunSessionTelemetry#function:writeBrowserRunSessionTelemetry",
+          "fileId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__writeBrowserRunSessionTelemetry",
+          "unitKind": "function",
+          "name": "writeBrowserRunSessionTelemetry",
+          "qualifiedName": "writeBrowserRunSessionTelemetry",
+          "parentUnitId": null,
+          "startLine": 264,
+          "endLine": 286,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "A browser session has been created and its telemetry context is available.",
+            "The telemetry destination and required runtime environment are available to the implementation."
+          ],
+          "postconditions": [
+            "One browser-run-session telemetry datapoint is written for the created session, containing its source, mode, and optional queue reason."
+          ],
+          "invariants": [
+            "The telemetry mode is restricted to measurement or screenshot capture.",
+            "The telemetry source is restricted to MCP, OG, or queue-triggered sessions."
+          ],
+          "edgeCases": [
+            "A request-path session has no queue reason; telemetry omits the optional reason.",
+            "A queue-triggered session may include the queue render reason.",
+            "The function is concerned with sessions actually created, rather than attempted sessions."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": ["Telemetry storage receives a browser_run_session datapoint."],
+          "eventsEmitted": ["browser_run_session telemetry datapoint"],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["BrowserRunSessionContext", "OgImageRenderReason"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Records telemetry for a browser run session, identifying what initiated the session and whether it was used for measurement or screenshot capture.",
+          "specLiterals": [
+            { "kind": "enum-value", "value": "mcp", "role": "Allowed browser session telemetry source." },
+            { "kind": "enum-value", "value": "og", "role": "Allowed browser session telemetry source." },
+            { "kind": "enum-value", "value": "queue", "role": "Allowed browser session telemetry source." },
+            { "kind": "enum-value", "value": "measure", "role": "Allowed browser session telemetry mode." },
+            { "kind": "enum-value", "value": "screenshot", "role": "Allowed browser session telemetry mode." },
+            { "kind": "enum-value", "value": "browser_run_session", "role": "Telemetry datapoint name." }
+          ],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "19eacf581d1a76e0d94bfb4e9aa698631f6e92f1a29f9411f23353d1b9e005db"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__renderThumbnailScreenshot#function:renderThumbnailScreenshot",
+        "unitKind": "function",
+        "name": "renderThumbnailScreenshot",
+        "qualifiedName": "renderThumbnailScreenshot",
+        "parentUnitId": null,
+        "startLine": 294,
+        "endLine": 367,
+        "isBehavioral": true,
+        "source": "\tsession: BrowserRunSessionContext,\n\t{\n\t\toutcome,\n\t\tdurationMs,\n\t\twidth,\n\t\theight,\n\t}: {\n\t\t/** `ok`, or the bounded browser failure code for a session that died. */\n\t\toutcome: string\n\t\tdurationMs: number\n\t\twidth: number\n\t\theight: number\n\t}\n) {\n\twriteDataPoint(undefined, env.MEASURE, env, 'browser_run_session', {\n\t\tblobs: [\n\t\t\t`source:${session.source}`,\n\t\t\t`mode:${session.mode}`,\n\t\t\t`outcome:${outcome}`,\n\t\t\t`reason:${session.reason ?? 'none'}`,\n\t\t],\n\t\tdoubles: [width, height, durationMs],\n\t})\n}\n\n// The pixels come from editor.toImage on the render page, which displays its own export as a\n// full-viewport image for the Quick Action to capture. A failed render marks an error state rather\n// than the ready one, so it returns as a failure immediately instead of burning the timeout (see\n// THUMBNAIL_SETTLED_SELECTOR / THUMBNAIL_CAPTURE_SELECTOR in @tldraw/dotcom-shared).\nasync function renderThumbnailScreenshot(\n\tenv: Environment,\n\trenderUrl: string,\n\t{ width, height, session }: { width: number; height: number; session: BrowserRunSessionContext }\n): Promise<{ base64: string; durationMs: number }> {\n\t// Built once and handed to whichever transport runs, so the wait strategy, capture target and\n\t// timeout cannot drift between Browser Run and its development stand-in.\n\tconst requestBody = getThumbnailScreenshotRequestBody({\n\t\trenderUrl,\n\t\twidth,\n\t\theight,\n\t\ttimeoutMs: THUMBNAIL_RENDER_TIMEOUT_MS,\n\t})\n\n\t// Local dev has no route to Browser Run, so it points this at a screenshot service instead (the\n\t// client's dev server, which can drive Playwright). Selected on the var being set rather than on\n\t// an environment name, so only an environment that configures one can take this path.\n\tlet timed: TimedCapture\n\tconst startedAt = Date.now()\n\ttry {\n\t\tconst capture = env.LOCAL_SCREENSHOT_SERVICE_URL\n\t\t\t? callLocalScreenshotService(env.LOCAL_SCREENSHOT_SERVICE_URL, requestBody)\n\t\t\t: callBrowserRun(env, requestBody)\n\t\t// Measures are exempt from the worker-side deadline, and it is the *result* that makes them\n\t\t// so: the render page POSTs its measurements before signalling ready, and the result route\n\t\t// accepts any unexpired signed token, so abandoning the wait early would let that POST land\n\t\t// after measurePageShapes' cleanup has already deleted the result key — stranding an object\n\t\t// in a bucket that must never get a lifecycle rule. The deadline exists for the OG pipeline's\n\t\t// invariants, which never price a measure; a measure stays bounded by the quick action's own\n\t\t// per-phase timers.\n\t\ttimed = await (session.mode === 'measure'\n\t\t\t? capture\n\t\t\t: abandonAtRenderTimeout(capture, startedAt))\n\t} catch (error) {\n\t\t// A BrowserRenderError is a session that existed and died, so it lands on the ledger with the\n\t\t// time it held its browser. Anything else never created a session and records nothing.\n\t\tif (error instanceof BrowserRenderError) {\n\t\t\twriteBrowserRunSessionTelemetry(env, session, {\n\t\t\t\toutcome: classifyScreenshotFailure(error),\n\t\t\t\tdurationMs: error.durationMs,\n\t\t\t\twidth,\n\t\t\t\theight,\n\t\t\t})\n\t\t}\n\t\tthrow error",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__renderThumbnailScreenshot#function:renderThumbnailScreenshot",
+          "fileId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__renderThumbnailScreenshot",
+          "unitKind": "function",
+          "name": "renderThumbnailScreenshot",
+          "qualifiedName": "renderThumbnailScreenshot",
+          "parentUnitId": null,
+          "startLine": 294,
+          "endLine": 367,
+          "signature": "async function renderThumbnailScreenshot(env: Environment, renderUrl: string, { width, height, session }: { width: number; height: number; session: BrowserRunSessionContext }): Promise<{ base64: string; durationMs: number }>",
+          "parameters": [
+            { "name": "env", "type": "Environment", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "renderUrl",
+              "type": "string",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            { "name": "width", "type": "number", "default": null, "optional": false, "variadic": false, "order": 2 },
+            { "name": "height", "type": "number", "default": null, "optional": false, "variadic": false, "order": 3 },
+            {
+              "name": "session",
+              "type": "BrowserRunSessionContext",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 4
+            }
+          ],
+          "returnType": "Promise<{ base64: string; durationMs: number }>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "env, renderUrl, width, height, and session are provided.",
+            "session.mode identifies whether the capture is a measure session.",
+            "The selected capture transport accepts the request body produced for the render URL and viewport dimensions."
+          ],
+          "postconditions": [
+            "On success, resolves with a base64 screenshot and capture duration in milliseconds.",
+            "The screenshot request uses the render URL, requested width and height, and THUMBNAIL_RENDER_TIMEOUT_MS.",
+            "For non-measure sessions, the capture is subject to abandonAtRenderTimeout.",
+            "For measure sessions, the capture result is awaited without the worker-side render-timeout abandonment."
+          ],
+          "invariants": [
+            "The same request body is used regardless of whether the local screenshot service or Browser Run transport is selected.",
+            "The local screenshot service is selected only when env.LOCAL_SCREENSHOT_SERVICE_URL is set.",
+            "A BrowserRenderError is rethrown after session telemetry is written.",
+            "Errors that are not BrowserRenderError do not cause browser-session telemetry to be written by this function."
+          ],
+          "edgeCases": [
+            "When env.LOCAL_SCREENSHOT_SERVICE_URL is set, capture is delegated to the local screenshot service instead of Browser Run.",
+            "When env.LOCAL_SCREENSHOT_SERVICE_URL is unset, capture is delegated to Browser Run.",
+            "When session.mode is 'measure', the capture promise is awaited directly rather than abandoned at the worker-side render timeout.",
+            "When a BrowserRenderError is thrown, telemetry records the classified failure, error duration, and requested dimensions before the error propagates.",
+            "When a non-BrowserRenderError is thrown, the error propagates without browser-session telemetry from this function."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [
+              "BrowserRenderError",
+              "Errors propagated by the selected screenshot transport",
+              "Errors propagated by request construction or timeout handling"
+            ],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": null
+          },
+          "stateMutations": ["Writes browser run session telemetry for BrowserRenderError failures."],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "getThumbnailScreenshotRequestBody", "source": null, "kind": "internal" },
+            {
+              "name": "callLocalScreenshotService",
+              "source": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts",
+              "kind": "internal"
+            },
+            {
+              "name": "callBrowserRun",
+              "source": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts",
+              "kind": "internal"
+            },
+            {
+              "name": "abandonAtRenderTimeout",
+              "source": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts",
+              "kind": "internal"
+            },
+            {
+              "name": "writeBrowserRunSessionTelemetry",
+              "source": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts",
+              "kind": "internal"
+            },
+            { "name": "classifyScreenshotFailure", "source": null, "kind": "internal" },
+            { "name": "Date.now", "source": "runtime", "kind": "external" }
+          ],
+          "symbolReferences": [
+            "Environment",
+            "BrowserRunSessionContext",
+            "BrowserRenderError",
+            "TimedCapture",
+            "THUMBNAIL_RENDER_TIMEOUT_MS"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "The capture request contains renderUrl, width, height, and timeoutMs. The successful result is an object with base64: string and durationMs: number.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Captures a thumbnail screenshot from the render URL using the configured local screenshot service or Browser Run transport. It applies the render timeout except for measure sessions and records telemetry when an existing browser session fails.",
+          "specLiterals": [
+            {
+              "kind": "enum-value",
+              "value": "measure",
+              "role": "Session mode that bypasses worker-side render-timeout abandonment."
+            },
+            {
+              "kind": "enum-value",
+              "value": "browser_run_session",
+              "role": "Telemetry measure name used for browser session failure recording."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "renderThumbnailScreenshot is called",
+              "then": "It delegates capture to the local screenshot service with a request containing renderUrl, width, height, and THUMBNAIL_RENDER_TIMEOUT_MS, and awaits the capture without worker-side timeout abandonment.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "the Browser Run capture fails with a BrowserRenderError",
+              "then": "browser session telemetry is written using the classified failure, the error duration, and the requested width and height, and the same error is rethrown.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "885e220944c4e150067ad39a94792632cb29bc24aa878d7f3a523a5d01bf1dcd"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__callBrowserRun#function:callBrowserRun",
+        "unitKind": "function",
+        "name": "callBrowserRun",
+        "qualifiedName": "callBrowserRun",
+        "parentUnitId": null,
+        "startLine": 383,
+        "endLine": 423,
+        "isBehavioral": true,
+        "source": "\t\toutcome: 'ok',\n\t\tdurationMs: timed.durationMs,\n\t\twidth,\n\t\theight,\n\t})\n\treturn { base64: arrayBufferToBase64(buffer), durationMs: timed.durationMs }\n}\n\ntype ThumbnailScreenshotRequestBody = ReturnType<typeof getThumbnailScreenshotRequestBody>\n\n// A capture that came back OK, fully read, and how long the whole thing took. The transports read\n// the body themselves rather than handing back a Response: the read has to happen inside\n// abandonAtRenderTimeout's deadline, or a body stream that stalls after a 200's headers would hold\n// the delivery unbounded — past every bound the pipeline prices a capture at. Each transport throws\n// its own kind of failure; only Browser Run's carries the status, body detail and timeout budget\n// that BrowserRenderError exists to hold.\ninterface TimedCapture {\n\tbuffer: ArrayBuffer\n\tdurationMs: number\n}\n\nasync function callBrowserRun(\n\tenv: Environment,\n\trequestBody: ThumbnailScreenshotRequestBody\n): Promise<TimedCapture> {\n\tif (!env.BROWSER) {\n\t\tthrow new Error(\n\t\t\t'Browser Rendering is not configured. Set the BROWSER binding (local dev needs Cloudflare credentials).'\n\t\t)\n\t}\n\n\tconst startedAt = Date.now()\n\t// Browser Rendering `/screenshot` Quick Action, invoked straight through the binding (no\n\t// puppeteer, no API token). Requires compatibility_date >= 2026-03-24 for `quickAction`.\n\tconst response = await env.BROWSER.quickAction('screenshot', requestBody)\n\tconst durationMs = Date.now() - startedAt\n\n\tif (!response.ok) {\n\t\tthrow new BrowserRenderError({\n\t\t\tstatus: response.status,\n\t\t\tdetail: await readBrowserErrorDetail(response),",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__callBrowserRun#function:callBrowserRun",
+          "fileId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__callBrowserRun",
+          "unitKind": "function",
+          "name": "callBrowserRun",
+          "qualifiedName": "callBrowserRun",
+          "parentUnitId": null,
+          "startLine": 383,
+          "endLine": 423,
+          "signature": "async function callBrowserRun(\n\tenv: Environment,\n\trequestBody: ThumbnailScreenshotRequestBody\n): Promise<TimedCapture>",
+          "parameters": [
+            { "name": "env", "type": "Environment", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "requestBody",
+              "type": "ThumbnailScreenshotRequestBody",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "Promise<TimedCapture>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "env.BROWSER is configured with a Browser Rendering binding.",
+            "requestBody conforms to ThumbnailScreenshotRequestBody."
+          ],
+          "postconditions": [
+            "On success, returns an ArrayBuffer containing the screenshot and a durationMs measurement.",
+            "The Browser Rendering screenshot Quick Action is invoked with the operation name 'screenshot' and the supplied request body."
+          ],
+          "invariants": [
+            "A successful result always contains both screenshot bytes and durationMs.",
+            "A non-OK Browser Rendering response is not returned as a successful capture."
+          ],
+          "edgeCases": [
+            "When env.BROWSER is absent, the function throws an Error explaining that Browser Rendering is not configured.",
+            "When the Browser Rendering response is non-OK, the function reads the browser error detail and throws BrowserRenderError rather than returning capture data.",
+            "When the Browser Rendering response is OK, its body is read as an ArrayBuffer and returned as base64-independent binary capture data."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [
+              "Error when env.BROWSER is not configured",
+              "BrowserRenderError when the Browser Rendering response is not OK"
+            ],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            {
+              "name": "env.BROWSER.quickAction('screenshot', requestBody)",
+              "source": "Cloudflare Browser Rendering binding",
+              "kind": "external"
+            },
+            { "name": "readBrowserErrorDetail", "source": "local module", "kind": "internal" },
+            { "name": "Date.now", "source": "JavaScript runtime", "kind": "external" },
+            { "name": "response.arrayBuffer", "source": "Fetch Response", "kind": "external" }
+          ],
+          "symbolReferences": ["Environment", "ThumbnailScreenshotRequestBody", "TimedCapture", "BrowserRenderError"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Calls the Browser Rendering binding's quickAction('screenshot', requestBody). On success, consumes the response body as an ArrayBuffer and returns { buffer, durationMs }. Non-OK responses are converted to BrowserRenderError using the HTTP status and browser error detail.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Invokes the configured Browser Rendering screenshot Quick Action and returns the captured image bytes with its measured duration. It rejects when the Browser binding is unavailable or the remote render fails.",
+          "specLiterals": [
+            {
+              "kind": "error-message",
+              "value": "Browser Rendering is not configured. Set the BROWSER binding (local dev needs Cloudflare credentials).",
+              "role": "Error message returned when the BROWSER binding is unavailable."
+            },
+            { "kind": "enum-value", "value": "screenshot", "role": "Browser Rendering Quick Action operation name." }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "callBrowserRun is invoked.",
+              "then": "The returned promise rejects with an Error whose message is exactly 'Browser Rendering is not configured. Set the BROWSER binding (local dev needs Cloudflare credentials).'.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "callBrowserRun is invoked.",
+              "then": "The returned promise resolves to an object containing those bytes as buffer and a durationMs measurement.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "callBrowserRun is invoked.",
+              "then": "The returned promise rejects with BrowserRenderError carrying the response status and the detail read from the response.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "bb5ab70f29eebba36722b3bef0bd3b24d4d26487aa781825ce8983cdf0a5f496"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__abandonAtRenderTimeout#function:abandonAtRenderTimeout",
+        "unitKind": "function",
+        "name": "abandonAtRenderTimeout",
+        "qualifiedName": "abandonAtRenderTimeout",
+        "parentUnitId": null,
+        "startLine": 431,
+        "endLine": 464,
+        "isBehavioral": true,
+        "source": "\tconst buffer = await response.arrayBuffer().catch((error) => {\n\t\tthrow new BrowserRenderError({\n\t\t\tstatus: response.status,\n\t\t\tdetail: `Reading the capture body failed: ${error instanceof Error ? error.message : String(error)}`,\n\t\t\tdurationMs: Date.now() - startedAt,\n\t\t\ttimeoutMs: THUMBNAIL_RENDER_TIMEOUT_MS,\n\t\t})\n\t})\n\treturn { buffer, durationMs: Date.now() - startedAt }\n}\n\n// The request cannot cap its own total: `gotoOptions.timeout` and `waitForSelector.timeout` are\n// sequential phases that each get the full render budget (see getThumbnailScreenshotRequestBody),\n// so a page that stalls through both holds the call for roughly twice THUMBNAIL_RENDER_TIMEOUT_MS.\n// Everything sized against \"a capture takes at most the render timeout\" — the pending-marker TTL\n// against the retry chain, the edit debounce outlasting a capture, both pinned in\n// ogImageQueue.test.ts — needs the single budget to be a real ceiling, so it is enforced here on\n// the whole call. The abandoned browser session is Cloudflare's to reap and still spends its\n// remainder — this bounds the delivery, not the spend.\nasync function abandonAtRenderTimeout(\n\tcapture: Promise<TimedCapture>,\n\tstartedAt: number\n): Promise<TimedCapture> {\n\tlet timer: ReturnType<typeof setTimeout> | undefined\n\ttry {\n\t\treturn await Promise.race([\n\t\t\tcapture,\n\t\t\tnew Promise<never>((_, reject) => {\n\t\t\t\ttimer = setTimeout(() => {\n\t\t\t\t\treject(\n\t\t\t\t\t\tnew BrowserRenderError({\n\t\t\t\t\t\t\t// No response was received, so there is no status; the detail is what classifies\n\t\t\t\t\t\t\t// this as a browser_timeout (see classifyBrowserRenderFailure).\n\t\t\t\t\t\t\tstatus: 0,",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__abandonAtRenderTimeout#function:abandonAtRenderTimeout",
+          "fileId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__abandonAtRenderTimeout",
+          "unitKind": "function",
+          "name": "abandonAtRenderTimeout",
+          "qualifiedName": "abandonAtRenderTimeout",
+          "parentUnitId": null,
+          "startLine": 431,
+          "endLine": 464,
+          "signature": "async function abandonAtRenderTimeout(\n\tcapture: Promise<TimedCapture>,\n\tstartedAt: number\n): Promise<TimedCapture>",
+          "parameters": [
+            {
+              "name": "capture",
+              "type": "Promise<TimedCapture>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            { "name": "startedAt", "type": "number", "default": null, "optional": false, "variadic": false, "order": 1 }
+          ],
+          "returnType": "Promise<TimedCapture>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "capture is a promise for a TimedCapture.",
+            "startedAt is a timestamp in the same time basis used by Date.now()."
+          ],
+          "postconditions": [
+            "If capture settles before the render timeout, the returned promise settles with the same result or rejection.",
+            "If the render timeout elapses first, the returned promise rejects with a BrowserRenderError classified as a browser timeout.",
+            "The timeout duration is measured from the supplied startedAt timestamp."
+          ],
+          "invariants": [
+            "The timeout applies to the whole capture promise rather than to individual capture phases.",
+            "The timeout error reports status 0 because no response was received."
+          ],
+          "edgeCases": [
+            "A capture that completes before the timeout is returned without replacing its TimedCapture result.",
+            "A capture that remains pending until the render budget expires is rejected with a BrowserRenderError containing timeout metadata.",
+            "A capture that rejects before the timeout propagates its rejection rather than being converted into a timeout error."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [
+              "BrowserRenderError when the overall render timeout expires",
+              "The original capture rejection when capture rejects before the timeout"
+            ],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "Promise.race", "source": "TypeScript/JavaScript runtime", "kind": "external" },
+            { "name": "setTimeout", "source": "TypeScript/JavaScript runtime", "kind": "external" },
+            { "name": "BrowserRenderError", "source": "local module", "kind": "internal" }
+          ],
+          "symbolReferences": ["TimedCapture", "BrowserRenderError", "THUMBNAIL_RENDER_TIMEOUT_MS"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Resolves with the capture result when it completes within the thumbnail render budget. If the capture exceeds the budget, it rejects with a browser timeout error so delivery is bounded independently of the abandoned browser session.",
+          "specLiterals": [
+            {
+              "kind": "magic-number",
+              "value": "0",
+              "role": "Status value used for timeout errors when no browser response was received."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "abandonAtRenderTimeout(capture, startedAt) is awaited.",
+              "then": "The promise resolves with the capture's TimedCapture result.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "abandonAtRenderTimeout(capture, startedAt) is awaited.",
+              "then": "The promise rejects with BrowserRenderError, including status 0 and duration measured from startedAt.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "f308b467d02fb4ed7f48d23e86a390f2de27a6398c017b246b6dd3bdba6f97dd"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__readBrowserErrorDetail#function:readBrowserErrorDetail",
+        "unitKind": "function",
+        "name": "readBrowserErrorDetail",
+        "qualifiedName": "readBrowserErrorDetail",
+        "parentUnitId": null,
+        "startLine": 474,
+        "endLine": 484,
+        "isBehavioral": true,
+        "source": "\t\t// Only the timer needs cleanup: an abandoned capture's eventual rejection is already handled,\n\t\t// since Promise.race subscribes to every input.\n\t\tclearTimeout(timer)\n\t}\n}\n\n// How much of Cloudflare's error body to keep. It is a short JSON object in practice; the cap is\n// there so a proxy's HTML error page can't put a document into a Sentry event.\nconst MAX_BROWSER_ERROR_DETAIL_LENGTH = 500\n\n// Reads why Browser Run refused, which the status cannot say on its own (see BrowserRenderError).",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__readBrowserErrorDetail#function:readBrowserErrorDetail",
+          "fileId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__readBrowserErrorDetail",
+          "unitKind": "function",
+          "name": "readBrowserErrorDetail",
+          "qualifiedName": "readBrowserErrorDetail",
+          "parentUnitId": null,
+          "startLine": 474,
+          "endLine": 484,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [
+            "Returns browser error detail when available, subject to the configured maximum detail length."
+          ],
+          "invariants": ["Retained browser error detail does not exceed 500 characters."],
+          "edgeCases": [
+            "A short JSON error body is retained as detail.",
+            "An oversized proxy or HTML error body is bounded to the maximum detail length."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["MAX_BROWSER_ERROR_DETAIL_LENGTH", "BrowserRenderError"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Reads the detail explaining why Browser Run refused a request when the status alone is insufficient. The retained detail is bounded to protect telemetry from oversized proxy error bodies.",
+          "specLiterals": [
+            {
+              "kind": "magic-number",
+              "value": "500",
+              "role": "Maximum browser error detail length retained for telemetry and error reporting."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "7883456b595c0060b45f2dc339ed9b00c6bee9b558c587b26d8635f24cd6c9e5"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__extractBrowserErrorMessages#function:extractBrowserErrorMessages",
+        "unitKind": "function",
+        "name": "extractBrowserErrorMessages",
+        "qualifiedName": "extractBrowserErrorMessages",
+        "parentUnitId": null,
+        "startLine": 489,
+        "endLine": 501,
+        "isBehavioral": true,
+        "source": "\ttry {\n\t\tconst text = (await response.text()).trim()\n\t\tif (!text) return undefined\n\t\treturn truncate(extractBrowserErrorMessages(text) ?? text)\n\t} catch {\n\t\treturn undefined\n\t}\n}\n\n// Cloudflare's error body is `{\"success\":false,\"errors\":[{\"code\":…,\"message\":\"…\"}]}`, and the\n// messages are the whole readable part. Anything else — a proxy's HTML, a plain string, a shape we\n// don't recognise — falls back to the raw text.\nfunction extractBrowserErrorMessages(text: string): string | undefined {",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__extractBrowserErrorMessages#function:extractBrowserErrorMessages",
+          "fileId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__extractBrowserErrorMessages",
+          "unitKind": "function",
+          "name": "extractBrowserErrorMessages",
+          "qualifiedName": "extractBrowserErrorMessages",
+          "parentUnitId": null,
+          "startLine": 489,
+          "endLine": 501,
+          "signature": "function extractBrowserErrorMessages(text: string): string | undefined",
+          "parameters": [
+            { "name": "text", "type": "string", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "string | undefined",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["text is a string containing a candidate response body."],
+          "postconditions": [
+            "For a recognized Cloudflare error body, returns the contained error messages as readable text.",
+            "For malformed JSON or an unrecognized response shape, returns undefined rather than throwing."
+          ],
+          "invariants": [
+            "The function does not throw for malformed or otherwise unrecognized response text.",
+            "Only messages from the recognized error collection are included in the extracted result."
+          ],
+          "edgeCases": [
+            "A valid Cloudflare error body with multiple errors produces readable text containing the errors' messages.",
+            "Malformed JSON returns undefined.",
+            "A valid JSON value that is not the recognized Cloudflare error shape returns undefined.",
+            "Missing, empty, or non-message error entries do not produce a fabricated fallback message."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Returns undefined for malformed JSON or an unrecognized response shape.",
+            "returnsOnError": "undefined"
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Input is a response-body string. The recognized input shape is a Cloudflare error object with success:false and an errors array whose entries contain message values; output is the combined readable message text or undefined.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Extracts readable error messages from a recognized Cloudflare browser error response. Returns undefined when the input is not the expected error-response shape or cannot be parsed.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "extractBrowserErrorMessages is called with that string",
+              "then": "It returns readable text containing both \"first error\" and \"second error\".",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "extractBrowserErrorMessages is called with that string",
+              "then": "It returns undefined and does not throw.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "86a23577d872f5e840d198e7cec61c22f8394828861b02682d686abe0af2ca00"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__truncate#function:truncate",
+        "unitKind": "function",
+        "name": "truncate",
+        "qualifiedName": "truncate",
+        "parentUnitId": null,
+        "startLine": 503,
+        "endLine": 507,
+        "isBehavioral": true,
+        "source": "\t\tconst body = JSON.parse(text)\n\t\tif (!Array.isArray(body?.errors)) return undefined\n\t\tconst messages = body.errors\n\t\t\t.map((error: unknown) => (error as { message?: unknown } | null)?.message)\n\t\t\t.filter((message: unknown): message is string => typeof message === 'string' && !!message)",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__truncate#function:truncate",
+          "fileId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__truncate",
+          "unitKind": "function",
+          "name": "truncate",
+          "qualifiedName": "truncate",
+          "parentUnitId": null,
+          "startLine": 503,
+          "endLine": 507,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "The truncate function provides the file's string-truncation boundary for callers.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "b3f535304a538caebedecc7f91832a6d57a13369929076ef4ae6ba2859f6c724"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__callLocalScreenshotService#function:callLocalScreenshotService",
+        "unitKind": "function",
+        "name": "callLocalScreenshotService",
+        "qualifiedName": "callLocalScreenshotService",
+        "parentUnitId": null,
+        "startLine": 514,
+        "endLine": 544,
+        "isBehavioral": true,
+        "source": "function truncate(text: string) {\n\treturn text.length > MAX_BROWSER_ERROR_DETAIL_LENGTH\n\t\t? `${text.slice(0, MAX_BROWSER_ERROR_DETAIL_LENGTH)}…`\n\t\t: text\n}\n\n// Development stand-in for the Browser Rendering call above. Sent the same request body, and its\n// response decoded by the same code, so everything either side of the call is the production path.\n// The browser is a local Playwright one though, not Browser Run, so a render that works here is not\n// evidence that it works in production.\nasync function callLocalScreenshotService(\n\tserviceUrl: string,\n\trequestBody: ThumbnailScreenshotRequestBody\n): Promise<TimedCapture> {\n\tconst startedAt = Date.now()\n\tconst response = await fetch(serviceUrl, {\n\t\tmethod: 'POST',\n\t\theaders: { 'Content-Type': 'application/json' },\n\t\tbody: JSON.stringify(requestBody),\n\t})\n\n\tif (!response.ok) {\n\t\tthrow new Error(\n\t\t\t`Local screenshot service failed (${response.status}): ${await response.text()}`\n\t\t)\n\t}\n\t// A dev server that has not loaded the screenshot plugin answers this path with the client's\n\t// index.html — a 200 full of bytes that would otherwise be cached as if it were a thumbnail.\n\tconst contentType = response.headers.get('content-type') ?? ''\n\tif (!contentType.includes('image/png')) {\n\t\tthrow new Error(",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__callLocalScreenshotService#function:callLocalScreenshotService",
+          "fileId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__callLocalScreenshotService",
+          "unitKind": "function",
+          "name": "callLocalScreenshotService",
+          "qualifiedName": "callLocalScreenshotService",
+          "parentUnitId": null,
+          "startLine": 514,
+          "endLine": 544,
+          "signature": "async function callLocalScreenshotService(\n\tserviceUrl: string,\n\trequestBody: ThumbnailScreenshotRequestBody\n): Promise<TimedCapture>",
+          "parameters": [
+            {
+              "name": "serviceUrl",
+              "type": "string",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "requestBody",
+              "type": "ThumbnailScreenshotRequestBody",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "Promise<TimedCapture>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "serviceUrl identifies a fetchable HTTP endpoint.",
+            "requestBody is a valid ThumbnailScreenshotRequestBody."
+          ],
+          "postconditions": [
+            "A POST request is sent to serviceUrl with the request body JSON-encoded.",
+            "A successful response is accepted only when its content type includes image/png.",
+            "A non-OK response or a successful non-PNG response causes the returned promise to reject."
+          ],
+          "invariants": [
+            "The request uses Content-Type application/json.",
+            "The elapsed capture timing begins immediately before the fetch request."
+          ],
+          "edgeCases": [
+            "When the HTTP response is not OK, the function throws an Error containing the numeric status and the response text.",
+            "When an HTTP 200 response has no content-type header, it is rejected because the content type does not include image/png.",
+            "When a successful response has a content type other than one containing image/png, it is rejected rather than treated as a thumbnail."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [
+              "Error with message `Local screenshot service failed (${response.status}): ${await response.text()}` for non-OK responses",
+              "Error for successful responses whose content type does not include image/png"
+            ],
+            "reverts": [],
+            "onInvalidInput": "The promise rejects if the service response is unsuccessful or is not identified as a PNG image.",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "Date.now", "source": "global runtime", "kind": "internal" },
+            { "name": "fetch", "source": "global runtime", "kind": "external" }
+          ],
+          "symbolReferences": ["ThumbnailScreenshotRequestBody", "TimedCapture"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "HTTP POST to serviceUrl with headers { \"Content-Type\": \"application/json\" } and body JSON.stringify(requestBody). Successful responses must have a Content-Type header containing image/png.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Posts a thumbnail screenshot request to the local screenshot service and processes the service response using the production-compatible capture path. It rejects unsuccessful responses and successful responses that are not PNG images.",
+          "specLiterals": [
+            {
+              "kind": "format-string",
+              "value": "Local screenshot service failed (${response.status}): ${await response.text()}",
+              "role": "Error message format for non-OK screenshot-service responses."
+            },
+            { "kind": "format-string", "value": "application/json", "role": "Request Content-Type header." },
+            {
+              "kind": "format-string",
+              "value": "image/png",
+              "role": "Required substring in the successful response Content-Type header."
+            },
+            { "kind": "enum-value", "value": "POST", "role": "HTTP method used for the screenshot-service request." }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "callLocalScreenshotService is invoked for that service URL.",
+              "then": "The returned promise rejects with an Error whose message is `Local screenshot service failed (503): unavailable`.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "callLocalScreenshotService is invoked.",
+              "then": "The returned promise rejects instead of treating the response as a thumbnail.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "callLocalScreenshotService is invoked.",
+              "then": "The returned promise rejects instead of accepting the response as a PNG thumbnail.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "4652206f627d9af806b3f04e8b7f45c86ecdb52ff0aa9ae916d85be8ec946f2a"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__getRenderResultKey#function:getRenderResultKey",
+        "unitKind": "function",
+        "name": "getRenderResultKey",
+        "qualifiedName": "getRenderResultKey",
+        "parentUnitId": null,
+        "startLine": 553,
+        "endLine": 555,
+        "isBehavioral": true,
+        "source": "// can be detected) alongside any surface-specific metadata.\n// --- Measuring a page in a real editor ----------------------------------------------------------\n//",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__getRenderResultKey#function:getRenderResultKey",
+          "fileId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__getRenderResultKey",
+          "unitKind": "function",
+          "name": "getRenderResultKey",
+          "qualifiedName": "getRenderResultKey",
+          "parentUnitId": null,
+          "startLine": 553,
+          "endLine": 555,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Computes the key used to identify a thumbnail render result.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "13c24028b61a09798395f408e8be7a1051c9b2022eb8488a63dfe34037155b04"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__putRenderResult#function:putRenderResult",
+        "unitKind": "function",
+        "name": "putRenderResult",
+        "qualifiedName": "putRenderResult",
+        "parentUnitId": null,
+        "startLine": 557,
+        "endLine": 565,
+        "isBehavioral": true,
+        "source": "// at all. So when clustering needs geometry, the render page is driven in `measure` mode — it loads\n// the same snapshot, waits for fonts, reads editor.getShapePageBounds for every shape, and POSTs the\n// result back. Stashed under the job's own token and read once, so it is a rendezvous for a single\n// in-flight render rather than a cache with a lifetime to manage.\n\nfunction getRenderResultKey(token: string) {\n\treturn `render-result/${encodeURIComponent(token)}.json`\n}\n",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__putRenderResult#function:putRenderResult",
+          "fileId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__putRenderResult",
+          "unitKind": "function",
+          "name": "putRenderResult",
+          "qualifiedName": "putRenderResult",
+          "parentUnitId": null,
+          "startLine": 557,
+          "endLine": 565,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "The implementation and public contract for putRenderResult are not present in the supplied unit source, so no behavioral guarantee can be established.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "6e690bd97d327961fc60a5ae8c1952aa51fd1ac143b604d494ad924190227ee9"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__measurePageShapes#function:measurePageShapes",
+        "unitKind": "function",
+        "name": "measurePageShapes",
+        "qualifiedName": "measurePageShapes",
+        "parentUnitId": null,
+        "startLine": 573,
+        "endLine": 636,
+        "isBehavioral": true,
+        "source": "\t\thttpMetadata: { contentType: 'application/json' },\n\t})\n}\n\n/**\n * Measures every shape on a page through a real editor, returning `shapeId -> bounds and text`.\n *\n * Costs one Browser Rendering session, the same as a screenshot — there is no cheaper way to get\n * geometry the Worker cannot compute. Callers own the rate limiting that implies; the session\n * itself lands on the `browser_run_session` spend ledger with `mode:measure`, written at the render\n * choke point rather than by callers.\n */\nexport async function measurePageShapes(\n\tenv: Environment,\n\tboard: ResolvedThumbnailBoard,\n\tpageId: string,\n\t{ surface }: { surface: ThumbnailRenderSurface }\n): Promise<Record<string, ShapeMeasurement>> {\n\tconst job: ThumbnailRenderJob = {\n\t\tv: 1,\n\t\tkind: board.kind,\n\t\tslug: board.slug,\n\t\tversion: board.version,\n\t\t// Taken from the resolution rather than the caller, same as captureThumbnailScreenshot: a\n\t\t// measure token for a private board reads the whole document through the snapshot route, so it\n\t\t// carries the gate the board resolved under rather than defaulting to `public`.\n\t\taccess: board.access,\n\t\tsurface,\n\t\tmode: 'measure',\n\t\tpageId,\n\t\tx: 0,\n\t\ty: 0,\n\t\tz: 1,\n\t\t// Nothing is exported, but the viewport still has to be a sane size: shapes are measured\n\t\t// against a laid-out document, not a zero-sized one.\n\t\twidth: DEFAULT_THUMBNAIL_WIDTH,\n\t\theight: DEFAULT_THUMBNAIL_HEIGHT,\n\t\ttheme: 'light',\n\t\texp: Date.now() + THUMBNAIL_RENDER_TOKEN_TTL_MS,\n\t}\n\t// Checked before the render rather than after it: the read below cannot work without the bucket, and\n\t// discovering that once a full browser session has already been spent makes the failure cost a\n\t// capture it was never going to use.\n\tif (!env.THUMBNAILS) throw new Error('THUMBNAILS bucket is not configured')\n\n\tconst token = await mintRecordedRenderToken(env, job)\n\tconst key = getRenderResultKey(token)\n\n\ttry {\n\t\t// The screenshot is discarded — it is only how the browser session is driven, and how we know the\n\t\t// page reached its terminal state. The answer arrives via the result endpoint.\n\t\tawait renderThumbnailScreenshot(env, buildThumbnailRenderUrl(getRenderOrigin(env), token), {\n\t\t\twidth: DEFAULT_THUMBNAIL_WIDTH,\n\t\t\theight: DEFAULT_THUMBNAIL_HEIGHT,\n\t\t\t// The measure runs only on the MCP surface today; `surface` names the render pipeline for the\n\t\t\t// signed job, not the telemetry source, so this is stated rather than derived.\n\t\t\tsession: { source: 'mcp', mode: 'measure' },\n\t\t})\n\n\t\tconst stored = await env.THUMBNAILS.get(key)\n\t\tif (!stored) throw new Error('The render page did not report any measurements')\n\t\treturn JSON.parse(await stored.text())\n\t} finally {\n\t\t// Both of this capture's leftovers, dropped on the failure path as well as the success one.",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__measurePageShapes#function:measurePageShapes",
+          "fileId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__measurePageShapes",
+          "unitKind": "function",
+          "name": "measurePageShapes",
+          "qualifiedName": "measurePageShapes",
+          "parentUnitId": null,
+          "startLine": 573,
+          "endLine": 636,
+          "signature": "export async function measurePageShapes(\n\tenv: Environment,\n\tboard: ResolvedThumbnailBoard,\n\tpageId: string,\n\t{ surface }: { surface: ThumbnailRenderSurface }\n): Promise<Record<string, ShapeMeasurement>>",
+          "parameters": [
+            { "name": "env", "type": "Environment", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "board",
+              "type": "ResolvedThumbnailBoard",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            { "name": "pageId", "type": "string", "default": null, "optional": false, "variadic": false, "order": 2 },
+            {
+              "name": "{ surface }",
+              "type": "{ surface: ThumbnailRenderSurface }",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 3
+            }
+          ],
+          "returnType": "Promise<Record<string, ShapeMeasurement>>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "env.THUMBNAILS is configured.",
+            "board contains the resolved kind, slug, version, and access values required to construct a thumbnail render job.",
+            "surface is a valid ThumbnailRenderSurface."
+          ],
+          "postconditions": [
+            "A measure-mode thumbnail render job is minted and rendered using the board resolution and requested page.",
+            "On success, the stored render result is parsed as JSON and returned as a Record<string, ShapeMeasurement>.",
+            "Temporary render artifacts are cleaned up on both success and failure paths."
+          ],
+          "invariants": [
+            "The render job uses mode 'measure', access from board.access, theme 'light', zoom 1, x 0, and y 0.",
+            "The render job uses DEFAULT_THUMBNAIL_WIDTH and DEFAULT_THUMBNAIL_HEIGHT for both its viewport and browser-render dimensions.",
+            "The browser session telemetry source is 'mcp' and its mode is 'measure'.",
+            "The render token expiration is set to the current time plus THUMBNAIL_RENDER_TOKEN_TTL_MS.",
+            "The render result is looked up using the key derived from the minted token."
+          ],
+          "edgeCases": [
+            "When env.THUMBNAILS is absent, the function throws before minting a token or starting a browser-rendering session.",
+            "When the render result is absent from the thumbnails bucket, the function throws instead of returning an empty measurement record.",
+            "When the stored result is not valid JSON, JSON parsing throws and the cleanup path still runs.",
+            "A page with no shapes is represented by whatever empty measurement record the render result endpoint stores; the function does not synthesize measurements locally."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["Error", "SyntaxError from JSON.parse when the stored result is invalid JSON"],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": null
+          },
+          "stateMutations": [
+            "Mints and records a measure-mode render token through the thumbnail render pipeline.",
+            "Starts a browser-rendering session whose measurement result is written to the thumbnails result store.",
+            "Cleans up temporary render artifacts in the finally path."
+          ],
+          "eventsEmitted": [
+            "A browser_run_session spend-ledger record with mode 'measure' is written at the render choke point."
+          ],
+          "complexity": null,
+          "calls": [
+            { "name": "mintRecordedRenderToken", "source": "local thumbnailRender module", "kind": "internal" },
+            { "name": "getRenderResultKey", "source": "local thumbnailRender module", "kind": "internal" },
+            { "name": "getRenderOrigin", "source": "local thumbnailRender module", "kind": "internal" },
+            { "name": "buildThumbnailRenderUrl", "source": "local thumbnailRender module", "kind": "internal" },
+            { "name": "renderThumbnailScreenshot", "source": "local thumbnailRender module", "kind": "internal" },
+            { "name": "env.THUMBNAILS.get", "source": "Environment.THUMBNAILS bucket", "kind": "external" },
+            { "name": "JSON.parse", "source": "TypeScript/JavaScript runtime", "kind": "external" }
+          ],
+          "symbolReferences": [
+            "Environment",
+            "ResolvedThumbnailBoard",
+            "ThumbnailRenderSurface",
+            "ThumbnailRenderJob",
+            "ShapeMeasurement",
+            "DEFAULT_THUMBNAIL_WIDTH",
+            "DEFAULT_THUMBNAIL_HEIGHT",
+            "THUMBNAIL_RENDER_TOKEN_TTL_MS"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "The stored render result body must be JSON representing Record<string, ShapeMeasurement>; the parsed object is returned unchanged.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Measures every shape on the specified page through a browser-rendering session and returns measurements keyed by shape ID. The render session is driven through the thumbnail pipeline and its measurement result is read from the configured thumbnails bucket.",
+          "specLiterals": [
+            {
+              "kind": "enum-value",
+              "value": "measure",
+              "role": "Identifies the render job and browser session as a shape-measurement operation."
+            },
+            {
+              "kind": "enum-value",
+              "value": "mcp",
+              "role": "Identifies the telemetry source for the measurement browser session."
+            },
+            {
+              "kind": "enum-value",
+              "value": "light",
+              "role": "Specifies the theme used for page layout during measurement."
+            },
+            {
+              "kind": "error-message",
+              "value": "THUMBNAILS bucket is not configured",
+              "role": "Error raised when the required thumbnails bucket is unavailable."
+            },
+            {
+              "kind": "error-message",
+              "value": "The render page did not report any measurements",
+              "role": "Error raised when no measurement result is found for the rendered page."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "measurePageShapes is called",
+              "then": "It throws an Error with message 'THUMBNAILS bucket is not configured' before starting the render.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "measurePageShapes is called",
+              "then": "It returns the parsed measurement record keyed by shape ID.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "measurePageShapes is called",
+              "then": "It throws an Error with message 'The render page did not report any measurements'.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "2a612725dcbdea2e3eaaed576a9b76e3754d94d2da973c83188e338b3f65ebf4"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__putThumbnailPng#function:putThumbnailPng",
+        "unitKind": "function",
+        "name": "putThumbnailPng",
+        "qualifiedName": "putThumbnailPng",
+        "parentUnitId": null,
+        "startLine": 638,
+        "endLine": 650,
+        "isBehavioral": true,
+        "source": "\t\t// The record is keyed by its own token, so concurrent measures of one page cannot invalidate each\n\t\t// other — which also means nothing later overwrites it. The result object is keyed the same way,\n\t\t// and the render page POSTs it *before* signalling ready: a Quick Action that then times out —\n\t\t// chronically a few percent of renders — leaves an object nothing will ever read or overwrite, in\n\t\t// a bucket that deliberately carries no lifecycle rule.\n\t\t//\n\t\t// Best effort on the result key, and not for the sake of a tidy bucket: throwing here would\n\t\t// replace a measure's real answer, or its real error, with a cleanup failure.\n\t\tawait deleteMintedRenderToken(env, job, token)\n\t\ttry {\n\t\t\tawait env.THUMBNAILS.delete(key)\n\t\t} catch {\n\t\t\t// Ignored — see above.",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__putThumbnailPng#function:putThumbnailPng",
+          "fileId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__putThumbnailPng",
+          "unitKind": "function",
+          "name": "putThumbnailPng",
+          "qualifiedName": "putThumbnailPng",
+          "parentUnitId": null,
+          "startLine": 638,
+          "endLine": 650,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The environment, job, token, and result key supplied to the cleanup operations are valid for the current render."
+          ],
+          "postconditions": [
+            "The minted render token cleanup operation is awaited.",
+            "An attempt is made to delete the thumbnail result object from env.THUMBNAILS using the supplied key.",
+            "Errors from deleting the thumbnail result object do not escape this cleanup operation."
+          ],
+          "invariants": [
+            "Failure of thumbnail object deletion does not replace the measure's real answer or real error with a cleanup failure."
+          ],
+          "edgeCases": [
+            "If env.THUMBNAILS.delete(key) rejects, the rejection is ignored and the function completes normally.",
+            "Concurrent measures use their own token-keyed records and result objects, so cleanup targets only the supplied token and key."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": "When deletion of the thumbnail result object fails, the error is swallowed and no error is returned from that cleanup step."
+          },
+          "stateMutations": [
+            "Deletes the minted render token through deleteMintedRenderToken.",
+            "Attempts to delete the thumbnail result object identified by key from env.THUMBNAILS."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "deleteMintedRenderToken", "source": "internal", "kind": "internal" },
+            { "name": "env.THUMBNAILS.delete", "source": "environment thumbnail object store", "kind": "external" }
+          ],
+          "symbolReferences": ["deleteMintedRenderToken", "env.THUMBNAILS"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Performs best-effort cleanup of a minted render token and its thumbnail result object. Cleanup failures for the thumbnail object are suppressed so they cannot replace the measure's original result or error.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The thumbnail cleanup function is awaited.",
+              "then": "The rejection from env.THUMBNAILS.delete is suppressed and the cleanup function does not fail because of it.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "9ae984930377d9ea109fa0a89c7676a6b20c80010afed6514fed2686043cf0c2"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__writeScreenshotTelemetry#function:writeScreenshotTelemetry",
+        "unitKind": "function",
+        "name": "writeScreenshotTelemetry",
+        "qualifiedName": "writeScreenshotTelemetry",
+        "parentUnitId": null,
+        "startLine": 674,
+        "endLine": 742,
+        "isBehavioral": true,
+        "source": "// GET route) and queue (the render consumer). The dataset name covers all three despite its mcp_\n// prefix, and must keep doing so: renaming it would split the dashboard's history.\n//\n// This event answers cache and refusal questions — hit rates by source, who was refused and why,\n// what was rate-limited. What requests *spend* lives on the separate `browser_run_session` event\n// (see writeBrowserRunSessionTelemetry): one request can hold zero, one, or two browser sessions,\n// so durations on request rows could only ever be sums that answer neither ledger cleanly.\n//\n// Carries **no board identity**: no index, no slug, no hash, no derived id. Not an omission — these\n// datapoints answer aggregate cache and failure-rate questions, and the cost of that choice is a\n// dataset that cannot say which board is failing. See \"No board identifier leaves this pipeline\" in\n// browser-run-thumbnails.md.\nexport function writeScreenshotTelemetry(\n\tenv: Environment,\n\tdata: {\n\t\tsource: 'mcp' | 'og' | 'queue'\n\t\t/**\n\t\t * Which trigger asked for this render — what attributes a render to publishing or editing.\n\t\t * Only meaningful on queue datapoints; the request paths have no trigger and record `none`.\n\t\t */\n\t\treason?: OgImageRenderReason\n\t\t/**\n\t\t * Whether this delivery is the follow-up a completed render enqueues when a `published` board —\n\t\t * the only kind that follows up — moved during its capture (see `enqueueFollowUpIfBoardMoved`),\n\t\t * rather than the ask a trigger made. Separates\n\t\t * the two halves of render spend, which `reason` cannot: a follow-up inherits the reason of the\n\t\t * job it follows, so both land in the same bucket. Only meaningful on queue datapoints; the\n\t\t * request paths have no follow-up and record `none`.\n\t\t */\n\t\tfollowUp?: boolean\n\t\t/**\n\t\t * What the PNG cache did for this request. `none` when the request never consulted it: the\n\t\t * info tools have no cache at all, and a screenshot request refused before the cache read\n\t\t * (bad input, rate-limited caller, unresolvable board) says nothing about cache health.\n\t\t * Excluding `none` is what keeps a hit-rate-by-source panel honest.\n\t\t */\n\t\tcacheStatus: 'hit' | 'stale' | 'miss' | 'none'\n\t\t/**\n\t\t * Hashed identity of whoever asked, for surfaces that have one. Recorded only on rate-limited\n\t\t * rows — see below.\n\t\t *\n\t\t * This is a hashed user id on the MCP surface, which now requires authentication; it replaced\n\t\t * a hashed client IP, and holds the same blob position so the dashboard panels reading it did\n\t\t * not have to move. The OG surfaces have no caller at all and leave it unset.\n\t\t */\n\t\tcallerHash?: string\n\t\tfailureReason?: string\n\t\trateLimitAllowed?: boolean\n\t}\n) {\n\tconst rateLimitAllowed = data.rateLimitAllowed ?? true\n\t// Only on rate-limited rows, which is the whole question a per-caller blob answers: who to look at\n\t// when spend spikes or a limit keeps firing.\n\t//\n\t// Deliberately narrower than \"any failure\". Cardinality is about distinct *values*, not row count,\n\t// and the failure set is mostly routine model mistakes — a wrong board id, a stale cluster id, a\n\t// page that moved. Nearly every caller produces one of those eventually, so gating on failure\n\t// would leave the number of distinct callers converging on the number of users, which is the cost\n\t// the gate exists to avoid. Rate limits fire rarely and only for callers worth naming.\n\twriteDataPoint(undefined, env.MEASURE, env, 'mcp_shared_board_screenshot', {\n\t\tblobs: [\n\t\t\t`source:${data.source}`,\n\t\t\t`cache:${data.cacheStatus}`,\n\t\t\t`failure:${data.failureReason ?? 'none'}`,\n\t\t\t`rate_limit:${rateLimitAllowed ? 'allowed' : 'blocked'}`,\n\t\t\t`caller:${!rateLimitAllowed && data.callerHash ? data.callerHash : 'none'}`,\n\t\t\t// Appended rather than slotted in beside `source`, so the existing blob positions (and the\n\t\t\t// dashboard panels reading them) don't shift.\n\t\t\t`reason:${data.reason ?? 'none'}`,",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__writeScreenshotTelemetry#function:writeScreenshotTelemetry",
+          "fileId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts__writeScreenshotTelemetry",
+          "unitKind": "function",
+          "name": "writeScreenshotTelemetry",
+          "qualifiedName": "writeScreenshotTelemetry",
+          "parentUnitId": null,
+          "startLine": 674,
+          "endLine": 742,
+          "signature": "export function writeScreenshotTelemetry(env: Environment, data: { source: 'mcp' | 'og' | 'queue'; reason?: OgImageRenderReason; followUp?: boolean; cacheStatus: 'hit' | 'stale' | 'miss' | 'none'; callerHash?: string; failureReason?: string; rateLimitAllowed?: boolean }): void",
+          "parameters": [
+            { "name": "env", "type": "Environment", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "data",
+              "type": "{ source: 'mcp' | 'og' | 'queue'; reason?: OgImageRenderReason; followUp?: boolean; cacheStatus: 'hit' | 'stale' | 'miss' | 'none'; callerHash?: string; failureReason?: string; rateLimitAllowed?: boolean }",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "void",
+          "decorators": [],
+          "modifiersApplied": ["export"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "data.source is one of 'mcp', 'og', or 'queue'.",
+            "data.cacheStatus is one of 'hit', 'stale', 'miss', or 'none'.",
+            "env.MEASURE is available to the telemetry writer."
+          ],
+          "postconditions": [
+            "One datapoint is submitted to the mcp_shared_board_screenshot dataset.",
+            "The emitted datapoint contains six blobs in the order source, cache, failure, rate_limit, caller, and reason."
+          ],
+          "invariants": [
+            "The dataset name remains mcp_shared_board_screenshot.",
+            "No board identity is included in the emitted telemetry.",
+            "The caller hash is emitted only when rateLimitAllowed is false and callerHash is truthy.",
+            "An omitted rateLimitAllowed value is treated as allowed.",
+            "An omitted failureReason is represented as none.",
+            "An omitted reason is represented as none."
+          ],
+          "edgeCases": [
+            "When rateLimitAllowed is omitted, the rate-limit blob is rate_limit:allowed.",
+            "When rateLimitAllowed is false and callerHash is present, the caller blob contains that hash.",
+            "When rateLimitAllowed is true or callerHash is absent, the caller blob is caller:none.",
+            "When failureReason is absent, the failure blob is failure:none.",
+            "When reason is absent, the reason blob is reason:none."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": ["Submits telemetry to env.MEASURE through writeDataPoint."],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "writeDataPoint", "source": null, "kind": "external" }],
+          "symbolReferences": ["Environment", "OgImageRenderReason"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Telemetry datapoint written to dataset mcp_shared_board_screenshot with blobs ordered as source:${data.source}, cache:${data.cacheStatus}, failure:${data.failureReason ?? 'none'}, rate_limit:${rateLimitAllowed ? 'allowed' : 'blocked'}, caller:${!rateLimitAllowed && data.callerHash ? data.callerHash : 'none'}, reason:${data.reason ?? 'none'}.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Writes one screenshot-render telemetry datapoint to the shared measurement dataset. It records source, cache outcome, failure and rate-limit status, caller identity only for blocked requests, and the optional render reason.",
+          "specLiterals": [
+            { "kind": "enum-value", "value": "mcp", "role": "Allowed telemetry source identifying the MCP surface." },
+            { "kind": "enum-value", "value": "og", "role": "Allowed telemetry source identifying the OG surface." },
+            {
+              "kind": "enum-value",
+              "value": "queue",
+              "role": "Allowed telemetry source identifying the render queue."
+            },
+            { "kind": "enum-value", "value": "hit", "role": "Allowed PNG cache status." },
+            { "kind": "enum-value", "value": "stale", "role": "Allowed PNG cache status." },
+            { "kind": "enum-value", "value": "miss", "role": "Allowed PNG cache status." },
+            {
+              "kind": "enum-value",
+              "value": "none",
+              "role": "Sentinel for absent or inapplicable cache, failure, caller, and reason values."
+            },
+            {
+              "kind": "format-string",
+              "value": "source:${data.source}",
+              "role": "First telemetry blob identifying the render source."
+            },
+            {
+              "kind": "format-string",
+              "value": "cache:${data.cacheStatus}",
+              "role": "Second telemetry blob identifying the cache outcome."
+            },
+            {
+              "kind": "format-string",
+              "value": "failure:${data.failureReason ?? 'none'}",
+              "role": "Third telemetry blob identifying the failure reason or its sentinel."
+            },
+            {
+              "kind": "format-string",
+              "value": "rate_limit:${rateLimitAllowed ? 'allowed' : 'blocked'}",
+              "role": "Fourth telemetry blob identifying rate-limit outcome."
+            },
+            {
+              "kind": "format-string",
+              "value": "caller:${!rateLimitAllowed && data.callerHash ? data.callerHash : 'none'}",
+              "role": "Fifth telemetry blob carrying caller identity only for blocked requests."
+            },
+            {
+              "kind": "format-string",
+              "value": "reason:${data.reason ?? 'none'}",
+              "role": "Sixth telemetry blob identifying the render trigger reason or its sentinel."
+            },
+            {
+              "kind": "string",
+              "value": "mcp_shared_board_screenshot",
+              "role": "Stable telemetry dataset name used by dashboard history."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "writeScreenshotTelemetry is called",
+              "then": "one datapoint is written to mcp_shared_board_screenshot with blobs source:mcp, cache:hit, failure:none, rate_limit:allowed, caller:none, reason:none.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "writeScreenshotTelemetry is called",
+              "then": "the datapoint includes the supplied reason and failure, rate_limit:blocked, and caller:hashed-caller in the prescribed blob order.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "db4e139c42ac248830d026b065514e925c30a3e5adbf6d0b631fbc5ab1071acf"
+        }
+      }
+    ]
+  },
+  "out": [
+    "apps/dotcom/sync-worker/src/config.ts",
+    "apps/dotcom/sync-worker/src/r2.ts",
+    "apps/dotcom/sync-worker/src/routes/tla/boardTools.ts",
+    "apps/dotcom/sync-worker/src/routes/tla/getSharedFile.ts",
+    "apps/dotcom/sync-worker/src/types.ts",
+    "apps/dotcom/sync-worker/src/utils/base64.ts",
+    "apps/dotcom/sync-worker/src/utils/analytics.ts",
+    "apps/dotcom/sync-worker/src/routes/tla/getPublishedFile.ts",
+    "apps/dotcom/sync-worker/src/utils/renderTokens.ts",
+    "apps/dotcom/sync-worker/src/routes/tla/thumbnailShared.ts"
+  ],
+  "in": [
+    "apps/dotcom/sync-worker/src/routes/getSocialPreview.ts",
+    "apps/dotcom/sync-worker/src/routes/tla/getOgImage.ts",
+    "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts",
+    "apps/dotcom/sync-worker/src/routes/tla/sharedBoardScreenshotMcp.ts",
+    "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.test.ts",
+    "apps/dotcom/sync-worker/src/routes/tla/putThumbnailRenderResult.ts"
+  ],
+  "externals": ["@tldraw/dotcom-shared", "@tldraw/sync-core"],
+  "impact": {
+    "seeds": 19,
+    "callers": 13,
+    "impactedFiles": [
+      "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts",
+      "apps/dotcom/sync-worker/src/routes/getSocialPreview.ts",
+      "apps/dotcom/sync-worker/src/routes/tla/getOgImage.ts",
+      "apps/dotcom/sync-worker/src/routes/tla/sharedBoardScreenshotMcp.ts",
+      "apps/dotcom/sync-worker/src/routes/tla/putThumbnailRenderResult.ts"
+    ]
+  }
+}

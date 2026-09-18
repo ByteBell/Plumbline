@@ -1,0 +1,852 @@
+{
+  "schema": 2,
+  "kind": "file",
+  "repoName": "tldraw",
+  "file": {
+    "relativePath": "packages/editor/src/lib/exports/ExportDelay.tsx",
+    "language": "typescript",
+    "sizeBytes": 1824,
+    "tokenCount": 456,
+    "model": "us.openai.gpt-5.6-luna",
+    "analysedAt": "2026-08-24T12:19:45.829Z",
+    "module": {
+      "purpose": "Provides a one-use coordination helper that delays export completion until registered asynchronous work settles or a maximum delay expires.",
+      "summary": "This module defines a helper object for export workflows. Callers register promises during rendering, and resolution waits for all currently registered work plus promises added during subsequent event-loop cycles. Each rejection is logged and treated as settled, while a configured timeout prevents indefinite waiting. After resolution completes, further registrations are rejected.",
+      "businessContext": "Supports reliable editor exports by allowing asynchronous rendering or asset preparation to finish before output generation. Failure can produce incomplete or inconsistent exported documents, while excessive waiting delays the user-facing export.",
+      "classes": ["ExportDelay (~L9-49): Coordinates asynchronous export waits before export completion."],
+      "functions": [
+        "constructor (~L13-13): Stores the maximum delay allowed for export coordination.",
+        "waitUntil (~L15-25): Registers an asynchronous operation required before export resolution.",
+        "resolvePromises (~L27-36): Waits through dynamically expanding batches of registered promises.",
+        "resolve (~L38-48): Races promise completion against the configured export timeout."
+      ],
+      "keywords": [
+        "export delay",
+        "Promise.allSettled",
+        "Promise.race",
+        "event loop",
+        "asynchronous rendering",
+        "promise registration",
+        "export timeout"
+      ],
+      "ontologyConcepts": [
+        "asynchronous coordination",
+        "bounded waiting",
+        "event-loop synchronization",
+        "lifecycle state",
+        "error containment",
+        "promise aggregation"
+      ],
+      "businessEntities": ["Export", "Promise"],
+      "systemCapabilities": [
+        "Coordinate export readiness",
+        "Register asynchronous export work",
+        "Bound export waiting time",
+        "Log asynchronous export failures"
+      ],
+      "configDependencies": [],
+      "importsInternal": [],
+      "importsExternal": [
+        {
+          "spec": "@tldraw/utils",
+          "symbols": ["bind", "sleep"],
+          "package": "@tldraw/utils",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 1 }
+        }
+      ],
+      "sideEffects": {
+        "io": ["Logs rejected registered promises with console.error.", "Logs timeout warnings with console.warn."],
+        "network": [],
+        "env": [],
+        "fs": [],
+        "process": ["Schedules asynchronous delays through imported sleep calls."],
+        "mutationOfArg": []
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "ExportDelay",
+          "shape": "export class ExportDelay",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "ExportDelay.waitUntil",
+          "shape": "waitUntil(promise: Promise<void>): void",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "ExportDelay.resolve",
+          "shape": "async resolve(): Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        { "name": "bind", "shape": "bind", "resolvedRelativePath": null, "resolvedFileId": null },
+        { "name": "sleep", "shape": "sleep", "resolvedRelativePath": null, "resolvedFileId": null }
+      ],
+      "sectionMap": [
+        {
+          "name": "registration guard",
+          "intent": "Rejects registrations after resolution has completed.",
+          "structureKind": "branch",
+          "predicate": "if (this.isResolved)",
+          "branchOutcomes": ["already resolved: throw Error", "not resolved: append promise"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 17, "endLine": 25 }
+        },
+        {
+          "name": "dynamic promise settling",
+          "intent": "Repeats settling and event-loop yielding while registrations continue growing.",
+          "structureKind": "loop",
+          "predicate": "while (this.promisesToWaitFor.length !== lastLength)",
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": "this.promisesToWaitFor.length !== lastLength",
+          "anchor": { "startLine": 28, "endLine": 35 }
+        },
+        {
+          "name": "resolution race",
+          "intent": "Races complete promise processing against the configured maximum delay.",
+          "structureKind": "async",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 38, "endLine": 48 }
+        },
+        {
+          "name": "timeout warning",
+          "intent": "Reports when the timeout wins the resolution race.",
+          "structureKind": "branch",
+          "predicate": "if (result === 'timeout')",
+          "branchOutcomes": ["timeout: warn", "resolved: continue silently"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 43, "endLine": 45 }
+        }
+      ],
+      "representationFamily": "class-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "class",
+          "name": "ExportDelay",
+          "signature": "export class ExportDelay {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 9, "endLine": 9 }
+        },
+        {
+          "kind": "constructor",
+          "name": "constructor",
+          "signature": "constructor(private readonly maxDelayTimeMs: number) {}",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 13, "endLine": 13 }
+        },
+        {
+          "kind": "method",
+          "name": "waitUntil",
+          "signature": "waitUntil(promise: Promise<void>): void {",
+          "generics": null,
+          "decorators": ["@bind"],
+          "returnType": "void",
+          "exported": false,
+          "anchor": { "startLine": 15, "endLine": 16 }
+        },
+        {
+          "kind": "method",
+          "name": "resolvePromises",
+          "signature": "private async resolvePromises() {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 27, "endLine": 27 }
+        },
+        {
+          "kind": "method",
+          "name": "resolve",
+          "signature": "async resolve() {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 38, "endLine": 38 }
+        }
+      ],
+      "typeShapes": [],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "No promises registered before resolve",
+          "handled": true,
+          "behavior": "The initial empty batch settles and resolution completes after an event-loop yield unless the timeout wins.",
+          "anchor": { "startLine": 27, "endLine": 35 }
+        },
+        {
+          "inputShape": "Promise rejects",
+          "handled": true,
+          "behavior": "The rejection is logged and does not reject the aggregate waiting operation.",
+          "anchor": { "startLine": 22, "endLine": 24 }
+        },
+        {
+          "inputShape": "Promise added while resolution is processing",
+          "handled": true,
+          "behavior": "The changed collection length causes another settling cycle.",
+          "anchor": { "startLine": 28, "endLine": 35 }
+        },
+        {
+          "inputShape": "Promise remains unresolved beyond maxDelayTimeMs",
+          "handled": true,
+          "behavior": "The race returns timeout, logs a warning, and marks the helper resolved without cancelling work.",
+          "anchor": { "startLine": 39, "endLine": 47 }
+        },
+        {
+          "inputShape": "waitUntil called after resolution",
+          "handled": true,
+          "behavior": "An Error is thrown and the promise is not registered.",
+          "anchor": { "startLine": 17, "endLine": 21 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": "!=",
+          "left": "this.promisesToWaitFor.length",
+          "right": "lastLength",
+          "inclusive": false,
+          "intent": "Continues processing while the number of registered promises changes.",
+          "anchor": { "startLine": 29, "endLine": 29 }
+        },
+        {
+          "operator": "==",
+          "left": "result",
+          "right": "'timeout'",
+          "inclusive": false,
+          "intent": "Warns only when the timeout branch wins the race.",
+          "anchor": { "startLine": 43, "endLine": 43 }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": "new Error('Cannot `waitUntil` - the export has already been resolved. Make sure to call `waitUntil` as soon as possible during an export - ie within the first react effect after rendering.')",
+          "caught": null,
+          "action": "Rejects late promise registration immediately.",
+          "fallback": null,
+          "anchor": { "startLine": 17, "endLine": 21 }
+        },
+        {
+          "thrown": null,
+          "caught": "err",
+          "action": "Logs the rejected promise error with console.error.",
+          "fallback": "The catch callback resolves with undefined, allowing aggregate settlement to continue.",
+          "anchor": { "startLine": 22, "endLine": 24 }
+        }
+      ],
+      "invariants": [
+        {
+          "kind": "invariant",
+          "description": "Registered promises are retained until their settlement has been observed.",
+          "anchor": { "startLine": 10, "endLine": 11 }
+        },
+        {
+          "kind": "ordering",
+          "description": "New promises added during a settling cycle are included in a later cycle.",
+          "anchor": { "startLine": 28, "endLine": 35 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "isResolved becomes true after the resolution race finishes.",
+          "anchor": { "startLine": 42, "endLine": 47 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Rejected registered promises are converted into fulfilled catch promises after logging.",
+          "anchor": { "startLine": 22, "endLine": 24 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "Callers must register export-related promises promptly and before resolution completes.",
+          "anchor": { "startLine": 17, "endLine": 21 }
+        },
+        {
+          "kind": "caller",
+          "description": "The helper is intended to be used once for a single export lifecycle.",
+          "anchor": { "startLine": 3, "endLine": 8 }
+        },
+        {
+          "kind": "config",
+          "description": "The supplied maxDelayTimeMs is expected to represent a valid delay accepted by sleep.",
+          "anchor": { "startLine": 13, "endLine": 13 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "Should calling resolve more than once be explicitly rejected or coordinated?",
+          "affects": "concurrency_model and lifecycle behaviour",
+          "anchor": { "startLine": 38, "endLine": 48 },
+          "resolution": null
+        },
+        {
+          "question": "Is the timeout warning intended to interpolate maxDelayTimeMs or preserve the current literal text?",
+          "affects": "error_handling and observable logging",
+          "anchor": { "startLine": 44, "endLine": 44 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "async",
+        "reentrant": false,
+        "ordering": "non-deterministic",
+        "notes": "Promise settlement and the timeout race asynchronously; registrations can occur during resolution, and the helper is intended for one use."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "wait-until-registers-promise",
+          "scenario": "A promise is registered before resolution begins.",
+          "given": ["const delay = new ExportDelay(1000)", "const promise = Promise.resolve()"],
+          "when": "delay.waitUntil(promise)",
+          "then": "The promise is awaited before delay.resolve() completes.",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Ensures registered export work is included in the resolution barrier."
+        },
+        {
+          "testId": "wait-until-rejecting-promise-does-not-reject-resolution",
+          "scenario": "A registered promise rejects while the export delay is resolving.",
+          "given": ["const delay = new ExportDelay(1000)", "delay.waitUntil(Promise.reject(new Error('failure')))"],
+          "when": "await delay.resolve()",
+          "then": "delay.resolve() fulfills instead of rejecting.",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins the contract that individual wait failures are handled without aborting export resolution."
+        },
+        {
+          "testId": "wait-until-allows-dynamically-added-promises",
+          "scenario": "A registered promise adds another promise while the resolution cycle is in progress.",
+          "given": [
+            "const delay = new ExportDelay(1000)",
+            "let release: () => void",
+            "const first = new Promise<void>((resolve) => { release = resolve })",
+            "delay.waitUntil(first)"
+          ],
+          "when": "release(); delay.waitUntil(secondPromise); await delay.resolve()",
+          "then": "delay.resolve() fulfills only after secondPromise settles.",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Guards the event-loop cycle that captures promises added during resolution."
+        },
+        {
+          "testId": "wait-until-after-resolution-throws",
+          "scenario": "A promise is registered after the export delay has completed.",
+          "given": ["const delay = new ExportDelay(1000)", "await delay.resolve()"],
+          "when": "delay.waitUntil(Promise.resolve())",
+          "then": "The call throws an Error whose message starts with \"Cannot `waitUntil` - the export has already been resolved.\"",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins the single-use lifecycle and prevents late export work from being silently ignored."
+        },
+        {
+          "testId": "resolve-times-out",
+          "scenario": "A registered promise remains pending beyond the configured maximum delay.",
+          "given": ["const delay = new ExportDelay(1)", "delay.waitUntil(new Promise<void>(() => {}))"],
+          "when": "await delay.resolve()",
+          "then": "resolve() fulfills after the timeout and subsequent waitUntil() calls throw.",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Ensures the maximum delay bounds export completion even when work never settles."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": ["import { bind, sleep } from '@tldraw/utils'", "ExportDelay class declaration"],
+      "moduleLevelCode": "import { bind, sleep } from '@tldraw/utils'",
+      "exports": [{ "name": "ExportDelay", "kind": "own", "fromSpec": null, "exportedAs": null }],
+      "importSymbolMap": [
+        { "symbol": "bind", "module": "@tldraw/utils", "alias": null, "kind": "external" },
+        { "symbol": "sleep", "module": "@tldraw/utils", "alias": null, "kind": "external" }
+      ],
+      "fileConstants": [],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/editor/src/lib/exports/ExportDelay.tsx__ExportDelay#class:ExportDelay",
+        "unitKind": "class",
+        "name": "ExportDelay",
+        "qualifiedName": "ExportDelay",
+        "parentUnitId": null,
+        "startLine": 9,
+        "endLine": 49,
+        "isBehavioral": true,
+        "source": " * `resolve` has been called and finished, new promises cannot be added.\n */\nexport class ExportDelay {\n\tprivate isResolved = false\n\tprivate readonly promisesToWaitFor: Promise<void>[] = []\n\n\tconstructor(private readonly maxDelayTimeMs: number) {}\n\n\t@bind waitUntil(promise: Promise<void>): void {\n\t\tif (this.isResolved) {\n\t\t\tthrow new Error(\n\t\t\t\t'Cannot `waitUntil` - the export has already been resolved. Make sure to call `waitUntil` as soon as possible during an export - ie within the first react effect after rendering.'\n\t\t\t)\n\t\t}\n\t\tthis.promisesToWaitFor.push(\n\t\t\tpromise.catch((err) => console.error('Error while waiting for export:', err))\n\t\t)\n\t}\n\n\tprivate async resolvePromises() {\n\t\tlet lastLength = null\n\t\twhile (this.promisesToWaitFor.length !== lastLength) {\n\t\t\tlastLength = this.promisesToWaitFor.length\n\t\t\tawait Promise.allSettled(this.promisesToWaitFor)\n\n\t\t\t// wait for a cycle of the event loop to allow any of those promises to add more if needed.\n\t\t\tawait sleep(0)\n\t\t}\n\t}\n\n\tasync resolve() {\n\t\tconst timeoutPromise = sleep(this.maxDelayTimeMs).then(() => 'timeout' as const)\n\t\tconst resolvePromise = this.resolvePromises().then(() => 'resolved' as const)\n\n\t\tconst result = await Promise.race([timeoutPromise, resolvePromise])\n\t\tif (result === 'timeout') {\n\t\t\tconsole.warn('[tldraw] Export delay timed out after ${this.maxDelayTimeMs}ms')\n\t\t}\n\n\t\tthis.isResolved = true\n\t}",
+        "detail": {
+          "unitId": "packages/editor/src/lib/exports/ExportDelay.tsx__ExportDelay#class:ExportDelay",
+          "fileId": "packages/editor/src/lib/exports/ExportDelay.tsx__ExportDelay",
+          "unitKind": "class",
+          "name": "ExportDelay",
+          "qualifiedName": "ExportDelay",
+          "parentUnitId": null,
+          "startLine": 9,
+          "endLine": 49,
+          "signature": "export class ExportDelay",
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [
+            {
+              "name": "maxDelayTimeMs",
+              "kind": "property",
+              "type": "number",
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "isResolved",
+              "kind": "property",
+              "type": "boolean",
+              "default": "false",
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "promisesToWaitFor",
+              "kind": "property",
+              "type": "Promise<void>[]",
+              "default": "[]",
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "waitUntil",
+              "kind": "method",
+              "type": "(promise: Promise<void>) => void",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "resolvePromises",
+              "kind": "method",
+              "type": "() => Promise<void>",
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "resolve",
+              "kind": "method",
+              "type": "() => Promise<void>",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            }
+          ],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "ExportDelay coordinates asynchronous export-related work and completes once tracked promises settle or the configured maximum delay is reached. It prevents additional promises from being registered after resolution.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "734c75a443bc54c831cf73965471e8f4734032282f19305d0828c12ca2777918"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/exports/ExportDelay.tsx__ExportDelay.waitUntil#method:ExportDelay.waitUntil",
+        "unitKind": "method",
+        "name": "waitUntil",
+        "qualifiedName": "ExportDelay.waitUntil",
+        "parentUnitId": "packages/editor/src/lib/exports/ExportDelay.tsx__ExportDelay#class:ExportDelay",
+        "startLine": 15,
+        "endLine": 25,
+        "isBehavioral": true,
+        "source": "\tconstructor(private readonly maxDelayTimeMs: number) {}\n\n\t@bind waitUntil(promise: Promise<void>): void {\n\t\tif (this.isResolved) {\n\t\t\tthrow new Error(\n\t\t\t\t'Cannot `waitUntil` - the export has already been resolved. Make sure to call `waitUntil` as soon as possible during an export - ie within the first react effect after rendering.'\n\t\t\t)\n\t\t}\n\t\tthis.promisesToWaitFor.push(\n\t\t\tpromise.catch((err) => console.error('Error while waiting for export:', err))\n\t\t)",
+        "detail": {
+          "unitId": "packages/editor/src/lib/exports/ExportDelay.tsx__ExportDelay.waitUntil#method:ExportDelay.waitUntil",
+          "fileId": "packages/editor/src/lib/exports/ExportDelay.tsx__ExportDelay.waitUntil",
+          "unitKind": "method",
+          "name": "waitUntil",
+          "qualifiedName": "ExportDelay.waitUntil",
+          "parentUnitId": "packages/editor/src/lib/exports/ExportDelay.tsx__ExportDelay#class:ExportDelay",
+          "startLine": 15,
+          "endLine": 25,
+          "signature": "@bind waitUntil(promise: Promise<void>): void",
+          "parameters": [
+            {
+              "name": "promise",
+              "type": "Promise<void>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "void",
+          "decorators": [],
+          "modifiersApplied": ["@bind"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The export must not already be resolved.",
+            "The promise argument must be a promise-like value supporting catch()."
+          ],
+          "postconditions": [
+            "When unresolved, the promise returned by promise.catch(...) is appended to promisesToWaitFor.",
+            "A rejection from the supplied promise is converted into a fulfilled promise after being logged."
+          ],
+          "invariants": [
+            "Once isResolved is true, no additional promise is appended.",
+            "Registered promise rejections are handled by logging rather than being propagated through the promise stored for resolution."
+          ],
+          "edgeCases": [
+            "If isResolved is true, the method throws synchronously and does not register the promise.",
+            "If the supplied promise rejects, console.error is called with the fixed prefix and rejection value, and the rejection is swallowed by the catch handler.",
+            "If the supplied promise fulfills, it is registered without error logging."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["Error"],
+            "reverts": [],
+            "onInvalidInput": "Throws when called after the export has already been resolved.",
+            "returnsOnError": null
+          },
+          "stateMutations": [
+            "Appends the promise returned by promise.catch(...) to this.promisesToWaitFor when this.isResolved is false."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "promise.catch", "source": "promise parameter", "kind": "external" },
+            { "name": "console.error", "source": "global console", "kind": "external" }
+          ],
+          "symbolReferences": ["Promise<void>", "Error", "console"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Registers a promise whose completion delays export resolution. It rejects registration after the export has already been resolved and logs any waiting-promise error without propagating it.",
+          "specLiterals": [
+            {
+              "kind": "error-message",
+              "value": "Cannot `waitUntil` - the export has already been resolved. Make sure to call `waitUntil` as soon as possible during an export - ie within the first react effect after rendering.",
+              "role": "Synchronous error message raised when registration occurs after export resolution."
+            },
+            {
+              "kind": "format-string",
+              "value": "Error while waiting for export:",
+              "role": "Prefix used when logging a rejection from a registered promise."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "waitUntil(promise) is called.",
+              "then": "The method returns normally and registers a handled promise for the supplied promise.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "waitUntil(promise) is called.",
+              "then": "The method throws an Error with message \"Cannot `waitUntil` - the export has already been resolved. Make sure to call `waitUntil` as soon as possible during an export - ie within the first react effect after rendering.\" and does not register the promise.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "waitUntil(promise) is called and the promise rejection is processed.",
+              "then": "console.error is called with \"Error while waiting for export:\" and err, and the handled promise does not remain rejected.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "ac2fabd9fbd9bb9fbefa4ad609f19729ee90277bbee1aae4837fe29998ef8c45"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/exports/ExportDelay.tsx__ExportDelay.resolvePromises#method:ExportDelay.resolvePromises",
+        "unitKind": "method",
+        "name": "resolvePromises",
+        "qualifiedName": "ExportDelay.resolvePromises",
+        "parentUnitId": "packages/editor/src/lib/exports/ExportDelay.tsx__ExportDelay#class:ExportDelay",
+        "startLine": 27,
+        "endLine": 36,
+        "isBehavioral": true,
+        "source": "\n\tprivate async resolvePromises() {\n\t\tlet lastLength = null\n\t\twhile (this.promisesToWaitFor.length !== lastLength) {\n\t\t\tlastLength = this.promisesToWaitFor.length\n\t\t\tawait Promise.allSettled(this.promisesToWaitFor)\n\n\t\t\t// wait for a cycle of the event loop to allow any of those promises to add more if needed.\n\t\t\tawait sleep(0)\n\t\t}",
+        "detail": {
+          "unitId": "packages/editor/src/lib/exports/ExportDelay.tsx__ExportDelay.resolvePromises#method:ExportDelay.resolvePromises",
+          "fileId": "packages/editor/src/lib/exports/ExportDelay.tsx__ExportDelay.resolvePromises",
+          "unitKind": "method",
+          "name": "resolvePromises",
+          "qualifiedName": "ExportDelay.resolvePromises",
+          "parentUnitId": "packages/editor/src/lib/exports/ExportDelay.tsx__ExportDelay#class:ExportDelay",
+          "startLine": 27,
+          "endLine": 36,
+          "signature": "private async resolvePromises()",
+          "parameters": [],
+          "returnType": "Promise<void>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "private",
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "this.promisesToWaitFor is accessible and has a length property.",
+            "The sleep dependency is callable with a zero-millisecond delay."
+          ],
+          "postconditions": [
+            "All promises present in this.promisesToWaitFor during the final settlement pass have settled.",
+            "The method resolves only after the tracked promise-list length remains unchanged across a settlement pass and a subsequent event-loop cycle.",
+            "Rejections from tracked promises do not cause this method itself to reject."
+          ],
+          "invariants": [
+            "Promise settlement is performed with Promise.allSettled rather than fail-fast aggregation.",
+            "The method rechecks the tracked promise-list length after yielding to the event loop."
+          ],
+          "edgeCases": [
+            "When the tracked promise list is initially empty, one all-settled pass and one zero-delay event-loop yield occur before the method resolves.",
+            "If tracked promises add more promises while settling or during the event-loop yield, the newly increased length causes another settlement cycle.",
+            "If a tracked promise rejects, its rejection is observed by allSettled and processing continues.",
+            "If promises continue adding entries on every cycle, the method continues waiting until the length stabilizes."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "Promise.allSettled", "source": "global Promise API", "kind": "external" },
+            { "name": "sleep", "source": "imported sleep dependency", "kind": "external" }
+          ],
+          "symbolReferences": ["Promise", "sleep", "this.promisesToWaitFor"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Waits for all currently tracked promises to settle and continues until a complete event-loop cycle produces no newly tracked promises.",
+          "specLiterals": [
+            {
+              "kind": "magic-number",
+              "value": "0",
+              "role": "Requests a zero-delay sleep to yield for one event-loop cycle before checking for newly added promises."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "resolvePromises is invoked.",
+              "then": "The method waits for that promise to settle and resolves without propagating the promise rejection.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "resolvePromises is invoked.",
+              "then": "The method performs a subsequent settlement cycle that includes the newly added promise before resolving.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "7859868a79de0ba631d0622a42584a0237133d084dd6d13cc00c851e0450b99a"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/exports/ExportDelay.tsx__ExportDelay.resolve#method:ExportDelay.resolve",
+        "unitKind": "method",
+        "name": "resolve",
+        "qualifiedName": "ExportDelay.resolve",
+        "parentUnitId": "packages/editor/src/lib/exports/ExportDelay.tsx__ExportDelay#class:ExportDelay",
+        "startLine": 38,
+        "endLine": 48,
+        "isBehavioral": true,
+        "source": "\n\tasync resolve() {\n\t\tconst timeoutPromise = sleep(this.maxDelayTimeMs).then(() => 'timeout' as const)\n\t\tconst resolvePromise = this.resolvePromises().then(() => 'resolved' as const)\n\n\t\tconst result = await Promise.race([timeoutPromise, resolvePromise])\n\t\tif (result === 'timeout') {\n\t\t\tconsole.warn('[tldraw] Export delay timed out after ${this.maxDelayTimeMs}ms')\n\t\t}\n\n\t\tthis.isResolved = true",
+        "detail": {
+          "unitId": "packages/editor/src/lib/exports/ExportDelay.tsx__ExportDelay.resolve#method:ExportDelay.resolve",
+          "fileId": "packages/editor/src/lib/exports/ExportDelay.tsx__ExportDelay.resolve",
+          "unitKind": "method",
+          "name": "resolve",
+          "qualifiedName": "ExportDelay.resolve",
+          "parentUnitId": "packages/editor/src/lib/exports/ExportDelay.tsx__ExportDelay#class:ExportDelay",
+          "startLine": 38,
+          "endLine": 48,
+          "signature": "async resolve()",
+          "parameters": [],
+          "returnType": "Promise<void>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The instance has a configured maxDelayTimeMs value.",
+            "The instance can invoke resolvePromises()."
+          ],
+          "postconditions": [
+            "When the race settles successfully, isResolved is set to true.",
+            "If the timeout settles first, console.warn is called with the timeout warning literal."
+          ],
+          "invariants": [
+            "Completion is determined by the first settlement of the timeout promise and resolvePromises().",
+            "The method does not set isResolved until the Promise.race has settled."
+          ],
+          "edgeCases": [
+            "If resolvePromises() settles before the timeout, the method completes without issuing the timeout warning.",
+            "If the timeout settles first, the method issues the timeout warning and then marks the instance resolved.",
+            "If the raced promise rejects, the rejection propagates and the subsequent isResolved assignment is not performed."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["Propagates rejection from the raced promise."],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": null
+          },
+          "stateMutations": ["Sets this.isResolved to true after successful Promise.race completion."],
+          "eventsEmitted": ["Writes a timeout warning through console.warn when the timeout wins."],
+          "complexity": null,
+          "calls": [
+            { "name": "sleep", "source": null, "kind": "external" },
+            { "name": "resolvePromises", "source": "ExportDelay", "kind": "internal" },
+            { "name": "console.warn", "source": null, "kind": "external" }
+          ],
+          "symbolReferences": ["Promise.race", "console.warn"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Waits for either the configured maximum delay or the pending resolution work to complete. It marks the export delay as resolved after the race completes and warns when the timeout wins.",
+          "specLiterals": [
+            {
+              "kind": "format-string",
+              "value": "[tldraw] Export delay timed out after ${this.maxDelayTimeMs}ms",
+              "role": "Exact warning text emitted when the timeout promise wins."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "resolve() is awaited",
+              "then": "The method completes without calling console.warn and sets isResolved to true.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "resolve() is awaited",
+              "then": "console.warn is called with the exact timeout warning literal and isResolved is set to true.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "resolve() is awaited",
+              "then": "The rejection propagates and isResolved is not set to true by this method.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "8646fa526a9ef0940242c75b2b0609fb040d350b85afa5710c7fcec802f16208"
+        }
+      }
+    ]
+  },
+  "out": [],
+  "in": ["packages/editor/src/lib/exports/getSvgJsx.tsx"],
+  "externals": ["@tldraw/utils"],
+  "impact": { "seeds": 4, "callers": 1, "impactedFiles": ["packages/editor/src/lib/exports/getSvgJsx.tsx"] }
+}

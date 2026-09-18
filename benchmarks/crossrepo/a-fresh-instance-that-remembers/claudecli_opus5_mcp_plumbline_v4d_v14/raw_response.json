@@ -1,0 +1,84 @@
+{
+  "duration_api_ms": 780793,
+  "stop_reason": "end_turn",
+  "session_id": "ef3c3fa9-0dfa-4434-8192-b4da502b9504",
+  "total_cost_usd": 6.040004999999999,
+  "usage": {
+    "input_tokens": 52,
+    "cache_creation_input_tokens": 255452,
+    "cache_read_input_tokens": 4099292,
+    "output_tokens": 57148,
+    "output_tokens_details": { "thinking_tokens": 39427 },
+    "server_tool_use": { "web_search_requests": 0, "web_fetch_requests": 0 },
+    "service_tier": "standard",
+    "cache_creation": { "ephemeral_1h_input_tokens": 255452, "ephemeral_5m_input_tokens": 0 },
+    "inference_geo": "not_available",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 8696,
+        "cache_read_input_tokens": 282467,
+        "cache_creation_input_tokens": 2200,
+        "cache_creation": { "ephemeral_5m_input_tokens": 0, "ephemeral_1h_input_tokens": 2200 },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 6799,
+      "outputTokens": 16,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.0068790000000000006,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "claude-haiku-4-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    },
+    "claude-opus-5": {
+      "inputTokens": 52,
+      "outputTokens": 57148,
+      "cacheReadInputTokens": 4099292,
+      "cacheCreationInputTokens": 255452,
+      "webSearchRequests": 0,
+      "costUSD": 6.033125999999999,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "canonicalModel": "claude-opus-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": { "background": 0, "foreground": 0, "unset": 0 },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": { "parent": 0, "user": 0, "system": 0 },
+    "refused": { "depth_limit": 0, "concurrency_limit": 0, "budget": 0 },
+    "by_type": {}
+  },
+  "is_error": false,
+  "num_turns": 52,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## LEDGER\n\n**(a) Obligations**\n\n- **OB-1 — re-initialises by enumeration (VIOLATOR)** — **CLOSED**, closers:\n  - `xyflow: packages/svelte/src/lib/store/initial-store.svelte.ts` — `resetStoreValues()` (465–478, read verbatim) assigns twelve hand-listed fields (`dragging`, `selectionRect`, `selectionRectMode`, four key-pressed flags, `_connection`, `clickConnectStartHandle`, `viewport`, `ariaLiveMessage`) out of a `SvelteFlowStore` class that also holds the per-item defaults (`nodeTypes`/`edgeTypes`/`defaultEdgeOptions`), the host callbacks, and the derived lookups — none of which are mentioned, so they survive the reset.\n  - `xyflow: packages/svelte/src/lib/store/index.ts` — exposes that reset as the store's `reset` action (395–420, read verbatim).\n  - `redux-devtools: packages/redux-devtools-instrument/src/instrument.ts` — `initialLiftedState` (422–431) is a complete description of a fresh lifted store *including* `monitorState`, `isLocked`, `isPaused` (the latter two derived from the passed-in `options`); `case ActionTypes.RESET` (615–625, comment: \"Get back to the state the store was created with\") re-assigns only seven of those ten fields, so the three added later survive the reset.\n- **OB-2 — every constituent reducer must answer the init probe (OWNER)** — **CLOSED**, closer: `redux: src/combineReducers.ts` (evidence: \"throws Error describing missing initial state\", \"throws Error about handling private actions\"), grounded by `redux: src/utils/actionTypes.ts` (`INIT` / `PROBE_UNKNOWN_ACTION`).\n- **OB-3 — explicit reset-to-initial protocol for state slots (OWNER)** — **CLOSED**, closers: `jotai: src/vanilla/utils/atomWithReset.ts` (score 28, \"Resets atom to initialValue\" via the `RESET` sentinel), `jotai: src/react/utils/useResetAtom.ts`, `jotai: src/vanilla/utils/atomWithDefault.ts`; second closer `table: packages/table-core/src/core/table.ts` (`reset: () => table.setState(table.initialState)`, read verbatim 356–358).\n- **OB-4 — default state in one description the constructor consumes (OWNER)** — **CLOSED**, closers: `xyflow: packages/react/src/store/initialState.ts` with `xyflow: packages/react/src/store/index.ts` (verbatim: `...getInitialState({…})` at :84 in the constructor and `reset: () => set({ ...getInitialState() })` at :450 — the in-repo counterexample that makes the svelte sibling's omission legible); `table: packages/table-core/src/core/table.ts` (initial state folded from every feature's `getInitialState`, 312–322); `redux-toolkit: packages/toolkit/src/entities/entity_state.ts`.\n\n**(b) Sweep matrix** (repositories actually swept with that obligation's phrase)\n\n| OB | swept | planned | shortfall |\n|---|---|---|---|\n| OB-1 | xyflow, table, tldraw, query, db, zustand, router, redux-devtools, jotai, primitives (+tldraw 2nd register) | 10 | none — 3.5 holds |\n| OB-2 | redux, redux-toolkit | 6 | **4 missing** (redux-devtools, zustand, jotai, db) — 3.5 did **not** hold; the tool capped `stakeout` mid-sweep |\n| OB-3 | jotai, table | 7 | **5 missing** (zustand, redux-toolkit, tldraw, xyflow, primitives) — 3.5 did **not** hold |\n| OB-4 | zustand, redux-toolkit (xyflow/table settled by reads instead) | 8 | **6 missing** (query, router, db, tldraw, zod, react-redux) — 3.5 did **not** hold |\n\nStated plainly: OB-2/3/4 are closed on evidence I read verbatim, but their sweeps are incomplete; repositories not swept are not evidence of absence, so their files stay ranked as candidates rather than being dropped.\n\n[{\"repo\":\"xyflow\",\"files\":[\"packages/svelte/src/lib/store/initial-store.svelte.ts\",\"packages/svelte/src/lib/store/index.ts\",\"packages/react/src/store/initialState.ts\",\"packages/react/src/store/index.ts\",\"packages/svelte/src/lib/store/types.ts\",\"packages/react/src/types/store.ts\",\"packages/svelte/src/lib/container/SvelteFlow/SvelteFlow.svelte\",\"packages/svelte/src/lib/components/SvelteFlowProvider/SvelteFlowProvider.svelte\",\"packages/react/src/components/StoreUpdater/index.tsx\",\"packages/react/src/components/ReactFlowProvider/index.tsx\",\"packages/react/src/container/ReactFlow/Wrapper.tsx\",\"packages/svelte/src/lib/hooks/useStore.ts\",\"packages/react/src/hooks/useStore.ts\",\"packages/system/src/utils/store.ts\",\"packages/react/src/contexts/StoreContext.ts\"],\"pinpoints\":[{\"path\":\"packages/svelte/src/lib/store/initial-store.svelte.ts\",\"symbol\":\"getInitialStore.SvelteFlowStore.resetStoreValues\",\"lines\":\"465-478\",\"change\":\"Replace the hand-listed field assignments with a reset derived from the single fresh-store description (re-run the initialiser / a shared defaults record) so newly added fields cannot be silently skipped.\"},{\"path\":\"packages/svelte/src/lib/store/index.ts\",\"symbol\":\"createStore.reset\",\"lines\":\"395-420\",\"change\":\"Make the exposed reset action restore the whole fresh-store description rather than delegating to an enumerated subset.\"},{\"path\":\"packages/react/src/store/initialState.ts\",\"symbol\":\"getInitialState\",\"lines\":\"20-154\",\"change\":\"Owner: keep this as the one description of a fresh store; export it as the shape both creation and every reset path must be expressed in terms of.\"},{\"path\":\"packages/react/src/store/index.ts\",\"symbol\":\"createStore\",\"lines\":\"84-450\",\"change\":\"Reference implementation of the contract (constructor spreads getInitialState, reset re-spreads it); pass the creation config through to reset so it restores the configured state, not library defaults.\"}]},\n{\"repo\":\"redux-devtools\",\"files\":[\"packages/redux-devtools-instrument/src/instrument.ts\",\"extension/src/pageScript/index.ts\",\"packages/redux-devtools-remote/src/devTools.ts\",\"packages/redux-devtools/src/createDevTools.tsx\",\"packages/redux-devtools-app-core/src/utils/updateState.ts\",\"extension/src/pageScript/api/importState.ts\",\"extension/src/pageScript/Monitor.ts\",\"packages/redux-devtools/src/persistState.ts\",\"packages/redux-devtools-app-core/src/reducers/instances.ts\",\"packages/redux-devtools-inspector-monitor/src/redux.ts\",\"extension/src/pageScript/enhancerStore.ts\",\"packages/redux-devtools/src/index.ts\",\"extension/src/pageScript/api/index.ts\",\"packages/redux-devtools-app-core/src/components/TopButtons.tsx\",\"packages/redux-devtools-remote/src/configureStore.ts\"],\"pinpoints\":[{\"path\":\"packages/redux-devtools-instrument/src/instrument.ts\",\"symbol\":\"liftReducerWith (case ActionTypes.RESET)\",\"lines\":\"615-625\",\"change\":\"Restore the lifted state from initialLiftedState instead of re-assigning seven fields by hand; monitorState, isLocked and isPaused are currently carried over from the previous configuration.\"},{\"path\":\"packages/redux-devtools-instrument/src/instrument.ts\",\"symbol\":\"initialLiftedState\",\"lines\":\"422-431\",\"change\":\"Make this the single fresh-instance description both the initial destructure and every reset/hot-reload branch derive from.\"}]},\n{\"repo\":\"redux\",\"files\":[\"src/combineReducers.ts\",\"src/utils/actionTypes.ts\",\"src/createStore.ts\",\"src/types/reducers.ts\",\"src/index.ts\"],\"pinpoints\":[{\"path\":\"src/combineReducers.ts\",\"symbol\":\"assertReducerShape\",\"lines\":\"\",\"change\":\"Owner of the initialisation-probe contract: every constituent reducer must answer with its own starting value or assembly throws — the standard the enumerating resets must be brought in line with.\"},{\"path\":\"src/utils/actionTypes.ts\",\"symbol\":\"ActionTypes\",\"lines\":\"\",\"change\":\"Evidence: defines the INIT / PROBE_UNKNOWN_ACTION probes that make the contract enforceable.\"}]},\n{\"repo\":\"jotai\",\"files\":[\"src/vanilla/utils/atomWithReset.ts\",\"src/react/utils/useResetAtom.ts\",\"src/vanilla/utils/atomWithDefault.ts\",\"src/vanilla/utils.ts\",\"src/vanilla/store.ts\",\"src/vanilla/internals.ts\"],\"pinpoints\":[{\"path\":\"src/vanilla/utils/atomWithReset.ts\",\"symbol\":\"atomWithReset\",\"lines\":\"\",\"change\":\"Owner of the explicit reset-to-initial protocol: a state slot restores its own initial value via the RESET sentinel, so no caller enumerates fields.\"},{\"path\":\"src/react/utils/useResetAtom.ts\",\"symbol\":\"useResetAtom\",\"lines\":\"\",\"change\":\"Evidence: the caller-facing half of the reset protocol.\"}]},\n{\"repo\":\"table\",\"files\":[\"packages/table-core/src/core/table.ts\",\"packages/table-core/src/features/ColumnSizing.ts\",\"packages/table-core/src/features/ColumnPinning.ts\",\"packages/table-core/src/features/ColumnOrdering.ts\",\"packages/table-core/src/features/ColumnVisibility.ts\",\"packages/table-core/src/features/RowExpanding.ts\",\"packages/table-core/src/features/RowPagination.ts\",\"packages/table-core/src/features/RowPinning.ts\",\"packages/table-core/src/features/RowSelection.ts\",\"packages/table-core/src/features/RowSorting.ts\",\"packages/table-core/src/features/ColumnGrouping.ts\",\"packages/table-core/src/features/GlobalFiltering.ts\",\"packages/table-core/src/types.ts\"],\"pinpoints\":[{\"path\":\"packages/table-core/src/core/table.ts\",\"symbol\":\"createTable\",\"lines\":\"312-358\",\"change\":\"Owner: initialState is folded from every feature's getInitialState and reset() re-applies that same description — the derive-don't-enumerate pattern the violators must adopt.\"}]},\n{\"repo\":\"redux-toolkit\",\"files\":[\"packages/toolkit/src/entities/entity_state.ts\",\"packages/toolkit/src/combineSlices.ts\",\"packages/toolkit/src/createSlice.ts\",\"packages/toolkit/src/configureStore.ts\"],\"pinpoints\":[{\"path\":\"packages/toolkit/src/entities/entity_state.ts\",\"symbol\":\"createInitialStateFactory/getInitialState\",\"lines\":\"21-35\",\"change\":\"Owner-side evidence: one factory describes a fresh instance and the constructor consumes it.\"}]},\n{\"repo\":\"zustand\",\"files\":[\"src/vanilla.ts\",\"src/middleware/combine.ts\",\"src/middleware/persist.ts\"],\"pinpoints\":[{\"path\":\"src/vanilla.ts\",\"symbol\":\"createStoreImpl.getInitialState\",\"lines\":\"85-86\",\"change\":\"Candidate owner: the captured initial state a reset could be expressed in terms of.\"}]},\n{\"repo\":\"query\",\"files\":[\"packages/query-core/src/queryClient.ts\",\"packages/query-core/src/queryCache.ts\"]},\n{\"repo\":\"db\",\"files\":[\"packages/db/src/collection/lifecycle.ts\",\"packages/db/src/collection/state.ts\",\"packages/db/src/collection/index.ts\"]},\n{\"repo\":\"tldraw\",\"files\":[\"packages/editor/src/lib/config/createTLStore.ts\",\"packages/store/src/lib/Store.ts\"]}]",
+  "ttft_ms": 2933,
+  "type": "result",
+  "duration_ms": 1529096,
+  "uuid": "9370de66-6097-401c-851b-eed55ae8ddbc",
+  "ttft_stream_ms": 2427,
+  "time_to_request_ms": 14,
+  "queued_turn_count": 0
+}

@@ -1,0 +1,905 @@
+{
+  "relativePath": "packages/features/auth/lib/verifyEmail.ts",
+  "language": "typescript",
+  "sha256": "d89dc032b77ac256ddca9ea370e93d9d031c9d086126653a0d6e7272cbf6b27d",
+  "sizeBytes": 4960,
+  "tokenCount": 1240,
+  "lineCount": 173,
+  "analysedAt": "2026-09-04T15:44:51.193Z",
+  "analysis": {
+    "module": {
+      "purpose": "Provides authentication email verification workflows, including feature gating, watchlist blocking, rate limiting, token persistence, time-based code generation, localization, and delivery of verification messages.",
+      "summary": "This module supports verification of primary, secondary, and changed email addresses. It generates expiring database-backed tokens for link verification, derives time-based verification codes for code-based verification, applies feature and abuse-prevention checks, and delegates localized email delivery to the email manager. Platform-specific requests can bypass link delivery, while blocked addresses are refused.",
+      "businessContext": "Supports account security and email ownership confirmation in the authentication system.\nFailures can prevent sign-up, email changes, or secondary-address verification, while bypassing controls could enable abuse.",
+      "classes": [
+        "VerifyEmailType (~L20-27): Defines optional context and required address data for verification workflows",
+        "ChangeOfEmail (~L119-126): Represents source, destination, username, and locale for email-change verification"
+      ],
+      "functions": [
+        "sendEmailVerification (~L29-85): Creates expiring tokens and sends localized email verification links",
+        "sendEmailVerificationByCode (~L87-117): Generates time-based codes and sends localized verification code emails",
+        "sendChangeOfEmailVerification (~L128-172): Creates tokens and sends links confirming requested email changes"
+      ],
+      "keywords": [
+        "email verification",
+        "verificationToken",
+        "TOTP",
+        "watchlist blocking",
+        "rate limiting",
+        "secondary email",
+        "email change verification",
+        "feature flag",
+        "localized email delivery",
+        "expiring token"
+      ],
+      "ontologyConcepts": [
+        "Identity verification",
+        "Access control",
+        "Rate limiting",
+        "Feature gating",
+        "Token-based authentication",
+        "Time-based one-time password",
+        "Email ownership",
+        "Abuse prevention"
+      ],
+      "businessEntities": [
+        "User",
+        "Email address",
+        "Secondary email",
+        "Verification token",
+        "Verification code",
+        "Email change request"
+      ],
+      "systemCapabilities": [
+        "Send email ownership verification links",
+        "Send time-based verification codes",
+        "Verify secondary email addresses",
+        "Confirm requested email changes",
+        "Block watchlisted email addresses",
+        "Enforce verification request rate limits"
+      ],
+      "configDependencies": ["CALENDSO_ENCRYPTION_KEY", "WEBAPP_URL", "email-verification"],
+      "importsInternal": [
+        {
+          "spec": "@calcom/emails/email-manager",
+          "symbols": ["sendEmailVerificationCode", "sendEmailVerificationLink", "sendChangeOfEmailVerificationLink"],
+          "anchor": {
+            "startLine": 4,
+            "endLine": 7
+          },
+          "resolvedRelativePath": "packages/emails/email-manager.ts",
+          "resolvedFileId": "packages/emails/email-manager.ts",
+          "resolvedHint": "packages/emails/email-manager.ts"
+        },
+        {
+          "spec": "@calcom/features/flags/features.repository",
+          "symbols": ["FeaturesRepository"],
+          "anchor": {
+            "startLine": 8,
+            "endLine": 8
+          },
+          "resolvedRelativePath": "packages/features/flags/features.repository.ts",
+          "resolvedFileId": "packages/features/flags/features.repository.ts",
+          "resolvedHint": "packages/features/flags/features.repository.ts"
+        },
+        {
+          "spec": "@calcom/features/watchlist/operations/check-if-email-in-watchlist.controller",
+          "symbols": ["checkIfEmailIsBlockedInWatchlistController"],
+          "anchor": {
+            "startLine": 9,
+            "endLine": 9
+          },
+          "resolvedRelativePath": "packages/features/watchlist/operations/check-if-email-in-watchlist.controller.ts",
+          "resolvedFileId": "packages/features/watchlist/operations/check-if-email-in-watchlist.controller.ts",
+          "resolvedHint": "packages/features/watchlist/operations/check-if-email-in-watchlist.controller.ts"
+        },
+        {
+          "spec": "@calcom/lib/checkRateLimitAndThrowError",
+          "symbols": ["checkRateLimitAndThrowError"],
+          "anchor": {
+            "startLine": 10,
+            "endLine": 10
+          },
+          "resolvedRelativePath": "packages/lib/checkRateLimitAndThrowError.ts",
+          "resolvedFileId": "packages/lib/checkRateLimitAndThrowError.ts",
+          "resolvedHint": "packages/lib/checkRateLimitAndThrowError.ts"
+        },
+        {
+          "spec": "@calcom/lib/constants",
+          "symbols": ["WEBAPP_URL"],
+          "anchor": {
+            "startLine": 11,
+            "endLine": 11
+          },
+          "resolvedRelativePath": "packages/lib/constants.ts",
+          "resolvedFileId": "packages/lib/constants.ts",
+          "resolvedHint": "packages/lib/constants.ts"
+        },
+        {
+          "spec": "@calcom/lib/logger",
+          "symbols": ["logger"],
+          "anchor": {
+            "startLine": 12,
+            "endLine": 12
+          },
+          "resolvedRelativePath": "packages/lib/logger.ts",
+          "resolvedFileId": "packages/lib/logger.ts",
+          "resolvedHint": "packages/lib/logger.ts"
+        },
+        {
+          "spec": "@calcom/lib/server/i18n",
+          "symbols": ["getTranslation"],
+          "anchor": {
+            "startLine": 13,
+            "endLine": 13
+          },
+          "resolvedRelativePath": "packages/lib/server/i18n.ts",
+          "resolvedFileId": "packages/lib/server/i18n.ts",
+          "resolvedHint": "packages/lib/server/i18n.ts"
+        },
+        {
+          "spec": "@calcom/prisma",
+          "symbols": ["prisma"],
+          "anchor": {
+            "startLine": 14,
+            "endLine": 14
+          },
+          "resolvedRelativePath": "packages/prisma/index.ts",
+          "resolvedFileId": "packages/prisma/index.ts",
+          "resolvedHint": "packages/prisma/index.ts"
+        },
+        {
+          "spec": "@calcom/lib/server/PiiHasher",
+          "symbols": ["hashEmail"],
+          "anchor": {
+            "startLine": 15,
+            "endLine": 15
+          },
+          "resolvedRelativePath": "packages/lib/server/PiiHasher.ts",
+          "resolvedFileId": "packages/lib/server/PiiHasher.ts",
+          "resolvedHint": "packages/lib/server/PiiHasher.ts"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "crypto",
+          "symbols": ["randomBytes", "createHash"],
+          "package": "crypto",
+          "subpath": null,
+          "isBuiltin": true,
+          "anchor": {
+            "startLine": 1,
+            "endLine": 1
+          }
+        },
+        {
+          "spec": "otplib",
+          "symbols": ["totp"],
+          "package": "otplib",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 2,
+            "endLine": 2
+          }
+        }
+      ],
+      "sideEffects": {
+        "io": [
+          "Logs warnings when email verification is disabled or the email is blocked.",
+          "Reads translations and feature flags.",
+          "Checks the email watchlist and rate limit.",
+          "Creates verificationToken records in the database.",
+          "Sends email verification links or codes."
+        ],
+        "network": [],
+        "env": ["Reads process.env.CALENDSO_ENCRYPTION_KEY when generating an email verification code."],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": []
+      },
+      "integrationSurface": [
+        {
+          "kind": "table",
+          "role": "consumes",
+          "address": "verificationToken",
+          "payloadRef": null,
+          "rawKind": null
+        },
+        {
+          "kind": "http",
+          "role": "consumes",
+          "address": "GET /api/auth/verify-email",
+          "payloadRef": null,
+          "rawKind": null
+        },
+        {
+          "kind": "http",
+          "role": "consumes",
+          "address": "GET /auth/verify-email-change",
+          "payloadRef": null,
+          "rawKind": null
+        }
+      ],
+      "contractsProvided": [
+        {
+          "name": "sendEmailVerification",
+          "shape": "export const sendEmailVerification = async ({\n  email,\n  language,\n  username,\n  secondaryEmailId,\n  isPlatform = false,\n}: VerifyEmailType) =>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendEmailVerificationByCode",
+          "shape": "export const sendEmailVerificationByCode = async ({\n  email,\n  language,\n  username,\n  isVerifyingEmail,\n}: VerifyEmailType) =>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendChangeOfEmailVerification",
+          "shape": "export const sendChangeOfEmailVerification = async ({ user, language }: ChangeOfEmail) =>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "checkIfFeatureIsEnabledGlobally",
+          "shape": "featuresRepository.checkIfFeatureIsEnabledGlobally(\"email-verification\")",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "checkIfEmailIsBlockedInWatchlistController",
+          "shape": "checkIfEmailIsBlockedInWatchlistController(email)",
+          "resolvedRelativePath": "packages/features/watchlist/operations/check-if-email-in-watchlist.controller.ts",
+          "resolvedFileId": "packages/features/watchlist/operations/check-if-email-in-watchlist.controller.ts"
+        },
+        {
+          "name": "checkRateLimitAndThrowError",
+          "shape": "checkRateLimitAndThrowError({\n    rateLimitingType: \"core\",\n    identifier: hashEmail(email),\n  })",
+          "resolvedRelativePath": "packages/lib/checkRateLimitAndThrowError.ts",
+          "resolvedFileId": "packages/lib/checkRateLimitAndThrowError.ts"
+        },
+        {
+          "name": "verificationToken.create",
+          "shape": "prisma.verificationToken.create({\n    data: {\n      identifier: email,\n      token,\n      expires: new Date(Date.now() + 24 * 3600 * 1000),\n      secondaryEmailId: secondaryEmailId || null,\n    },\n  })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "sendEmailVerificationLink",
+          "shape": "sendEmailVerificationLink({\n    language: translation,\n    verificationEmailLink: `${WEBAPP_URL}/api/auth/verify-email?${params.toString()}`,\n    user: {\n      email,\n      name: username,\n    },\n    isSecondaryEmailVerification: !!secondaryEmailId,\n  })",
+          "resolvedRelativePath": "packages/emails/email-manager.ts",
+          "resolvedFileId": "packages/emails/email-manager.ts"
+        },
+        {
+          "name": "sendEmailVerificationCode",
+          "shape": "sendEmailVerificationCode({\n    language: translation,\n    verificationEmailCode: code,\n    user: {\n      email,\n      name: username,\n    },\n    isVerifyingEmail,\n  })",
+          "resolvedRelativePath": "packages/emails/email-manager.ts",
+          "resolvedFileId": "packages/emails/email-manager.ts"
+        },
+        {
+          "name": "sendChangeOfEmailVerificationLink",
+          "shape": "sendChangeOfEmailVerificationLink({\n    language: translation,\n    verificationEmailLink: `${WEBAPP_URL}/auth/verify-email-change?${params.toString()}`,\n    user: {\n      emailFrom: user.emailFrom,\n      emailTo: user.emailTo,\n      name: user.username,\n    },\n  })",
+          "resolvedRelativePath": "packages/emails/email-manager.ts",
+          "resolvedFileId": "packages/emails/email-manager.ts"
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "sendEmailVerification setup",
+          "intent": "Generate token, translation, and feature flag state.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 29,
+            "endLine": 40
+          }
+        },
+        {
+          "name": "sendEmailVerification guards",
+          "intent": "Skip disabled, blocked, or platform verification requests.",
+          "structureKind": "branch",
+          "predicate": "!emailVerification",
+          "branchOutcomes": ["verification disabled", "email blocked", "platform request", "continue"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 41,
+            "endLine": 54
+          }
+        },
+        {
+          "name": "sendEmailVerification persistence and delivery",
+          "intent": "Rate-limit, persist a token, and send a verification link.",
+          "structureKind": "io",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 56,
+            "endLine": 84
+          }
+        },
+        {
+          "name": "sendEmailVerificationByCode",
+          "intent": "Generate and email a time-based verification code.",
+          "structureKind": "async",
+          "predicate": "await checkIfEmailIsBlockedInWatchlistController(email)",
+          "branchOutcomes": ["email blocked", "continue"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 87,
+            "endLine": 116
+          }
+        },
+        {
+          "name": "sendChangeOfEmailVerification setup",
+          "intent": "Generate token, translation, and feature flag state.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 128,
+            "endLine": 133
+          }
+        },
+        {
+          "name": "sendChangeOfEmailVerification guards",
+          "intent": "Skip disabled or blocked change-of-email verification requests.",
+          "structureKind": "branch",
+          "predicate": "!emailVerification",
+          "branchOutcomes": ["verification disabled", "email blocked", "continue"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 134,
+            "endLine": 142
+          }
+        },
+        {
+          "name": "sendChangeOfEmailVerification persistence and delivery",
+          "intent": "Rate-limit, persist a token, and send a change-of-email link.",
+          "structureKind": "io",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 144,
+            "endLine": 171
+          }
+        }
+      ],
+      "representationFamily": "function-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "function",
+          "name": "sendEmailVerification",
+          "signature": "export const sendEmailVerification = async ({\n  email,\n  language,\n  username,\n  secondaryEmailId,\n  isPlatform = false,\n}: VerifyEmailType) => {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": {
+            "startLine": 29,
+            "endLine": 35
+          }
+        },
+        {
+          "kind": "function",
+          "name": "sendEmailVerificationByCode",
+          "signature": "export const sendEmailVerificationByCode = async ({\n  email,\n  language,\n  username,\n  isVerifyingEmail,\n}: VerifyEmailType) => {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": {
+            "startLine": 87,
+            "endLine": 92
+          }
+        },
+        {
+          "kind": "function",
+          "name": "sendChangeOfEmailVerification",
+          "signature": "export const sendChangeOfEmailVerification = async ({ user, language }: ChangeOfEmail) => {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": {
+            "startLine": 128,
+            "endLine": 128
+          }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "interface",
+          "name": "VerifyEmailType",
+          "shape": "{\n  username?: string;\n  email: string;\n  language?: string;\n  secondaryEmailId?: number;\n  isVerifyingEmail?: boolean;\n  isPlatform?: boolean;\n}",
+          "discriminant": null,
+          "anchor": {
+            "startLine": 20,
+            "endLine": 27
+          }
+        },
+        {
+          "kind": "interface",
+          "name": "ChangeOfEmail",
+          "shape": "{\n  user: {\n    username: string;\n    emailFrom: string;\n    emailTo: string;\n  };\n  language?: string;\n}",
+          "discriminant": null,
+          "anchor": {
+            "startLine": 119,
+            "endLine": 126
+          }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": {
+        "paragraph": "",
+        "tokenEstimate": 0
+      },
+      "edgeCases": [
+        {
+          "inputShape": "verification feature disabled",
+          "handled": true,
+          "behavior": "Logs a warning and returns { ok: true, skipped: true } without checking the watchlist, rate limit, persistence, or sending email.",
+          "anchor": {
+            "startLine": 41,
+            "endLine": 44
+          }
+        },
+        {
+          "inputShape": "email blocked by the watchlist",
+          "handled": true,
+          "behavior": "Logs a warning and returns { ok: false, skipped: false } without persisting a token or sending email.",
+          "anchor": {
+            "startLine": 46,
+            "endLine": 49
+          }
+        },
+        {
+          "inputShape": "platform verification request",
+          "handled": true,
+          "behavior": "Logs a warning and returns { ok: true, skipped: true } without rate limiting, persistence, or sending email.",
+          "anchor": {
+            "startLine": 51,
+            "endLine": 54
+          }
+        },
+        {
+          "inputShape": "missing language",
+          "handled": true,
+          "behavior": "Uses \"en\" for translation lookup.",
+          "anchor": {
+            "startLine": 37,
+            "endLine": 37
+          }
+        },
+        {
+          "inputShape": "falsy secondaryEmailId",
+          "handled": true,
+          "behavior": "Stores null as secondaryEmailId and marks the sent link as non-secondary.",
+          "anchor": {
+            "startLine": 61,
+            "endLine": 81
+          }
+        },
+        {
+          "inputShape": "empty or malformed email string",
+          "handled": false,
+          "behavior": "Performs no local validation; the value is passed to watchlist checks, hashing, token persistence, code generation, and/or email delivery.",
+          "anchor": {
+            "startLine": 20,
+            "endLine": 27
+          }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": "rejection from getTranslation",
+          "caught": null,
+          "action": "Propagates the rejected promise.",
+          "fallback": null,
+          "anchor": {
+            "startLine": 37,
+            "endLine": 37
+          }
+        },
+        {
+          "thrown": "error from checkRateLimitAndThrowError",
+          "caught": null,
+          "action": "Propagates the error and does not continue to token persistence or email delivery.",
+          "fallback": null,
+          "anchor": {
+            "startLine": 56,
+            "endLine": 59
+          }
+        },
+        {
+          "thrown": "rejection from prisma.verificationToken.create",
+          "caught": null,
+          "action": "Propagates the rejected promise and does not send the verification email.",
+          "fallback": null,
+          "anchor": {
+            "startLine": 61,
+            "endLine": 68
+          }
+        },
+        {
+          "thrown": "rejection from an email sender",
+          "caught": null,
+          "action": "Propagates the rejected promise after token creation.",
+          "fallback": null,
+          "anchor": {
+            "startLine": 74,
+            "endLine": 82
+          }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "env",
+          "description": "CALENDSO_ENCRYPTION_KEY is available and participates in deterministic code-secret generation.",
+          "anchor": {
+            "startLine": 99,
+            "endLine": 101
+          }
+        },
+        {
+          "kind": "config",
+          "description": "WEBAPP_URL is configured as the base URL for generated verification links.",
+          "anchor": {
+            "startLine": 76,
+            "endLine": 76
+          }
+        },
+        {
+          "kind": "schema",
+          "description": "The verificationToken model accepts identifier, token, expires, and optional secondaryEmailId fields.",
+          "anchor": {
+            "startLine": 61,
+            "endLine": 68
+          }
+        },
+        {
+          "kind": "schema",
+          "description": "Change-of-email verification metadata is retrieved using emailFrom as the verification-token identifier.",
+          "anchor": {
+            "startLine": 149,
+            "endLine": 154
+          }
+        },
+        {
+          "kind": "platform",
+          "description": "The runtime provides crypto, otplib, URLSearchParams, and Date APIs.",
+          "anchor": {
+            "startLine": 1,
+            "endLine": 2
+          }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "What errors can the watchlist, translation, rate-limit, database, and email services throw?",
+          "affects": "error_handling",
+          "anchor": {
+            "startLine": 37,
+            "endLine": 82
+          },
+          "resolution": null
+        },
+        {
+          "question": "What exact persistence and delivery guarantees are provided when the database write or email send succeeds?",
+          "affects": "side_effects",
+          "anchor": {
+            "startLine": 61,
+            "endLine": 82
+          },
+          "resolution": null
+        },
+        {
+          "question": "What validation, if any, is performed by the imported watchlist, rate-limit, hashing, and email services?",
+          "affects": "edge_cases",
+          "anchor": {
+            "startLine": 46,
+            "endLine": 59
+          },
+          "resolution": null
+        }
+      ],
+      "stateModel": null,
+      "fileFingerprint": {
+        "lineCount": 0,
+        "declarationCount": 0,
+        "maxNestingDepth": 0,
+        "roughCyclomatic": 0
+      },
+      "reconstructionHints": {
+        "namingStyle": "unknown",
+        "returnStyle": "n/a",
+        "commentStyle": "none",
+        "dialect": ""
+      },
+      "moduleContractTests": [
+        {
+          "testId": "skips-when-email-verification-disabled",
+          "scenario": "Email verification is globally disabled when a verification email is requested.",
+          "given": ["featuresRepository.checkIfFeatureIsEnabledGlobally(\"email-verification\") returns false"],
+          "when": "sendEmailVerification({ email, language, username })",
+          "then": "resolves to { ok: true, skipped: true } and does not create a verification token or send an email",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Guards the feature flag short-circuit."
+        },
+        {
+          "testId": "rejects-blocked-email",
+          "scenario": "The requested email is present on the watchlist.",
+          "given": ["checkIfEmailIsBlockedInWatchlistController(email) returns true"],
+          "when": "sendEmailVerification({ email, language, username })",
+          "then": "resolves to { ok: false, skipped: false } and does not send an email",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Ensures blocked addresses cannot receive verification messages."
+        },
+        {
+          "testId": "skips-platform-verification",
+          "scenario": "Email verification is requested for a platform user.",
+          "given": [
+            "isPlatform = true",
+            "featuresRepository.checkIfFeatureIsEnabledGlobally(\"email-verification\") returns true",
+            "checkIfEmailIsBlockedInWatchlistController(email) returns false"
+          ],
+          "when": "sendEmailVerification({ email, language, username, isPlatform: true })",
+          "then": "resolves to { ok: true, skipped: true } and does not create a verification token or send an email",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins the platform-specific bypass."
+        },
+        {
+          "testId": "creates-expiring-email-token",
+          "scenario": "A normal email verification request passes feature, watchlist, and rate-limit checks.",
+          "given": [
+            "featuresRepository.checkIfFeatureIsEnabledGlobally(\"email-verification\") returns true",
+            "checkIfEmailIsBlockedInWatchlistController(email) returns false",
+            "checkRateLimitAndThrowError(...) resolves"
+          ],
+          "when": "sendEmailVerification({ email, language, username, secondaryEmailId })",
+          "then": "creates verificationToken with a random token, the email identifier, an expiry 24 hours ahead, and secondaryEmailId || null",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Protects token persistence and expiry semantics."
+        },
+        {
+          "testId": "generates-time-based-verification-code",
+          "scenario": "An unblocked email requests code-based verification.",
+          "given": [
+            "checkIfEmailIsBlockedInWatchlistController(email) returns false",
+            "process.env.CALENDSO_ENCRYPTION_KEY is configured"
+          ],
+          "when": "sendEmailVerificationByCode({ email, language, username, isVerifyingEmail })",
+          "then": "sends a verification code generated from md5(email + process.env.CALENDSO_ENCRYPTION_KEY) with a 900-second TOTP step and resolves to { ok: true, skipped: false }",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins deterministic secret derivation and code lifetime."
+        },
+        {
+          "testId": "sends-change-email-link",
+          "scenario": "A change-of-email request passes feature, watchlist, and rate-limit checks.",
+          "given": [
+            "featuresRepository.checkIfFeatureIsEnabledGlobally(\"email-verification\") returns true",
+            "checkIfEmailIsBlockedInWatchlistController(user.emailFrom) returns false",
+            "checkRateLimitAndThrowError(...) resolves"
+          ],
+          "when": "sendChangeOfEmailVerification({ user, language })",
+          "then": "sends a link at `${WEBAPP_URL}/auth/verify-email-change?${params.toString()}` containing the generated token and both email addresses",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Guards the change-email route and payload mapping."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "import block",
+        "log",
+        "VerifyEmailType",
+        "sendEmailVerification",
+        "sendEmailVerificationByCode",
+        "ChangeOfEmail",
+        "sendChangeOfEmailVerification"
+      ],
+      "moduleLevelCode": "import { randomBytes, createHash } from \"crypto\";\nimport { totp } from \"otplib\";\n\nimport {\n  sendEmailVerificationCode,\n  sendEmailVerificationLink,\n  sendChangeOfEmailVerificationLink,\n} from \"@calcom/emails/email-manager\";\nimport { FeaturesRepository } from \"@calcom/features/flags/features.repository\";\nimport { checkIfEmailIsBlockedInWatchlistController } from \"@calcom/features/watchlist/operations/check-if-email-in-watchlist.controller\";\nimport { checkRateLimitAndThrowError } from \"@calcom/lib/checkRateLimitAndThrowError\";\nimport { WEBAPP_URL } from \"@calcom/lib/constants\";\nimport logger from \"@calcom/lib/logger\";\nimport { getTranslation } from \"@calcom/lib/server/i18n\";\nimport { prisma } from \"@calcom/prisma\";\nimport { hashEmail } from \"@calcom/lib/server/PiiHasher\";",
+      "exports": [
+        {
+          "name": "sendEmailVerification",
+          "kind": "own",
+          "fromSpec": null,
+          "exportedAs": null
+        },
+        {
+          "name": "sendEmailVerificationByCode",
+          "kind": "own",
+          "fromSpec": null,
+          "exportedAs": null
+        },
+        {
+          "name": "sendChangeOfEmailVerification",
+          "kind": "own",
+          "fromSpec": null,
+          "exportedAs": null
+        }
+      ],
+      "importSymbolMap": [
+        {
+          "symbol": "randomBytes",
+          "module": "crypto",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "createHash",
+          "module": "crypto",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "totp",
+          "module": "otplib",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "sendEmailVerificationCode",
+          "module": "@calcom/emails/email-manager",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "sendEmailVerificationLink",
+          "module": "@calcom/emails/email-manager",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "sendChangeOfEmailVerificationLink",
+          "module": "@calcom/emails/email-manager",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "FeaturesRepository",
+          "module": "@calcom/features/flags/features.repository",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "checkIfEmailIsBlockedInWatchlistController",
+          "module": "@calcom/features/watchlist/operations/check-if-email-in-watchlist.controller",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "checkRateLimitAndThrowError",
+          "module": "@calcom/lib/checkRateLimitAndThrowError",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "WEBAPP_URL",
+          "module": "@calcom/lib/constants",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "logger",
+          "module": "@calcom/lib/logger",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "getTranslation",
+          "module": "@calcom/lib/server/i18n",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "prisma",
+          "module": "@calcom/prisma",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "hashEmail",
+          "module": "@calcom/lib/server/PiiHasher",
+          "alias": null,
+          "kind": "internal"
+        }
+      ],
+      "fileConstants": [
+        {
+          "name": "log",
+          "value": "logger.getSubLogger({ prefix: [`[[Auth] `] });",
+          "kind": "const"
+        }
+      ],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/features/auth/lib/verifyEmail.ts__VerifyEmailType_1#interface:VerifyEmailType",
+        "unitKind": "interface",
+        "name": "VerifyEmailType",
+        "qualifiedName": "VerifyEmailType",
+        "parentUnitId": null,
+        "startLine": 20,
+        "endLine": 27,
+        "isBehavioral": false,
+        "source": "interface VerifyEmailType {\n  username?: string;\n  email: string;\n  language?: string;\n  secondaryEmailId?: number;\n  isVerifyingEmail?: boolean;\n  isPlatform?: boolean;\n}"
+      },
+      {
+        "unitId": "packages/features/auth/lib/verifyEmail.ts__sendEmailVerification_2#function:sendEmailVerification",
+        "unitKind": "function",
+        "name": "sendEmailVerification",
+        "qualifiedName": "sendEmailVerification",
+        "parentUnitId": null,
+        "startLine": 29,
+        "endLine": 85,
+        "isBehavioral": true,
+        "source": "export const sendEmailVerification = async ({\n  email,\n  language,\n  username,\n  secondaryEmailId,\n  isPlatform = false,\n}: VerifyEmailType) => {\n  const token = randomBytes(32).toString(\"hex\");\n  const translation = await getTranslation(language ?? \"en\", \"common\");\n  const featuresRepository = new FeaturesRepository(prisma);\n  const emailVerification = await featuresRepository.checkIfFeatureIsEnabledGlobally(\"email-verification\");\n\n  if (!emailVerification) {\n    log.warn(\"Email verification is disabled - Skipping\");\n    return { ok: true, skipped: true };\n  }\n\n  if (await checkIfEmailIsBlockedInWatchlistController(email)) {\n    log.warn(\"Email is blocked - not sending verification email\", email);\n    return { ok: false, skipped: false };\n  }\n\n  if (isPlatform) {\n    log.warn(\"Skipping Email verification\");\n    return { ok: true, skipped: true };\n  }\n\n  await checkRateLimitAndThrowError({\n    rateLimitingType: \"core\",\n    identifier: hashEmail(email),\n  });\n\n  await prisma.verificationToken.create({\n    data: {\n      identifier: email,\n      token,\n      expires: new Date(Date.now() + 24 * 3600 * 1000), // +1 day\n      secondaryEmailId: secondaryEmailId || null,\n    },\n  });\n\n  const params = new URLSearchParams({\n    token,\n  });\n\n  await sendEmailVerificationLink({\n    language: translation,\n    verificationEmailLink: `${WEBAPP_URL}/api/auth/verify-email?${params.toString()}`,\n    user: {\n      email,\n      name: username,\n    },\n    isSecondaryEmailVerification: !!secondaryEmailId,\n  });\n\n  return { ok: true, skipped: false };\n};"
+      },
+      {
+        "unitId": "packages/features/auth/lib/verifyEmail.ts__sendEmailVerificationByCode_3#function:sendEmailVerificationByCode",
+        "unitKind": "function",
+        "name": "sendEmailVerificationByCode",
+        "qualifiedName": "sendEmailVerificationByCode",
+        "parentUnitId": null,
+        "startLine": 87,
+        "endLine": 117,
+        "isBehavioral": true,
+        "source": "export const sendEmailVerificationByCode = async ({\n  email,\n  language,\n  username,\n  isVerifyingEmail,\n}: VerifyEmailType) => {\n  if (await checkIfEmailIsBlockedInWatchlistController(email)) {\n    log.warn(\"Email is blocked - not sending verification email\", email);\n    return { ok: false, skipped: false };\n  }\n\n  const translation = await getTranslation(language ?? \"en\", \"common\");\n  const secret = createHash(\"md5\")\n    .update(email + process.env.CALENDSO_ENCRYPTION_KEY)\n    .digest(\"hex\");\n\n  totp.options = { step: 900 };\n  const code = totp.generate(secret);\n\n  await sendEmailVerificationCode({\n    language: translation,\n    verificationEmailCode: code,\n    user: {\n      email,\n      name: username,\n    },\n    isVerifyingEmail,\n  });\n\n  return { ok: true, skipped: false };\n};"
+      },
+      {
+        "unitId": "packages/features/auth/lib/verifyEmail.ts__ChangeOfEmail_4#interface:ChangeOfEmail",
+        "unitKind": "interface",
+        "name": "ChangeOfEmail",
+        "qualifiedName": "ChangeOfEmail",
+        "parentUnitId": null,
+        "startLine": 119,
+        "endLine": 126,
+        "isBehavioral": false,
+        "source": "interface ChangeOfEmail {\n  user: {\n    username: string;\n    emailFrom: string;\n    emailTo: string;\n  };\n  language?: string;\n}"
+      },
+      {
+        "unitId": "packages/features/auth/lib/verifyEmail.ts__sendChangeOfEmailVerification_5#function:sendChangeOfEmailVerification",
+        "unitKind": "function",
+        "name": "sendChangeOfEmailVerification",
+        "qualifiedName": "sendChangeOfEmailVerification",
+        "parentUnitId": null,
+        "startLine": 128,
+        "endLine": 172,
+        "isBehavioral": true,
+        "source": "export const sendChangeOfEmailVerification = async ({ user, language }: ChangeOfEmail) => {\n  const token = randomBytes(32).toString(\"hex\");\n  const translation = await getTranslation(language ?? \"en\", \"common\");\n  const featuresRepository = new FeaturesRepository(prisma);\n  const emailVerification = await featuresRepository.checkIfFeatureIsEnabledGlobally(\"email-verification\");\n\n  if (!emailVerification) {\n    log.warn(\"Email verification is disabled - Skipping\");\n    return { ok: true, skipped: true };\n  }\n\n  if (await checkIfEmailIsBlockedInWatchlistController(user.emailFrom)) {\n    log.warn(\"Email is blocked - not sending verification email\", user.emailFrom);\n    return { ok: false, skipped: false };\n  }\n\n  await checkRateLimitAndThrowError({\n    rateLimitingType: \"core\",\n    identifier: hashEmail(user.emailFrom),\n  });\n\n  await prisma.verificationToken.create({\n    data: {\n      identifier: user.emailFrom, // We use from as this is the email use to get the metadata from\n      token,\n      expires: new Date(Date.now() + 24 * 3600 * 1000), // +1 day\n    },\n  });\n\n  const params = new URLSearchParams({\n    token,\n  });\n\n  await sendChangeOfEmailVerificationLink({\n    language: translation,\n    verificationEmailLink: `${WEBAPP_URL}/auth/verify-email-change?${params.toString()}`,\n    user: {\n      emailFrom: user.emailFrom,\n      emailTo: user.emailTo,\n      name: user.username,\n    },\n  });\n\n  return { ok: true, skipped: false };\n};"
+      }
+    ],
+    "extractedUnitCount": 5,
+    "unreconciledUnitNames": []
+  },
+  "tokenUsage": {
+    "inputTokens": 13584,
+    "outputTokens": 9907,
+    "costUsd": 0
+  },
+  "model": "us.openai.gpt-5.6-luna"
+}

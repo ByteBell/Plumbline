@@ -1,0 +1,613 @@
+{
+  "relativePath": "packages/trpc/server/routers/viewer/workflows/verifyEmailCode.handler.ts",
+  "language": "typescript",
+  "sha256": "3d08e85c8074657cfa11178a8a119a2de7583b5fc9f9edc23df370b16848c3d2",
+  "sizeBytes": 1093,
+  "tokenCount": 274,
+  "lineCount": 42,
+  "analysedAt": "2026-08-27T17:25:55.460Z",
+  "analysis": {
+    "module": {
+      "purpose": "Validates a user-submitted email verification code and records the verified email association for the authenticated user and optional team.",
+      "summary": "This server-side workflow handler derives a deterministic TOTP secret from the submitted email and encryption key, validates the supplied code using a fifteen-minute step, and persists successful verification through Prisma. It rejects missing input and invalid codes with TRPC errors, then returns the validation result.",
+      "businessContext": "Supports email verification in account and team workflows. Failure blocks users from completing verification or associating verified email addresses.",
+      "classes": [],
+      "functions": ["verifyEmailCodeHandler (~L18-40): Validates an email code and persists successful verification"],
+      "keywords": [
+        "email verification",
+        "TOTP",
+        "Prisma",
+        "TRPC",
+        "MD5",
+        "encryption key",
+        "verified email",
+        "team association"
+      ],
+      "ontologyConcepts": [
+        "identity verification",
+        "one-time password validation",
+        "authenticated user context",
+        "credential derivation",
+        "persistence",
+        "authorization boundary"
+      ],
+      "businessEntities": ["Email", "User", "Team", "Verification Code", "Verified Email"],
+      "systemCapabilities": [
+        "Validate email verification codes",
+        "Persist verified email associations",
+        "Reject malformed verification requests",
+        "Associate verified emails with teams"
+      ],
+      "configDependencies": ["CALENDSO_ENCRYPTION_KEY"],
+      "importsInternal": [
+        {
+          "spec": "./verifyEmailCode.schema",
+          "symbols": ["TVerifyEmailCodeInputSchema"],
+          "anchor": {
+            "startLine": 9,
+            "endLine": 9
+          },
+          "resolvedRelativePath": "packages/trpc/server/routers/viewer/workflows/verifyEmailCode.schema.ts",
+          "resolvedFileId": "packages/trpc/server/routers/viewer/workflows/verifyEmailCode.schema.ts",
+          "resolvedHint": "packages/trpc/server/routers/viewer/workflows/verifyEmailCode.schema.ts"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "crypto",
+          "symbols": ["createHash"],
+          "package": "crypto",
+          "subpath": null,
+          "isBuiltin": true,
+          "anchor": {
+            "startLine": 1,
+            "endLine": 1
+          }
+        },
+        {
+          "spec": "@calcom/lib/totp",
+          "symbols": ["totpRawCheck"],
+          "package": "@calcom/lib",
+          "subpath": "totp",
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 3,
+            "endLine": 3
+          }
+        },
+        {
+          "spec": "@calcom/prisma",
+          "symbols": ["prisma"],
+          "package": "@calcom/prisma",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 4,
+            "endLine": 4
+          }
+        },
+        {
+          "spec": "@calcom/trpc/server/types",
+          "symbols": ["TrpcSessionUser"],
+          "package": "@calcom/trpc",
+          "subpath": "server/types",
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 5,
+            "endLine": 5
+          }
+        },
+        {
+          "spec": "@trpc/server",
+          "symbols": ["TRPCError"],
+          "package": "@trpc/server",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 7,
+            "endLine": 7
+          }
+        }
+      ],
+      "sideEffects": {
+        "io": ["Creates a verifiedEmail database record through Prisma after successful validation."],
+        "network": [],
+        "env": ["Reads process.env.CALENDSO_ENCRYPTION_KEY when deriving the verification secret."],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": []
+      },
+      "integrationSurface": [
+        {
+          "kind": "table",
+          "role": "consumes",
+          "address": "verifiedEmail",
+          "payloadRef": null,
+          "rawKind": null
+        }
+      ],
+      "contractsProvided": [
+        {
+          "name": "verifyEmailCodeHandler",
+          "shape": "export const verifyEmailCodeHandler = async ({ ctx, input }: VerifyEmailCodeOptions) => { ... }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "TVerifyEmailCodeInputSchema",
+          "shape": "input: TVerifyEmailCodeInputSchema",
+          "resolvedRelativePath": "packages/trpc/server/routers/viewer/workflows/verifyEmailCode.schema.ts",
+          "resolvedFileId": "packages/trpc/server/routers/viewer/workflows/verifyEmailCode.schema.ts"
+        },
+        {
+          "name": "TrpcSessionUser",
+          "shape": "user: Pick<NonNullable<TrpcSessionUser>, \"id\">",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "totpRawCheck",
+          "shape": "totpRawCheck(code, secret, { step: 900 })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "prisma.verifiedEmail.create",
+          "shape": "await prisma.verifiedEmail.create({ data: { email, userId: id, teamId } })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "TRPCError",
+          "shape": "throw new TRPCError({ code: \"BAD_REQUEST\" })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "input extraction",
+          "intent": "Extracts verification fields and authenticated user identity from arguments.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 19,
+            "endLine": 20
+          }
+        },
+        {
+          "name": "required input validation",
+          "intent": "Rejects requests missing either the code or email.",
+          "structureKind": "branch",
+          "predicate": "!code || !email",
+          "branchOutcomes": ["missing input throws BAD_REQUEST", "input present continues"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 22,
+            "endLine": 22
+          }
+        },
+        {
+          "name": "secret derivation",
+          "intent": "Derives an MD5 hexadecimal secret from email and encryption configuration.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 24,
+            "endLine": 26
+          }
+        },
+        {
+          "name": "token validation",
+          "intent": "Checks the supplied code against a fifteen-minute TOTP window.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 28,
+            "endLine": 28
+          }
+        },
+        {
+          "name": "invalid token handling",
+          "intent": "Rejects invalid verification codes with a typed TRPC error.",
+          "structureKind": "branch",
+          "predicate": "!isValidToken",
+          "branchOutcomes": ["invalid token throws BAD_REQUEST with invalid_code", "valid token continues"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 30,
+            "endLine": 30
+          }
+        },
+        {
+          "name": "verification persistence",
+          "intent": "Stores the verified email against the authenticated user and optional team.",
+          "structureKind": "io",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 32,
+            "endLine": 37
+          }
+        },
+        {
+          "name": "result return",
+          "intent": "Returns the successful token validation result.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 39,
+            "endLine": 39
+          }
+        }
+      ],
+      "representationFamily": "function-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "function",
+          "name": "verifyEmailCodeHandler",
+          "signature": "export const verifyEmailCodeHandler = async ({ ctx, input }: VerifyEmailCodeOptions) => {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": {
+            "startLine": 18,
+            "endLine": 18
+          }
+        },
+        {
+          "kind": "type",
+          "name": "VerifyEmailCodeOptions",
+          "signature": "type VerifyEmailCodeOptions = {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": {
+            "startLine": 11,
+            "endLine": 16
+          }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "type",
+          "name": "VerifyEmailCodeOptions",
+          "shape": "{\n  ctx: {\n    user: Pick<NonNullable<TrpcSessionUser>, \"id\">;\n  };\n  input: TVerifyEmailCodeInputSchema;\n}",
+          "discriminant": null,
+          "anchor": {
+            "startLine": 11,
+            "endLine": 16
+          }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": {
+        "paragraph": "",
+        "tokenEstimate": 0
+      },
+      "edgeCases": [
+        {
+          "inputShape": "Missing or falsy code",
+          "handled": true,
+          "behavior": "Throws TRPC BAD_REQUEST before deriving a secret.",
+          "anchor": {
+            "startLine": 22,
+            "endLine": 22
+          }
+        },
+        {
+          "inputShape": "Missing or falsy email",
+          "handled": true,
+          "behavior": "Throws TRPC BAD_REQUEST before deriving a secret.",
+          "anchor": {
+            "startLine": 22,
+            "endLine": 22
+          }
+        },
+        {
+          "inputShape": "Present code that fails TOTP validation",
+          "handled": true,
+          "behavior": "Throws TRPC BAD_REQUEST with message invalid_code and does not persist.",
+          "anchor": {
+            "startLine": 30,
+            "endLine": 30
+          }
+        },
+        {
+          "inputShape": "Valid code with optional teamId",
+          "handled": true,
+          "behavior": "Creates a verified email record containing email, authenticated user ID, and teamId.",
+          "anchor": {
+            "startLine": 32,
+            "endLine": 37
+          }
+        }
+      ],
+      "boundaryConditions": [],
+      "errorHandling": [
+        {
+          "thrown": "new TRPCError({ code: \"BAD_REQUEST\" })",
+          "caught": null,
+          "action": "Rejects the request when code or email is falsy.",
+          "fallback": null,
+          "anchor": {
+            "startLine": 22,
+            "endLine": 22
+          }
+        },
+        {
+          "thrown": "new TRPCError({ code: \"BAD_REQUEST\", message: \"invalid_code\" })",
+          "caught": null,
+          "action": "Rejects the request when TOTP validation fails.",
+          "fallback": null,
+          "anchor": {
+            "startLine": 30,
+            "endLine": 30
+          }
+        }
+      ],
+      "invariants": [
+        {
+          "kind": "precondition",
+          "description": "The request must provide truthy code and email values before secret derivation.",
+          "anchor": {
+            "startLine": 22,
+            "endLine": 22
+          }
+        },
+        {
+          "kind": "non-null",
+          "description": "The authenticated context must provide a user identifier.",
+          "anchor": {
+            "startLine": 20,
+            "endLine": 20
+          }
+        },
+        {
+          "kind": "invariant",
+          "description": "Persistence occurs only after the token has been validated successfully.",
+          "anchor": {
+            "startLine": 28,
+            "endLine": 32
+          }
+        },
+        {
+          "kind": "postcondition",
+          "description": "A successful call returns the truthy token validation result after persistence completes.",
+          "anchor": {
+            "startLine": 32,
+            "endLine": 39
+          }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "The caller supplies a validated input object matching TVerifyEmailCodeInputSchema.",
+          "anchor": {
+            "startLine": 15,
+            "endLine": 15
+          }
+        },
+        {
+          "kind": "caller",
+          "description": "The caller supplies an authenticated context with a usable user ID.",
+          "anchor": {
+            "startLine": 12,
+            "endLine": 13
+          }
+        },
+        {
+          "kind": "env",
+          "description": "CALENDSO_ENCRYPTION_KEY is available for deterministic secret derivation.",
+          "anchor": {
+            "startLine": 25,
+            "endLine": 25
+          }
+        },
+        {
+          "kind": "schema",
+          "description": "The verifiedEmail persistence model accepts the email, userId, and teamId fields.",
+          "anchor": {
+            "startLine": 33,
+            "endLine": 36
+          }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "Is teamId optional, nullable, or required by the input schema and database model?",
+          "affects": "type_shapes, assumptions, and verification persistence semantics",
+          "anchor": {
+            "startLine": 19,
+            "endLine": 19
+          },
+          "resolution": null
+        },
+        {
+          "question": "Does the database enforce uniqueness or idempotency for repeated verifiedEmail records?",
+          "affects": "invariants and error_handling",
+          "anchor": {
+            "startLine": 32,
+            "endLine": 37
+          },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "async",
+        "reentrant": true,
+        "ordering": "unknown",
+        "notes": "The handler awaits a database write; concurrent calls are independently processed and database ordering is not established here."
+      },
+      "stateModel": null,
+      "fileFingerprint": {
+        "lineCount": 0,
+        "declarationCount": 0,
+        "maxNestingDepth": 0,
+        "roughCyclomatic": 0
+      },
+      "reconstructionHints": {
+        "namingStyle": "unknown",
+        "returnStyle": "n/a",
+        "commentStyle": "none",
+        "dialect": ""
+      },
+      "moduleContractTests": [
+        {
+          "testId": "rejects-missing-code-or-email",
+          "scenario": "A request omitting the verification code or email is rejected as a bad request.",
+          "given": ["input = { code: \"\", email: \"user@example.com\", teamId }", "ctx = { user: { id } }"],
+          "when": "verifyEmailCodeHandler({ ctx, input })",
+          "then": "rejects with TRPCError having code \"BAD_REQUEST\"",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Guards the required input validation contract."
+        },
+        {
+          "testId": "rejects-invalid-verification-code",
+          "scenario": "A non-empty email and code fail when the TOTP code is invalid.",
+          "given": [
+            "input = { code: \"invalid\", email: \"user@example.com\", teamId }",
+            "totpRawCheck(\"invalid\", secret, { step: 900 }) === false"
+          ],
+          "when": "verifyEmailCodeHandler({ ctx, input })",
+          "then": "rejects with TRPCError having code \"BAD_REQUEST\" and message \"invalid_code\"",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Ensures invalid tokens cannot create verified-email records."
+        },
+        {
+          "testId": "creates-verified-email-record",
+          "scenario": "A valid verification code persists the email association and returns success.",
+          "given": [
+            "input = { code, email, teamId }",
+            "ctx = { user: { id } }",
+            "totpRawCheck(code, secret, { step: 900 }) === true"
+          ],
+          "when": "verifyEmailCodeHandler({ ctx, input })",
+          "then": "calls prisma.verifiedEmail.create({ data: { email, userId: id, teamId } }) and returns true",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Pins the successful persistence payload and return value."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "crypto import",
+        "TOTP utility import",
+        "Prisma client import",
+        "session user type import",
+        "TRPC error import",
+        "verification input schema type import",
+        "VerifyEmailCodeOptions type alias",
+        "verifyEmailCodeHandler exported async function"
+      ],
+      "moduleLevelCode": null,
+      "exports": [
+        {
+          "name": "verifyEmailCodeHandler",
+          "kind": "own",
+          "fromSpec": null,
+          "exportedAs": null
+        }
+      ],
+      "importSymbolMap": [
+        {
+          "symbol": "createHash",
+          "module": "crypto",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "totpRawCheck",
+          "module": "@calcom/lib/totp",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "prisma",
+          "module": "@calcom/prisma",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "TrpcSessionUser",
+          "module": "@calcom/trpc/server/types",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "TRPCError",
+          "module": "@trpc/server",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "TVerifyEmailCodeInputSchema",
+          "module": "./verifyEmailCode.schema",
+          "alias": null,
+          "kind": "internal"
+        }
+      ],
+      "fileConstants": [],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/trpc/server/routers/viewer/workflows/verifyEmailCode.handler.ts__VerifyEmailCodeOptions_1#type_alias:VerifyEmailCodeOptions",
+        "unitKind": "type_alias",
+        "name": "VerifyEmailCodeOptions",
+        "qualifiedName": "VerifyEmailCodeOptions",
+        "parentUnitId": null,
+        "startLine": 11,
+        "endLine": 16,
+        "isBehavioral": false,
+        "source": "type VerifyEmailCodeOptions = {\n  ctx: {\n    user: Pick<NonNullable<TrpcSessionUser>, \"id\">;\n  };\n  input: TVerifyEmailCodeInputSchema;\n};"
+      },
+      {
+        "unitId": "packages/trpc/server/routers/viewer/workflows/verifyEmailCode.handler.ts__verifyEmailCodeHandler_2#function:verifyEmailCodeHandler",
+        "unitKind": "function",
+        "name": "verifyEmailCodeHandler",
+        "qualifiedName": "verifyEmailCodeHandler",
+        "parentUnitId": null,
+        "startLine": 18,
+        "endLine": 41,
+        "isBehavioral": true,
+        "source": "export const verifyEmailCodeHandler = async ({ ctx, input }: VerifyEmailCodeOptions) => {\n  const { code, email, teamId } = input;\n  const { id } = ctx.user;\n\n  if (!code || !email) throw new TRPCError({ code: \"BAD_REQUEST\" });\n\n  const secret = createHash(\"md5\")\n    .update(email + process.env.CALENDSO_ENCRYPTION_KEY)\n    .digest(\"hex\");\n\n  const isValidToken = totpRawCheck(code, secret, { step: 900 });\n\n  if (!isValidToken) throw new TRPCError({ code: \"BAD_REQUEST\", message: \"invalid_code\" });\n\n  await prisma.verifiedEmail.create({\n    data: {\n      email,\n      userId: id,\n      teamId,\n    },\n  });\n\n  return isValidToken;\n};"
+      }
+    ],
+    "extractedUnitCount": 2,
+    "unreconciledUnitNames": []
+  },
+  "tokenUsage": {
+    "inputTokens": 5632,
+    "outputTokens": 5499,
+    "costUsd": 0
+  },
+  "model": "us.openai.gpt-5.6-luna"
+}

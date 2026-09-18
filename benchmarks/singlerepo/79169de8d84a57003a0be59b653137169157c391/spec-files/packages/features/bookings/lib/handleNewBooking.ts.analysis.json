@@ -1,0 +1,701 @@
+{
+  "relativePath": "packages/features/bookings/lib/handleNewBooking.ts",
+  "language": "typescript",
+  "sizeBytes": 86632,
+  "tokenCount": 21658,
+  "generatedAt": "2026-09-04T20:02:28.241Z",
+  "skimOutlines": [
+    {
+      "startLine": 1,
+      "endLine": 644,
+      "language": "typescript",
+      "windowSummary": "Imports and helper utilities for the new-booking handler: dry-run booking/event builders, troubleshooter data, type definitions, and the start of the main async `handler` function.",
+      "importsInternal": [
+        "@calcom/app-store/_utils/calendars/processExternalId",
+        "@calcom/app-store/googlevideo/_metadata",
+        "@calcom/app-store/locations",
+        "@calcom/app-store/utils",
+        "@calcom/app-store/zod-utils",
+        "@calcom/dayjs",
+        "@calcom/ee/workflows/lib/reminders/scheduleMandatoryReminder",
+        "@calcom/emails/lib/getICalUID",
+        "@calcom/features/CalendarEventBuilder",
+        "@calcom/features/bookings/lib/dto/types",
+        "@calcom/features/bookings/lib/handleNewBooking/checkBookingAndDurationLimits",
+        "@calcom/features/bookings/lib/handlePayment",
+        "@calcom/features/bookings/lib/handleWebhookTrigger",
+        "@calcom/features/bookings/lib/isEventTypeLoggingEnabled",
+        "@calcom/features/calendar-cache/lib/getShouldServeCache",
+        "@calcom/features/ee/round-robin/assignmentReason/AssignmentReasonRecorder",
+        "@calcom/features/eventtypes/lib/eventNaming",
+        "@calcom/features/flags/features.repository",
+        "@calcom/features/form-builder/utils",
+        "@calcom/features/users/users.repository",
+        "@calcom/features/webhooks/lib/getWebhooks",
+        "@calcom/features/webhooks/lib/scheduleTrigger",
+        "@calcom/lib/CalEventParser",
+        "@calcom/lib/EventManager",
+        "@calcom/lib/analyticsManager/handleAnalyticsEvents",
+        "@calcom/lib/bookings/hostGroupUtils",
+        "@calcom/lib/bookings/routing/utils",
+        "@calcom/lib/constants",
+        "@calcom/lib/defaultEvents",
+        "@calcom/lib/delegationCredential/server",
+        "@calcom/lib/di/containers/BookingLimits",
+        "@calcom/lib/di/containers/Cache",
+        "@calcom/lib/di/containers/LuckyUser",
+        "@calcom/lib/errorCodes",
+        "@calcom/lib/errors",
+        "@calcom/lib/extract-base-email",
+        "@calcom/lib/getBookerUrl/server",
+        "@calcom/lib/getOrgIdFromMemberOrTeamId",
+        "@calcom/lib/getPaymentAppData",
+        "@calcom/lib/getTeamIdFromEventType",
+        "@calcom/lib/http-error",
+        "@calcom/lib/intervalLimits/server/checkBookingLimits",
+        "@calcom/lib/logger",
+        "@calcom/lib/piiFreeData",
+        "@calcom/lib/safeStringify",
+        "@calcom/lib/server/i18n",
+        "@calcom/lib/server/repository/booking",
+        "@calcom/lib/server/repository/workflow",
+        "@calcom/lib/server/service/hashedLinkService",
+        "@calcom/lib/server/service/workflows",
+        "@calcom/lib/timeFormat",
+        "@calcom/prisma",
+        "@calcom/prisma/client",
+        "@calcom/prisma/enums",
+        "@calcom/prisma/zod-utils",
+        "@calcom/trpc/server/routers/viewer/workflows/util",
+        "@calcom/types/Calendar",
+        "@calcom/types/Credential",
+        "@calcom/types/EventManager",
+        "../../webhooks/lib/sendPayload",
+        "./BookingEmailSmsHandler",
+        "./getAllCredentialsForUsersOnEvent/getAllCredentials",
+        "./getAllCredentialsForUsersOnEvent/refreshCredentials",
+        "./getBookingDataSchema",
+        "./handleNewBooking/addVideoCallDataToEvent",
+        "./handleNewBooking/checkActiveBookingsLimitForBooker",
+        "./handleNewBooking/checkIfBookerEmailIsBlocked",
+        "./handleNewBooking/createBooking",
+        "./handleNewBooking/ensureAvailableUsers",
+        "./handleNewBooking/getBookingData",
+        "./handleNewBooking/getCustomInputsResponses",
+        "./handleNewBooking/getEventType",
+        "./handleNewBooking/getEventTypesFromDB",
+        "./handleNewBooking/getLocationValuesForDb",
+        "./handleNewBooking/getRequiresConfirmationFlags",
+        "./handleNewBooking/getSeatedBooking",
+        "./handleNewBooking/getVideoCallDetails",
+        "./handleNewBooking/handleAppsStatus",
+        "./handleNewBooking/loadAndValidateUsers",
+        "./handleNewBooking/logger",
+        "./handleNewBooking/originalRescheduledBookingUtils",
+        "./handleNewBooking/scheduleNoShowTriggers",
+        "./handleNewBooking/types",
+        "./handleNewBooking/validateBookingTimeIsNotOutOfBounds",
+        "./handleNewBooking/validateEventLength",
+        "./handleSeats/handleSeats",
+        "./interfaces/IBookingService"
+      ],
+      "importsExternal": ["short-uuid", "uuid"],
+      "declarations": [
+        {
+          "kind": "const",
+          "name": "translator",
+          "signature": "const translator = short();",
+          "role": "short-uuid translator instance for UUID conversion."
+        },
+        {
+          "kind": "const",
+          "name": "log",
+          "signature": "const log = logger.getSubLogger({ prefix: [\"[api] book:user\"] });",
+          "role": "Module-level sub-logger for the booking API."
+        },
+        {
+          "kind": "type",
+          "name": "IsFixedAwareUserWithCredentials",
+          "signature": "type IsFixedAwareUserWithCredentials = Omit<IsFixedAwareUser, \"credentials\"> & {",
+          "role": "IsFixedAwareUser with concrete CredentialForCalendarService[] credentials."
+        },
+        {
+          "kind": "function",
+          "name": "assertNonEmptyArray",
+          "signature": "function assertNonEmptyArray<T>(arr: T[]): asserts arr is [T, ...T[]] {",
+          "role": "Type-guard assertion that an array has at least one item."
+        },
+        {
+          "kind": "function",
+          "name": "getICalSequence",
+          "signature": "function getICalSequence(originalRescheduledBooking: BookingType | null) {",
+          "role": "Computes iCal sequence: 0 for new bookings, incremented on reschedules."
+        },
+        {
+          "kind": "type",
+          "name": "CreatedBooking",
+          "signature": "type CreatedBooking = Booking & { appsStatus?: AppsStatus[]; paymentUid?: string; paymentId?: number };",
+          "role": "Booking extended with optional appsStatus and payment info."
+        },
+        {
+          "kind": "type",
+          "name": "ReturnTypeCreateBooking",
+          "signature": "type ReturnTypeCreateBooking = Awaited<ReturnType<typeof createBooking>>;",
+          "role": "Awaited return type of createBooking."
+        },
+        {
+          "kind": "const",
+          "name": "buildDryRunBooking",
+          "signature": "export const buildDryRunBooking = ({",
+          "role": "Builds a fake booking object and troubleshooter data for dry-run bookings."
+        },
+        {
+          "kind": "function",
+          "name": "buildDryRunEventManager",
+          "signature": "const buildDryRunEventManager = () => {",
+          "role": "Returns a no-op EventManager stub with empty results for dry runs."
+        },
+        {
+          "kind": "function",
+          "name": "buildEventForTeamEventType",
+          "signature": "export const buildEventForTeamEventType = async ({",
+          "role": "Builds a team CalendarEvent with members and merged destination calendars."
+        },
+        {
+          "kind": "function",
+          "name": "buildTroubleshooterData",
+          "signature": "function buildTroubleshooterData({",
+          "role": "Initializes empty troubleshooter/debugging data structure for an event type."
+        },
+        {
+          "kind": "type",
+          "name": "PlatformParams",
+          "signature": "export type PlatformParams = {",
+          "role": "Optional platform client/URL/location params for platform bookings."
+        },
+        {
+          "kind": "type",
+          "name": "BookingHandlerInput",
+          "signature": "export type BookingHandlerInput = {",
+          "role": "Input shape for the booking handler (bookingData, userId, hostname, platform params)."
+        },
+        {
+          "kind": "function",
+          "name": "formatAvailabilitySnapshot",
+          "signature": "function formatAvailabilitySnapshot(data: {",
+          "role": "Converts dayjs date ranges in availability snapshots to ISO strings."
+        },
+        {
+          "kind": "function",
+          "name": "handler",
+          "signature": "async function handler(",
+          "role": "Main booking handler: fetches event type, validates booking data, checks limits/confirmation, and begins booking flow."
+        }
+      ]
+    },
+    {
+      "startLine": 645,
+      "endLine": 1226,
+      "language": "typescript",
+      "windowSummary": "Continuation of the handleNewBooking function body: resolves available/lucky round-robin users, organizer, translations, guests, location, and begins building the CalendarEvent.",
+      "importsInternal": [],
+      "importsExternal": [],
+      "declarations": [
+        {
+          "kind": "function",
+          "name": "handleNewBooking (continued, started in earlier window)",
+          "signature": "const handleNewBooking = async (input: HandleNewBookingInput) => {",
+          "role": "Main booking handler — this window covers user availability/lucky-user selection, organizer & attendee setup, location resolution, and start of calendar event construction."
+        }
+      ]
+    },
+    {
+      "startLine": 1227,
+      "endLine": 1881,
+      "language": "typescript",
+      "windowSummary": "Middle of handleNewBooking: builds the CalendarEvent, prepares webhook/workflow data, handles seated bookings, persists the booking (or dry-run), then runs reschedule/create logic through EventManager including Google Meet handling.",
+      "importsInternal": [],
+      "importsExternal": [],
+      "declarations": [
+        {
+          "kind": "const",
+          "name": "eventTypeInfo",
+          "signature": "const eventTypeInfo: EventTypeInfo = {",
+          "role": "Data packet (title, description, price, currency, length) for triggering webhooks"
+        },
+        {
+          "kind": "const",
+          "name": "teamId",
+          "signature": "const teamId = await getTeamIdFromEventType({ eventType });",
+          "role": "Resolves team ID from the event type"
+        },
+        {
+          "kind": "const",
+          "name": "organizerUserId",
+          "signature": "const organizerUserId = triggerForUser ? organizerUser.id : null;",
+          "role": "Determines webhook target user"
+        },
+        {
+          "kind": "const",
+          "name": "orgId",
+          "signature": "const orgId = await getOrgIdFromMemberOrTeamId({ memberId: organizerUserId, teamId });",
+          "role": "Resolves org ID for webhook subscriber options"
+        },
+        {
+          "kind": "const",
+          "name": "subscriberOptions",
+          "signature": "const subscriberOptions: GetSubscriberOptions = {",
+          "role": "Webhook subscriber options for booking created/rescheduled"
+        },
+        {
+          "kind": "const",
+          "name": "eventTrigger",
+          "signature": "const eventTrigger: WebhookTriggerEvents = rescheduleUid",
+          "role": "Chooses BOOKING_RESCHEDULED vs BOOKING_CREATED trigger"
+        },
+        {
+          "kind": "const",
+          "name": "subscriberOptionsMeetingEnded",
+          "signature": "const subscriberOptionsMeetingEnded = {",
+          "role": "Webhook subscriber options for MEETING_ENDED"
+        },
+        {
+          "kind": "const",
+          "name": "subscriberOptionsMeetingStarted",
+          "signature": "const subscriberOptionsMeetingStarted = {",
+          "role": "Webhook subscriber options for MEETING_STARTED"
+        },
+        {
+          "kind": "const",
+          "name": "workflows",
+          "signature": "const workflows = await getAllWorkflowsFromEventType(",
+          "role": "Fetches workflows associated with the event type"
+        },
+        {
+          "kind": "const",
+          "name": "changedOrganizer",
+          "signature": "const changedOrganizer =",
+          "role": "Flags round-robin reschedules where the host changed"
+        },
+        {
+          "kind": "const",
+          "name": "skipDeleteEventsAndMeetings",
+          "signature": "const skipDeleteEventsAndMeetings = changedOrganizer;",
+          "role": "Controls skipping of event/meeting deletion on reschedule"
+        },
+        {
+          "kind": "const",
+          "name": "isBookingRequestedReschedule",
+          "signature": "const isBookingRequestedReschedule =",
+          "role": "Detects reschedule of a cancelled (requested-reschedule) booking"
+        },
+        {
+          "kind": "other",
+          "name": "results / referencesToCreate / booking / assignmentReason (declarations)",
+          "signature": "let results: EventResult<AdditionalInformation & { url?: string; iCalUID?: string }>[] = [];",
+          "role": "Mutable accumulators for event manager results, calendar references, created booking, and assignment reason"
+        },
+        {
+          "kind": "const",
+          "name": "credentials",
+          "signature": "const credentials = await refreshCredentials(allCredentials);",
+          "role": "Refreshes credentials before creating the EventManager"
+        },
+        {
+          "kind": "const",
+          "name": "eventManager",
+          "signature": "const eventManager = !isDryRun",
+          "role": "Real or dry-run EventManager used to create/reschedule calendar events"
+        },
+        {
+          "kind": "other",
+          "name": "try/catch booking creation block",
+          "signature": "try {",
+          "role": "Persists booking via createBooking (or buildDryRunBooking), records assignment reasons, updates evt with uid/OTP, saves booking seats"
+        },
+        {
+          "kind": "const",
+          "name": "apps",
+          "signature": "const apps = eventTypeAppMetadataOptionalSchema.parse(eventType?.metadata?.apps);",
+          "role": "Parses per-event-type app metadata for EventManager"
+        },
+        {
+          "kind": "other",
+          "name": "rescheduling logic block",
+          "signature": "if (!eventType.seatsPerTimeSlot && originalRescheduledBooking?.uid) {",
+          "role": "Reschedule path: deletes old host events if organizer changed, calls eventManager.reschedule, processes Google Meet results, sends rescheduled emails"
+        },
+        {
+          "kind": "other",
+          "name": "new booking creation block",
+          "signature": "} else if (isConfirmedByDefault) {",
+          "role": "Creation path for confirmed bookings without seats, using eventManager.create and processing results"
+        }
+      ]
+    },
+    {
+      "startLine": 1882,
+      "endLine": 2418,
+      "language": "typescript",
+      "windowSummary": "Final section of the handleNewBooking handler: Google Meet/Calendar handling, payment flow, webhook triggers, booking references, workflows, no-show triggers, plus the RegularBookingService class that wraps the handler.",
+      "importsInternal": [],
+      "importsExternal": [],
+      "declarations": [
+        {
+          "kind": "const",
+          "name": "googleMeetResult",
+          "signature": "const googleMeetResult = {",
+          "role": "Google Meet conferencing result payload built from EventManager results"
+        },
+        {
+          "kind": "const",
+          "name": "webhookData",
+          "signature": "const webhookData: EventPayloadType = {",
+          "role": "Event payload assembled for webhook triggers (created/rescheduled booking)"
+        },
+        {
+          "kind": "const",
+          "name": "bookingRequiresPayment",
+          "signature": "const bookingRequiresPayment =",
+          "role": "Boolean flag indicating whether the booking requires a payment"
+        },
+        {
+          "kind": "const",
+          "name": "bookingResponse",
+          "signature": "const bookingResponse = {",
+          "role": "Sanitized booking response (email stripped) returned in payment-required branch"
+        },
+        {
+          "kind": "method",
+          "name": "handler (function body end / default export)",
+          "signature": "export default handler;",
+          "role": "Default export of the new-booking handler function"
+        },
+        {
+          "kind": "interface",
+          "name": "IBookingServiceDependencies",
+          "signature": "export interface IBookingServiceDependencies {",
+          "role": "Dependency injection contract for RegularBookingService (cache, repos, prisma, limits)"
+        },
+        {
+          "kind": "class",
+          "name": "RegularBookingService",
+          "signature": "export class RegularBookingService implements IBookingService {",
+          "role": "Service for creating/rescheduling non-recurring, non-instant bookings, delegating to handler"
+        },
+        {
+          "kind": "method",
+          "name": "createBooking",
+          "signature": "async createBooking(input: { bookingData: CreateRegularBookingData; bookingMeta?: CreateBookingMeta }) {",
+          "role": "Creates a regular booking via handler"
+        },
+        {
+          "kind": "method",
+          "name": "rescheduleBooking",
+          "signature": "async rescheduleBooking(input: { bookingData: CreateRegularBookingData; bookingMeta?: CreateBookingMeta }) {",
+          "role": "Reschedules a regular booking via handler"
+        },
+        {
+          "kind": "method",
+          "name": "rescheduleBookingForApiV1",
+          "signature": "async rescheduleBookingForApiV1(input: {",
+          "role": "Reschedules a booking for API v1 with a custom booking data schema getter"
+        }
+      ]
+    }
+  ],
+  "locatedDeclarations": [
+    {
+      "kind": "const",
+      "name": "translator",
+      "signature": "const translator = short();",
+      "role": "short-uuid translator instance for UUID conversion.",
+      "startLine": 122
+    },
+    {
+      "kind": "const",
+      "name": "log",
+      "signature": "const log = logger.getSubLogger({ prefix: [\"[api] book:user\"] });",
+      "role": "Module-level sub-logger for the booking API.",
+      "startLine": 123
+    },
+    {
+      "kind": "type",
+      "name": "IsFixedAwareUserWithCredentials",
+      "signature": "type IsFixedAwareUserWithCredentials = Omit<IsFixedAwareUser, \"credentials\"> & {",
+      "role": "IsFixedAwareUser with concrete CredentialForCalendarService[] credentials.",
+      "startLine": 125
+    },
+    {
+      "kind": "function",
+      "name": "assertNonEmptyArray",
+      "signature": "function assertNonEmptyArray<T>(arr: T[]): asserts arr is [T, ...T[]] {",
+      "role": "Type-guard assertion that an array has at least one item.",
+      "startLine": 129
+    },
+    {
+      "kind": "function",
+      "name": "getICalSequence",
+      "signature": "function getICalSequence(originalRescheduledBooking: BookingType | null) {",
+      "role": "Computes iCal sequence: 0 for new bookings, incremented on reschedules.",
+      "startLine": 135
+    },
+    {
+      "kind": "type",
+      "name": "CreatedBooking",
+      "signature": "type CreatedBooking = Booking & { appsStatus?: AppsStatus[]; paymentUid?: string; paymentId?: number };",
+      "role": "Booking extended with optional appsStatus and payment info.",
+      "startLine": 150
+    },
+    {
+      "kind": "type",
+      "name": "ReturnTypeCreateBooking",
+      "signature": "type ReturnTypeCreateBooking = Awaited<ReturnType<typeof createBooking>>;",
+      "role": "Awaited return type of createBooking.",
+      "startLine": 151
+    },
+    {
+      "kind": "const",
+      "name": "buildDryRunBooking",
+      "signature": "export const buildDryRunBooking = ({",
+      "role": "Builds a fake booking object and troubleshooter data for dry-run bookings.",
+      "startLine": 152
+    },
+    {
+      "kind": "function",
+      "name": "buildDryRunEventManager",
+      "signature": "const buildDryRunEventManager = () => {",
+      "role": "Returns a no-op EventManager stub with empty results for dry runs.",
+      "startLine": 251
+    },
+    {
+      "kind": "function",
+      "name": "buildEventForTeamEventType",
+      "signature": "export const buildEventForTeamEventType = async ({",
+      "role": "Builds a team CalendarEvent with members and merged destination calendars.",
+      "startLine": 258
+    },
+    {
+      "kind": "function",
+      "name": "buildTroubleshooterData",
+      "signature": "function buildTroubleshooterData({",
+      "role": "Initializes empty troubleshooter/debugging data structure for an event type.",
+      "startLine": 347
+    },
+    {
+      "kind": "type",
+      "name": "PlatformParams",
+      "signature": "export type PlatformParams = {",
+      "role": "Optional platform client/URL/location params for platform bookings.",
+      "startLine": 389
+    },
+    {
+      "kind": "type",
+      "name": "BookingHandlerInput",
+      "signature": "export type BookingHandlerInput = {",
+      "role": "Input shape for the booking handler (bookingData, userId, hostname, platform params).",
+      "startLine": 398
+    },
+    {
+      "kind": "function",
+      "name": "formatAvailabilitySnapshot",
+      "signature": "function formatAvailabilitySnapshot(data: {",
+      "role": "Converts dayjs date ranges in availability snapshots to ISO strings.",
+      "startLine": 407
+    },
+    {
+      "kind": "function",
+      "name": "handler",
+      "signature": "async function handler(",
+      "role": "Main booking handler: fetches event type, validates booking data, checks limits/confirmation, and begins booking flow.",
+      "startLine": 424
+    },
+    {
+      "kind": "const",
+      "name": "eventTypeInfo",
+      "signature": "const eventTypeInfo: EventTypeInfo = {",
+      "role": "Data packet (title, description, price, currency, length) for triggering webhooks",
+      "startLine": 1296
+    },
+    {
+      "kind": "const",
+      "name": "teamId",
+      "signature": "const teamId = await getTeamIdFromEventType({ eventType });",
+      "role": "Resolves team ID from the event type",
+      "startLine": 1304
+    },
+    {
+      "kind": "const",
+      "name": "organizerUserId",
+      "signature": "const organizerUserId = triggerForUser ? organizerUser.id : null;",
+      "role": "Determines webhook target user",
+      "startLine": 1308
+    },
+    {
+      "kind": "const",
+      "name": "orgId",
+      "signature": "const orgId = await getOrgIdFromMemberOrTeamId({ memberId: organizerUserId, teamId });",
+      "role": "Resolves org ID for webhook subscriber options",
+      "startLine": 1310
+    },
+    {
+      "kind": "const",
+      "name": "subscriberOptions",
+      "signature": "const subscriberOptions: GetSubscriberOptions = {",
+      "role": "Webhook subscriber options for booking created/rescheduled",
+      "startLine": 1312
+    },
+    {
+      "kind": "const",
+      "name": "eventTrigger",
+      "signature": "const eventTrigger: WebhookTriggerEvents = rescheduleUid",
+      "role": "Chooses BOOKING_RESCHEDULED vs BOOKING_CREATED trigger",
+      "startLine": 1321
+    },
+    {
+      "kind": "const",
+      "name": "subscriberOptionsMeetingEnded",
+      "signature": "const subscriberOptionsMeetingEnded = {",
+      "role": "Webhook subscriber options for MEETING_ENDED",
+      "startLine": 1327
+    },
+    {
+      "kind": "const",
+      "name": "subscriberOptionsMeetingStarted",
+      "signature": "const subscriberOptionsMeetingStarted = {",
+      "role": "Webhook subscriber options for MEETING_STARTED",
+      "startLine": 1336
+    },
+    {
+      "kind": "const",
+      "name": "workflows",
+      "signature": "const workflows = await getAllWorkflowsFromEventType(",
+      "role": "Fetches workflows associated with the event type",
+      "startLine": 1345
+    },
+    {
+      "kind": "const",
+      "name": "changedOrganizer",
+      "signature": "const changedOrganizer =",
+      "role": "Flags round-robin reschedules where the host changed",
+      "startLine": 1436
+    },
+    {
+      "kind": "const",
+      "name": "skipDeleteEventsAndMeetings",
+      "signature": "const skipDeleteEventsAndMeetings = changedOrganizer;",
+      "role": "Controls skipping of event/meeting deletion on reschedule",
+      "startLine": 1441
+    },
+    {
+      "kind": "const",
+      "name": "isBookingRequestedReschedule",
+      "signature": "const isBookingRequestedReschedule =",
+      "role": "Detects reschedule of a cancelled (requested-reschedule) booking",
+      "startLine": 1443
+    },
+    {
+      "kind": "other",
+      "name": "results / referencesToCreate / booking / assignmentReason (declarations)",
+      "signature": "let results: EventResult<AdditionalInformation & { url?: string; iCalUID?: string }>[] = [];",
+      "role": "Mutable accumulators for event manager results, calendar references, created booking, and assignment reason",
+      "startLine": 1461
+    },
+    {
+      "kind": "const",
+      "name": "credentials",
+      "signature": "const credentials = await refreshCredentials(allCredentials);",
+      "role": "Refreshes credentials before creating the EventManager",
+      "startLine": 1639
+    },
+    {
+      "kind": "const",
+      "name": "eventManager",
+      "signature": "const eventManager = !isDryRun",
+      "role": "Real or dry-run EventManager used to create/reschedule calendar events",
+      "startLine": 1641
+    },
+    {
+      "kind": "other",
+      "name": "rescheduling logic block",
+      "signature": "if (!eventType.seatsPerTimeSlot && originalRescheduledBooking?.uid) {",
+      "role": "Reschedule path: deletes old host events if organizer changed, calls eventManager.reschedule, processes Google Meet results, sends rescheduled emails",
+      "startLine": 1648
+    },
+    {
+      "kind": "other",
+      "name": "new booking creation block",
+      "signature": "} else if (isConfirmedByDefault) {",
+      "role": "Creation path for confirmed bookings without seats, using eventManager.create and processing results",
+      "startLine": 1851
+    },
+    {
+      "kind": "const",
+      "name": "googleMeetResult",
+      "signature": "const googleMeetResult = {",
+      "role": "Google Meet conferencing result payload built from EventManager results",
+      "startLine": 1882
+    },
+    {
+      "kind": "const",
+      "name": "webhookData",
+      "signature": "const webhookData: EventPayloadType = {",
+      "role": "Event payload assembled for webhook triggers (created/rescheduled booking)",
+      "startLine": 2015
+    },
+    {
+      "kind": "const",
+      "name": "bookingResponse",
+      "signature": "const bookingResponse = {",
+      "role": "Sanitized booking response (email stripped) returned in payment-required branch",
+      "startLine": 2137
+    },
+    {
+      "kind": "method",
+      "name": "handler (function body end / default export)",
+      "signature": "export default handler;",
+      "role": "Default export of the new-booking handler function",
+      "startLine": 2382
+    },
+    {
+      "kind": "interface",
+      "name": "IBookingServiceDependencies",
+      "signature": "export interface IBookingServiceDependencies {",
+      "role": "Dependency injection contract for RegularBookingService (cache, repos, prisma, limits)",
+      "startLine": 2384
+    },
+    {
+      "kind": "class",
+      "name": "RegularBookingService",
+      "signature": "export class RegularBookingService implements IBookingService {",
+      "role": "Service for creating/rescheduling non-recurring, non-instant bookings, delegating to handler",
+      "startLine": 2398
+    },
+    {
+      "kind": "method",
+      "name": "createBooking",
+      "signature": "async createBooking(input: { bookingData: CreateRegularBookingData; bookingMeta?: CreateBookingMeta }) {",
+      "role": "Creates a regular booking via handler",
+      "startLine": 2401
+    },
+    {
+      "kind": "method",
+      "name": "rescheduleBooking",
+      "signature": "async rescheduleBooking(input: { bookingData: CreateRegularBookingData; bookingMeta?: CreateBookingMeta }) {",
+      "role": "Reschedules a regular booking via handler",
+      "startLine": 2406
+    },
+    {
+      "kind": "method",
+      "name": "rescheduleBookingForApiV1",
+      "signature": "async rescheduleBookingForApiV1(input: {",
+      "role": "Reschedules a booking for API v1 with a custom booking data schema getter",
+      "startLine": 2410
+    }
+  ],
+  "skimTokenUsage": {
+    "inputTokens": 20016,
+    "outputTokens": 3983,
+    "costUsd": 0.003167955
+  }
+}

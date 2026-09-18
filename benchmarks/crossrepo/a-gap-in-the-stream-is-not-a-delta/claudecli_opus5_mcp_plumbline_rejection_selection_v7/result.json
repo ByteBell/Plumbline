@@ -1,0 +1,618 @@
+{
+  "arm": "claudecli_opus5_mcp_plumbline_rejection_selection_v7",
+  "contract": "A stream of incremental changes is only meaningful relative to a baseline the consumer is known to hold; every producer of such a stream must be able to say 'your baseline is gone' distinctly from 'here is the next delta', and every consumer must detect that signal and recover by discarding its local copy and re-reading the whole set, never by continuing to apply increments onto state that no longer corresponds to any state the producer was in.",
+  "defect_location": {
+    "repo": "db",
+    "summary": "The core sync write API owns the increment-versus-snapshot distinction and already expresses it: db/packages/db/src/types.ts declares the SyncConfig write surface and ChangeMessage (insert/update/delete); db/packages/db/src/collection/events.ts:87-96 declares AllCollectionEvents.truncate: CollectionTruncateEvent; db/packages/db/src/collection/state.ts:23-43 declares PendingSyncedTransaction.truncate?: boolean, the flag that turns a synced transaction from a patch into a replacement; db/packages/db/src/collection/sync.ts and db/packages/db/src/collection/subscription.ts carry it through the begin/write/commit transaction and out to subscribers. Exactly one adapter honours it: db/packages/electric-db-collection/src/electric.ts:1709-1732 tests isMustRefetchMessage(message), then begin(); truncate(); and resets the subset-dedupe state ('previously loaded predicates don't prevent refetching after truncate'), with a second begin(); truncate() at 1755-1758 for the narrow-then-widen atomic swap. The peer adapters drive the same begin/write/commit API and never reach for it: the_receipts bulk_search for 'truncate' returned noMatch for db/packages/trailbase-db-collection/src/trailbase.ts, db/packages/query-db-collection/src/manual-sync.ts, db/packages/rxdb-db-collection/src/rxdb.ts, db/packages/powersync-db-collection/src/powersync.ts and db/packages/powersync-db-collection/src/PowerSyncTransactor.ts, and shakedown over all 27 files matching '-db-collection/src' matched only electric.ts (7 hits, no cap). These adapters therefore apply every upstream batch as a delta against a baseline they may not hold \u2014 a late join, a restarted upstream, a moved window, a widened subset \u2014 and the local view stays wrong indefinitely. The vocabulary they must be brought in line with is explicit in tldraw: tldraw/packages/store/src/lib/RecordsDiff.ts:50-311 defines a per-record diff of added/updated/removed with squash and reverse, while tldraw/packages/store/src/lib/Store.ts:205,809,858 defines StoreSnapshot with getStoreSnapshot/loadStoreSnapshot, and tldraw/packages/sync-core/src/lib/TLSyncClient.ts:561-814 pairs resetConnection/didReconnect with applyNetworkDiff so a recovery and an increment are expressible in one vocabulary; tldraw/packages/sync-core/src/lib/SQLiteSyncStorage.ts states the producer half outright \u2014 it 'resets the requested clock to -1 and returns a wipe-all diff' when a client is too far behind."
+  },
+  "case_id": "xrepo-v6-17-a-gap-in-the-stream-is-not-a-delta-medium",
+  "case_question": "An incremental subscriber in one of these libraries is fed a running sequence of changes against a baseline it is assumed to hold. When the producer cannot honour that assumption - the subscriber joined late, the window it was tracking moved, the upstream restarted, the portion of the data it had asked for was narrowed and then widened again - what arrives is not a change against the baseline the subscriber holds but a change against a baseline it never saw. It applies it anyway, because nothing in the protocol distinguishes 'here is what changed' from 'you have missed something, start again': both are just the next batch. The result is a local view that no longer corresponds to any state the producer was ever in, and it stays wrong indefinitely, because every subsequent correct batch is applied on top of the corruption. The contract is that a stream of changes is only meaningful relative to a known baseline, so a subscriber must be able to detect that it has lost the baseline and must recover by re-reading the whole rather than by continuing to patch. Elsewhere in the folder the difference is explicit: one library's diff type carries, per record, whether the entry was added, changed or removed, and its constructor can be asked for the diff between two whole snapshots, so a recovery is expressible in the same vocabulary as an increment. Which files apply an increment against a baseline they may not hold, and which own the increment-versus-snapshot contract they have to be brought in line with?",
+  "retrieved": 58,
+  "gold_counts": {
+    "min_repos": 2,
+    "min_files": 5
+  },
+  "gold_size": 5,
+  "gold_repo_count": 2,
+  "metrics": {
+    "recall@10": 0.2,
+    "recall@25": 0.2,
+    "recall@50": 0.8,
+    "recall@100": 0.8,
+    "precision@5": 0.2,
+    "precision@10": 0.1,
+    "MRR": 0.5,
+    "first_hit_rank": 2,
+    "hits_at_25": "1/5",
+    "repo_recall": 1.0,
+    "repos_found": "2/2",
+    "repos_named": 9,
+    "invalid_path_rate": 0.0,
+    "cap_at_run_time": 100
+  },
+  "prf": {
+    "full_list": {
+      "precision": 0.069,
+      "recall": 0.8,
+      "f1": 0.127,
+      "hits": 4,
+      "retrieved": 58,
+      "gold_size": 5
+    },
+    "@10": {
+      "precision": 0.1,
+      "recall": 0.2,
+      "f1": 0.1333,
+      "hits": 1,
+      "retrieved": 10,
+      "gold_size": 5
+    },
+    "@25": {
+      "precision": 0.04,
+      "recall": 0.2,
+      "f1": 0.0667,
+      "hits": 1,
+      "retrieved": 25,
+      "gold_size": 5
+    },
+    "@50": {
+      "precision": 0.08,
+      "recall": 0.8,
+      "f1": 0.1455,
+      "hits": 4,
+      "retrieved": 50,
+      "gold_size": 5
+    },
+    "@100": {
+      "precision": 0.069,
+      "recall": 0.8,
+      "f1": 0.127,
+      "hits": 4,
+      "retrieved": 58,
+      "gold_size": 5
+    }
+  },
+  "hits": [
+    "tldraw::packages/store/src/lib/RecordsDiff.ts",
+    "db::packages/db/src/collection/subscription.ts",
+    "db::packages/db/src/query/live/collection-subscriber.ts",
+    "db::packages/db/src/collection/changes.ts"
+  ],
+  "ranked_detail": [
+    {
+      "rank": 1,
+      "repo": "db",
+      "path": "packages/db/src/types.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 2,
+      "repo": "tldraw",
+      "path": "packages/store/src/lib/RecordsDiff.ts",
+      "gold": true,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 3,
+      "repo": "xyflow",
+      "path": "packages/react/src/utils/changes.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 4,
+      "repo": "redux-devtools",
+      "path": "packages/redux-devtools-app-core/src/utils/updateState.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 5,
+      "repo": "query",
+      "path": "packages/query-core/src/queryObserver.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 6,
+      "repo": "router",
+      "path": "packages/router-core/src/ssr/serializer/RawStream.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 7,
+      "repo": "zustand",
+      "path": "src/vanilla.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 8,
+      "repo": "jotai",
+      "path": "src/vanilla/internals.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 9,
+      "repo": "react",
+      "path": "packages/react-server-dom-webpack/src/client/ReactFlightDOMClientBrowser.js",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 10,
+      "repo": "db",
+      "path": "packages/trailbase-db-collection/src/trailbase.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 11,
+      "repo": "tldraw",
+      "path": "packages/store/src/lib/Store.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 12,
+      "repo": "xyflow",
+      "path": "packages/system/src/types/changes.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 13,
+      "repo": "redux-devtools",
+      "path": "packages/redux-devtools-app-core/src/reducers/instances.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 14,
+      "repo": "query",
+      "path": "packages/query-core/src/hydration.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 15,
+      "repo": "router",
+      "path": "packages/react-start-rsc/src/ReplayableStream.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 16,
+      "repo": "zustand",
+      "path": "src/middleware/persist.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 17,
+      "repo": "db",
+      "path": "packages/query-db-collection/src/manual-sync.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 18,
+      "repo": "tldraw",
+      "path": "packages/sync-core/src/lib/TLSyncClient.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 19,
+      "repo": "xyflow",
+      "path": "packages/react/src/store/index.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 20,
+      "repo": "redux-devtools",
+      "path": "packages/redux-devtools-instrument/src/instrument.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 21,
+      "repo": "query",
+      "path": "packages/query-core/src/queryClient.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 22,
+      "repo": "db",
+      "path": "packages/rxdb-db-collection/src/rxdb.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 23,
+      "repo": "tldraw",
+      "path": "packages/sync-core/src/lib/diff.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 24,
+      "repo": "xyflow",
+      "path": "packages/react/src/hooks/useNodesEdgesState.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 25,
+      "repo": "redux-devtools",
+      "path": "packages/redux-devtools-remote/src/devTools.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 26,
+      "repo": "db",
+      "path": "packages/powersync-db-collection/src/powersync.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 27,
+      "repo": "tldraw",
+      "path": "packages/sync-core/src/lib/protocol.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 28,
+      "repo": "xyflow",
+      "path": "packages/react/src/types/store.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 29,
+      "repo": "redux-devtools",
+      "path": "packages/redux-devtools-app-core/src/actions/index.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 30,
+      "repo": "db",
+      "path": "packages/electric-db-collection/src/electric.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 31,
+      "repo": "tldraw",
+      "path": "packages/sync-core/src/lib/TLSyncStorage.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 32,
+      "repo": "db",
+      "path": "packages/db/src/collection/sync.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 33,
+      "repo": "tldraw",
+      "path": "packages/sync-core/src/lib/SQLiteSyncStorage.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 34,
+      "repo": "db",
+      "path": "packages/db/src/collection/state.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 35,
+      "repo": "tldraw",
+      "path": "packages/sync-core/src/lib/InMemorySyncStorage.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 36,
+      "repo": "db",
+      "path": "packages/db/src/collection/subscription.ts",
+      "gold": true,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 37,
+      "repo": "tldraw",
+      "path": "packages/sync-core/src/lib/TLSyncRoom.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 38,
+      "repo": "db",
+      "path": "packages/db/src/collection/events.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 39,
+      "repo": "tldraw",
+      "path": "packages/store/src/index.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 40,
+      "repo": "db",
+      "path": "packages/powersync-db-collection/src/PowerSyncTransactor.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 41,
+      "repo": "tldraw",
+      "path": "packages/editor/src/lib/utils/sync/TLLocalSyncClient.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 42,
+      "repo": "db",
+      "path": "packages/db/src/query/live/collection-subscriber.ts",
+      "gold": true,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 43,
+      "repo": "tldraw",
+      "path": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 44,
+      "repo": "db",
+      "path": "packages/db/src/query/subset-dedupe.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 45,
+      "repo": "tldraw",
+      "path": "packages/store/src/lib/StoreQueries.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 46,
+      "repo": "db",
+      "path": "packages/db/src/collection/changes.ts",
+      "gold": true,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 47,
+      "repo": "tldraw",
+      "path": "packages/editor/src/lib/config/TLEditorSnapshot.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 48,
+      "repo": "db",
+      "path": "packages/db/src/collection/change-events.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 49,
+      "repo": "db",
+      "path": "packages/db/src/collection/index.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 50,
+      "repo": "db",
+      "path": "packages/db/src/collection/lifecycle.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 51,
+      "repo": "db",
+      "path": "packages/powersync-db-collection/src/definitions.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 52,
+      "repo": "db",
+      "path": "packages/rxdb-db-collection/src/index.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 53,
+      "repo": "db",
+      "path": "packages/trailbase-db-collection/src/index.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 54,
+      "repo": "db",
+      "path": "packages/query-db-collection/src/index.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 55,
+      "repo": "db",
+      "path": "packages/powersync-db-collection/src/index.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 56,
+      "repo": "db",
+      "path": "packages/db/src/local-storage.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 57,
+      "repo": "db",
+      "path": "packages/db/src/collection/indexes.ts",
+      "gold": false,
+      "exists_at_pin": true
+    },
+    {
+      "rank": 58,
+      "repo": "db",
+      "path": "packages/db/src/query/live/utils.ts",
+      "gold": false,
+      "exists_at_pin": true
+    }
+  ],
+  "rank_policy": "block-interleave",
+  "invalid_paths": [],
+  "missed_gold": ["db::packages/db/src/query/live-query-collection.ts"],
+  "retriever": {
+    "surface": "plumbline MCP alone: the ByteBell IR knowledge graph. No filesystem, shell or grep.",
+    "repo_pins": {
+      "redux": "3aa561f9fc13f3287e6d83764f85fe0e82437c5f",
+      "xyflow": "360f5b13e2bc6899ea06b4be1a49b068d86926cf",
+      "redux-toolkit": "b1c5130154c454ca8387f55da6122fcb507c560c",
+      "query": "46d7f02f1c7b9fcd3255082cc7103e8bfa3dab76",
+      "react-redux": "ad5d1e0816d0cb1464b25cf2853f2a7d73433f5b",
+      "table": "d08af367e11c539bb7e18c2472aa761149ef6db6",
+      "reselect": "950112a328f71d97d18fd543159d6fdefa432b38",
+      "tldraw": "5590d14d8edd4faab7dc1177b6e1adb28876fd23",
+      "react": "3a717e42438afac81020cdec297dadb5613a4304",
+      "redux-devtools": "f4b4668c30ae08920c59a76cc4629c35c16ef0fa",
+      "jotai": "5c4ca26b0db5571114be58393e17854a771f7790",
+      "router": "3dee5b2e9453d01a3172c73426959007b290b3fc",
+      "zustand": "beca84e600e4e250f6b244d22878e72948f331c7",
+      "primitives": "58164e06ca67dff9a68dd375d858180cfdc8ec27",
+      "db": "7f0fa36ff6d48b0494ed5f6a1223fd18c317e41f",
+      "zod": "912f0f51b0ced654d0069741e7160834dca742ee"
+    },
+    "checkout_verified": "run.sh gates on git rev-parse HEAD == pinned commit for all 15 repositories before launch",
+    "isolation": "kernel-enforced by sandbox-exec: gold, the answer vault and every sibling arm are unreadable; no session transcript is readable; fresh cwd",
+    "surface_pure": true
+  },
+  "cost": {
+    "session_id": "cc69cad5-8d31-49b6-ae2b-dd8ab4a11b1e",
+    "arm": "claudecli_opus5_mcp_plumbline_rejection_selection_v7",
+    "case": "xrepo-v6-17-a-gap-in-the-stream-is-not-a-delta-medium",
+    "model": "claude-opus-5",
+    "launch": "fresh isolated `claude -p` under sandbox-exec, --strict-mcp-config",
+    "price_per_mtok_usd": {
+      "input": 5.0,
+      "output": 25.0,
+      "cache_write": 10.0,
+      "cache_read": 0.5
+    },
+    "usd_per_query_cli": 4.76419,
+    "usd_per_query_list_price": 4.755801,
+    "duration_ms": 996362,
+    "wall_seconds": 1001,
+    "num_turns": 40,
+    "tokens": {
+      "input": 28,
+      "output": 54912,
+      "cache_creation": 237501,
+      "cache_read": 2015702
+    },
+    "tokens_retrieved": 103046,
+    "cache_clean": false,
+    "cache_mode": "warm",
+    "cache_note": "fresh session, no --resume/--continue: every cache_read is cache THIS session created and read back, which the run conditions permit",
+    "tool_calls": {
+      "ToolSearch": 2,
+      "mcp__plumbline__roll_call": 1,
+      "mcp__plumbline__rap_sheet": 1,
+      "mcp__plumbline__stakeout": 14,
+      "Bash": 2,
+      "mcp__plumbline__case_file": 4,
+      "mcp__plumbline__collateral_damage": 4,
+      "mcp__plumbline__manhunt": 2,
+      "mcp__plumbline__blueprint": 5,
+      "mcp__plumbline__shakedown": 1,
+      "mcp__plumbline__dragnet": 1,
+      "mcp__plumbline__the_receipts": 2
+    },
+    "disallowed_tool_calls": {},
+    "non_retrieval_tool_calls": {
+      "ToolSearch": 2
+    },
+    "misfired_tool_calls": {},
+    "mcp_tool_calls": {
+      "mcp__plumbline__roll_call": 1,
+      "mcp__plumbline__rap_sheet": 1,
+      "mcp__plumbline__stakeout": 14,
+      "mcp__plumbline__case_file": 4,
+      "mcp__plumbline__collateral_damage": 4,
+      "mcp__plumbline__manhunt": 2,
+      "mcp__plumbline__blueprint": 5,
+      "mcp__plumbline__shakedown": 1,
+      "mcp__plumbline__dragnet": 1,
+      "mcp__plumbline__the_receipts": 2
+    },
+    "permission_denials": 0,
+    "surface_pure": true,
+    "surface_pure_note": "Any Bash/Read/Grep/Glob call is a surface violation: the knowledge graph is the whole search surface.",
+    "allowed_tools_source": "run.sh --allowedTools",
+    "allowed_tools": [
+      "Bash",
+      "ScheduleWakeup",
+      "TodoWrite",
+      "ToolSearch",
+      "mcp__plumbline__blueprint",
+      "mcp__plumbline__case_file",
+      "mcp__plumbline__case_notes",
+      "mcp__plumbline__cold_case",
+      "mcp__plumbline__collateral_damage",
+      "mcp__plumbline__cross_repo_lookup",
+      "mcp__plumbline__dragnet",
+      "mcp__plumbline__evidence_locker",
+      "mcp__plumbline__file_a_complaint",
+      "mcp__plumbline__interrogation",
+      "mcp__plumbline__kingpin",
+      "mcp__plumbline__manhunt",
+      "mcp__plumbline__mugshot",
+      "mcp__plumbline__paper_trail",
+      "mcp__plumbline__pull_the_evidence",
+      "mcp__plumbline__rap_sheet",
+      "mcp__plumbline__read_the_fine_print",
+      "mcp__plumbline__roll_call",
+      "mcp__plumbline__shakedown",
+      "mcp__plumbline__stakeout",
+      "mcp__plumbline__the_receipts"
+    ],
+    "sandbox": {
+      "mechanism": "sandbox-exec (macOS seatbelt), profile pinned at sandbox.sb",
+      "gold_readable": false,
+      "other_arms_readable": false,
+      "transcripts_readable": false,
+      "out_of_arena_paths_attempted": {},
+      "reads_refused_by_kernel": 0,
+      "contamination_possible": false,
+      "gate4_verified": "run.sh proved golden.json unreadable under this profile before launch"
+    },
+    "transcript": "/Users/sauravverma/.claude/projects/-private-tmp-xrepo-runs-medium-a-gap-in-the-stream-is-not-a-delta-claudecli-opus5-mcp-plumbline-rejection-selection-v7-20260917T224238Z-34945/cc69cad5-8d31-49b6-ae2b-dd8ab4a11b1e.jsonl"
+  },
+  "comparable": true
+}

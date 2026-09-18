@@ -1,0 +1,1484 @@
+{
+  "schema": 1,
+  "kind": "file",
+  "repoName": "xyflow",
+  "commitHash": "360f5b13e2bc6899ea06b4be1a49b068d86926cf",
+  "generatedAt": "2026-08-03T07:44:04.757Z",
+  "file": {
+    "relativePath": "packages/system/src/xypanzoom/eventhandler.ts",
+    "language": "typescript",
+    "sizeBytes": 7314,
+    "tokenCount": 1862,
+    "model": "openai/gpt-5.6-luna",
+    "analysedAt": "2026-08-03T07:37:37.228Z",
+    "module": {
+      "purpose": "Provides D3-based event handlers for pan, zoom, wheel scrolling, pinch zooming, dragging, context-menu behavior, and transform lifecycle callbacks.",
+      "summary": "This module adapts native wheel and D3 zoom events into pan and zoom operations for the XY viewport. It filters interactions around no-wheel elements, normalizes browser-specific scroll behavior, supports pinch zooming, tracks active pan and zoom state, suppresses internally generated events, and coordinates start, transform, and end callbacks including delayed scroll completion.",
+      "businessContext": "Supports interactive canvas navigation in a graph or diagram editor. Failures can break viewport movement, pinch zooming, drag state, context-menu behavior, or consumer synchronization.",
+      "classes": [],
+      "functions": [
+        "createPanOnScrollHandler (~L57-123): Creates wheel-driven panning and pinch-zoom event handling",
+        "createZoomOnScrollHandler (~L125-145): Filters wheel events before delegating zoom handling",
+        "createPanZoomStartHandler (~L147-174): Initializes viewport interaction and drag lifecycle state",
+        "createPanZoomHandler (~L176-198): Applies transforms and emits pan-zoom updates",
+        "createPanZoomEndHandler (~L200-239): Finalizes interactions and dispatches context-menu callbacks"
+      ],
+      "keywords": [
+        "D3 zoom",
+        "pinch zoom",
+        "wheel normalization",
+        "viewport transform",
+        "pan-on-scroll",
+        "right-click pan",
+        "dragging state",
+        "context menu",
+        "trackpad gestures",
+        "scroll debounce"
+      ],
+      "ontologyConcepts": [
+        "viewport navigation",
+        "gesture interpretation",
+        "event lifecycle",
+        "state synchronization",
+        "input filtering",
+        "interaction debouncing"
+      ],
+      "businessEntities": ["viewport", "zoom state", "pan gesture", "wheel event", "drag interaction", "context menu"],
+      "systemCapabilities": [
+        "Pan viewport from wheel input",
+        "Zoom viewport from pinch gestures",
+        "Synchronize transform state",
+        "Track dragging and zoom lifecycle",
+        "Suppress duplicate scroll completion events",
+        "Handle right-click pane interactions"
+      ],
+      "configDependencies": [
+        "noWheelClassName",
+        "panOnScrollMode",
+        "panOnScrollSpeed",
+        "zoomOnPinch",
+        "preventScrolling",
+        "panOnDrag",
+        "onPaneContextMenu"
+      ],
+      "importsInternal": [
+        {
+          "spec": "../types",
+          "symbols": [
+            "PanOnScrollMode",
+            "D3SelectionInstance",
+            "D3ZoomHandler",
+            "D3ZoomInstance",
+            "OnPanZoom",
+            "OnDraggingChange",
+            "OnTransformChange"
+          ],
+          "anchor": { "startLine": 6, "endLine": 13 },
+          "resolvedRelativePath": "packages/system/src/types/index.ts",
+          "resolvedFileId": "packages/system/src/types/index.ts",
+          "resolvedHint": "packages/system/src/types.ts"
+        },
+        {
+          "spec": "./utils",
+          "symbols": ["isRightClickPan", "isWrappedWithClass", "transformToViewport", "wheelDelta"],
+          "anchor": { "startLine": 14, "endLine": 14 },
+          "resolvedRelativePath": "packages/system/src/xypanzoom/utils.ts",
+          "resolvedFileId": "packages/system/src/xypanzoom/utils.ts",
+          "resolvedHint": "packages/system/src/xypanzoom/utils.ts"
+        },
+        {
+          "spec": "../utils",
+          "symbols": ["isMacOs"],
+          "anchor": { "startLine": 15, "endLine": 15 },
+          "resolvedRelativePath": "packages/system/src/utils/index.ts",
+          "resolvedFileId": "packages/system/src/utils/index.ts",
+          "resolvedHint": "packages/system/src/utils.ts"
+        },
+        {
+          "spec": "./XYPanZoom",
+          "symbols": ["ZoomPanValues"],
+          "anchor": { "startLine": 16, "endLine": 16 },
+          "resolvedRelativePath": "packages/system/src/xypanzoom/XYPanZoom.ts",
+          "resolvedFileId": "packages/system/src/xypanzoom/XYPanZoom.ts",
+          "resolvedHint": "packages/system/src/xypanzoom/XYPanZoom.ts"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "d3-zoom",
+          "symbols": ["D3ZoomEvent"],
+          "package": "d3-zoom",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 3, "endLine": 3 }
+        },
+        {
+          "spec": "d3-selection",
+          "symbols": ["pointer"],
+          "package": "d3-selection",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 4, "endLine": 4 }
+        }
+      ],
+      "sideEffects": {
+        "io": [],
+        "network": [],
+        "env": [],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": [
+          "Mutates zoomPanValues interaction flags, mouse button, previous viewport, and timeout identifiers.",
+          "Calls preventDefault and stopImmediatePropagation on handled wheel events."
+        ]
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "PanOnScrollParams",
+          "shape": "export type PanOnScrollParams = { zoomPanValues: ZoomPanValues; noWheelClassName: string; d3Selection: D3SelectionInstance; d3Zoom: D3ZoomInstance; panOnScrollMode: PanOnScrollMode; panOnScrollSpeed: number; zoomOnPinch: boolean; onPanZoomStart?: OnPanZoom; onPanZoom?: OnPanZoom; onPanZoomEnd?: OnPanZoom; }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "ZoomOnScrollParams",
+          "shape": "export type ZoomOnScrollParams = { noWheelClassName: string; preventScrolling: boolean; d3ZoomHandler: D3ZoomHandler; }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "PanZoomStartParams",
+          "shape": "export type PanZoomStartParams = { zoomPanValues: ZoomPanValues; onDraggingChange: OnDraggingChange; onPanZoomStart?: OnPanZoom; }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "PanZoomParams",
+          "shape": "export type PanZoomParams = { zoomPanValues: ZoomPanValues; panOnDrag: boolean | number[]; onPaneContextMenu: boolean; onTransformChange: OnTransformChange; onPanZoom?: OnPanZoom; }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "PanZoomEndParams",
+          "shape": "export type PanZoomEndParams = { zoomPanValues: ZoomPanValues; panOnDrag: boolean | number[]; panOnScroll: boolean; onDraggingChange: (isDragging: boolean) => void; onPanZoomEnd?: OnPanZoom; onPaneContextMenu?: (event: any) => void; }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "createPanOnScrollHandler",
+          "shape": "export function createPanOnScrollHandler(params: PanOnScrollParams)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "createZoomOnScrollHandler",
+          "shape": "export function createZoomOnScrollHandler(params: ZoomOnScrollParams)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "createPanZoomStartHandler",
+          "shape": "export function createPanZoomStartHandler(params: PanZoomStartParams)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "createPanZoomHandler",
+          "shape": "export function createPanZoomHandler(params: PanZoomParams)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "createPanZoomEndHandler",
+          "shape": "export function createPanZoomEndHandler(params: PanZoomEndParams)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "D3ZoomEvent",
+          "shape": "D3ZoomEvent<HTMLDivElement, any>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "PanOnScrollMode",
+          "shape": "PanOnScrollMode.Vertical | PanOnScrollMode.Horizontal",
+          "resolvedRelativePath": "packages/system/src/types/index.ts",
+          "resolvedFileId": "packages/system/src/types/index.ts"
+        },
+        {
+          "name": "D3SelectionInstance",
+          "shape": "d3Selection.property('__zoom')",
+          "resolvedRelativePath": "packages/system/src/types/index.ts",
+          "resolvedFileId": "packages/system/src/types/index.ts"
+        },
+        {
+          "name": "D3ZoomInstance",
+          "shape": "d3Zoom.scaleTo(d3Selection, zoom, point, event); d3Zoom.translateBy(d3Selection, x, y, { internal: true })",
+          "resolvedRelativePath": "packages/system/src/types/index.ts",
+          "resolvedFileId": "packages/system/src/types/index.ts"
+        },
+        {
+          "name": "D3ZoomHandler",
+          "shape": "d3ZoomHandler.call(this, event, d)",
+          "resolvedRelativePath": "packages/system/src/types/index.ts",
+          "resolvedFileId": "packages/system/src/types/index.ts"
+        },
+        {
+          "name": "OnPanZoom",
+          "shape": "onPanZoom(event, viewport)",
+          "resolvedRelativePath": "packages/system/src/types/index.ts",
+          "resolvedFileId": "packages/system/src/types/index.ts"
+        },
+        {
+          "name": "OnDraggingChange",
+          "shape": "onDraggingChange(isDragging)",
+          "resolvedRelativePath": "packages/system/src/types/index.ts",
+          "resolvedFileId": "packages/system/src/types/index.ts"
+        },
+        {
+          "name": "OnTransformChange",
+          "shape": "onTransformChange([event.transform.x, event.transform.y, event.transform.k])",
+          "resolvedRelativePath": "packages/system/src/types/index.ts",
+          "resolvedFileId": "packages/system/src/types/index.ts"
+        },
+        {
+          "name": "transformToViewport",
+          "shape": "transformToViewport(event.transform)",
+          "resolvedRelativePath": "packages/system/src/xypanzoom/utils.ts",
+          "resolvedFileId": "packages/system/src/xypanzoom/utils.ts"
+        },
+        {
+          "name": "isWrappedWithClass",
+          "shape": "isWrappedWithClass(event, noWheelClassName)",
+          "resolvedRelativePath": "packages/system/src/xypanzoom/utils.ts",
+          "resolvedFileId": "packages/system/src/xypanzoom/utils.ts"
+        },
+        {
+          "name": "isRightClickPan",
+          "shape": "isRightClickPan(panOnDrag, zoomPanValues.mouseButton ?? 0)",
+          "resolvedRelativePath": "packages/system/src/xypanzoom/utils.ts",
+          "resolvedFileId": "packages/system/src/xypanzoom/utils.ts"
+        },
+        {
+          "name": "wheelDelta",
+          "shape": "wheelDelta(event)",
+          "resolvedRelativePath": "packages/system/src/xypanzoom/utils.ts",
+          "resolvedFileId": "packages/system/src/xypanzoom/utils.ts"
+        },
+        {
+          "name": "isMacOs",
+          "shape": "isMacOs()",
+          "resolvedRelativePath": "packages/system/src/utils/index.ts",
+          "resolvedFileId": "packages/system/src/utils/index.ts"
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "wheel-pan-filtering",
+          "intent": "Rejects no-wheel elements and suppresses native scrolling for handled wheel events.",
+          "structureKind": "branch",
+          "predicate": "isWrappedWithClass(event, noWheelClassName)",
+          "branchOutcomes": ["return false for no-wheel targets", "continue handling wheel input"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 72, "endLine": 79 }
+        },
+        {
+          "name": "pinch-zoom",
+          "intent": "Converts trackpad pinch wheel deltas into D3 scale operations.",
+          "structureKind": "branch",
+          "predicate": "event.ctrlKey && zoomOnPinch",
+          "branchOutcomes": ["scale viewport for pinch gesture", "continue with pan scrolling"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 87, "endLine": 96 }
+        },
+        {
+          "name": "scroll-normalization",
+          "intent": "Normalizes browser wheel units and applies orientation-specific deltas.",
+          "structureKind": "branch",
+          "predicate": "!isMacOs() && event.shiftKey && panOnScrollMode !== PanOnScrollMode.Vertical",
+          "branchOutcomes": [
+            "map Windows shift-scroll vertically into horizontal movement",
+            "retain normalized horizontal and vertical deltas"
+          ],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 98, "endLine": 103 }
+        },
+        {
+          "name": "pan-scroll-lifecycle",
+          "intent": "Starts or continues scrolling callbacks and debounces the end callback.",
+          "structureKind": "async",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 111, "endLine": 123 }
+        },
+        {
+          "name": "zoom-scroll-filtering",
+          "intent": "Allows or blocks wheel zoom based on scrolling and target-class settings.",
+          "structureKind": "branch",
+          "predicate": "preventZoom || hasNoWheelClass",
+          "branchOutcomes": ["return null without delegating zoom", "prevent default and invoke D3 zoom handler"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 127, "endLine": 145 }
+        },
+        {
+          "name": "zoom-start-state",
+          "intent": "Records interaction origin and initializes viewport and dragging state.",
+          "structureKind": "branch",
+          "predicate": "event.sourceEvent?.internal",
+          "branchOutcomes": ["ignore internal event", "record external interaction state"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 148, "endLine": 166 }
+        },
+        {
+          "name": "transform-dispatch",
+          "intent": "Publishes transform changes while suppressing synchronized and internal events.",
+          "structureKind": "branch",
+          "predicate": "!event.sourceEvent?.sync",
+          "branchOutcomes": ["emit transform change", "skip transform callback"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 181, "endLine": 191 }
+        },
+        {
+          "name": "zoom-end-finalization",
+          "intent": "Clears interaction state and delays completion callbacks during scroll panning.",
+          "structureKind": "async",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 201, "endLine": 239 }
+        }
+      ],
+      "representationFamily": "function-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "type",
+          "name": "PanOnScrollParams",
+          "signature": "export type PanOnScrollParams = {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 15, "endLine": 26 }
+        },
+        {
+          "kind": "type",
+          "name": "ZoomOnScrollParams",
+          "signature": "export type ZoomOnScrollParams = {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 28, "endLine": 32 }
+        },
+        {
+          "kind": "type",
+          "name": "PanZoomStartParams",
+          "signature": "export type PanZoomStartParams = {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 34, "endLine": 38 }
+        },
+        {
+          "kind": "type",
+          "name": "PanZoomParams",
+          "signature": "export type PanZoomParams = {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 40, "endLine": 46 }
+        },
+        {
+          "kind": "type",
+          "name": "PanZoomEndParams",
+          "signature": "export type PanZoomEndParams = {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 48, "endLine": 55 }
+        },
+        {
+          "kind": "function",
+          "name": "createPanOnScrollHandler",
+          "signature": "export function createPanOnScrollHandler({",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 57, "endLine": 123 }
+        },
+        {
+          "kind": "function",
+          "name": "createZoomOnScrollHandler",
+          "signature": "export function createZoomOnScrollHandler({ noWheelClassName, preventScrolling, d3ZoomHandler }: ZoomOnScrollParams) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 125, "endLine": 145 }
+        },
+        {
+          "kind": "function",
+          "name": "createPanZoomStartHandler",
+          "signature": "export function createPanZoomStartHandler({ zoomPanValues, onDraggingChange, onPanZoomStart }: PanZoomStartParams) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 147, "endLine": 174 }
+        },
+        {
+          "kind": "function",
+          "name": "createPanZoomHandler",
+          "signature": "export function createPanZoomHandler({",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 176, "endLine": 198 }
+        },
+        {
+          "kind": "function",
+          "name": "createPanZoomEndHandler",
+          "signature": "export function createPanZoomEndHandler({",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 200, "endLine": 239 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "type",
+          "name": "PanOnScrollParams",
+          "shape": "{\n  zoomPanValues: ZoomPanValues;\n  noWheelClassName: string;\n  d3Selection: D3SelectionInstance;\n  d3Zoom: D3ZoomInstance;\n  panOnScrollMode: PanOnScrollMode;\n  panOnScrollSpeed: number;\n  zoomOnPinch: boolean;\n  onPanZoomStart?: OnPanZoom;\n  onPanZoom?: OnPanZoom;\n  onPanZoomEnd?: OnPanZoom;\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 15, "endLine": 26 }
+        },
+        {
+          "kind": "type",
+          "name": "ZoomOnScrollParams",
+          "shape": "{\n  noWheelClassName: string;\n  preventScrolling: boolean;\n  d3ZoomHandler: D3ZoomHandler;\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 28, "endLine": 32 }
+        },
+        {
+          "kind": "type",
+          "name": "PanZoomStartParams",
+          "shape": "{\n  zoomPanValues: ZoomPanValues;\n  onDraggingChange: OnDraggingChange;\n  onPanZoomStart?: OnPanZoom;\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 34, "endLine": 38 }
+        },
+        {
+          "kind": "type",
+          "name": "PanZoomParams",
+          "shape": "{\n  zoomPanValues: ZoomPanValues;\n  panOnDrag: boolean | number[];\n  onPaneContextMenu: boolean;\n  onTransformChange: OnTransformChange;\n  onPanZoom?: OnPanZoom;\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 40, "endLine": 46 }
+        },
+        {
+          "kind": "type",
+          "name": "PanZoomEndParams",
+          "shape": "{\n  zoomPanValues: ZoomPanValues;\n  panOnDrag: boolean | number[];\n  panOnScroll: boolean;\n  onDraggingChange: (isDragging: boolean) => void;\n  onPanZoomEnd?: OnPanZoom;\n  onPaneContextMenu?: (event: any) => void;\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 48, "endLine": 55 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "Event wrapped by the configured no-wheel class",
+          "handled": true,
+          "behavior": "Prevents native pinch zoom when needed and returns without panning or delegating zoom.",
+          "anchor": { "startLine": 72, "endLine": 79 }
+        },
+        {
+          "inputShape": "Trackpad pinch event with ctrlKey",
+          "handled": true,
+          "behavior": "Uses wheelDelta and the pointer location to scale the viewport, then returns.",
+          "anchor": { "startLine": 87, "endLine": 96 }
+        },
+        {
+          "inputShape": "Firefox wheel event with deltaMode equal to one",
+          "handled": true,
+          "behavior": "Multiplies wheel deltas by twenty before applying pan.",
+          "anchor": { "startLine": 84, "endLine": 84 }
+        },
+        {
+          "inputShape": "Windows shift-scroll outside vertical-only mode",
+          "handled": true,
+          "behavior": "Maps vertical wheel movement into horizontal panning.",
+          "anchor": { "startLine": 90, "endLine": 93 }
+        },
+        {
+          "inputShape": "Internal event marked internal",
+          "handled": true,
+          "behavior": "Returns or suppresses external lifecycle and transform callbacks.",
+          "anchor": { "startLine": 149, "endLine": 151 }
+        },
+        {
+          "inputShape": "Right-click pan that never used the right mouse button",
+          "handled": true,
+          "behavior": "Invokes the pane context-menu callback at interaction end.",
+          "anchor": { "startLine": 210, "endLine": 217 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": "==",
+          "left": "event.deltaMode",
+          "right": "1",
+          "inclusive": true,
+          "intent": "Selects Firefox-style wheel scaling.",
+          "anchor": { "startLine": 84, "endLine": 84 }
+        },
+        {
+          "operator": "==",
+          "left": "panOnScrollMode",
+          "right": "PanOnScrollMode.Vertical",
+          "inclusive": true,
+          "intent": "Disables horizontal movement in vertical mode.",
+          "anchor": { "startLine": 86, "endLine": 86 }
+        },
+        {
+          "operator": "==",
+          "left": "panOnScrollMode",
+          "right": "PanOnScrollMode.Horizontal",
+          "inclusive": true,
+          "intent": "Disables vertical movement in horizontal mode.",
+          "anchor": { "startLine": 87, "endLine": 87 }
+        },
+        {
+          "operator": "!=",
+          "left": "panOnScrollMode",
+          "right": "PanOnScrollMode.Vertical",
+          "inclusive": false,
+          "intent": "Enables Windows shift-scroll remapping outside vertical-only mode.",
+          "anchor": { "startLine": 90, "endLine": 90 }
+        },
+        {
+          "operator": "==",
+          "left": "event.type",
+          "right": "'wheel'",
+          "inclusive": true,
+          "intent": "Identifies wheel events for scrolling prevention logic.",
+          "anchor": { "startLine": 127, "endLine": 127 }
+        },
+        {
+          "operator": "==",
+          "left": "event.sourceEvent?.type",
+          "right": "'mousedown'",
+          "inclusive": true,
+          "intent": "Marks dragging when the zoom interaction originated from a mouse press.",
+          "anchor": { "startLine": 161, "endLine": 161 }
+        }
+      ],
+      "errorHandling": [],
+      "invariants": [
+        {
+          "kind": "invariant",
+          "description": "Current zoom scale defaults to one when the D3 selection has no scale.",
+          "anchor": { "startLine": 82, "endLine": 82 }
+        },
+        {
+          "kind": "ordering",
+          "description": "Pan-on-scroll start fires once, intermediate callbacks fire while scrolling, and end fires after 150 milliseconds of inactivity.",
+          "anchor": { "startLine": 115, "endLine": 123 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Internal D3-generated events do not trigger external pan, zoom, or end lifecycle callbacks.",
+          "anchor": { "startLine": 149, "endLine": 152 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "Ending an external interaction resets zooming, right-button usage, and dragging state.",
+          "anchor": { "startLine": 207, "endLine": 222 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "D3 selection property __zoom contains a transform with a usable scale during wheel panning.",
+          "anchor": { "startLine": 82, "endLine": 82 }
+        },
+        {
+          "kind": "caller",
+          "description": "Callbacks accept the event and viewport shapes supplied by these handlers.",
+          "anchor": { "startLine": 118, "endLine": 119 }
+        },
+        {
+          "kind": "schema",
+          "description": "zoomPanValues provides mutable state fields used for interaction tracking and timer storage.",
+          "anchor": { "startLine": 111, "endLine": 123 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "What exact viewport representation is returned by transformToViewport?",
+          "affects": "public callback payloads and viewport state",
+          "anchor": { "startLine": 81, "endLine": 81 },
+          "resolution": null
+        },
+        {
+          "question": "What does the internal marker mean across all D3 event sources?",
+          "affects": "event suppression and transform propagation",
+          "anchor": { "startLine": 149, "endLine": 151 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "mixed",
+        "reentrant": false,
+        "ordering": "deterministic",
+        "notes": "Handlers execute synchronously, while pan-scroll and pan-zoom end callbacks are scheduled through cancellable timers."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "blocks-no-wheel-scroll",
+          "scenario": "A wheel event occurs inside an element wrapped with the configured no-wheel class.",
+          "given": ["isWrappedWithClass(event, noWheelClassName) === true", "event.ctrlKey === false"],
+          "when": "createPanOnScrollHandler(params)(event)",
+          "then": "event.preventDefault is not called, d3Zoom.translateBy is not called, and the handler returns false",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "No-wheel regions must not pan the viewport."
+        },
+        {
+          "testId": "pinch-zooms-at-pointer",
+          "scenario": "A trackpad pinch event is received while pinch zooming is enabled.",
+          "given": [
+            "event.ctrlKey === true",
+            "zoomOnPinch === true",
+            "d3Selection.property('__zoom').k === currentZoom"
+          ],
+          "when": "createPanOnScrollHandler(params)(event)",
+          "then": "d3Zoom.scaleTo is called with currentZoom * Math.pow(2, wheelDelta(event)) and pointer(event)",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pinch gestures must scale around the pointer instead of translating."
+        },
+        {
+          "testId": "pan-scroll-starts-and-debounces-end",
+          "scenario": "The first scroll event begins a pan-scroll gesture and subsequent events arrive before the debounce timeout.",
+          "given": [
+            "zoomPanValues.isPanScrolling === false",
+            "panOnScrollMode !== PanOnScrollMode.Vertical",
+            "panOnScrollMode !== PanOnScrollMode.Horizontal"
+          ],
+          "when": "createPanOnScrollHandler(params)(event)",
+          "then": "onPanZoomStart is called once, onPanZoom is called for later events, and onPanZoomEnd is called after 150 milliseconds",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Scroll callbacks must represent one debounced gesture rather than one start/end pair per wheel event."
+        },
+        {
+          "testId": "skips-prevented-zoom",
+          "scenario": "Wheel zoom prevention is disabled and the event is not a pinch gesture.",
+          "given": [
+            "preventScrolling === false",
+            "event.type === 'wheel'",
+            "event.ctrlKey === false",
+            "hasNoWheelClass === false"
+          ],
+          "when": "createZoomOnScrollHandler(params).call(element, event, d)",
+          "then": "the handler returns null without calling event.preventDefault or d3ZoomHandler",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Normal wheel events must pass through when scrolling prevention is disabled."
+        },
+        {
+          "testId": "ignores-internal-pan-start",
+          "scenario": "A d3 zoom start event is marked as internally generated.",
+          "given": ["event.sourceEvent.internal === true"],
+          "when": "createPanZoomStartHandler(params)(event)",
+          "then": "zoomPanValues.isZoomingOrPanning and zoomPanValues.prevViewport are unchanged and onPanZoomStart is not called",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Internal transformations must not appear as user interactions."
+        },
+        {
+          "testId": "emits-transform-for-user-pan",
+          "scenario": "A user-generated zoom event updates the viewport transform.",
+          "given": ["event.sourceEvent.internal !== true", "event.sourceEvent.sync !== true"],
+          "when": "createPanZoomHandler(params)(event)",
+          "then": "onTransformChange is called with [event.transform.x, event.transform.y, event.transform.k] and onPanZoom receives transformToViewport(event.transform)",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "User transformations must update both controlled state and interaction callbacks."
+        },
+        {
+          "testId": "fires-context-menu-for-unused-right-pan",
+          "scenario": "A right-button pan ends without the right mouse button being used for panning.",
+          "given": [
+            "onPaneContextMenu === true",
+            "isRightClickPan(panOnDrag, zoomPanValues.mouseButton ?? 0) === true",
+            "zoomPanValues.usedRightMouseButton === false",
+            "event.sourceEvent exists"
+          ],
+          "when": "createPanZoomEndHandler(params)(event)",
+          "then": "onPaneContextMenu is called with event.sourceEvent and onDraggingChange(false) is called",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "The pane context menu is reserved for right-clicks that did not become right-button pans."
+        },
+        {
+          "testId": "debounces-scroll-pan-end",
+          "scenario": "A pan interaction ends while pan-on-scroll mode is enabled.",
+          "given": ["event.sourceEvent.internal !== true", "panOnScroll === true", "onPanZoomEnd exists"],
+          "when": "createPanZoomEndHandler(params)(event)",
+          "then": "onPanZoomEnd is called with event.sourceEvent and the final viewport after 150 milliseconds",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Scroll panning suppresses duplicate end notifications during a burst of wheel events."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "ESLint suppression comments",
+        "Type-only and runtime imports",
+        "PanOnScrollParams type alias",
+        "ZoomOnScrollParams type alias",
+        "PanZoomStartParams type alias",
+        "PanZoomParams type alias",
+        "PanZoomEndParams type alias",
+        "createPanOnScrollHandler function",
+        "createZoomOnScrollHandler function",
+        "createPanZoomStartHandler function",
+        "createPanZoomHandler function",
+        "createPanZoomEndHandler function"
+      ],
+      "moduleLevelCode": "/* eslint-disable @typescript-eslint/no-explicit-any */\n/* eslint-disable @typescript-eslint/ban-ts-comment */\nimport type { D3ZoomEvent } from 'd3-zoom';\nimport { pointer } from 'd3-selection';\n\nimport {\n  PanOnScrollMode,\n  type D3SelectionInstance,\n  type D3ZoomHandler,\n  type D3ZoomInstance,\n  type OnPanZoom,\n  type OnDraggingChange,\n  type OnTransformChange,\n} from '../types';\nimport { isRightClickPan, isWrappedWithClass, transformToViewport, wheelDelta } from './utils';\nimport { isMacOs } from '../utils';\nimport { ZoomPanValues } from './XYPanZoom';",
+      "exports": [
+        { "name": "PanOnScrollParams", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "ZoomOnScrollParams", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "PanZoomStartParams", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "PanZoomParams", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "PanZoomEndParams", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "createPanOnScrollHandler", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "createZoomOnScrollHandler", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "createPanZoomStartHandler", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "createPanZoomHandler", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "createPanZoomEndHandler", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "D3ZoomEvent", "module": "d3-zoom", "alias": null, "kind": "external" },
+        { "symbol": "pointer", "module": "d3-selection", "alias": null, "kind": "external" },
+        { "symbol": "PanOnScrollMode", "module": "../types", "alias": null, "kind": "internal" },
+        { "symbol": "D3SelectionInstance", "module": "../types", "alias": null, "kind": "internal" },
+        { "symbol": "D3ZoomHandler", "module": "../types", "alias": null, "kind": "internal" },
+        { "symbol": "D3ZoomInstance", "module": "../types", "alias": null, "kind": "internal" },
+        { "symbol": "OnPanZoom", "module": "../types", "alias": null, "kind": "internal" },
+        { "symbol": "OnDraggingChange", "module": "../types", "alias": null, "kind": "internal" },
+        { "symbol": "OnTransformChange", "module": "../types", "alias": null, "kind": "internal" },
+        { "symbol": "isRightClickPan", "module": "./utils", "alias": null, "kind": "internal" },
+        { "symbol": "isWrappedWithClass", "module": "./utils", "alias": null, "kind": "internal" },
+        { "symbol": "transformToViewport", "module": "./utils", "alias": null, "kind": "internal" },
+        { "symbol": "wheelDelta", "module": "./utils", "alias": null, "kind": "internal" },
+        { "symbol": "isMacOs", "module": "../utils", "alias": null, "kind": "internal" },
+        { "symbol": "ZoomPanValues", "module": "./XYPanZoom", "alias": null, "kind": "internal" }
+      ],
+      "fileConstants": [],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/system/src/xypanzoom/eventhandler.ts__createPanOnScrollHandler#function:createPanOnScrollHandler",
+        "unitKind": "function",
+        "name": "createPanOnScrollHandler",
+        "qualifiedName": "createPanOnScrollHandler",
+        "parentUnitId": null,
+        "startLine": 57,
+        "endLine": 123,
+        "isBehavioral": true,
+        "source": "  onPanZoomEnd?: OnPanZoom;\n  onPaneContextMenu?: (event: any) => void;\n};\n\nexport function createPanOnScrollHandler({\n  zoomPanValues,\n  noWheelClassName,\n  d3Selection,\n  d3Zoom,\n  panOnScrollMode,\n  panOnScrollSpeed,\n  zoomOnPinch,\n  onPanZoomStart,\n  onPanZoom,\n  onPanZoomEnd,\n}: PanOnScrollParams) {\n  return (event: any) => {\n    if (isWrappedWithClass(event, noWheelClassName)) {\n      if (event.ctrlKey) {\n        event.preventDefault(); // stop native page zoom for pinch zooming\n      }\n      return false;\n    }\n    event.preventDefault();\n    event.stopImmediatePropagation();\n\n    const currentZoom = d3Selection.property('__zoom').k || 1;\n\n    // macos sets ctrlKey=true for pinch gesture on a trackpad\n    if (event.ctrlKey && zoomOnPinch) {\n      const point = pointer(event);\n      const pinchDelta = wheelDelta(event);\n      const zoom = currentZoom * Math.pow(2, pinchDelta);\n      // @ts-ignore\n      d3Zoom.scaleTo(d3Selection, zoom, point, event);\n\n      return;\n    }\n\n    /*\n     * increase scroll speed in firefox\n     * firefox: deltaMode === 1; chrome: deltaMode === 0\n     */\n    const deltaNormalize = event.deltaMode === 1 ? 20 : 1;\n    let deltaX = panOnScrollMode === PanOnScrollMode.Vertical ? 0 : event.deltaX * deltaNormalize;\n    let deltaY = panOnScrollMode === PanOnScrollMode.Horizontal ? 0 : event.deltaY * deltaNormalize;\n\n    // this enables vertical scrolling with shift + scroll on windows\n    if (!isMacOs() && event.shiftKey && panOnScrollMode !== PanOnScrollMode.Vertical) {\n      deltaX = event.deltaY * deltaNormalize;\n      deltaY = 0;\n    }\n\n    d3Zoom.translateBy(\n      d3Selection,\n      -(deltaX / currentZoom) * panOnScrollSpeed,\n      -(deltaY / currentZoom) * panOnScrollSpeed,\n      // @ts-ignore\n      { internal: true }\n    );\n\n    const nextViewport = transformToViewport(d3Selection.property('__zoom'));\n\n    clearTimeout(zoomPanValues.panScrollTimeout);\n\n    /*\n     * for pan on scroll we need to handle the event calls on our own",
+        "detail": {
+          "unitId": "packages/system/src/xypanzoom/eventhandler.ts__createPanOnScrollHandler#function:createPanOnScrollHandler",
+          "fileId": "packages/system/src/xypanzoom/eventhandler.ts__createPanOnScrollHandler",
+          "unitKind": "function",
+          "name": "createPanOnScrollHandler",
+          "qualifiedName": "createPanOnScrollHandler",
+          "parentUnitId": null,
+          "startLine": 57,
+          "endLine": 123,
+          "signature": "export function createPanOnScrollHandler({ zoomPanValues, noWheelClassName, d3Selection, d3Zoom, panOnScrollMode, panOnScrollSpeed, zoomOnPinch, onPanZoomStart, onPanZoom, onPanZoomEnd }: PanOnScrollParams)",
+          "parameters": [
+            {
+              "name": "zoomPanValues",
+              "type": "PanOnScrollParams['zoomPanValues']",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "noWheelClassName",
+              "type": "PanOnScrollParams['noWheelClassName']",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "d3Selection",
+              "type": "PanOnScrollParams['d3Selection']",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            },
+            {
+              "name": "d3Zoom",
+              "type": "PanOnScrollParams['d3Zoom']",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 3
+            },
+            {
+              "name": "panOnScrollMode",
+              "type": "PanOnScrollParams['panOnScrollMode']",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 4
+            },
+            {
+              "name": "panOnScrollSpeed",
+              "type": "PanOnScrollParams['panOnScrollSpeed']",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 5
+            },
+            {
+              "name": "zoomOnPinch",
+              "type": "PanOnScrollParams['zoomOnPinch']",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 6
+            },
+            {
+              "name": "onPanZoomStart",
+              "type": "PanOnScrollParams['onPanZoomStart']",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 7
+            },
+            {
+              "name": "onPanZoom",
+              "type": "PanOnScrollParams['onPanZoom']",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 8
+            },
+            {
+              "name": "onPanZoomEnd",
+              "type": "PanOnScrollParams['onPanZoomEnd']",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 9
+            }
+          ],
+          "returnType": "(event: any) => false | void",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The factory argument satisfies PanOnScrollParams.",
+            "d3Selection exposes the current __zoom transform and d3Zoom supports scaleTo and translateBy.",
+            "The returned handler receives an event with preventDefault, stopImmediatePropagation, deltaX, deltaY, deltaMode, ctrlKey, and shiftKey properties."
+          ],
+          "postconditions": [
+            "For an event outside the configured no-wheel class, the event's default handling is prevented and immediate propagation is stopped.",
+            "A pinch event with ctrlKey and zoomOnPinch enabled scales the selection around the event pointer.",
+            "Otherwise, the selection is translated according to the configured scroll mode and speed."
+          ],
+          "invariants": [
+            "The current zoom scale defaults to 1 when the selection's __zoom.k is falsy.",
+            "Translation deltas are divided by the current zoom before panOnScrollSpeed is applied.",
+            "A no-wheel-class event does not pan or zoom the selection."
+          ],
+          "edgeCases": [
+            "An event wrapped with noWheelClassName returns false; if ctrlKey is also true, preventDefault is called to suppress native page zoom.",
+            "A ctrlKey event with zoomOnPinch enabled uses pointer(event) and wheelDelta(event) to compute scale currentZoom * 2^pinchDelta, then returns without applying scroll translation.",
+            "deltaMode equal to 1 multiplies wheel deltas by 20; other delta modes use the raw deltas.",
+            "Vertical mode forces horizontal delta to zero; horizontal mode forces vertical delta to zero.",
+            "On non-macOS systems, shiftKey with a non-vertical mode converts the vertical wheel delta into horizontal panning."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": "Returns false for events wrapped with noWheelClassName; otherwise returns void."
+          },
+          "stateMutations": [
+            "Mutates the d3 selection's __zoom transform through d3Zoom.scaleTo or d3Zoom.translateBy.",
+            "Clears and updates zoomPanValues.panScrollTimeout for pan-scroll lifecycle handling."
+          ],
+          "eventsEmitted": [
+            "Invokes configured onPanZoomStart, onPanZoom, and onPanZoomEnd callbacks as part of pan-scroll lifecycle handling."
+          ],
+          "complexity": null,
+          "calls": [
+            { "name": "isWrappedWithClass", "source": "local/imported helper", "kind": "internal" },
+            { "name": "pointer", "source": "d3 pointer helper", "kind": "external" },
+            { "name": "wheelDelta", "source": "d3 zoom helper", "kind": "external" },
+            { "name": "isMacOs", "source": "local/imported platform helper", "kind": "internal" },
+            { "name": "d3Selection.property", "source": "d3-selection", "kind": "external" },
+            { "name": "d3Zoom.scaleTo", "source": "d3-zoom", "kind": "external" },
+            { "name": "d3Zoom.translateBy", "source": "d3-zoom", "kind": "external" },
+            { "name": "transformToViewport", "source": "local/imported helper", "kind": "internal" },
+            { "name": "clearTimeout", "source": "JavaScript runtime", "kind": "external" }
+          ],
+          "symbolReferences": ["PanOnScrollParams", "PanOnScrollMode", "__zoom", "zoomPanValues.panScrollTimeout"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Input is a wheel-like event object. Viewport updates are applied through d3-zoom; lifecycle callbacks receive the resulting viewport according to the surrounding OnPanZoom contract.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Creates a wheel-event handler that pans the viewport according to configured scroll behavior and optionally zooms for pinch gestures. It suppresses browser handling and coordinates pan/zoom lifecycle callbacks.",
+          "specLiterals": [
+            { "kind": "magic-number", "value": "1", "role": "Fallback current zoom scale when __zoom.k is falsy." },
+            {
+              "kind": "magic-number",
+              "value": "20",
+              "role": "Normalization multiplier for Firefox wheel events with deltaMode === 1."
+            },
+            { "kind": "magic-number", "value": "2", "role": "Base of the exponential pinch-zoom scale calculation." },
+            {
+              "kind": "format-string",
+              "value": "__zoom",
+              "role": "d3-selection property containing the current zoom transform."
+            },
+            {
+              "kind": "format-string",
+              "value": "internal",
+              "role": "translateBy option marking the update as internal."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The returned handler processes the event.",
+              "then": "It calls preventDefault, does not pan or zoom, and returns false.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The returned handler processes the event.",
+              "then": "It prevents default handling, stops immediate propagation, and calls scaleTo with zoom 2 * 2^0.5 around pointer(event), without applying translateBy.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The returned handler processes the event.",
+              "then": "It normalizes the deltas to 60 and 80 and requests translation by -60 and -80 through d3Zoom.translateBy.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "de2641b9cd0217a8d7a424daf9c2e9086da9010235bcad63cab03f04d3daa025"
+        }
+      },
+      {
+        "unitId": "packages/system/src/xypanzoom/eventhandler.ts__createZoomOnScrollHandler#function:createZoomOnScrollHandler",
+        "unitKind": "function",
+        "name": "createZoomOnScrollHandler",
+        "qualifiedName": "createZoomOnScrollHandler",
+        "parentUnitId": null,
+        "startLine": 125,
+        "endLine": 145,
+        "isBehavioral": true,
+        "source": "     * because start and move gets called on every scroll event and not once at the beginning\n     */\n    if (!zoomPanValues.isPanScrolling) {\n      zoomPanValues.isPanScrolling = true;\n\n      onPanZoomStart?.(event, nextViewport);\n    } else {\n      onPanZoom?.(event, nextViewport);\n    }\n\n    zoomPanValues.panScrollTimeout = setTimeout(() => {\n      onPanZoomEnd?.(event, nextViewport);\n\n      zoomPanValues.isPanScrolling = false;\n    }, 150);\n  };\n}\n\nexport function createZoomOnScrollHandler({ noWheelClassName, preventScrolling, d3ZoomHandler }: ZoomOnScrollParams) {\n  return function (this: Element, event: any, d: unknown) {\n    const isWheel = event.type === 'wheel';",
+        "detail": {
+          "unitId": "packages/system/src/xypanzoom/eventhandler.ts__createZoomOnScrollHandler#function:createZoomOnScrollHandler",
+          "fileId": "packages/system/src/xypanzoom/eventhandler.ts__createZoomOnScrollHandler",
+          "unitKind": "function",
+          "name": "createZoomOnScrollHandler",
+          "qualifiedName": "createZoomOnScrollHandler",
+          "parentUnitId": null,
+          "startLine": 125,
+          "endLine": 145,
+          "signature": "export function createZoomOnScrollHandler({ noWheelClassName, preventScrolling, d3ZoomHandler }: ZoomOnScrollParams)",
+          "parameters": [
+            {
+              "name": "{ noWheelClassName, preventScrolling, d3ZoomHandler }",
+              "type": "ZoomOnScrollParams",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The configuration argument must be non-null and provide the destructured ZoomOnScrollParams fields.",
+            "The returned handler must receive an event value on which the type property can be read."
+          ],
+          "postconditions": ["The returned handler evaluates whether the event type is exactly \"wheel\"."],
+          "invariants": [],
+          "edgeCases": [
+            "An event whose type is exactly \"wheel\" is classified as a wheel event.",
+            "An event whose type is any other value is not classified as a wheel event."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["ZoomOnScrollParams"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Creates and returns an element-bound scroll-event handler configured by the supplied zoom-scroll parameters. The returned handler classifies the incoming event by its type, including whether it is a wheel event.",
+          "specLiterals": [
+            { "kind": "enum-value", "value": "wheel", "role": "Event type value used to identify wheel events." }
+          ],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "db2b61eefa3abfbf7c783aa9af9a581ca96fc000b83665a8322ff287635b4368"
+        }
+      },
+      {
+        "unitId": "packages/system/src/xypanzoom/eventhandler.ts__createPanZoomStartHandler#function:createPanZoomStartHandler",
+        "unitKind": "function",
+        "name": "createPanZoomStartHandler",
+        "qualifiedName": "createPanZoomStartHandler",
+        "parentUnitId": null,
+        "startLine": 147,
+        "endLine": 174,
+        "isBehavioral": true,
+        "source": "    const preventZoom = !preventScrolling && isWheel && !event.ctrlKey;\n    const hasNoWheelClass = isWrappedWithClass(event, noWheelClassName);\n\n    // if user is pinch zooming above a nowheel element, we don't want the browser to zoom\n    if (event.ctrlKey && isWheel && hasNoWheelClass) {\n      event.preventDefault();\n    }\n\n    if (preventZoom || hasNoWheelClass) {\n      return null;\n    }\n\n    event.preventDefault();\n\n    d3ZoomHandler.call(this, event, d);\n  };\n}\n\nexport function createPanZoomStartHandler({ zoomPanValues, onDraggingChange, onPanZoomStart }: PanZoomStartParams) {\n  return (event: D3ZoomEvent<HTMLDivElement, any>) => {\n    if (event.sourceEvent?.internal) {\n      return;\n    }\n\n    const viewport = transformToViewport(event.transform);\n\n    // we need to remember it here, because it's always 0 in the \"zoom\" event\n    zoomPanValues.mouseButton = event.sourceEvent?.button || 0;",
+        "detail": {
+          "unitId": "packages/system/src/xypanzoom/eventhandler.ts__createPanZoomStartHandler#function:createPanZoomStartHandler",
+          "fileId": "packages/system/src/xypanzoom/eventhandler.ts__createPanZoomStartHandler",
+          "unitKind": "function",
+          "name": "createPanZoomStartHandler",
+          "qualifiedName": "createPanZoomStartHandler",
+          "parentUnitId": null,
+          "startLine": 147,
+          "endLine": 174,
+          "signature": "export function createPanZoomStartHandler({ zoomPanValues, onDraggingChange, onPanZoomStart }: PanZoomStartParams)",
+          "parameters": [
+            {
+              "name": "{ zoomPanValues, onDraggingChange, onPanZoomStart }",
+              "type": "PanZoomStartParams",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The factory receives a PanZoomStartParams object.",
+            "The handler is invoked with a D3ZoomEvent whose transform can be converted to a viewport."
+          ],
+          "postconditions": [
+            "For a non-internal event, zoomPanValues.mouseButton is set to the source event button or 0 when unavailable.",
+            "For a non-internal event, the dragging state is updated and the pan/zoom start callback is notified with the event and derived viewport."
+          ],
+          "invariants": [
+            "Events whose sourceEvent.internal value is truthy produce no state mutation or callbacks.",
+            "The viewport passed to the start callback is derived from event.transform."
+          ],
+          "edgeCases": [
+            "When sourceEvent is absent, the event is not treated as internal and mouseButton falls back to 0.",
+            "When sourceEvent.button is 0, mouseButton remains 0 because the fallback value is also 0.",
+            "When sourceEvent.internal is truthy, the handler returns without recording the button, changing dragging state, or invoking the start callback."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [
+            "Mutates zoomPanValues.mouseButton for non-internal events.",
+            "Updates dragging state through onDraggingChange for non-internal events."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            {
+              "name": "transformToViewport",
+              "source": "packages/system/src/xypanzoom/eventhandler.ts",
+              "kind": "internal"
+            },
+            { "name": "onDraggingChange", "source": "PanZoomStartParams", "kind": "external" },
+            { "name": "onPanZoomStart", "source": "PanZoomStartParams", "kind": "external" }
+          ],
+          "symbolReferences": [
+            "PanZoomStartParams",
+            "D3ZoomEvent",
+            "HTMLDivElement",
+            "zoomPanValues",
+            "transformToViewport"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Creates a D3 zoom-start event handler that records the initiating mouse button, updates dragging state, and reports the pan/zoom start viewport. Events marked as internal are ignored.",
+          "specLiterals": [
+            {
+              "kind": "magic-number",
+              "value": "0",
+              "role": "Fallback mouse-button value when the source event or its button is unavailable."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The returned handler is invoked.",
+              "then": "It returns without changing zoomPanValues.mouseButton or invoking the dragging and pan/zoom-start callbacks.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The returned handler is invoked.",
+              "then": "zoomPanValues.mouseButton becomes 2, dragging is reported as active, and the pan/zoom-start callback receives the event and viewport derived from event.transform.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The returned handler is invoked.",
+              "then": "zoomPanValues.mouseButton is set to 0 and the normal dragging and pan/zoom-start notifications occur.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "42f31e3694ac1488edaee58d2a4d07304ff38000d8957733607f36214567b349"
+        }
+      },
+      {
+        "unitId": "packages/system/src/xypanzoom/eventhandler.ts__createPanZoomHandler#function:createPanZoomHandler",
+        "unitKind": "function",
+        "name": "createPanZoomHandler",
+        "qualifiedName": "createPanZoomHandler",
+        "parentUnitId": null,
+        "startLine": 176,
+        "endLine": 198,
+        "isBehavioral": true,
+        "source": "    zoomPanValues.prevViewport = viewport;\n\n    if (event.sourceEvent?.type === 'mousedown') {\n      onDraggingChange(true);\n    }\n\n    if (onPanZoomStart) {\n      onPanZoomStart?.(event.sourceEvent as MouseEvent | TouchEvent, viewport);\n    }\n  };\n}\n\nexport function createPanZoomHandler({\n  zoomPanValues,\n  panOnDrag,\n  onPaneContextMenu,\n  onTransformChange,\n  onPanZoom,\n}: PanZoomParams) {\n  return (event: D3ZoomEvent<HTMLDivElement, any>) => {\n    zoomPanValues.usedRightMouseButton = !!(\n      onPaneContextMenu && isRightClickPan(panOnDrag, zoomPanValues.mouseButton ?? 0)\n    );",
+        "detail": {
+          "unitId": "packages/system/src/xypanzoom/eventhandler.ts__createPanZoomHandler#function:createPanZoomHandler",
+          "fileId": "packages/system/src/xypanzoom/eventhandler.ts__createPanZoomHandler",
+          "unitKind": "function",
+          "name": "createPanZoomHandler",
+          "qualifiedName": "createPanZoomHandler",
+          "parentUnitId": null,
+          "startLine": 176,
+          "endLine": 198,
+          "signature": "export function createPanZoomHandler({\n  zoomPanValues,\n  panOnDrag,\n  onPaneContextMenu,\n  onTransformChange,\n  onPanZoom,\n}: PanZoomParams)",
+          "parameters": [
+            {
+              "name": "{ zoomPanValues, panOnDrag, onPaneContextMenu, onTransformChange, onPanZoom }",
+              "type": "PanZoomParams",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The argument conforms to PanZoomParams.",
+            "The returned handler receives a D3ZoomEvent containing a transform and, when needed, a source event."
+          ],
+          "postconditions": [
+            "The handler updates zoomPanValues.usedRightMouseButton based on pane context-menu availability, pan-on-drag configuration, and the current mouse-button value.",
+            "Viewport transformation and pan/zoom callback behavior is driven by the supplied event and callbacks."
+          ],
+          "invariants": [
+            "Right-mouse-button pan detection is enabled only when onPaneContextMenu is provided.",
+            "A missing zoomPanValues.mouseButton is treated as 0 for right-mouse-button pan detection."
+          ],
+          "edgeCases": [
+            "When onPaneContextMenu is absent, zoomPanValues.usedRightMouseButton is set to false.",
+            "When zoomPanValues.mouseButton is nullish, the right-mouse-button check uses 0.",
+            "The handler accepts events whose sourceEvent is absent because source-event access is optional."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": ["zoomPanValues.usedRightMouseButton"],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "isRightClickPan", "source": null, "kind": "internal" },
+            { "name": "onTransformChange", "source": "PanZoomParams", "kind": "external" },
+            { "name": "onPanZoom", "source": "PanZoomParams", "kind": "external" }
+          ],
+          "symbolReferences": ["PanZoomParams", "D3ZoomEvent", "HTMLDivElement", "MouseEvent", "TouchEvent"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Creates a D3 zoom event handler that tracks pan/zoom state and coordinates viewport-related callbacks. The handler also records whether the current interaction should use right-mouse-button pan behavior when a pane context-menu callback is configured.",
+          "specLiterals": [
+            {
+              "kind": "magic-number",
+              "value": "0",
+              "role": "Fallback mouse-button value when zoomPanValues.mouseButton is nullish."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "f5e51bfb636f9be892ef67f39643ab51e2a76c24a9df312f5389975a5c9821cc"
+        }
+      },
+      {
+        "unitId": "packages/system/src/xypanzoom/eventhandler.ts__createPanZoomEndHandler#function:createPanZoomEndHandler",
+        "unitKind": "function",
+        "name": "createPanZoomEndHandler",
+        "qualifiedName": "createPanZoomEndHandler",
+        "parentUnitId": null,
+        "startLine": 200,
+        "endLine": 239,
+        "isBehavioral": true,
+        "source": "    if (!event.sourceEvent?.sync) {\n      onTransformChange([event.transform.x, event.transform.y, event.transform.k]);\n    }\n\n    if (onPanZoom && !event.sourceEvent?.internal) {\n      onPanZoom?.(event.sourceEvent as MouseEvent | TouchEvent, transformToViewport(event.transform));\n    }\n  };\n}\n\nexport function createPanZoomEndHandler({\n  zoomPanValues,\n  panOnDrag,\n  panOnScroll,\n  onDraggingChange,\n  onPanZoomEnd,\n  onPaneContextMenu,\n}: PanZoomEndParams) {\n  return (event: D3ZoomEvent<HTMLDivElement, any>) => {\n    if (event.sourceEvent?.internal) {\n      return;\n    }\n\n    zoomPanValues.isZoomingOrPanning = false;\n\n    if (\n      onPaneContextMenu &&\n      isRightClickPan(panOnDrag, zoomPanValues.mouseButton ?? 0) &&\n      !zoomPanValues.usedRightMouseButton &&\n      event.sourceEvent\n    ) {\n      onPaneContextMenu(event.sourceEvent);\n    }\n    zoomPanValues.usedRightMouseButton = false;\n\n    onDraggingChange(false);\n\n    if (onPanZoomEnd) {\n      const viewport = transformToViewport(event.transform);\n      zoomPanValues.prevViewport = viewport;",
+        "detail": {
+          "unitId": "packages/system/src/xypanzoom/eventhandler.ts__createPanZoomEndHandler#function:createPanZoomEndHandler",
+          "fileId": "packages/system/src/xypanzoom/eventhandler.ts__createPanZoomEndHandler",
+          "unitKind": "function",
+          "name": "createPanZoomEndHandler",
+          "qualifiedName": "createPanZoomEndHandler",
+          "parentUnitId": null,
+          "startLine": 200,
+          "endLine": 239,
+          "signature": "export function createPanZoomEndHandler({\n  zoomPanValues,\n  panOnDrag,\n  panOnScroll,\n  onDraggingChange,\n  onPanZoomEnd,\n  onPaneContextMenu,\n}: PanZoomEndParams)",
+          "parameters": [
+            {
+              "name": "{ zoomPanValues, panOnDrag, panOnScroll, onDraggingChange, onPanZoomEnd, onPaneContextMenu }",
+              "type": "PanZoomEndParams",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The handler receives a D3ZoomEvent containing a transform.",
+            "The supplied zoomPanValues object is mutable and contains isZoomingOrPanning, usedRightMouseButton, mouseButton, and prevViewport state."
+          ],
+          "postconditions": [
+            "For non-internal source events, zoomPanValues.isZoomingOrPanning is set to false.",
+            "For non-internal source events, zoomPanValues.usedRightMouseButton is reset to false.",
+            "For non-internal source events, onDraggingChange is called with false.",
+            "When onPanZoomEnd is provided, the event transform is converted to a viewport and stored in zoomPanValues.prevViewport."
+          ],
+          "invariants": [
+            "Internal source events do not change zoom/pan state or invoke end-of-interaction handling.",
+            "The viewport stored in prevViewport is derived from the event transform using transformToViewport."
+          ],
+          "edgeCases": [
+            "If event.sourceEvent.internal is truthy, the handler returns immediately without mutating zoomPanValues or invoking callbacks.",
+            "If event.sourceEvent is absent, the handler still finalizes zooming state, resets usedRightMouseButton, and calls onDraggingChange(false), but cannot invoke the pane context-menu callback.",
+            "The pane context-menu callback is invoked only when it exists, the configured drag button and mouse button identify a right-click pan, the right mouse button was not used, and a source event exists.",
+            "If onPanZoomEnd is absent, no end callback is invoked and the viewport assignment guarded by that callback is not performed."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [
+            "zoomPanValues.isZoomingOrPanning",
+            "zoomPanValues.usedRightMouseButton",
+            "zoomPanValues.prevViewport when onPanZoomEnd is provided"
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "isRightClickPan", "source": null, "kind": "internal" },
+            { "name": "onPaneContextMenu", "source": "PanZoomEndParams", "kind": "internal" },
+            { "name": "onDraggingChange", "source": "PanZoomEndParams", "kind": "internal" },
+            { "name": "transformToViewport", "source": null, "kind": "internal" },
+            { "name": "onPanZoomEnd", "source": "PanZoomEndParams", "kind": "internal" }
+          ],
+          "symbolReferences": [
+            "PanZoomEndParams",
+            "D3ZoomEvent",
+            "HTMLDivElement",
+            "MouseEvent",
+            "TouchEvent",
+            "transformToViewport",
+            "isRightClickPan"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Creates a D3 zoom end-event handler that finalizes pan/zoom state, optionally reports a pane context menu action, updates dragging state, and records the resulting viewport.",
+          "specLiterals": [
+            {
+              "kind": "magic-number",
+              "value": "0",
+              "role": "Fallback mouse-button value when zoomPanValues.mouseButton is nullish."
+            },
+            {
+              "kind": "magic-number",
+              "value": "false",
+              "role": "Value used to finalize the zoom/pan and dragging states and reset right-button usage."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The returned handler is called with the event.",
+              "then": "It returns without changing zoomPanValues and without calling onDraggingChange, onPaneContextMenu, or onPanZoomEnd.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The returned handler is called.",
+              "then": "It sets isZoomingOrPanning to false, resets usedRightMouseButton to false, calls onDraggingChange(false), converts the transform to a viewport, and stores that viewport in prevViewport.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The returned handler is called with onPaneContextMenu provided.",
+              "then": "onPaneContextMenu is called with the event sourceEvent.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "8122e8b371fb54d6b626d51530e6005da6a1379415e3be1aed9d17eb8887c7b2"
+        }
+      }
+    ]
+  },
+  "out": [
+    "packages/system/src/types/index.ts",
+    "packages/system/src/utils/index.ts",
+    "packages/system/src/xypanzoom/XYPanZoom.ts",
+    "packages/system/src/xypanzoom/utils.ts"
+  ],
+  "in": ["packages/system/src/xypanzoom/XYPanZoom.ts"],
+  "externals": ["d3-zoom", "d3-selection"],
+  "impact": { "seeds": 5, "callers": 1, "impactedFiles": ["packages/system/src/xypanzoom/XYPanZoom.ts"] }
+}

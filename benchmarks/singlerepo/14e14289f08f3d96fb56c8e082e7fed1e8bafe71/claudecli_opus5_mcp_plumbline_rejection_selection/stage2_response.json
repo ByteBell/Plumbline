@@ -1,0 +1,71 @@
+{
+  "duration_api_ms": 54938,
+  "stop_reason": "end_turn",
+  "session_id": "52da42fd-0271-466f-9e48-ca0d020c75c3",
+  "total_cost_usd": 0.7916690000000001,
+  "usage": {
+    "input_tokens": 12,
+    "cache_creation_input_tokens": 56937,
+    "cache_read_input_tokens": 252128,
+    "output_tokens": 3847,
+    "output_tokens_details": { "thinking_tokens": 726 },
+    "server_tool_use": { "web_search_requests": 0, "web_fetch_requests": 0 },
+    "service_tier": "standard",
+    "cache_creation": { "ephemeral_1h_input_tokens": 56937, "ephemeral_5m_input_tokens": 0 },
+    "inference_geo": "not_available",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 1272,
+        "cache_read_input_tokens": 55565,
+        "cache_creation_input_tokens": 1372,
+        "cache_creation": { "ephemeral_5m_input_tokens": 0, "ephemeral_1h_input_tokens": 1372 },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-opus-5": {
+      "inputTokens": 12,
+      "outputTokens": 3847,
+      "cacheReadInputTokens": 252128,
+      "cacheCreationInputTokens": 56937,
+      "webSearchRequests": 0,
+      "costUSD": 0.7916690000000001,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "canonicalModel": "claude-opus-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": { "background": 0, "foreground": 0, "unset": 0 },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": { "parent": 0, "user": 0, "system": 0 },
+    "refused": { "depth_limit": 0, "concurrency_limit": 0, "budget": 0 },
+    "by_type": {}
+  },
+  "is_error": false,
+  "num_turns": 6,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "STAGE 2 REPORT — cal.com.processed/14e14289f08f3d96fb56c8e082e7fed1e8bafe71, arm `claudecli_opus5_mcp_plumbline_rejection_selection`\n\nGold file: `gold.json` (no `golden.json` present). I read `ranked.json` in full before opening it.\n\nAnswer shape: flat single-repo array of 35 paths — matches the shape `gold.json` uses, so no flattening was needed. Scored with `score_arm.py`; it ran clean.\n\nMetrics (scorer output; it emits this set and no others)\n- hits/gold_total: 3/5\n- recall@10 0.400, recall@20 0.400, recall@25 0.600, recall@50 0.600, recall@75 0.600 — the list is 35 long, so 0.600 is the full-list recall and @50/@75 are flagged degenerate\n- precision@5: 0.400\n- MRR: 1.000 (rank-1 hit)\n- precision@10, precision@20, F1@20 and F1_full_list are not emitted by `score_arm.py`. I did not compute them by hand, per the rules.\n\nfound\n- packages/features/bookings/lib/handleNewBooking.ts (rank 1)\n- packages/lib/errorCodes.ts (rank 2)\n- packages/features/ee/round-robin/roundRobinReassignment.ts (rank 22)\n\nmissed_gold\n- packages/app-store/googlecalendar/lib/CalendarService.ts\n- packages/lib/server/getServerErrorFromUnknown.ts\n\nSurface verdict: NOT COMPARABLE — one reason. Recounted independently from `commands.log`: ToolSearch 1, roll_call 1, blueprint 4, stakeout 8, manhunt 3, the_receipts 7, collateral_damage 2. That is 26 calls, all inside the declared plumbline surface (ToolSearch is schema loading, not a repo read); no filesystem or shell tool appears, and the retriever's own search tools (stakeout, manhunt) were both exercised, so the thing measured is in fact this retriever. The scorer's built-in surface block reported `not_comparable: []`. It is wrong here on the cost clause: `cost.json` records `cache_read=1,827,168` and `cache_creation=216,215` with `cache_mode: warm` and `cost_comparable_to_cold_runs: false`. Under the stated rule, nonzero cache figures make the run not comparable, so `result.json` carries the audited block (comparable false) with the scorer's original preserved alongside as `surface_from_scorer`. Cost itself is present: $3.468, 458,187 ms, 27 turns, session a912d530-36d9-4cce-ba65-ed1f6e6aa53e.\n\nWhat the two misses share: both sit one layer out from the booking-flow code the run occupied. The whole retrieved list is the booking pipeline and its round-robin/availability neighbourhood — `handleNewBooking` and twelve of its step modules, host selection, slot utilities, the v1/v2 booking controllers. The gold files it did not reach are the error *translation* boundary rather than the error *raising* site: `getServerErrorFromUnknown.ts` is the generic server-error normalizer that sits above every handler and belongs to no booking module, and `CalendarService.ts` is a third-party calendar adapter under `app-store/` — a provider-integration register the run never entered, reachable only by following an error class outward into the code that throws it and the code that converts it, not by descending the booking call tree. Both hits at the top of the list (`handleNewBooking`, `errorCodes`) are precisely the points where those two outward edges begin; the list instead expanded downward into the pipeline's own internals, where 22 of the 35 paths lie.",
+  "ttft_ms": 1706,
+  "type": "result",
+  "duration_ms": 55884,
+  "uuid": "663f7a17-1e9d-4d19-bf63-025ee3bc1d5d",
+  "ttft_stream_ms": 1258,
+  "time_to_request_ms": 24,
+  "queued_turn_count": 0
+}

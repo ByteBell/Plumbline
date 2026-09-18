@@ -1,0 +1,735 @@
+{
+  "schema": 2,
+  "kind": "file",
+  "repoName": "tldraw",
+  "file": {
+    "relativePath": "packages/tlschema/src/shapes/TLLineShape.ts",
+    "language": "typescript",
+    "sizeBytes": 8107,
+    "tokenCount": 2027,
+    "model": "us.openai.gpt-5.6-terra",
+    "analysedAt": "2026-08-24T12:20:08.751Z",
+    "module": {
+      "purpose": "Defines the line shape schema, runtime property validation, and versioned migrations for persisted line-shape records.",
+      "summary": "This schema module describes the configurable properties and point data used by canvas line and spline records. It exposes a spline style option, validates point dictionaries and shape properties at runtime, and provides a chronological migration sequence that upgrades or downgrades older handle-based representations into indexed point-based representations. The migrations preserve point ordering, reconstruct legacy handle metadata when downgrading, and add or remove the scale property across schema versions.",
+      "businessContext": "Line and spline records are persisted canvas entities whose geometry and styling must remain compatible across document versions. Failure would make existing drawings invalid, reorder line points, or prevent older documents from loading correctly.",
+      "classes": [
+        "TLLineShapePoint (~L51-61): Ordered coordinate record representing one line path point",
+        "TLLineShapeProps (~L85-99): Validated style and geometry properties for line records"
+      ],
+      "functions": [],
+      "keywords": [
+        "line shape",
+        "cubic spline",
+        "fractional indexing",
+        "shape property migration",
+        "handle-to-point migration",
+        "runtime validation",
+        "canvas geometry",
+        "schema evolution"
+      ],
+      "ontologyConcepts": [
+        "Canvas shape",
+        "Polyline",
+        "Spline interpolation",
+        "Ordered point collection",
+        "Runtime schema validation",
+        "Versioned data migration",
+        "Backward compatibility"
+      ],
+      "businessEntities": [
+        "Line shape",
+        "Line point",
+        "Shape properties",
+        "Handle",
+        "Spline style",
+        "Migration version",
+        "Index key"
+      ],
+      "systemCapabilities": [
+        "Defines line and spline shape properties",
+        "Validates persisted line geometry",
+        "Orders line points using fractional indices",
+        "Migrates legacy handle-based shape data",
+        "Supports reversible schema version transitions",
+        "Adds scale support to line records"
+      ],
+      "configDependencies": [],
+      "importsInternal": [
+        {
+          "spec": "../records/TLShape",
+          "symbols": ["createShapePropsMigrationIds", "createShapePropsMigrationSequence"],
+          "anchor": { "startLine": 3, "endLine": 3 },
+          "resolvedRelativePath": "packages/tlschema/src/records/TLShape.ts",
+          "resolvedFileId": "packages/tlschema/src/records/TLShape.ts",
+          "resolvedHint": "packages/tlschema/src/records/TLShape.ts"
+        },
+        {
+          "spec": "../recordsWithProps",
+          "symbols": ["RecordProps"],
+          "anchor": { "startLine": 4, "endLine": 4 },
+          "resolvedRelativePath": "packages/tlschema/src/recordsWithProps.ts",
+          "resolvedFileId": "packages/tlschema/src/recordsWithProps.ts",
+          "resolvedHint": "packages/tlschema/src/recordsWithProps.ts"
+        },
+        {
+          "spec": "../styles/StyleProp",
+          "symbols": ["StyleProp"],
+          "anchor": { "startLine": 5, "endLine": 5 },
+          "resolvedRelativePath": "packages/tlschema/src/styles/StyleProp.ts",
+          "resolvedFileId": "packages/tlschema/src/styles/StyleProp.ts",
+          "resolvedHint": "packages/tlschema/src/styles/StyleProp.ts"
+        },
+        {
+          "spec": "../styles/TLColorStyle",
+          "symbols": ["DefaultColorStyle", "TLDefaultColorStyle"],
+          "anchor": { "startLine": 6, "endLine": 6 },
+          "resolvedRelativePath": "packages/tlschema/src/styles/TLColorStyle.ts",
+          "resolvedFileId": "packages/tlschema/src/styles/TLColorStyle.ts",
+          "resolvedHint": "packages/tlschema/src/styles/TLColorStyle.ts"
+        },
+        {
+          "spec": "../styles/TLDashStyle",
+          "symbols": ["DefaultDashStyle", "TLDefaultDashStyle"],
+          "anchor": { "startLine": 7, "endLine": 7 },
+          "resolvedRelativePath": "packages/tlschema/src/styles/TLDashStyle.ts",
+          "resolvedFileId": "packages/tlschema/src/styles/TLDashStyle.ts",
+          "resolvedHint": "packages/tlschema/src/styles/TLDashStyle.ts"
+        },
+        {
+          "spec": "../styles/TLSizeStyle",
+          "symbols": ["DefaultSizeStyle", "TLDefaultSizeStyle"],
+          "anchor": { "startLine": 8, "endLine": 8 },
+          "resolvedRelativePath": "packages/tlschema/src/styles/TLSizeStyle.ts",
+          "resolvedFileId": "packages/tlschema/src/styles/TLSizeStyle.ts",
+          "resolvedHint": "packages/tlschema/src/styles/TLSizeStyle.ts"
+        },
+        {
+          "spec": "./TLBaseShape",
+          "symbols": ["TLBaseShape"],
+          "anchor": { "startLine": 9, "endLine": 9 },
+          "resolvedRelativePath": "packages/tlschema/src/shapes/TLBaseShape.ts",
+          "resolvedFileId": "packages/tlschema/src/shapes/TLBaseShape.ts",
+          "resolvedHint": "packages/tlschema/src/shapes/TLBaseShape.ts"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "@tldraw/utils",
+          "symbols": ["IndexKey", "getIndices", "objectMapFromEntries", "sortByIndex"],
+          "package": "@tldraw/utils",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 1 }
+        },
+        {
+          "spec": "@tldraw/validate",
+          "symbols": ["T"],
+          "package": "@tldraw/validate",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 2, "endLine": 2 }
+        }
+      ],
+      "sideEffects": {
+        "io": [],
+        "network": [],
+        "env": [],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": [
+          "Marks every legacy handle as snappable during the AddSnapHandles upgrade.",
+          "Replaces legacy handle maps with reduced coordinate-only maps during upgrade.",
+          "Reconstructs legacy handle objects and metadata during downgrade.",
+          "Replaces handle maps with ordered point arrays and deletes handles during upgrade.",
+          "Replaces point arrays with generated-index handle maps and deletes points during downgrade.",
+          "Converts point arrays to indexed point dictionaries during upgrade.",
+          "Converts indexed point dictionaries back to sorted coordinate arrays during downgrade.",
+          "Adds scale with value 1 during upgrade and deletes it during downgrade."
+        ]
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "LineShapeSplineStyle",
+          "shape": "StyleProp.defineEnum('tldraw:spline', { defaultValue: 'line', values: ['cubic', 'line'] })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "TLLineShapeSplineStyle",
+          "shape": "T.TypeOf<typeof LineShapeSplineStyle>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "TLLineShapePoint",
+          "shape": "{ id: string; index: IndexKey; x: number; y: number }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "TLLineShapeProps",
+          "shape": "{ color: TLDefaultColorStyle; dash: TLDefaultDashStyle; size: TLDefaultSizeStyle; spline: TLLineShapeSplineStyle; points: Record<string, TLLineShapePoint>; scale: number }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "TLLineShape",
+          "shape": "TLBaseShape<'line', TLLineShapeProps>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "lineShapeProps",
+          "shape": "{ color: DefaultColorStyle; dash: DefaultDashStyle; size: DefaultSizeStyle; spline: LineShapeSplineStyle; points: T.dict(T.string, lineShapePointValidator); scale: T.nonZeroNumber }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "lineShapeVersions",
+          "shape": "createShapePropsMigrationIds('line', { AddSnapHandles: 1, RemoveExtraHandleProps: 2, HandlesToPoints: 3, PointIndexIds: 4, AddScale: 5 })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "lineShapeMigrations",
+          "shape": "createShapePropsMigrationSequence({ sequence: [...] })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        { "name": "IndexKey", "shape": "IndexKey", "resolvedRelativePath": null, "resolvedFileId": null },
+        { "name": "getIndices", "shape": "getIndices(length)", "resolvedRelativePath": null, "resolvedFileId": null },
+        {
+          "name": "objectMapFromEntries",
+          "shape": "objectMapFromEntries(entries)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        { "name": "sortByIndex", "shape": "sortByIndex", "resolvedRelativePath": null, "resolvedFileId": null },
+        {
+          "name": "T",
+          "shape": "T.object(...), T.dict(...), T.string, T.indexKey, T.number, T.nonZeroNumber",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "createShapePropsMigrationIds",
+          "shape": "createShapePropsMigrationIds('line', versions)",
+          "resolvedRelativePath": "packages/tlschema/src/records/TLShape.ts",
+          "resolvedFileId": "packages/tlschema/src/records/TLShape.ts"
+        },
+        {
+          "name": "createShapePropsMigrationSequence",
+          "shape": "createShapePropsMigrationSequence({ sequence })",
+          "resolvedRelativePath": "packages/tlschema/src/records/TLShape.ts",
+          "resolvedFileId": "packages/tlschema/src/records/TLShape.ts"
+        },
+        {
+          "name": "RecordProps",
+          "shape": "RecordProps<TLLineShape>",
+          "resolvedRelativePath": "packages/tlschema/src/recordsWithProps.ts",
+          "resolvedFileId": "packages/tlschema/src/recordsWithProps.ts"
+        },
+        {
+          "name": "StyleProp",
+          "shape": "StyleProp.defineEnum(...)",
+          "resolvedRelativePath": "packages/tlschema/src/styles/StyleProp.ts",
+          "resolvedFileId": "packages/tlschema/src/styles/StyleProp.ts"
+        },
+        {
+          "name": "DefaultColorStyle",
+          "shape": "DefaultColorStyle",
+          "resolvedRelativePath": "packages/tlschema/src/styles/TLColorStyle.ts",
+          "resolvedFileId": "packages/tlschema/src/styles/TLColorStyle.ts"
+        },
+        {
+          "name": "TLDefaultColorStyle",
+          "shape": "TLDefaultColorStyle",
+          "resolvedRelativePath": "packages/tlschema/src/styles/TLColorStyle.ts",
+          "resolvedFileId": "packages/tlschema/src/styles/TLColorStyle.ts"
+        },
+        {
+          "name": "DefaultDashStyle",
+          "shape": "DefaultDashStyle",
+          "resolvedRelativePath": "packages/tlschema/src/styles/TLDashStyle.ts",
+          "resolvedFileId": "packages/tlschema/src/styles/TLDashStyle.ts"
+        },
+        {
+          "name": "TLDefaultDashStyle",
+          "shape": "TLDefaultDashStyle",
+          "resolvedRelativePath": "packages/tlschema/src/styles/TLDashStyle.ts",
+          "resolvedFileId": "packages/tlschema/src/styles/TLDashStyle.ts"
+        },
+        {
+          "name": "DefaultSizeStyle",
+          "shape": "DefaultSizeStyle",
+          "resolvedRelativePath": "packages/tlschema/src/styles/TLSizeStyle.ts",
+          "resolvedFileId": "packages/tlschema/src/styles/TLSizeStyle.ts"
+        },
+        {
+          "name": "TLDefaultSizeStyle",
+          "shape": "TLDefaultSizeStyle",
+          "resolvedRelativePath": "packages/tlschema/src/styles/TLSizeStyle.ts",
+          "resolvedFileId": "packages/tlschema/src/styles/TLSizeStyle.ts"
+        },
+        {
+          "name": "TLBaseShape",
+          "shape": "TLBaseShape<'line', TLLineShapeProps>",
+          "resolvedRelativePath": "packages/tlschema/src/shapes/TLBaseShape.ts",
+          "resolvedFileId": "packages/tlschema/src/shapes/TLBaseShape.ts"
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "spline-style-definition",
+          "intent": "Defines the supported straight and cubic interpolation style values.",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 25, "endLine": 28 }
+        },
+        {
+          "name": "property-validation",
+          "intent": "Builds runtime validators for line points and complete shape properties.",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 63, "endLine": 68 }
+        },
+        {
+          "name": "line-property-schema",
+          "intent": "Associates line property names with their style and value validators.",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 151, "endLine": 158 }
+        },
+        {
+          "name": "migration-version-identifiers",
+          "intent": "Declares ordered identifiers for historical line property schema changes.",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 166, "endLine": 172 }
+        },
+        {
+          "name": "add-snap-handles-migration",
+          "intent": "Marks all legacy handles as capable of snapping.",
+          "structureKind": "loop",
+          "predicate": "const handle of Object.values(props.handles)",
+          "branchOutcomes": [],
+          "bounds": "Object.values(props.handles)",
+          "terminationCondition": null,
+          "anchor": { "startLine": 183, "endLine": 190 }
+        },
+        {
+          "name": "restore-extra-handle-properties",
+          "intent": "Restores legacy handle metadata with endpoint-specific identifiers.",
+          "structureKind": "branch",
+          "predicate": "i === 0 ? 'start' : i === handles.length - 1 ? 'end' : `handle:${handle.index}`",
+          "branchOutcomes": ["start", "end", "indexed handle"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 192, "endLine": 231 }
+        },
+        {
+          "name": "handles-to-points-migration",
+          "intent": "Converts sorted legacy handles into points and reverses the conversion.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 233, "endLine": 262 }
+        },
+        {
+          "name": "point-identifiers-and-scale-migrations",
+          "intent": "Adds point identifiers, then adds or removes scale support.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 264, "endLine": 297 }
+        }
+      ],
+      "representationFamily": "schema",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "const",
+          "name": "LineShapeSplineStyle",
+          "signature": "export const LineShapeSplineStyle = StyleProp.defineEnum('tldraw:spline', {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 25, "endLine": 28 }
+        },
+        {
+          "kind": "type",
+          "name": "TLLineShapeSplineStyle",
+          "signature": "export type TLLineShapeSplineStyle = T.TypeOf<typeof LineShapeSplineStyle>",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 35, "endLine": 35 }
+        },
+        {
+          "kind": "interface",
+          "name": "TLLineShapePoint",
+          "signature": "export interface TLLineShapePoint {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 51, "endLine": 61 }
+        },
+        {
+          "kind": "const",
+          "name": "lineShapePointValidator",
+          "signature": "const lineShapePointValidator: T.ObjectValidator<TLLineShapePoint> = T.object({",
+          "generics": null,
+          "decorators": [],
+          "returnType": "T.ObjectValidator<TLLineShapePoint>",
+          "exported": false,
+          "anchor": { "startLine": 63, "endLine": 68 }
+        },
+        {
+          "kind": "interface",
+          "name": "TLLineShapeProps",
+          "signature": "export interface TLLineShapeProps {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 85, "endLine": 99 }
+        },
+        {
+          "kind": "type",
+          "name": "TLLineShape",
+          "signature": "export type TLLineShape = TLBaseShape<'line', TLLineShapeProps>",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 135, "endLine": 135 }
+        },
+        {
+          "kind": "const",
+          "name": "lineShapeProps",
+          "signature": "export const lineShapeProps: RecordProps<TLLineShape> = {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "RecordProps<TLLineShape>",
+          "exported": true,
+          "anchor": { "startLine": 151, "endLine": 158 }
+        },
+        {
+          "kind": "const",
+          "name": "lineShapeVersions",
+          "signature": "export const lineShapeVersions = createShapePropsMigrationIds('line', {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 166, "endLine": 172 }
+        },
+        {
+          "kind": "const",
+          "name": "lineShapeMigrations",
+          "signature": "export const lineShapeMigrations = createShapePropsMigrationSequence({",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 180, "endLine": 299 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "alias",
+          "name": "TLLineShapeSplineStyle",
+          "shape": "T.TypeOf<typeof LineShapeSplineStyle>",
+          "discriminant": null,
+          "anchor": { "startLine": 35, "endLine": 35 }
+        },
+        {
+          "kind": "interface",
+          "name": "TLLineShapePoint",
+          "shape": "{\n\t/** Unique identifier for this point, used for tracking and ordering */\n\tid: string\n\t/** Fractional index key used for ordering points along the line */\n\tindex: IndexKey\n\t/** X coordinate of the point relative to the line shape's origin */\n\tx: number\n\t/** Y coordinate of the point relative to the line shape's origin */\n\ty: number\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 51, "endLine": 61 }
+        },
+        {
+          "kind": "interface",
+          "name": "TLLineShapeProps",
+          "shape": "{\n\t/** Color style of the line stroke */\n\tcolor: TLDefaultColorStyle\n\t/** Dash pattern style for the line (solid, dashed, dotted) */\n\tdash: TLDefaultDashStyle\n\t/** Size/thickness style of the line stroke */\n\tsize: TLDefaultSizeStyle\n\t/** Interpolation style between points (straight lines or curved splines) */\n\tspline: TLLineShapeSplineStyle\n\t/** Dictionary of points that make up the line, keyed by point ID */\n\tpoints: Record<string, TLLineShapePoint>\n\t/** Scale factor applied to the line shape for display */\n\tscale: number\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 85, "endLine": 99 }
+        },
+        {
+          "kind": "alias",
+          "name": "TLLineShape",
+          "shape": "TLBaseShape<'line', TLLineShapeProps>",
+          "discriminant": "type",
+          "anchor": { "startLine": 135, "endLine": 135 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "A legacy handle collection with a single entry",
+          "handled": true,
+          "behavior": "The sole reconstructed handle receives the start identifier because the first-index branch wins.",
+          "anchor": { "startLine": 207, "endLine": 207 }
+        },
+        {
+          "inputShape": "An empty point array during handle reconstruction",
+          "handled": true,
+          "behavior": "An empty index list and empty handle map are produced.",
+          "anchor": { "startLine": 246, "endLine": 258 }
+        },
+        {
+          "inputShape": "A point dictionary whose values are unordered",
+          "handled": true,
+          "behavior": "Values are sorted by fractional index before conversion to a coordinate array.",
+          "anchor": { "startLine": 283, "endLine": 287 }
+        },
+        {
+          "inputShape": "Missing expected handles or points properties for a migration version",
+          "handled": false,
+          "behavior": "Property access, Object.values, Object.entries, or array methods will fail at runtime.",
+          "anchor": { "startLine": 185, "endLine": 185 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": "==",
+          "left": "i",
+          "right": "0",
+          "inclusive": false,
+          "intent": "Assigns the first reconstructed legacy handle the start identifier.",
+          "anchor": { "startLine": 207, "endLine": 207 }
+        },
+        {
+          "operator": "==",
+          "left": "i",
+          "right": "handles.length - 1",
+          "inclusive": false,
+          "intent": "Assigns the final reconstructed legacy handle the end identifier.",
+          "anchor": { "startLine": 207, "endLine": 207 }
+        }
+      ],
+      "errorHandling": [],
+      "invariants": [
+        {
+          "kind": "invariant",
+          "description": "Each validated point has an id, fractional index, and numeric x/y coordinates.",
+          "anchor": { "startLine": 51, "endLine": 68 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Line point dictionaries are keyed by strings and use non-zero numeric scale.",
+          "anchor": { "startLine": 151, "endLine": 158 }
+        },
+        {
+          "kind": "ordering",
+          "description": "Legacy handles are sorted by index before endpoint identifiers are reconstructed.",
+          "anchor": { "startLine": 201, "endLine": 208 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "Handle-to-point upgrade removes handles after creating an ordered point array.",
+          "anchor": { "startLine": 240, "endLine": 241 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "Point-to-handle downgrade removes points after creating indexed handles.",
+          "anchor": { "startLine": 259, "endLine": 260 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "Point-index upgrade makes each point dictionary key equal its id and index.",
+          "anchor": { "startLine": 271, "endLine": 281 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "schema",
+          "description": "Each migration receives properties matching the source schema version it transforms.",
+          "anchor": { "startLine": 183, "endLine": 297 }
+        },
+        {
+          "kind": "caller",
+          "description": "Migration consumers apply sequence versions in the order registered by the migration framework.",
+          "anchor": { "startLine": 180, "endLine": 299 }
+        },
+        {
+          "kind": "schema",
+          "description": "Fractional index generation returns enough ordered keys for every point in the source array.",
+          "anchor": { "startLine": 245, "endLine": 245 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "How the migration framework selects and applies these upgrade and downgrade callbacks is not defined here.",
+          "affects": "migration execution ordering",
+          "anchor": { "startLine": 180, "endLine": 299 },
+          "resolution": null
+        },
+        {
+          "question": "The accepted value sets for imported color, dash, and size styles are defined outside this file.",
+          "affects": "property validation domain",
+          "anchor": { "startLine": 151, "endLine": 158 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "sync",
+        "reentrant": true,
+        "ordering": "deterministic",
+        "notes": "Validators and migration callbacks execute synchronously; each migration only transforms its supplied properties object."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "accepts-valid-line-shape-properties",
+          "scenario": "A line shape properties object contains valid styles, indexed points, and a non-zero scale.",
+          "given": [
+            "const props = { color: 'black', dash: 'solid', size: 'm', spline: 'line', points: { a1: { id: 'a1', index: 'a1', x: 0, y: 0 } }, scale: 1 }"
+          ],
+          "when": "T.object(lineShapeProps).validate(props)",
+          "then": "validation succeeds",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins the runtime schema for styles, point structure, and scale."
+        },
+        {
+          "testId": "rejects-zero-line-scale",
+          "scenario": "A line shape properties object has a zero scale.",
+          "given": ["const props = { color: 'black', dash: 'solid', size: 'm', spline: 'line', points: {}, scale: 0 }"],
+          "when": "T.object(lineShapeProps).validate(props)",
+          "then": "validation fails",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "The scale contract requires a non-zero number."
+        },
+        {
+          "testId": "migrates-handles-to-indexed-points",
+          "scenario": "Legacy line properties contain ordered handles.",
+          "given": ["props.handles = { a1: { x: 0, y: 0 }, a2: { x: 100, y: 50 } }"],
+          "when": "lineShapeMigrations.sequence[2].up(props)",
+          "then": "props.points contains the ordered coordinates and props.handles is deleted",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Guards the structural migration from handles to points."
+        },
+        {
+          "testId": "adds-point-index-identifiers",
+          "scenario": "Legacy points are represented as an ordered array of coordinates.",
+          "given": ["props.points = [{ x: 0, y: 0 }, { x: 100, y: 50 }]"],
+          "when": "lineShapeMigrations.sequence[3].up(props)",
+          "then": "props.points is an object whose entries each contain id, index, x, and y",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins stable point identifiers and ordering metadata."
+        },
+        {
+          "testId": "adds-default-line-scale",
+          "scenario": "A line shape is migrated to the scale-enabled schema.",
+          "given": ["const props = {}"],
+          "when": "lineShapeMigrations.sequence[4].up(props)",
+          "then": "props.scale === 1",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Ensures older line shapes receive the schema's default scale."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "Imports utility, validation, migration, record, style, and base-shape dependencies",
+        "Spline style property declaration",
+        "Spline style type alias",
+        "Line point interface",
+        "Line point runtime validator",
+        "Line properties interface",
+        "Line shape type alias",
+        "Line property validator map",
+        "Migration version identifiers",
+        "Line shape migration sequence"
+      ],
+      "moduleLevelCode": "import { IndexKey, getIndices, objectMapFromEntries, sortByIndex } from '@tldraw/utils'\nimport { T } from '@tldraw/validate'\nimport { createShapePropsMigrationIds, createShapePropsMigrationSequence } from '../records/TLShape'\nimport { RecordProps } from '../recordsWithProps'\nimport { StyleProp } from '../styles/StyleProp'\nimport { DefaultColorStyle, TLDefaultColorStyle } from '../styles/TLColorStyle'\nimport { DefaultDashStyle, TLDefaultDashStyle } from '../styles/TLDashStyle'\nimport { DefaultSizeStyle, TLDefaultSizeStyle } from '../styles/TLSizeStyle'\nimport { TLBaseShape } from './TLBaseShape'",
+      "exports": [
+        { "name": "LineShapeSplineStyle", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "TLLineShapeSplineStyle", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "TLLineShapePoint", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "TLLineShapeProps", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "TLLineShape", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "lineShapeProps", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "lineShapeVersions", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "lineShapeMigrations", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "IndexKey", "module": "@tldraw/utils", "alias": null, "kind": "external" },
+        { "symbol": "getIndices", "module": "@tldraw/utils", "alias": null, "kind": "external" },
+        { "symbol": "objectMapFromEntries", "module": "@tldraw/utils", "alias": null, "kind": "external" },
+        { "symbol": "sortByIndex", "module": "@tldraw/utils", "alias": null, "kind": "external" },
+        { "symbol": "T", "module": "@tldraw/validate", "alias": null, "kind": "external" },
+        { "symbol": "createShapePropsMigrationIds", "module": "../records/TLShape", "alias": null, "kind": "internal" },
+        {
+          "symbol": "createShapePropsMigrationSequence",
+          "module": "../records/TLShape",
+          "alias": null,
+          "kind": "internal"
+        },
+        { "symbol": "RecordProps", "module": "../recordsWithProps", "alias": null, "kind": "internal" },
+        { "symbol": "StyleProp", "module": "../styles/StyleProp", "alias": null, "kind": "internal" },
+        { "symbol": "DefaultColorStyle", "module": "../styles/TLColorStyle", "alias": null, "kind": "internal" },
+        { "symbol": "TLDefaultColorStyle", "module": "../styles/TLColorStyle", "alias": null, "kind": "internal" },
+        { "symbol": "DefaultDashStyle", "module": "../styles/TLDashStyle", "alias": null, "kind": "internal" },
+        { "symbol": "TLDefaultDashStyle", "module": "../styles/TLDashStyle", "alias": null, "kind": "internal" },
+        { "symbol": "DefaultSizeStyle", "module": "../styles/TLSizeStyle", "alias": null, "kind": "internal" },
+        { "symbol": "TLDefaultSizeStyle", "module": "../styles/TLSizeStyle", "alias": null, "kind": "internal" },
+        { "symbol": "TLBaseShape", "module": "./TLBaseShape", "alias": null, "kind": "internal" }
+      ],
+      "fileConstants": [],
+      "semanticFingerprint": ""
+    },
+    "units": []
+  },
+  "out": [
+    "packages/tlschema/src/styles/TLColorStyle.ts",
+    "packages/tlschema/src/styles/TLSizeStyle.ts",
+    "packages/tlschema/src/styles/StyleProp.ts",
+    "packages/tlschema/src/styles/TLDashStyle.ts",
+    "packages/tlschema/src/records/TLShape.ts",
+    "packages/tlschema/src/recordsWithProps.ts",
+    "packages/tlschema/src/shapes/TLBaseShape.ts"
+  ],
+  "in": [
+    "packages/tlschema/src/createTLSchema.ts",
+    "packages/tlschema/src/records/TLShape.ts",
+    "packages/tlschema/src/store-migrations.ts",
+    "packages/tlschema/src/index.ts"
+  ],
+  "externals": ["@tldraw/utils", "@tldraw/validate"]
+}

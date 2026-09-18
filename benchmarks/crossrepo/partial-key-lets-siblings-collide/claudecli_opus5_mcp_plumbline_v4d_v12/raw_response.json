@@ -1,0 +1,84 @@
+{
+  "duration_api_ms": 556396,
+  "stop_reason": "end_turn",
+  "session_id": "74af07b2-fc67-45ff-a39d-1757242bfbd1",
+  "total_cost_usd": 23.750504000000003,
+  "usage": {
+    "input_tokens": 4559187,
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "output_tokens": 37950,
+    "output_tokens_details": { "thinking_tokens": 21643 },
+    "server_tool_use": { "web_search_requests": 0, "web_fetch_requests": 0 },
+    "service_tier": "standard",
+    "cache_creation": { "ephemeral_1h_input_tokens": 0, "ephemeral_5m_input_tokens": 0 },
+    "inference_geo": "not_available",
+    "iterations": [
+      {
+        "input_tokens": 239531,
+        "output_tokens": 4035,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+        "cache_creation": { "ephemeral_5m_input_tokens": 0, "ephemeral_1h_input_tokens": 0 },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 5674,
+      "outputTokens": 29,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.005819,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "claude-haiku-4-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    },
+    "claude-opus-5": {
+      "inputTokens": 4559187,
+      "outputTokens": 37950,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 23.744685000000004,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "canonicalModel": "claude-opus-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": { "background": 0, "foreground": 0, "unset": 0 },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": { "parent": 0, "user": 0, "system": 0 },
+    "refused": { "depth_limit": 0, "concurrency_limit": 0, "budget": 0 },
+    "by_type": {}
+  },
+  "is_error": false,
+  "num_turns": 51,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## LEDGER\n\n**(a) Obligations**\n\n| ob | phrase | status | closers |\n|---|---|---|---|\n| OB-1 | *correlated subquery result joined back to parent row by key* (VIOLATOR) | **CLOSED** | `packages/db/src/query/live/collection-config-builder.ts`, `packages/db/src/query/compiler/index.ts`, `packages/db/src/query/builder/index.ts`, `packages/db/src/query/ir.ts` |\n| OB-2 | *cache key computed from object must include every distinguishing field* (OWNER) | **CLOSED** | `packages/query-core/src/utils.ts`, `packages/query-core/src/queryCache.ts`, `packages/toolkit/src/query/defaultSerializeQueryArgs.ts` |\n| OB-3 | *normalize state lookup key from object equality check dimension* (OWNER) | **CLOSED** | `src/vanilla/utils/atomFamily.ts`, `packages/table-core/src/core/table.ts` |\n| OB-4 | *composite lookup key must include every dimension not just the one a filter references* (OWNER) | **CLOSED** | `packages/table-core/src/utils/getGroupedRowModel.ts`, `packages/system/src/utils/store.ts` |\n\nAlso CONFIRMED as EVIDENCE: `packages/db/src/query/compiler/group-by.ts` — the in-repo sibling that *does* fold `__correlationKey` into its key extractor and into `finalKey` (lines 308–333, 399–413), which is what makes the routing-key omission legible as a defect rather than a design choice.\n\n**(b) Sweep matrix** — every row equals its ob's `repos[]`, so 3.5 holds.\n\n- OB-1 → db, query, table, router, redux-toolkit, tldraw (6/6)\n- OB-2 → reselect, jotai, xyflow, zod, query, redux-toolkit (6/6)\n- OB-3 → zustand, primitives, tldraw, react, xyflow (5/5)\n- OB-4 → xyflow, table, router, db, redux-devtools (5/5)\n\nName sweep (STEP 4): `__correlationKey` (0 org-wide hits — db-internal only), `hashKey` (1 hit, query-core), plus a fulltext unit sweep that surfaced `defaultSerializeQueryArgs`.\n\nRepositories swept and ruled out on verbatim/substrate evidence: zod, zustand, primitives, react, tldraw, redux-devtools, router, reselect — none carries a key-completeness contract of this kind. Commit discipline: react / redux / table / zustand were queried at their ROSTER pins, which differ from `roll_call`'s newest.\n\n**Finding.** In TanStack DB, an `include` subquery is correlated per parent, and its rows are routed back with `computeRoutingKey(correlationKey, parentContext)` — a key made of the *computed* correlation value plus, only when a parent-referencing WHERE clause exists, the parent fields that clause happens to mention (`parentProjection`). The parent's own identity never enters it, so two parents whose correlation expression yields the same value share one `childRegistry` entry and one child collection. `group-by.ts` in the same folder shows the correct shape. The contract it must be brought in line with is owned by `hashKey`/`hashQueryKeyByOptions` (query-core), `defaultSerializeQueryArgs` (RTK Query, which prefixes `endpointName` precisely so equal args under different endpoints cannot collide), `_getRowId` and `getGroupedRowModel` (table-core, which prefix `parent.id`), and `addConnectionToLookup` (xyflow, which keys on node+type+handle, not node alone).\n\n[{\"repo\": \"db\", \"files\": [\"packages/db/src/query/live/collection-config-builder.ts\", \"packages/db/src/query/compiler/index.ts\", \"packages/db/src/query/builder/index.ts\", \"packages/db/src/query/ir.ts\", \"packages/db/src/query/compiler/group-by.ts\"], \"pinpoints\": [{\"path\": \"packages/db/src/query/live/collection-config-builder.ts\", \"symbol\": \"computeRoutingKey\", \"lines\": \"1799-1805\", \"change\": \"Key is correlationKey alone when parentContext is null — fold the parent's own identity (parent collection key / parent match id) into the composite so two parents with the same correlation value cannot share a childRegistry entry.\"}, {\"path\": \"packages/db/src/query/compiler/index.ts\", \"symbol\": \"getRouting (non-parentProjection branch)\", \"lines\": \"664-678\", \"change\": \"Returns parentContext: null unconditionally, emitting a value-only routing key; stamp the parent identity into INCLUDES_ROUTING here too.\"}, {\"path\": \"packages/db/src/query/compiler/index.ts\", \"symbol\": \"includes-mode topK partition key\", \"lines\": \"846-855\", \"change\": \"Partition key falls back to bare correlationKey when __parentContext is absent — same completeness fix so per-parent limit/offset windows do not merge.\"}, {\"path\": \"packages/db/src/query/builder/index.ts\", \"symbol\": \"parentProjection collection\", \"lines\": \"1252-1270\", \"change\": \"parentProjection is built only from refs that a parent-referencing WHERE clause happens to mention; it must capture every parent dimension that distinguishes two correlated instances, not just filter-referenced ones.\"}, {\"path\": \"packages/db/src/query/ir.ts\", \"symbol\": \"IncludesSubquery\", \"lines\": \"176-190\", \"change\": \"Declares parentFilters/parentProjection as the whole parent-side contract; widen it to carry the parent identity the routing key needs.\"}, {\"path\": \"packages/db/src/query/compiler/group-by.ts\", \"symbol\": \"keyExtractor / finalKey\", \"lines\": \"308-333\", \"change\": \"Reference implementation — already appends __correlationKey so groups from different parents cannot collide; the includes routing key must match this discipline.\"}]}, {\"repo\": \"query\", \"files\": [\"packages/query-core/src/utils.ts\", \"packages/query-core/src/queryCache.ts\"], \"pinpoints\": [{\"path\": \"packages/query-core/src/utils.ts\", \"symbol\": \"hashKey\", \"lines\": \"232-242\", \"change\": \"Owns the key-completeness contract: the whole key object is normalized (plain-object keys sorted) into the hash, never a partial projection that matchQuery/matchMutation happens to filter on.\"}, {\"path\": \"packages/query-core/src/queryCache.ts\", \"symbol\": \"QueryCache.build\", \"lines\": \"113-127\", \"change\": \"Lookup and dedup are done purely on the complete hash from hashQueryKeyByOptions — the shape the DB routing key must adopt.\"}]}, {\"repo\": \"redux-toolkit\", \"files\": [\"packages/toolkit/src/query/defaultSerializeQueryArgs.ts\"], \"pinpoints\": [{\"path\": \"packages/toolkit/src/query/defaultSerializeQueryArgs.ts\", \"symbol\": \"defaultSerializeQueryArgs\", \"lines\": \"9-40\", \"change\": \"Owns the contract: the cache key is `${endpointName}(${stableStringify(queryArgs)})` — the producing endpoint is folded in alongside the computed value, exactly the dimension DB's routing key drops.\"}]}, {\"repo\": \"table\", \"files\": [\"packages/table-core/src/utils/getGroupedRowModel.ts\", \"packages/table-core/src/core/table.ts\"], \"pinpoints\": [{\"path\": \"packages/table-core/src/utils/getGroupedRowModel.ts\", \"symbol\": \"groupUpRecursively\", \"lines\": \"62-68\", \"change\": \"Owns the contract: a grouped row's id is `${columnId}:${groupingValue}` prefixed with `${parentId}>` so equal grouping values under different parents never collide.\"}, {\"path\": \"packages/table-core/src/core/table.ts\", \"symbol\": \"_getRowId\", \"lines\": \"375-377\", \"change\": \"Owns the contract: the default row key joins parent.id with index rather than using index alone, keeping sibling subrows distinguishable.\"}]}, {\"repo\": \"xyflow\", \"files\": [\"packages/system/src/utils/store.ts\"], \"pinpoints\": [{\"path\": \"packages/system/src/utils/store.ts\", \"symbol\": \"addConnectionToLookup\", \"lines\": \"559-585\", \"change\": \"Owns the contract: lookup keys are registered at nodeId, nodeId-type and nodeId-type-handleId so a connection is never found by a partial key that ignores a distinguishing dimension.\"}, {\"path\": \"packages/system/src/utils/store.ts\", \"symbol\": \"updateConnectionLookup\", \"lines\": \"587-603\", \"change\": \"Connection key is `${sourceNode}-${sourceHandle}--${targetNode}-${targetHandle}` — every dimension of both endpoints, not just the node ids.\"}]}, {\"repo\": \"jotai\", \"files\": [\"src/vanilla/utils/atomFamily.ts\"], \"pinpoints\": [{\"path\": \"src/vanilla/utils/atomFamily.ts\", \"symbol\": \"createAtom\", \"lines\": \"78-104\", \"change\": \"Counterexample that makes the omission legible: the family's param-to-atom lookup is decided entirely by areEqual, so a comparator narrower than the param's distinguishing dimensions silently returns another param's atom.\"}]}]",
+  "ttft_ms": 1940,
+  "type": "result",
+  "duration_ms": 1320954,
+  "uuid": "cb623072-99bd-470b-a5c5-85eabc228c0e",
+  "ttft_stream_ms": 1535,
+  "time_to_request_ms": 21,
+  "queued_turn_count": 0
+}

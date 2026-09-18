@@ -1,0 +1,71 @@
+{
+  "duration_api_ms": 241541,
+  "stop_reason": "end_turn",
+  "session_id": "810531b4-c328-418b-b766-a7a8dc4345a3",
+  "total_cost_usd": 3.5052685000000006,
+  "usage": {
+    "input_tokens": 48,
+    "cache_creation_input_tokens": 167305,
+    "cache_read_input_tokens": 2798857,
+    "output_tokens": 17302,
+    "output_tokens_details": { "thinking_tokens": 6927 },
+    "server_tool_use": { "web_search_requests": 0, "web_fetch_requests": 0 },
+    "service_tier": "standard",
+    "cache_creation": { "ephemeral_1h_input_tokens": 167305, "ephemeral_5m_input_tokens": 0 },
+    "inference_geo": "not_available",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 4871,
+        "cache_read_input_tokens": 185362,
+        "cache_creation_input_tokens": 4823,
+        "cache_creation": { "ephemeral_5m_input_tokens": 0, "ephemeral_1h_input_tokens": 4823 },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-opus-5": {
+      "inputTokens": 48,
+      "outputTokens": 17302,
+      "cacheReadInputTokens": 2798857,
+      "cacheCreationInputTokens": 167305,
+      "webSearchRequests": 0,
+      "costUSD": 3.5052685000000006,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "canonicalModel": "claude-opus-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": { "background": 0, "foreground": 0, "unset": 0 },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": { "parent": 0, "user": 0, "system": 0 },
+    "refused": { "depth_limit": 0, "concurrency_limit": 0, "budget": 0 },
+    "by_type": {}
+  },
+  "is_error": false,
+  "num_turns": 24,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## LEDGER\n\n**RETAINED[]** (from blueprint @ ab4eff1fe104)\n\n| area prefix | verdict that kept it |\n|---|---|\n| `apps/web` | `@calcom/web` — owns the public booking page and its schedule/slots hooks |\n| `packages/platform/atoms` | `@calcom/atoms` — the React Booker widget dropped into another site |\n| `packages/features` | `@calcom/features` (1689 files) — Booker store, time preferences, availability |\n| `packages/trpc` | slots router / `AvailableSlotsService` — server owner of the restriction schedule |\n| `packages/embeds` | `@calcom/embed-core`/`embed-react` — the iframe embed surface |\n| `packages/lib` | shared timezone/date helpers the booker reads |\n| `packages/platform/types` | `GetAvailableSlotsInput_2024_04_15` — the slots input DTO |\n| `apps/api/v2` | serves `/api/v2/slots/available`, the endpoint both violating hooks call |\n| `packages/prisma` | schema declares `restrictionScheduleId` / `useBookerTimezone` |\n| `packages/types` / `packages/dayjs` / `packages/ui` | declaration + timezone-primitive peers reached by the folds |\n\n**DROPPED[]**\n\n| area | verdict that dropped it |\n|---|---|\n| `packages/app-store/*` (~90 adapter modules) | blueprint: per-integration credential/OAuth/video adapters; none participates in slot query keys |\n| `packages/emails`, `packages/features/ee/billing`, `packages/kysely`, `packages/config`, `packages/app-store-cli`, `example-apps/*`, `.agents`/`.claude`/`.snaplet` | blueprint role = adapter/infrastructure/tooling with responsibilities (mail, Stripe billing, DB client, lint config, scaffolding) that never touch booker availability rendering |\n| `apps/api/v1` | legacy REST module; no booker UI and no react-query cache |\n\n**Obligations**\n\n| id | phrase | status | closers |\n|---|---|---|---|\n| OB1 | \"times on screen stay as they were when visitor changes zone\" (VIOLATOR) | CLOSED | `apps/web/modules/schedules/hooks/useApiV2AvailableSlots.ts`, `packages/platform/atoms/hooks/useAvailableSlots.ts` |\n| OB2 | \"schedule read in the visitor's own zone rather than the host's\" (OWNER) | CLOSED | `packages/trpc/server/routers/viewer/slots/util.ts` |\n| OB3 | \"our own page\" — web booker passes the zone correctly | CLOSED | `apps/web/modules/schedules/hooks/useSchedule.ts`, `apps/web/modules/schedules/hooks/useEvent.ts`, `packages/features/bookings/lib/timePreferences.ts` |\n| OB4 | \"the widget dropped into another site\" | CLOSED | `packages/platform/atoms/booker/BookerPlatformWrapper.tsx` |\n\nCounts: |SEEN| ≈ 120 · |CONFIRMED| = 9 · |RULED_OUT| = 0 · |CANDIDATES| ≈ 111 (list capped below).\n\nEvidence: `packages/trpc/server/routers/viewer/slots/util.ts:1281-1283` resolves `restrictionTimezone = eventType.useBookerTimezone ? input.timeZone : …`, so the server answer depends on the request's `timeZone`. `packages/platform/atoms/booker/BookerPlatformWrapper.tsx:246,289` and `apps/web/modules/schedules/hooks/useSchedule.ts:108` both *send* the live booker timezone. But `packages/platform/atoms/hooks/useAvailableSlots.ts:20-33` and `apps/web/modules/schedules/hooks/useApiV2AvailableSlots.ts:18-31` build react-query keys that list startTime/endTime/eventTypeId/slug/team fields and omit `rest.timeZone` — so a zone change mutates only `queryFn` params, never the key, and the cached slots are served until remount.\n\n{\n  \"contract\": \"Any client-side cache key for a slots/availability request must include every request parameter the server's slot computation can depend on. Because an event type's restriction schedule may be evaluated in the requesting visitor's own timezone rather than a fixed host timezone, `timeZone` is a semantic input to the response, not a presentation detail: two requests differing only in `timeZone` may legitimately return different sets of bookable slots. A react-query key that omits `timeZone` therefore aliases two distinct server answers onto one cache entry, and the UI keeps rendering the stale answer until the page is reloaded.\",\n  \"defect_location\": {\n    \"repo\": \"calcom/cal.com\",\n    \"summary\": \"The server honours the visitor's zone correctly: packages/trpc/server/routers/viewer/slots/util.ts:1271-1306 resolves `restrictionTimezone = eventType.useBookerTimezone ? input.timeZone : (restrictionSchedule.timeZone ?? \\\"UTC\\\")` and feeds it to buildDateRanges, so the returned slots are a function of the request's timeZone. Both booking surfaces also pass the live booker timezone into their fetch layer — apps/web/modules/schedules/hooks/useSchedule.ts:108 sets `timeZone: timezone ?? \\\"PLACEHOLDER_TIMEZONE\\\"` from apps/web/modules/schedules/hooks/useEvent.ts:96,109 (`useBookerTime()`, backed by packages/features/bookings/Booker/hooks/useBookerTime.ts and the zustand store in packages/features/bookings/lib/timePreferences.ts:21-32), and packages/platform/atoms/booker/BookerPlatformWrapper.tsx:246,289 passes `timeZone: timezone` from `useTimePreferences()`. The defect is in the two sibling react-query hooks that consume those params: apps/web/modules/schedules/hooks/useApiV2AvailableSlots.ts:18-31 and packages/platform/atoms/hooks/useAvailableSlots.ts:20-33 both enumerate the query key as [QUERY_KEY, startTime, endTime, eventTypeId, eventTypeSlug, isTeamEvent, teamId, usernameList, routedTeamMemberIds, skipContactOwner, teamMemberEmail, …] while spreading the full `rest` object (which does contain timeZone) into the request params at lines 32-37 and 34-38 respectively. Changing the zone therefore leaves the key identical, react-query serves the cached response computed for the previous zone, and only a remount/reload re-issues the request — matching the report on both the first-party booking page (apps/web) and the droppable Booker widget (packages/platform/atoms, entry point packages/platform/atoms/index.ts:41). packages/platform/atoms/calendar-view/EventTypeCalendarViewComponent.tsx is the second consumer of the atoms hook and inherits the same staleness.\",\n  \"answer\": [\n    \"packages/platform/atoms/hooks/useAvailableSlots.ts\",\n    \"apps/web/modules/schedules/hooks/useApiV2AvailableSlots.ts\",\n    \"packages/trpc/server/routers/viewer/slots/util.ts\",\n    \"packages/features/bookings/lib/timePreferences.ts\",\n    \"packages/platform/atoms/booker/BookerPlatformWrapper.tsx\",\n    \"apps/web/modules/schedules/hooks/useSchedule.ts\",\n    \"packages/features/bookings/Booker/hooks/useBookerTime.ts\",\n    \"packages/platform/types/slots/slots-2024-09-04/inputs/get-slots.input.ts\",\n    \"apps/web/modules/schedules/hooks/useEvent.ts\",\n    \"packages/platform/atoms/calendar-view/EventTypeCalendarViewComponent.tsx\",\n    \"packages/features/bookings/Booker/store.ts\",\n    \"packages/trpc/server/routers/viewer/slots/_router.tsx\",\n    \"apps/web/modules/bookings/hooks/useSlots.ts\",\n    \"packages/platform/atoms/index.ts\",\n    \"packages/features/bookings/Booker/hooks/useAvailableTimeSlots.ts\",\n    \"packages/embeds/embed-core/src/types.ts\",\n    \"apps/api/v2/src/modules/slots/slots-2024-04-15/controllers/slots.controller.ts\",\n    \"packages/platform/atoms/booker/types.ts\",\n    \"packages/features/bookings/Booker/utils/isTimeslotAvailable.ts\",\n    \"apps/web/modules/schedules/lib/types.ts\",\n    \"packages/platform/types/index.ts\",\n    \"packages/features/bookings/Booker/types.ts\",\n    \"apps/api/v2/src/modules/slots/slots-2024-09-04/controllers/slots.controller.ts\",\n    \"packages/platform/atoms/hooks/useScheduleByEventSlug.tsx\",\n    \"packages/features/availability/lib/getUserAvailability.ts\",\n    \"apps/web/modules/schedules/hooks/useSlotsForDate.ts\",\n    \"packages/platform/atoms/hooks/schedules/useSchedule.ts\",\n    \"packages/features/bookings/Booker/utils/isSlotEquivalent.ts\",\n    \"apps/web/modules/bookings/components/AvailableTimes.tsx\",\n    \"apps/api/v2/src/modules/slots/slots-2024-09-04/services/slots.service.ts\",\n    \"packages/features/schedules/hooks/useTimesForSchedule.ts\",\n    \"apps/web/modules/schedules/hooks/useNonEmptyScheduleDays.ts\",\n    \"packages/lib/dayjs/timeZone.schema.ts\",\n    \"packages/features/bookings/lib/handleNewBooking/ensureAvailableUsers.ts\",\n    \"apps/web/modules/event-types/components/tabs/availability/EventAvailabilityTab.tsx\",\n    \"packages/prisma/schema.prisma\",\n    \"packages/features/calendars/lib/types.ts\",\n    \"apps/web/modules/bookings/types.ts\",\n    \"packages/dayjs/index.ts\",\n    \"packages/features/eventtypes/components/tabs/limits/EventLimitsTab.tsx\",\n    \"packages/types/Calendar.d.ts\",\n    \"apps/web/lib/clock.ts\",\n    \"packages/features/busyTimes/lib/getBusyTimesFromLimits.ts\",\n    \"packages/platform/atoms/timezone/index.tsx\",\n    \"apps/web/lib/types/schedule.ts\",\n    \"packages/features/bookings/lib/handleNewBooking/checkBookingAndDurationLimits.ts\",\n    \"packages/platform/atoms/src/lib/timeZones.ts\",\n    \"apps/web/modules/embed/components/Embed.tsx\",\n    \"packages/platform/atoms/hooks/useTimezone.ts\",\n    \"packages/features/CalendarEventBuilder.ts\",\n    \"packages/platform/atoms/cal-provider/BaseCalProvider.tsx\",\n    \"packages/trpc/react/trpc.ts\",\n    \"packages/platform/atoms/hooks/useUpdateUserTimezone.ts\",\n    \"apps/web/app/_trpc/trpc.ts\",\n    \"packages/platform/atoms/lib/http.ts\",\n    \"apps/web/modules/ee/teams/components/TeamAvailabilityTimes.tsx\",\n    \"packages/platform/constants/api.ts\",\n    \"apps/web/modules/ee/teams/components/TeamAvailabilityModal.tsx\",\n    \"packages/platform/atoms/hooks/useGetCityTimezones.ts\",\n    \"packages/trpc/server/routers/viewer/availability/schedule/getScheduleByEventTypeSlug.handler.ts\",\n    \"packages/platform/atoms/hooks/schedules/useAtomSchedule.ts\",\n    \"packages/trpc/server/routers/viewer/teams/getMemberAvailability.schema.ts\",\n    \"packages/platform/atoms/availability/AvailabilitySettings.tsx\",\n    \"apps/api/v2/src/modules/routing-forms/services/routing-forms.service.ts\",\n    \"packages/features/bookings/Booker/config.ts\",\n    \"packages/platform/types/slots/index.ts\"\n  ]\n}",
+  "ttft_ms": 1724,
+  "type": "result",
+  "duration_ms": 502109,
+  "uuid": "1c31370b-e8d8-48b1-9feb-7fd0de595e68",
+  "ttft_stream_ms": 1275,
+  "time_to_request_ms": 15,
+  "queued_turn_count": 0
+}

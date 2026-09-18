@@ -1,0 +1,217 @@
+[
+  {
+    "repo": "xyflow",
+    "files": [
+      "packages/system/src/utils/store.ts",
+      "packages/react/src/store/index.ts",
+      "packages/svelte/src/lib/store/index.ts",
+      "packages/react/src/hooks/useUpdateNodeInternals.ts",
+      "packages/react/src/utils/changes.ts",
+      "packages/system/src/utils/graph.ts",
+      "packages/react/src/store/initialState.ts",
+      "packages/svelte/src/lib/store/initial-store.svelte.ts",
+      "packages/system/src/types/nodes.ts",
+      "packages/react/src/components/NodeWrapper/useNodeObserver.ts"
+    ],
+    "pinpoints": [
+      {
+        "path": "packages/system/src/utils/store.ts",
+        "symbol": "adoptUserNodes",
+        "lines": "141-171",
+        "change": "Stop inheriting the previous entry's internals by id alone: only reuse internalNode when it is the same user node object (or the node was not re-created), and drop handleBounds/z/positionAbsolute otherwise."
+      },
+      {
+        "path": "packages/system/src/utils/store.ts",
+        "symbol": "parseHandles",
+        "lines": "79-82",
+        "change": "Do not fall back to internalNode.internals.handleBounds for a node whose identity was not proven to carry over; force re-measurement instead."
+      }
+    ]
+  },
+  {
+    "repo": "table",
+    "files": [
+      "packages/table-core/src/utils/getCoreRowModel.ts",
+      "packages/table-core/src/core/row.ts",
+      "packages/table-core/src/features/RowSelection.ts",
+      "packages/table-core/src/core/table.ts",
+      "packages/table-core/src/utils.ts",
+      "packages/table-core/src/features/RowExpanding.ts",
+      "packages/table-core/src/features/RowPinning.ts",
+      "packages/table-core/src/core/cell.ts",
+      "packages/table-core/src/utils/getFacetedUniqueValues.ts",
+      "packages/table-core/src/utils/getFacetedMinMaxValues.ts",
+      "packages/table-core/src/utils/getExpandedRowModel.ts",
+      "packages/table-core/src/utils/filterRowsUtils.ts",
+      "packages/table-core/src/features/ColumnGrouping.ts",
+      "packages/table-core/src/types.ts"
+    ],
+    "pinpoints": [
+      {
+        "path": "packages/table-core/src/utils/getCoreRowModel.ts",
+        "symbol": "getCoreRowModel",
+        "lines": "31-53",
+        "change": "Detect a duplicate row.id before writing rowModel.rowsById[row.id] instead of silently overwriting, and restore the commented-out missing-id guard at lines 32-37."
+      },
+      {
+        "path": "packages/table-core/src/core/row.ts",
+        "symbol": "createRow",
+        "lines": "104-152",
+        "change": "Keep the per-row _valuesCache/_uniqueValuesCache lifetime tied to this row object \u2014 the in-repo model the id-keyed feature state should follow."
+      }
+    ]
+  },
+  {
+    "repo": "tldraw",
+    "files": [
+      "packages/store/src/lib/Store.ts",
+      "packages/store/src/lib/AtomMap.ts",
+      "packages/utils/src/lib/cache.ts",
+      "packages/store/src/lib/StoreQueries.ts",
+      "packages/store/src/lib/StoreSideEffects.ts",
+      "packages/state/src/lib/Computed.ts",
+      "packages/store/src/lib/RecordsDiff.ts",
+      "packages/editor/src/lib/utils/EditorAtom.ts",
+      "packages/editor/src/lib/editor/overlays/OverlayManager.ts",
+      "packages/tldraw/src/lib/shapes/arrow/ArrowShapeUtil.tsx"
+    ],
+    "pinpoints": [
+      {
+        "path": "packages/store/src/lib/Store.ts",
+        "symbol": "Store.createCache",
+        "lines": "1110-1121",
+        "change": "Owner of the contract: the cache is keyed on the record's atom via WeakCache, not on its id \u2014 keep this and document it as the rule other id-keyed caches must follow."
+      },
+      {
+        "path": "packages/store/src/lib/AtomMap.ts",
+        "symbol": "AtomMap.delete",
+        "lines": "247-260",
+        "change": "Deleting removes the value atom, so a re-created record gets a fresh atom and no inherited derivation \u2014 this is the lifetime tie the violators lack."
+      }
+    ]
+  },
+  {
+    "repo": "jotai",
+    "files": [
+      "src/vanilla/utils/atomFamily.ts",
+      "src/vanilla/utils/selectAtom.ts",
+      "src/vanilla/utils/splitAtom.ts",
+      "src/vanilla/utils/unwrap.ts",
+      "src/vanilla/internals.ts"
+    ],
+    "pinpoints": [
+      {
+        "path": "src/vanilla/utils/atomFamily.ts",
+        "symbol": "createAtom",
+        "lines": "78-104",
+        "change": "An equal param returns the predecessor's atom with all its state; nothing ties the entry to the subject's lifetime \u2014 require an explicit identity/version in the key or evict on subject teardown."
+      },
+      {
+        "path": "src/vanilla/utils/atomFamily.ts",
+        "symbol": "createAtom.setShouldRemove",
+        "lines": "125-151",
+        "change": "remove/setShouldRemove is the only let-go rule and it is time-based \u2014 tie removal to the keyed subject instead."
+      }
+    ]
+  },
+  {
+    "repo": "zod",
+    "files": ["packages/zod/src/v4/core/registries.ts", "packages/zod/src/v4/core/to-json-schema.ts"],
+    "pinpoints": [
+      {
+        "path": "packages/zod/src/v4/core/registries.ts",
+        "symbol": "$ZodRegistry.add",
+        "lines": "33-43",
+        "change": "_idmap.set(meta.id!, schema) silently overwrites a different schema registered under the same id, and holds it strongly while _map (a WeakMap) releases it \u2014 detect the collision and tie the id entry to the schema's lifetime."
+      }
+    ]
+  },
+  {
+    "repo": "reselect",
+    "files": [
+      "src/devModeChecks/cacheSizeCheck.ts",
+      "src/weakMapMemoize.ts",
+      "src/lruMemoize.ts",
+      "src/createSelectorCreator.ts",
+      "src/createStructuredSelector.ts",
+      "src/devModeChecks/inputStabilityCheck.ts"
+    ],
+    "pinpoints": [
+      {
+        "path": "src/devModeChecks/cacheSizeCheck.ts",
+        "symbol": "runCacheSizeCheck",
+        "lines": "11-44",
+        "change": "Owns the rule in prose: object keys live in WeakMaps and are released when unreachable, primitive keys (ids) are held strongly until clearCache() \u2014 the contract every id-keyed cache here must be brought in line with."
+      }
+    ]
+  },
+  {
+    "repo": "query",
+    "files": [
+      "packages/query-core/src/removable.ts",
+      "packages/query-core/src/queryCache.ts",
+      "packages/query-core/src/query.ts",
+      "packages/query-core/src/mutation.ts",
+      "packages/query-core/src/queryClient.ts",
+      "packages/query-core/src/queriesObserver.ts"
+    ],
+    "pinpoints": [
+      {
+        "path": "packages/query-core/src/removable.ts",
+        "symbol": "Removable.scheduleGc",
+        "lines": "14-22",
+        "change": "The owning rule for letting remembered work go: gcTime elapses with no observers, then optionalRemove() drops the entry keyed by queryHash."
+      }
+    ]
+  },
+  {
+    "repo": "redux-toolkit",
+    "files": [
+      "packages/toolkit/src/query/core/buildMiddleware/cacheCollection.ts",
+      "packages/toolkit/src/entities/unsorted_state_adapter.ts",
+      "packages/toolkit/src/entities/sorted_state_adapter.ts",
+      "packages/toolkit/src/entities/utils.ts",
+      "packages/toolkit/src/entities/create_adapter.ts",
+      "packages/toolkit/src/entities/state_selectors.ts"
+    ]
+  },
+  {
+    "repo": "db",
+    "files": [
+      "packages/db/src/collection/lifecycle.ts",
+      "packages/db/src/collection/cleanup-queue.ts",
+      "packages/db/src/collection/state.ts",
+      "packages/db/src/collection/index.ts",
+      "packages/db/src/collection/sync.ts",
+      "packages/db/src/collection/subscription.ts"
+    ]
+  },
+  {
+    "repo": "router",
+    "files": [
+      "packages/router-core/src/router.ts",
+      "packages/router-core/src/lru-cache.ts",
+      "packages/router-core/src/Matches.ts"
+    ]
+  },
+  {
+    "repo": "primitives",
+    "files": [
+      "packages/react/collection/src/collection.tsx",
+      "packages/react/collection/src/collection-legacy.tsx",
+      "packages/react/roving-focus/src/roving-focus-group.tsx"
+    ]
+  },
+  {
+    "repo": "react-redux",
+    "files": ["src/components/Context.ts", "src/connect/selectorFactory.ts"]
+  },
+  {
+    "repo": "redux-devtools",
+    "files": ["packages/redux-devtools-app-core/src/reducers/instances.ts"]
+  },
+  {
+    "repo": "zustand",
+    "files": ["src/middleware/persist.ts"]
+  }
+]

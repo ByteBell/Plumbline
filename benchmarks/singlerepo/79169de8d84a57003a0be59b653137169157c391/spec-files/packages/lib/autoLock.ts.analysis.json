@@ -1,0 +1,806 @@
+{
+  "relativePath": "packages/lib/autoLock.ts",
+  "language": "typescript",
+  "sha256": "97c9974819dfabe75563a9757f304799a87a7e09bc2a21e1190f4a60871c42e4",
+  "sizeBytes": 5412,
+  "tokenCount": 1353,
+  "lineCount": 178,
+  "analysedAt": "2026-08-27T17:37:04.175Z",
+  "analysis": {
+    "module": {
+      "purpose": "Provides automatic user locking when rate-limit violations reach a configurable threshold, using Redis to track repeated violations and Prisma to mark users as locked.",
+      "summary": "This module coordinates rate-limit enforcement with temporary Redis counters and persistent user locking. It normalizes identifiers, checks the configured Upstash Redis environment, increments and expires violation counters, and locks users when the threshold is reached. Locking supports numeric user IDs, email addresses, and API keys, while SMS identifiers are intentionally handled elsewhere. API-key lookup failures for missing users are surfaced to callers, whereas other auto-lock processing errors are logged and treated as non-locking failures.",
+      "businessContext": "Supports abuse prevention and account protection across rate-limited workflows and API access. Failure can allow repeated abuse or prevent legitimate users from being locked after sustained violations.",
+      "classes": [
+        "HandleAutoLockInput (~L14-21): Describes identifiers, rate-limit responses, and auto-lock configuration",
+        "LockReason (~L23-26): Enumerates reasons recorded when accounts become automatically locked"
+      ],
+      "functions": [
+        "handleAutoLock (~L33-88): Tracks violations and locks users after thresholded rate-limit failures",
+        "lockUser (~L90-167): Resolves an identifier and persists the user's locked state"
+      ],
+      "keywords": [
+        "auto-lock",
+        "rate limiting",
+        "Upstash Redis",
+        "Prisma",
+        "API key hashing",
+        "account protection",
+        "spam detection",
+        "Sentry"
+      ],
+      "ontologyConcepts": [
+        "rate-limit enforcement",
+        "threshold tracking",
+        "account locking",
+        "identifier resolution",
+        "abuse prevention",
+        "temporary counters"
+      ],
+      "businessEntities": ["User", "API key", "email", "SMS identifier", "rate-limit response"],
+      "systemCapabilities": [
+        "Track repeated rate-limit violations",
+        "Automatically lock user accounts",
+        "Resolve users from API keys",
+        "Expire violation counters",
+        "Log account-locking events"
+      ],
+      "configDependencies": ["UPSTASH_REDIS_REST_TOKEN", "UPSTASH_REDIS_REST_URL", "NEXT_PUBLIC_SENTRY_DSN"],
+      "importsInternal": [
+        {
+          "spec": "./logger",
+          "symbols": ["logger"],
+          "anchor": {
+            "startLine": 7,
+            "endLine": 7
+          },
+          "resolvedRelativePath": "packages/lib/logger.ts",
+          "resolvedFileId": "packages/lib/logger.ts",
+          "resolvedHint": "packages/lib/logger.ts"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "@unkey/ratelimit",
+          "symbols": ["RatelimitResponse"],
+          "package": "@unkey/ratelimit",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 1,
+            "endLine": 1
+          }
+        },
+        {
+          "spec": "@calcom/features/ee/api-keys/lib/apiKeys",
+          "symbols": ["hashAPIKey"],
+          "package": "@calcom/features",
+          "subpath": "ee/api-keys/lib/apiKeys",
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 3,
+            "endLine": 3
+          }
+        },
+        {
+          "spec": "@calcom/features/redis/RedisService",
+          "symbols": ["RedisService"],
+          "package": "@calcom/features",
+          "subpath": "redis/RedisService",
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 4,
+            "endLine": 4
+          }
+        },
+        {
+          "spec": "@calcom/prisma",
+          "symbols": ["prisma"],
+          "package": "@calcom/prisma",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 5,
+            "endLine": 5
+          }
+        }
+      ],
+      "sideEffects": {
+        "io": ["Writes informational, warning, and error messages through the auto-lock logger."],
+        "network": ["Reads, increments, expires, and deletes auto-lock counters through RedisService."],
+        "env": [
+          "Reads UPSTASH_REDIS_REST_TOKEN and UPSTASH_REDIS_REST_URL to determine whether auto-locking is enabled.",
+          "Reads NEXT_PUBLIC_SENTRY_DSN before logging locked-user details."
+        ],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": []
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "LockReason",
+          "shape": "export enum LockReason { RATE_LIMIT = \"Auto-locking user due to rate limit exceeded\", SPAM_WORKFLOW_BODY = \"Auto-locking user due to spam detected in workflow body\" }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "handleAutoLock",
+          "shape": "export async function handleAutoLock({ identifier: _identifier, identifierType, rateLimitResponse, identifierKeyword, autolockThreshold = DEFAULT_AUTOLOCK_THRESHOLD, autolockDuration = DEFAULT_CHECK_THRESHOLD_WINDOW_DURATION }: HandleAutoLockInput): Promise<boolean>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "lockUser",
+          "shape": "export async function lockUser(identifierType: string, identifier: string, lockReason: LockReason)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "RatelimitResponse",
+          "shape": "RatelimitResponse",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "hashAPIKey",
+          "shape": "hashAPIKey(identifier)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "RedisService",
+          "shape": "new RedisService()",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "prisma",
+          "shape": "prisma.user.update({ where, data: { locked: true }, select })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "prisma.apiKey.findUnique",
+          "shape": "prisma.apiKey.findUnique({ where: { hashedKey: hashedApiKey }, include: { user: { select } } })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "configuration guard",
+          "intent": "Skips auto-lock processing when required Redis environment variables are unavailable.",
+          "structureKind": "branch",
+          "predicate": "!UPSTASH_ENV_FOUND",
+          "branchOutcomes": [
+            "Redis environment missing: log warning and return false",
+            "Redis environment present: continue"
+          ],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 40,
+            "endLine": 45
+          }
+        },
+        {
+          "name": "identifier normalization",
+          "intent": "Removes an optional identifier keyword prefix before Redis and database operations.",
+          "structureKind": "branch",
+          "predicate": "identifierKeyword",
+          "branchOutcomes": ["Keyword present: strip keyword prefix", "Keyword absent: retain identifier"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 47,
+            "endLine": 49
+          }
+        },
+        {
+          "name": "rate-limit violation gate",
+          "intent": "Processes only unsuccessful rate-limit responses with no remaining allowance.",
+          "structureKind": "branch",
+          "predicate": "!success && remaining <= 0",
+          "branchOutcomes": ["Limit exceeded: read and update auto-lock counter", "Limit not exceeded: return false"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 51,
+            "endLine": 57
+          }
+        },
+        {
+          "name": "threshold decision",
+          "intent": "Locks the resolved user when the next violation reaches the configured threshold.",
+          "structureKind": "branch",
+          "predicate": "currentCount + 1 >= autolockThreshold",
+          "branchOutcomes": [
+            "Threshold reached: lock user, delete counter, return true",
+            "Threshold not reached: update counter and expiry, return false"
+          ],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 65,
+            "endLine": 77
+          }
+        },
+        {
+          "name": "auto-lock error recovery",
+          "intent": "Rethrows missing API-key users and converts other processing errors into false results.",
+          "structureKind": "try",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 57,
+            "endLine": 84
+          }
+        },
+        {
+          "name": "identifier dispatch",
+          "intent": "Selects the Prisma lookup and update strategy for each supported identifier type.",
+          "structureKind": "branch",
+          "predicate": null,
+          "branchOutcomes": [
+            "userId: update by numeric user ID",
+            "email: update by email",
+            "apiKey: hash key, resolve user, then update",
+            "SMS: perform no database operation",
+            "default: throw invalid identifier error"
+          ],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 103,
+            "endLine": 161
+          }
+        },
+        {
+          "name": "lock observability",
+          "intent": "Emits locked-user details only when a user was found and Sentry is configured.",
+          "structureKind": "branch",
+          "predicate": "user && process.env.NEXT_PUBLIC_SENTRY_DSN",
+          "branchOutcomes": [
+            "User and Sentry DSN present: log lock reason and user details",
+            "Otherwise: perform no lock observability logging"
+          ],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 163,
+            "endLine": 166
+          }
+        }
+      ],
+      "representationFamily": "module",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "function",
+          "name": "handleAutoLock",
+          "signature": "export async function handleAutoLock({\n  identifier: _identifier,\n  identifierType,\n  rateLimitResponse,\n  identifierKeyword,\n  autolockThreshold = DEFAULT_AUTOLOCK_THRESHOLD,\n  autolockDuration = DEFAULT_CHECK_THRESHOLD_WINDOW_DURATION,\n}: HandleAutoLockInput): Promise<boolean> {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Promise<boolean>",
+          "exported": true,
+          "anchor": {
+            "startLine": 33,
+            "endLine": 37
+          }
+        },
+        {
+          "kind": "function",
+          "name": "lockUser",
+          "signature": "export async function lockUser(identifierType: string, identifier: string, lockReason: LockReason) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": {
+            "startLine": 90,
+            "endLine": 90
+          }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "interface",
+          "name": "HandleAutoLockInput",
+          "shape": "{\n  identifier: string;\n  identifierType: \"email\" | \"userId\" | \"SMS\" | \"apiKey\";\n  rateLimitResponse: RatelimitResponse;\n  identifierKeyword?: string; // For instances where we have like \"addSecondaryEmail.${email}\"\n  autolockThreshold?: number;\n  autolockDuration?: number; // in milliseconds\n}",
+          "discriminant": "identifierType",
+          "anchor": {
+            "startLine": 14,
+            "endLine": 21
+          }
+        },
+        {
+          "kind": "enum",
+          "name": "LockReason",
+          "shape": "{\n  RATE_LIMIT = \"Auto-locking user due to rate limit exceeded\",\n  SPAM_WORKFLOW_BODY = \"Auto-locking user due to spam detected in workflow body\",\n}",
+          "discriminant": null,
+          "anchor": {
+            "startLine": 23,
+            "endLine": 26
+          }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": {
+        "paragraph": "",
+        "tokenEstimate": 0
+      },
+      "edgeCases": [
+        {
+          "inputShape": "Missing Upstash Redis environment variables",
+          "handled": true,
+          "behavior": "Logs a warning and returns false without accessing Redis or locking a user.",
+          "anchor": {
+            "startLine": 42,
+            "endLine": 45
+          }
+        },
+        {
+          "inputShape": "Successful rate-limit response or positive remaining allowance",
+          "handled": true,
+          "behavior": "Returns false without changing the counter or user state.",
+          "anchor": {
+            "startLine": 51,
+            "endLine": 87
+          }
+        },
+        {
+          "inputShape": "Missing Redis counter",
+          "handled": true,
+          "behavior": "Treats the current count as zero before evaluating the threshold.",
+          "anchor": {
+            "startLine": 58,
+            "endLine": 59
+          }
+        },
+        {
+          "inputShape": "Identifier with identifierKeyword prefix",
+          "handled": true,
+          "behavior": "Removes the first matching keyword prefix before constructing the counter key.",
+          "anchor": {
+            "startLine": 47,
+            "endLine": 49
+          }
+        },
+        {
+          "inputShape": "Empty identifier",
+          "handled": true,
+          "behavior": "lockUser returns immediately without database access.",
+          "anchor": {
+            "startLine": 91,
+            "endLine": 93
+          }
+        },
+        {
+          "inputShape": "SMS identifier type",
+          "handled": true,
+          "behavior": "The dispatch case performs no locking operation and completes without assigning a user.",
+          "anchor": {
+            "startLine": 156,
+            "endLine": 158
+          }
+        },
+        {
+          "inputShape": "Unknown identifier type",
+          "handled": false,
+          "behavior": "Throws an invalid identifier type error.",
+          "anchor": {
+            "startLine": 159,
+            "endLine": 160
+          }
+        },
+        {
+          "inputShape": "API key without an associated user",
+          "handled": true,
+          "behavior": "Throws a specific missing-user error, which handleAutoLock rethrows.",
+          "anchor": {
+            "startLine": 141,
+            "endLine": 143
+          }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": "<=",
+          "left": "remaining",
+          "right": "0",
+          "inclusive": true,
+          "intent": "Treats zero or negative remaining allowance as a rate-limit violation.",
+          "anchor": {
+            "startLine": 51,
+            "endLine": 51
+          }
+        },
+        {
+          "operator": ">=",
+          "left": "currentCount + 1",
+          "right": "autolockThreshold",
+          "inclusive": true,
+          "intent": "Locks on the violation that reaches or exceeds the configured threshold.",
+          "anchor": {
+            "startLine": 65,
+            "endLine": 65
+          }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": null,
+          "caught": "err instanceof Error && err.message === \"No user found for this API key.\"",
+          "action": "Logs the missing API-key user error and rethrows the original error.",
+          "fallback": null,
+          "anchor": {
+            "startLine": 79,
+            "endLine": 81
+          }
+        },
+        {
+          "thrown": null,
+          "caught": "err",
+          "action": "Logs the error message and suppresses the failure.",
+          "fallback": "false",
+          "anchor": {
+            "startLine": 82,
+            "endLine": 84
+          }
+        },
+        {
+          "thrown": "new Error(\"No user found for this API key.\")",
+          "caught": null,
+          "action": "Stops API-key locking when the key has no associated user.",
+          "fallback": null,
+          "anchor": {
+            "startLine": 141,
+            "endLine": 143
+          }
+        },
+        {
+          "thrown": "new Error(\"Invalid identifier type for locking\")",
+          "caught": null,
+          "action": "Rejects unsupported identifier types.",
+          "fallback": null,
+          "anchor": {
+            "startLine": 159,
+            "endLine": 160
+          }
+        }
+      ],
+      "invariants": [
+        {
+          "kind": "precondition",
+          "description": "Auto-lock counter processing requires both Upstash Redis environment variables.",
+          "anchor": {
+            "startLine": 40,
+            "endLine": 45
+          }
+        },
+        {
+          "kind": "invariant",
+          "description": "Violation counters use identifier type, optional keyword, and normalized identifier to isolate tracking keys.",
+          "anchor": {
+            "startLine": 47,
+            "endLine": 55
+          }
+        },
+        {
+          "kind": "postcondition",
+          "description": "A threshold-reaching violation deletes its Redis counter after successfully locking the user.",
+          "anchor": {
+            "startLine": 70,
+            "endLine": 72
+          }
+        },
+        {
+          "kind": "postcondition",
+          "description": "Non-threshold violations persist a counter and configure its expiration duration.",
+          "anchor": {
+            "startLine": 75,
+            "endLine": 77
+          }
+        },
+        {
+          "kind": "invariant",
+          "description": "Successful rate-limit responses never trigger counter access or user locking.",
+          "anchor": {
+            "startLine": 51,
+            "endLine": 51
+          }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "env",
+          "description": "Upstash Redis credentials are available when automatic locking is expected to operate.",
+          "anchor": {
+            "startLine": 40,
+            "endLine": 45
+          }
+        },
+        {
+          "kind": "schema",
+          "description": "Prisma exposes user, apiKey, locked, hashedKey, and related selected user fields with the expected schema.",
+          "anchor": {
+            "startLine": 105,
+            "endLine": 154
+          }
+        },
+        {
+          "kind": "caller",
+          "description": "Callers provide a rate-limit response whose success and remaining fields follow RatelimitResponse semantics.",
+          "anchor": {
+            "startLine": 33,
+            "endLine": 38
+          }
+        },
+        {
+          "kind": "caller",
+          "description": "SMS auto-locking is performed by another rate-limit path rather than this function.",
+          "anchor": {
+            "startLine": 156,
+            "endLine": 158
+          }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "Should counter updates be atomic to prevent concurrent violations from losing increments?",
+          "affects": "concurrency_model and threshold behavior",
+          "anchor": {
+            "startLine": 58,
+            "endLine": 76
+          },
+          "resolution": null
+        },
+        {
+          "question": "What caller-visible behavior is expected when Prisma update operations fail?",
+          "affects": "error_handling and lockUser behavior",
+          "anchor": {
+            "startLine": 105,
+            "endLine": 154
+          },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "async",
+        "reentrant": true,
+        "ordering": "unknown",
+        "notes": "Functions await Redis and Prisma operations; counter reads and writes are separate operations, so concurrent violations may race."
+      },
+      "stateModel": null,
+      "fileFingerprint": {
+        "lineCount": 0,
+        "declarationCount": 0,
+        "maxNestingDepth": 0,
+        "roughCyclomatic": 0
+      },
+      "reconstructionHints": {
+        "namingStyle": "unknown",
+        "returnStyle": "n/a",
+        "commentStyle": "none",
+        "dialect": ""
+      },
+      "moduleContractTests": [
+        {
+          "testId": "skips-when-upstash-environment-is-missing",
+          "scenario": "Auto-lock is requested without the required Upstash Redis environment variables.",
+          "given": ["delete process.env.UPSTASH_REDIS_REST_TOKEN", "delete process.env.UPSTASH_REDIS_REST_URL"],
+          "when": "handleAutoLock({ identifier: \"user@example.com\", identifierType: \"email\", rateLimitResponse: { success: false, remaining: 0 } })",
+          "then": "resolves to false",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Prevents locking or Redis access when the required runtime configuration is unavailable."
+        },
+        {
+          "testId": "increments-exceeded-rate-limit-counter",
+          "scenario": "A rate-limited request is below the auto-lock threshold.",
+          "given": [
+            "process.env.UPSTASH_REDIS_REST_TOKEN = \"token\"",
+            "process.env.UPSTASH_REDIS_REST_URL = \"url\"",
+            "redis.get(lockKey) resolves to \"2\"",
+            "autolockThreshold = 5"
+          ],
+          "when": "handleAutoLock({ identifier: \"user@example.com\", identifierType: \"email\", rateLimitResponse: { success: false, remaining: 0 }, autolockThreshold: 5 })",
+          "then": "resolves to false and increments the Redis counter to \"3\" with an expiry of Math.floor(autolockDuration / 1000)",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Pins the counting and expiration behavior before the threshold is reached."
+        },
+        {
+          "testId": "locks-at-rate-limit-threshold",
+          "scenario": "A rate-limited request reaches the configured auto-lock threshold.",
+          "given": [
+            "process.env.UPSTASH_REDIS_REST_TOKEN = \"token\"",
+            "process.env.UPSTASH_REDIS_REST_URL = \"url\"",
+            "redis.get(lockKey) resolves to \"4\"",
+            "autolockThreshold = 5"
+          ],
+          "when": "handleAutoLock({ identifier: \"user@example.com\", identifierType: \"email\", rateLimitResponse: { success: false, remaining: 0 }, autolockThreshold: 5 })",
+          "then": "resolves to true, locks the user with LockReason.RATE_LIMIT, and deletes lockKey",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Guards the threshold boundary and ensures the counter is cleared after locking."
+        },
+        {
+          "testId": "does-not-count-successful-rate-limit-response",
+          "scenario": "The rate-limit response is successful or still has remaining capacity.",
+          "given": ["process.env.UPSTASH_REDIS_REST_TOKEN = \"token\"", "process.env.UPSTASH_REDIS_REST_URL = \"url\""],
+          "when": "handleAutoLock({ identifier: \"user@example.com\", identifierType: \"email\", rateLimitResponse: { success: true, remaining: 0 } })",
+          "then": "resolves to false without changing Redis or locking the user",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Ensures only responses with success === false and remaining <= 0 enter auto-lock counting."
+        },
+        {
+          "testId": "rejects-unknown-api-key",
+          "scenario": "An API-key identifier cannot be mapped to a user.",
+          "given": ["prisma.apiKey.findUnique(...) resolves to an API key without a user"],
+          "when": "lockUser(\"apiKey\", \"invalid-key\", LockReason.RATE_LIMIT)",
+          "then": "rejects with Error(\"No user found for this API key.\")",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Preserves the explicit failure contract for API keys that do not resolve to users."
+        },
+        {
+          "testId": "rejects-invalid-identifier-type",
+          "scenario": "Locking is requested with an unsupported identifier type.",
+          "given": [],
+          "when": "lockUser(\"unsupported\", \"identifier\", LockReason.RATE_LIMIT)",
+          "then": "rejects with Error(\"Invalid identifier type for locking\")",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Prevents silent handling of unsupported locking strategies."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "type-only import of RatelimitResponse",
+        "imports for API-key hashing, RedisService, Prisma, and logger",
+        "default auto-lock threshold constant",
+        "default counter-window duration constant",
+        "HandleAutoLockInput interface",
+        "LockReason enum",
+        "module logger instance",
+        "handleAutoLock exported function",
+        "lockUser exported function"
+      ],
+      "moduleLevelCode": "import type { RatelimitResponse } from \"@unkey/ratelimit\";\n\nimport { hashAPIKey } from \"@calcom/features/ee/api-keys/lib/apiKeys\";\nimport { RedisService } from \"@calcom/features/redis/RedisService\";\nimport prisma from \"@calcom/prisma\";\n\nimport logger from \"./logger\";",
+      "exports": [
+        {
+          "name": "LockReason",
+          "kind": "own",
+          "fromSpec": null,
+          "exportedAs": null
+        },
+        {
+          "name": "handleAutoLock",
+          "kind": "own",
+          "fromSpec": null,
+          "exportedAs": null
+        },
+        {
+          "name": "lockUser",
+          "kind": "own",
+          "fromSpec": null,
+          "exportedAs": null
+        }
+      ],
+      "importSymbolMap": [
+        {
+          "symbol": "RatelimitResponse",
+          "module": "@unkey/ratelimit",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "hashAPIKey",
+          "module": "@calcom/features/ee/api-keys/lib/apiKeys",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "RedisService",
+          "module": "@calcom/features/redis/RedisService",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "prisma",
+          "module": "@calcom/prisma",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "logger",
+          "module": "./logger",
+          "alias": null,
+          "kind": "internal"
+        }
+      ],
+      "fileConstants": [
+        {
+          "name": "DEFAULT_AUTOLOCK_THRESHOLD",
+          "value": "5",
+          "kind": "number"
+        },
+        {
+          "name": "DEFAULT_CHECK_THRESHOLD_WINDOW_DURATION",
+          "value": "60 * 30 * 1000",
+          "kind": "number"
+        },
+        {
+          "name": "log",
+          "value": "logger.getSubLogger({ prefix: [\"[autoLock]\"] })",
+          "kind": "logger instance"
+        }
+      ],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/lib/autoLock.ts__HandleAutoLockInput_1#interface:HandleAutoLockInput",
+        "unitKind": "interface",
+        "name": "HandleAutoLockInput",
+        "qualifiedName": "HandleAutoLockInput",
+        "parentUnitId": null,
+        "startLine": 14,
+        "endLine": 21,
+        "isBehavioral": false,
+        "source": "interface HandleAutoLockInput {\n  identifier: string;\n  identifierType: \"email\" | \"userId\" | \"SMS\" | \"apiKey\";\n  rateLimitResponse: RatelimitResponse;\n  identifierKeyword?: string; // For instances where we have like \"addSecondaryEmail.${email}\"\n  autolockThreshold?: number;\n  autolockDuration?: number; // in milliseconds\n}"
+      },
+      {
+        "unitId": "packages/lib/autoLock.ts__LockReason_2#enum:LockReason",
+        "unitKind": "enum",
+        "name": "LockReason",
+        "qualifiedName": "LockReason",
+        "parentUnitId": null,
+        "startLine": 23,
+        "endLine": 26,
+        "isBehavioral": false,
+        "source": "export enum LockReason {\n  RATE_LIMIT = \"Auto-locking user due to rate limit exceeded\",\n  SPAM_WORKFLOW_BODY = \"Auto-locking user due to spam detected in workflow body\",\n}"
+      },
+      {
+        "unitId": "packages/lib/autoLock.ts__handleAutoLock_3#function:handleAutoLock",
+        "unitKind": "function",
+        "name": "handleAutoLock",
+        "qualifiedName": "handleAutoLock",
+        "parentUnitId": null,
+        "startLine": 35,
+        "endLine": 96,
+        "isBehavioral": true,
+        "source": "export async function handleAutoLock({\n  identifier: _identifier,\n  identifierType,\n  rateLimitResponse,\n  identifierKeyword,\n  autolockThreshold = DEFAULT_AUTOLOCK_THRESHOLD,\n  autolockDuration = DEFAULT_CHECK_THRESHOLD_WINDOW_DURATION,\n}: HandleAutoLockInput): Promise<boolean> {\n  const { success, remaining } = rateLimitResponse;\n\n  const UPSTASH_ENV_FOUND = process.env.UPSTASH_REDIS_REST_TOKEN && process.env.UPSTASH_REDIS_REST_URL;\n\n  if (!UPSTASH_ENV_FOUND) {\n    log.warn(\"Skipping auto lock because UPSTASH env variables are not set\");\n    return false;\n  }\n\n  const identifier = identifierKeyword\n    ? _identifier.toString().replace(`${identifierKeyword}.`, \"\")\n    : _identifier;\n\n  if (!success && remaining <= 0) {\n    const redis = new RedisService();\n    const lockKey = `autolock:${identifierType}${\n      identifierKeyword ? `:${identifierKeyword}` : \"\"\n    }:${identifier}.count`;\n\n    try {\n      const count = await redis.get(lockKey);\n      const currentCount = count ? parseInt(count.toString(), 10) : 0;\n\n      log.info(\n        `Rate limit exceeded for ${identifierType}: ${identifier}. Current count: ${currentCount}/${autolockThreshold}`\n      );\n\n      // If they have exceeded the threshold, lock them\n      if (currentCount + 1 >= autolockThreshold) {\n        log.warn(\n          `Auto-locking ${identifierType}: ${identifier}. Threshold reached: ${\n            currentCount + 1\n          }/${autolockThreshold}`\n        );\n        await lockUser(identifierType, identifier, LockReason.RATE_LIMIT);\n        await redis.del(lockKey);\n        return true;\n      }\n\n      await redis.set(lockKey, (currentCount + 1).toString());\n      await redis.expire(lockKey, Math.floor(autolockDuration / 1000));\n      return false;\n    } catch (err) {\n      if (err instanceof Error && err.message === \"No user found for this API key.\") {\n        log.error(`Error in auto-lock: No user found for API key: ${identifier}`);\n        throw err;\n      }\n      log.error(`Error in auto-lock process: ${err instanceof Error ? err.message : String(err)}`);\n      return false;\n    }\n  }\n\n  return false;\n}"
+      },
+      {
+        "unitId": "packages/lib/autoLock.ts__lockUser_4#function:lockUser",
+        "unitKind": "function",
+        "name": "lockUser",
+        "qualifiedName": "lockUser",
+        "parentUnitId": null,
+        "startLine": 98,
+        "endLine": 177,
+        "isBehavioral": true,
+        "source": "export async function lockUser(identifierType: string, identifier: string, lockReason: LockReason) {\n  if (!identifier) {\n    return;\n  }\n\n  type UserType = {\n    id: number;\n    email: string;\n    username: string | null;\n  } | null;\n\n  let user: UserType = null;\n\n  switch (identifierType) {\n    case \"userId\":\n      user = await prisma.user.update({\n        where: { id: Number(identifier) },\n        data: { locked: true },\n        select: {\n          id: true,\n          email: true,\n          username: true,\n        },\n      });\n      break;\n    case \"email\":\n      user = await prisma.user.update({\n        where: { email: identifier },\n        data: { locked: true },\n        select: {\n          id: true,\n          email: true,\n          username: true,\n        },\n      });\n      break;\n    case \"apiKey\":\n      const hashedApiKey = hashAPIKey(identifier);\n      const apiKey = await prisma.apiKey.findUnique({\n        where: { hashedKey: hashedApiKey },\n        include: {\n          user: {\n            select: {\n              id: true,\n              email: true,\n              username: true,\n            },\n          },\n        },\n      });\n\n      if (!apiKey?.user) {\n        throw new Error(\"No user found for this API key.\");\n      }\n\n      user = await prisma.user.update({\n        where: { id: apiKey.user.id },\n        data: { locked: true },\n        select: {\n          id: true,\n          email: true,\n          username: true,\n        },\n      });\n      break;\n    // Leaving SMS here but it is handled differently via checkRateLimitForSMS that auto locks\n    case \"SMS\":\n      break;\n    default:\n      throw new Error(\"Invalid identifier type for locking\");\n  }\n\n  if (user && process.env.NEXT_PUBLIC_SENTRY_DSN) {\n    log.warn(lockReason, {\n      userId: user.id,\n      email: user.email,\n      username: user.username,\n    });\n  }\n}"
+      }
+    ],
+    "extractedUnitCount": 4,
+    "unreconciledUnitNames": []
+  },
+  "tokenUsage": {
+    "inputTokens": 7554,
+    "outputTokens": 8299,
+    "costUsd": 0
+  },
+  "model": "us.openai.gpt-5.6-luna"
+}

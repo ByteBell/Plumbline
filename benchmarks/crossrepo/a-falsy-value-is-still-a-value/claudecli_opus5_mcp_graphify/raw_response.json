@@ -1,0 +1,83 @@
+{
+  "duration_api_ms": 532567,
+  "stop_reason": "end_turn",
+  "session_id": "78b589ec-56b1-4c29-bf0c-9172f82068b6",
+  "total_cost_usd": 10.305728999999998,
+  "usage": {
+    "input_tokens": 1839964,
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "output_tokens": 44144,
+    "output_tokens_details": { "thinking_tokens": 32518 },
+    "server_tool_use": { "web_search_requests": 0, "web_fetch_requests": 0 },
+    "service_tier": "standard",
+    "cache_creation": { "ephemeral_1h_input_tokens": 0, "ephemeral_5m_input_tokens": 0 },
+    "inference_geo": "not_available",
+    "iterations": [
+      {
+        "input_tokens": 135355,
+        "output_tokens": 3202,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+        "cache_creation": { "ephemeral_5m_input_tokens": 0, "ephemeral_1h_input_tokens": 0 },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 2204,
+      "outputTokens": 21,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.002309,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "claude-haiku-4-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    },
+    "claude-opus-5": {
+      "inputTokens": 1839964,
+      "outputTokens": 44144,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 10.303419999999997,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "canonicalModel": "claude-opus-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": { "background": 0, "foreground": 0, "unset": 0 },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": { "parent": 0, "user": 0, "system": 0 },
+    "refused": { "depth_limit": 0, "concurrency_limit": 0, "budget": 0 },
+    "by_type": {}
+  },
+  "is_error": false,
+  "num_turns": 57,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "# PHASE 2 — COMPARE\n\n**golden.json could not be read.** No golden.json path was supplied with this run, and this arm has no read tool: the only surfaces available are the graphify MCP tools plus `Write`, and `ToolSearch {\"query\":\"select:Read,Glob\"}` returned \"No matching deferred tools found\". So I cannot print the gold file list, nor the found/missed split. That comparison is unavailable for this arm — not skipped by choice.\n\nWhat PHASE 1 concluded, for the harness to diff against gold by hand:\n\n- **Infers presence from truthiness (symptom sites):** `query` — `packages/query-core/src/queriesObserver.ts` (the app-supplied `combine` result cached behind a falsy-check, so an empty combined result re-runs `combine` every pass) and `packages/query-core/src/queryObserver.ts` (an app-supplied `select` that throws an empty value leaves the select-error falsy, so the observer never reports `status: 'error'` and continues down the success path). Secondary candidate carried in the answer: `redux-toolkit` `packages/toolkit/src/query/core/buildThunks.ts` (`result.error` from a user baseQuery tested for truthiness before wrapping).\n- **Owns the presence-is-not-value contract:** `react` `compiler/packages/babel-plugin-react-compiler/src/Utils/Result.ts` (the tagged pair — `isOk`/`isErr` read the tag, never the payload) and `db` `packages/db/src/utils/comparison.ts` (`isUnorderable()` enumerating the values with no natural ordering). Plus the flag/tag/wrapper/status exemplars: `reselect/src/weakMapMemoize.ts` (terminated/unterminated cache-node status) and `src/utils.ts` (`NOT_FOUND` sentinel), `redux-toolkit/packages/toolkit/src/query/HandledError.ts` (wrapper), `react-redux/src/connect/selectorFactory.ts` (first-call flag), `tldraw/packages/state/src/lib/Computed.ts` (`UNINITIALIZED`), `jotai/src/vanilla/internals.ts` (presence by key, not value).\n\n## ERRORS\n\nWritten to `/Users/sauravverma/programs/benchmarks/react-ecosystem/cross-repo/hard-a-falsy-value-is-still-a-value/errors.log`, and reproduced here:\n\n```\n02. mcp__graphify__query_graph {\"question\":\"memoized result cached value truthiness check recompute selector memoize\",\"depth\":2,\"token_budget\":3000} -> \"[i] Complete answer over budget: all 67 nodes and 78 edges shown (~6929 tokens vs the requested ~3000-token budget). Edges are never dropped once every node fits, so this is already the full answer - raising --budget further will not shrink it. Narrow with context_filter=['call'] or use get_node for a specific symbol to reduce size instead.\" (result overflow: 2.3x requested budget)\n04. mcp__graphify__query_graph {\"question\":\"Result ok err tagged union unwrap error wrapper\",\"depth\":1,\"token_budget\":1500} -> \"[i] Complete answer over budget: all 40 nodes and 38 edges shown (~2766 tokens vs the requested ~1500-token budget).\" (result overflow)\n15. mcp__graphify__get_neighbors {\"label\":\"reselect::src_index\",\"token_budget\":1200} -> \"[!] TRUNCATED: showing 47 of 93 lines (~1200-token budget). Narrow with relation_filter or use get_node for a specific symbol\" (46 lines cut)\n16. mcp__graphify__get_neighbors {\"label\":\"packages/toolkit/src/query/core/buildThunks.ts\",\"token_budget\":2000} -> \"[!] TRUNCATED: showing 57 of 124 lines (~2000-token budget).\" (67 lines cut)\n17. mcp__graphify__query_graph {\"question\":\"Computed signal UNINITIALIZED lastChangedEpoch derivation atom state\",\"depth\":1,\"token_budget\":2500} -> \"[i] Complete answer over budget: all 36 nodes and 37 edges shown (~2580 tokens vs the requested ~2500-token budget).\" (result overflow)\n18. mcp__graphify__query_graph {\"question\":\"readAtomState recomputeDependents atomState dependencies invalidated\",\"depth\":1,\"token_budget\":2500} -> \"[i] Complete answer over budget: all 62 nodes and 58 edges shown (~3433 tokens vs the requested ~2500-token budget).\" (result overflow AND semantically empty: the matcher latched onto the label \"dependencies\" and returned 57 npm dependency nodes from react/fixtures/flight/package.json instead of jotai's atom-state internals; only 2 of 62 nodes were relevant)\n19. mcp__graphify__query_graph {\"question\":\"onError callback notify consumer failure reject handleError\",\"depth\":1,\"token_budget\":1800} -> no MCP error, but result effectively empty: 13 nodes, none an error-reporting call site (a svelte test fixture, react-dom server onError, yarn bundle internals). The concept exists in the corpus but was not retrievable by label search.\n20. mcp__graphify__query_graph {\"question\":\"mutation execute onSuccess onError mutate observer state error\",\"depth\":1,\"token_budget\":1800} -> \"[!] TRUNCATED: showing 73 of 189 nodes (~1800-token budget). The answer may be among the 116 cut nodes - raise the token budget (CLI: --budget) or narrow the query\" (result overflow; ~60 of 73 shown nodes were minified symbols from .yarn/releases/yarn-4.18.0.cjs, i.e. build output crowding out source)\n21. mcp__graphify__get_node {\"label\":\"packages/toolkit/src/query/core/buildMiddleware/queryLifecycle.ts\"} -> \"No node matching 'packages/toolkit/src/query/core/buildmiddleware/querylifecycle.ts' found.\" (false negative: the file IS in the graph; get_node lowercases the label and will not resolve a repo-relative path, while get_neighbors accepts the same path form)\n22. mcp__graphify__get_node {\"label\":\"packages/toolkit/src/createAsyncThunk.ts\"} -> \"No node matching 'packages/toolkit/src/createasyncthunk.ts' found.\" (false negative; resolves as redux-toolkit::packages_toolkit_src_createasyncthunk)\n23. mcp__graphify__get_node {\"label\":\"src/vanilla/store.ts\"} -> \"No node matching 'src/vanilla/store.ts' found.\" (false negative; resolves as jotai::src_vanilla_store)\n24. mcp__graphify__get_node {\"label\":\"src/combineReducers.ts\"} -> \"No node matching 'src/combinereducers.ts' found.\" (false negative; resolves as redux::src_combinereducers)\n25. mcp__graphify__get_node {\"label\":\"packages/query-core/src/retryer.ts\"} -> \"No node matching 'packages/query-core/src/retryer.ts' found.\" (false negative; resolves as query::packages_query_core_src_retryer)\n26. mcp__graphify__get_node {\"label\":\"packages/db/src/query/compiler/order-by.ts\"} -> \"No node matching 'packages/db/src/query/compiler/order-by.ts' found.\" (false negative; resolves as db::packages_db_src_query_compiler_order_by)\n27. mcp__graphify__get_node {\"label\":\"src/hooks/useSelector.ts\"} -> \"No node matching 'src/hooks/useselector.ts' found.\" (false negative; resolves as react-redux::src_hooks_useselector)\n28. mcp__graphify__get_node {\"label\":\"packages/toolkit/src/query/core/buildSlice.ts\"} -> \"No node matching 'packages/toolkit/src/query/core/buildslice.ts' found.\" (false negative; resolves as redux-toolkit::packages_toolkit_src_query_core_buildslice)\n39. mcp__graphify__get_neighbors {\"label\":\"query::packages_query_core_src_index\",\"relation_filter\":\"re_exports\",\"token_budget\":1200} -> \"[!] TRUNCATED: showing 41 of 66 lines (~1200-token budget).\" (25 lines cut)\n41. mcp__graphify__get_node {\"label\":\"UNINITIALIZED\"} -> wrong-node resolution, no error raised: returned \"UninitializedKind / react::compiler_crates_react_compiler_reactive_scopes_src_prune_hoisted_contexts_uninitializedkind\" instead of the UNINITIALIZED node query_graph had already reported at tldraw packages/state/src/lib/Computed.ts:L29. Fuzzy label matching silently crossed repos.\n52. ToolSearch {\"query\":\"select:Read,Glob\",\"max_results\":2} -> \"No matching deferred tools found\" (PHASE 2 blocker: no read tool in this arm, so golden.json could not be opened; no golden.json path was supplied with the run either)\n```\n\nTotals: 6 result overflows/truncations, 8 `get_node` false negatives from path-form labels, 2 empty-or-misdirected searches, 1 silent cross-repo mis-resolution, 1 missing read tool blocking the gold comparison.",
+  "ttft_ms": 2509,
+  "type": "result",
+  "duration_ms": 534258,
+  "uuid": "01963b9e-331a-4dc3-afa1-3a2fc0fae666",
+  "ttft_stream_ms": 1793,
+  "time_to_request_ms": 27,
+  "queued_turn_count": 0
+}

@@ -1,0 +1,586 @@
+{
+  "relativePath": "packages/lib/rateLimit.ts",
+  "language": "typescript",
+  "sha256": "0e6dafdd09a89598b3d64d272bc94316dd124711b2e02ba07a02f3914546081c",
+  "sizeBytes": 2896,
+  "tokenCount": 724,
+  "lineCount": 114,
+  "analysedAt": "2026-09-04T19:31:31.567Z",
+  "analysis": {
+    "module": {
+      "purpose": "Provides a centralized rate limiting abstraction for the application using the Unkey Ratelimit service. It defines multiple rate limiting profiles (core, common, api, ai, sms, smsMonth, forcedSlowMode) and exposes a rateLimiter() factory that returns a rateLimit function. When UNKEY_ROOT_KEY is missing, or the limiter times out or errors, it fails open with a permissive response so requests are not blocked.",
+      "summary": "This module wraps the @unkey/ratelimit library into a factory function rateLimiter() that constructs a set of named limiter instances, each with its own namespace, request limit, and duration window (e.g. core: 10/60s, api: 30/60s, ai: 20/day, sms: 50/5m, smsMonth: 250/30d, forcedSlowMode: 1/30s). Each limiter is configured with a 5s timeout and an onError handler that logs the failure and fails open (returns a success response) so that Unkey outages do not take down the app. The exported RateLimitHelper type describes the arguments accepted by the returned rateLimit function, including an optional rateLimitingType, a required identifier, optional LimitOptions, and an optional onRateLimiterResponse callback used to surface response headers even when the limit is reached or an error is thrown. If the UNKEY_ROOT_KEY environment variable is absent, rateLimiter() logs a warning and returns a stub function that always allows requests. Inside rateLimit, if the identifier matches an IP ban list, the request is routed to the restrictive forcedSlowMode limiter regardless of the requested type; otherwise the selected limiter enforces the limit. The module also re-exports RatelimitResponse and exports the API_KEY_RATE_LIMIT constant (30).",
+      "businessContext": "This file protects the product's APIs and messaging features (AI, SMS) from abuse and runaway cost by enforcing per-identifier request quotas. If it fails, attackers could spam endpoints or inflate SMS/AI spend; its fail-open design trades strictness for availability.",
+      "classes": [],
+      "functions": [
+        "rateLimiter (~L23-113): Builds and returns configured Unkey rate limiters and rateLimit function",
+        "rateLimit (~L104-110): Enforces rate limit for identifier, routing banned IPs to forcedSlowMode",
+        "onError (~L35-43): Logs Unkey errors and fails open with success response"
+      ],
+      "keywords": [
+        "Unkey Ratelimit",
+        "rate limiting",
+        "UNKEY_ROOT_KEY",
+        "forcedSlowMode",
+        "IP ban list",
+        "fail-open timeout",
+        "API rate limit",
+        "SMS quota",
+        "namespace limiters"
+      ],
+      "ontologyConcepts": [
+        "Rate limiting",
+        "Fail-open error handling",
+        "Factory pattern",
+        "Graceful degradation",
+        "Abuse prevention",
+        "Timeout fallback"
+      ],
+      "businessEntities": ["Rate limit profile", "Identifier", "IP ban list", "API key", "SMS quota", "AI quota"],
+      "systemCapabilities": [
+        "Enforce per-namespace request quotas",
+        "Throttle banned IP identifiers",
+        "Fail open on rate limiter failures",
+        "Expose rate limit response headers via callback"
+      ],
+      "configDependencies": ["UNKEY_ROOT_KEY"],
+      "importsInternal": [
+        {
+          "spec": "./getIP",
+          "symbols": ["isIpInBanListString"],
+          "anchor": {
+            "startLine": 3,
+            "endLine": 3
+          },
+          "resolvedRelativePath": "packages/lib/getIP.ts",
+          "resolvedFileId": "packages/lib/getIP.ts",
+          "resolvedHint": "packages/lib/getIP.ts"
+        },
+        {
+          "spec": "./logger",
+          "symbols": ["logger"],
+          "anchor": {
+            "startLine": 4,
+            "endLine": 4
+          },
+          "resolvedRelativePath": "packages/lib/logger.ts",
+          "resolvedFileId": "packages/lib/logger.ts",
+          "resolvedHint": "packages/lib/logger.ts"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "@unkey/ratelimit",
+          "symbols": ["Ratelimit", "LimitOptions", "RatelimitResponse"],
+          "package": "@unkey/ratelimit",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 1,
+            "endLine": 1
+          }
+        }
+      ],
+      "sideEffects": {
+        "io": [],
+        "network": [
+          "Calls Unkey Ratelimit.limit() which performs a network request to Unkey API when UNKEY_ROOT_KEY is set"
+        ],
+        "env": ["Reads process.env.UNKEY_ROOT_KEY"],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": []
+      },
+      "integrationSurface": [
+        {
+          "kind": "other",
+          "role": "consumes",
+          "address": "@unkey/ratelimit limit() per namespace (core, common, forcedSlowMode, api, ai, sms, smsMonth)",
+          "payloadRef": "RatelimitResponse",
+          "rawKind": "other"
+        }
+      ],
+      "contractsProvided": [
+        {
+          "name": "rateLimiter",
+          "shape": "export function rateLimiter(): (opts: RateLimitHelper) => Promise<RatelimitResponse>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "RateLimitHelper",
+          "shape": "{ rateLimitingType?: \"core\" | \"forcedSlowMode\" | \"common\" | \"api\" | \"ai\" | \"sms\" | \"smsMonth\"; identifier: string; opts?: LimitOptions; onRateLimiterResponse?: (response: RatelimitResponse) => void }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "API_KEY_RATE_LIMIT",
+          "shape": "const API_KEY_RATE_LIMIT = 30",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "Ratelimit.limit",
+          "shape": "new Ratelimit({ rootKey, namespace, limit, duration, timeout, onError }).limit(identifier, opts) => Promise<RatelimitResponse>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "isIpInBanListString",
+          "shape": "(identifier: string) => boolean",
+          "resolvedRelativePath": "packages/lib/getIP.ts",
+          "resolvedFileId": "packages/lib/getIP.ts"
+        },
+        {
+          "name": "UNKEY_ROOT_KEY",
+          "shape": "process.env.UNKEY_ROOT_KEY",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "logger setup",
+          "intent": "Create prefixed sub-logger for RateLimit",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 6,
+            "endLine": 6
+          }
+        },
+        {
+          "name": "rateLimiter",
+          "intent": "Factory returning rate limiting function or no-op when disabled",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 23,
+            "endLine": 113
+          }
+        },
+        {
+          "name": "disabled check",
+          "intent": "Fallback permissive limiter when UNKEY_ROOT_KEY missing",
+          "structureKind": "branch",
+          "predicate": "if (!UNKEY_ROOT_KEY)",
+          "branchOutcomes": ["missing key: return stub always-success", "key present: build limiters"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 26,
+            "endLine": 29
+          }
+        },
+        {
+          "name": "timeout and onError",
+          "intent": "5s timeout fallback allowing request and error logging",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 30,
+            "endLine": 43
+          }
+        },
+        {
+          "name": "limiter map",
+          "intent": "Construct seven namespaced Ratelimit instances with fixed limits",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 45,
+            "endLine": 102
+          }
+        },
+        {
+          "name": "rateLimit",
+          "intent": "Apply chosen limiter, forcing slow mode for banned IPs",
+          "structureKind": "async",
+          "predicate": "if (isIpInBanListString(identifier))",
+          "branchOutcomes": ["banned: forcedSlowMode", "normal: selected type"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 104,
+            "endLine": 110
+          }
+        }
+      ],
+      "representationFamily": "module",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "function",
+          "name": "rateLimiter",
+          "signature": "export function rateLimiter() {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": {
+            "startLine": 23,
+            "endLine": 113
+          }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "type",
+          "name": "RateLimitHelper",
+          "shape": "export type RateLimitHelper = {\n  rateLimitingType?: \"core\" | \"forcedSlowMode\" | \"common\" | \"api\" | \"ai\" | \"sms\" | \"smsMonth\";\n  identifier: string;\n  opts?: LimitOptions;\n  /**\n   * Using a callback instead of a regular return to provide headers even\n   * when the rate limit is reached and an error is thrown.\n   **/\n  onRateLimiterResponse?: (response: RatelimitResponse) => void;\n};",
+          "discriminant": null,
+          "anchor": {
+            "startLine": 10,
+            "endLine": 19
+          }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": {
+        "paragraph": "",
+        "tokenEstimate": 0
+      },
+      "edgeCases": [
+        {
+          "inputShape": "UNKEY_ROOT_KEY missing",
+          "handled": true,
+          "behavior": "Returns stub function always responding success:true, limit:10, remaining:999, reset:0",
+          "anchor": {
+            "startLine": 26,
+            "endLine": 29
+          }
+        },
+        {
+          "inputShape": "identifier is an IP present in ban list string",
+          "handled": true,
+          "behavior": "Uses forcedSlowMode limiter (1 request per 30s) regardless of requested type",
+          "anchor": {
+            "startLine": 105,
+            "endLine": 107
+          }
+        },
+        {
+          "inputShape": "Unkey error or timeout exceeding 5000ms",
+          "handled": true,
+          "behavior": "onError logs error and returns success:true fallback response",
+          "anchor": {
+            "startLine": 30,
+            "endLine": 43
+          }
+        },
+        {
+          "inputShape": "rateLimitingType omitted",
+          "handled": true,
+          "behavior": "Defaults to 'core' limiter",
+          "anchor": {
+            "startLine": 104,
+            "endLine": 104
+          }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": "Error (from Ratelimit limit call)",
+          "caught": "onError callback",
+          "action": "Log error message, stack, identifier, timestamp via sub-logger",
+          "fallback": "Return { success: true, limit: 10, remaining: 999, reset: 0 }",
+          "anchor": {
+            "startLine": 35,
+            "endLine": 43
+          }
+        },
+        {
+          "thrown": "Timeout after 5000ms",
+          "caught": "Unkey timeout handler",
+          "action": "Return fallback success response",
+          "fallback": "{ success: true, limit: 10, remaining: 999, reset: 0 }",
+          "anchor": {
+            "startLine": 30,
+            "endLine": 33
+          }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "env",
+          "description": "UNKEY_ROOT_KEY must be set for real rate limiting; otherwise module disables itself",
+          "anchor": {
+            "startLine": 24,
+            "endLine": 29
+          }
+        },
+        {
+          "kind": "caller",
+          "description": "Caller supplies identifier string; onRateLimiterResponse callback optionally receives raw response",
+          "anchor": {
+            "startLine": 10,
+            "endLine": 19
+          }
+        },
+        {
+          "kind": "schema",
+          "description": "isIpInBanListString can accept any identifier string to detect banned IPs",
+          "anchor": {
+            "startLine": 105,
+            "endLine": 105
+          }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "Which IP formats isIpInBanListString recognizes",
+          "affects": "banned-IP branch behavior",
+          "anchor": {
+            "startLine": 105,
+            "endLine": 105
+          },
+          "resolution": null
+        },
+        {
+          "question": "Whether opts may override namespace limits/durations",
+          "affects": "limit enforcement",
+          "anchor": {
+            "startLine": 106,
+            "endLine": 109
+          },
+          "resolution": null
+        }
+      ],
+      "stateModel": null,
+      "fileFingerprint": {
+        "lineCount": 0,
+        "declarationCount": 0,
+        "maxNestingDepth": 0,
+        "roughCyclomatic": 0
+      },
+      "reconstructionHints": {
+        "namingStyle": "unknown",
+        "returnStyle": "n/a",
+        "commentStyle": "none",
+        "dialect": ""
+      },
+      "moduleContractTests": [
+        {
+          "testId": "pass-through-when-unkey-key-missing",
+          "scenario": "When UNKEY_ROOT_KEY is absent, rate limiting is disabled and every request succeeds.",
+          "given": ["delete process.env.UNKEY_ROOT_KEY"],
+          "when": "rateLimiter()()({ identifier: \"any\" })",
+          "then": "resolves { success: true, limit: 10, remaining: 999, reset: 0 }",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Failure-open behaviour is a deliberate availability contract."
+        },
+        {
+          "testId": "banned-ip-routed-to-forced-slow-mode",
+          "scenario": "An identifier present in the IP ban list is throttled via the forcedSlowMode limiter.",
+          "given": ["UNKEY_ROOT_KEY set", "identifier matches ban list"],
+          "when": "rateLimit({ identifier })",
+          "then": "the forcedSlowMode Ratelimit (limit 1 / 30s) is used",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Ban list must map to strictest limiter regardless of requested type."
+        },
+        {
+          "testId": "default-rate-limiting-type-is-core",
+          "scenario": "Omitting rateLimitingType uses the core namespace limiter.",
+          "given": ["UNKEY_ROOT_KEY set"],
+          "when": "rateLimit({ identifier: \"x\" })",
+          "then": "the core Ratelimit (limit 10 / 60s) handles the call",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "per-type-limits",
+          "scenario": "Each rateLimitingType maps to its configured namespace/limit/duration.",
+          "given": ["UNKEY_ROOT_KEY set"],
+          "when": "rateLimit({ rateLimitingType: t, identifier: \"x\" }) for each of core/common/forcedSlowMode/api/ai/sms/smsMonth",
+          "then": "core=10/60s, common=200/60s, forcedSlowMode=1/30s, api=30/60s, ai=20/1d, sms=50/5m, smsMonth=250/30d",
+          "targets": [],
+          "oracleKind": "fingerprint",
+          "rationale": "Pins the exact limit table as the public rate-limit contract."
+        },
+        {
+          "testId": "onerror-fails-open",
+          "scenario": "An error from the underlying limiter is logged and treated as success.",
+          "given": ["UNKEY_ROOT_KEY set", "limiter.limit throws"],
+          "when": "rateLimit({ identifier: \"x\" })",
+          "then": "returns { success: true, limit: 10, remaining: 999, reset: 0 } and logs the error",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Error path must not lock users out; fail-open is contractual."
+        },
+        {
+          "testId": "timeout-fallback-succeeds",
+          "scenario": "A limiter call exceeding 5000ms falls back to a success response.",
+          "given": ["UNKEY_ROOT_KEY set", "limiter slower than 5000ms"],
+          "when": "rateLimit({ identifier: \"x\" })",
+          "then": "returns { success: true, limit: 10, remaining: 999, reset: 0 }",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "import @unkey/ratelimit",
+        "import ./getIP",
+        "import ./logger",
+        "const log",
+        "export type RatelimitResponse",
+        "type RateLimitHelper",
+        "const API_KEY_RATE_LIMIT",
+        "function rateLimiter"
+      ],
+      "moduleLevelCode": null,
+      "exports": [
+        {
+          "name": "RatelimitResponse",
+          "kind": "re-export",
+          "fromSpec": "@unkey/ratelimit",
+          "exportedAs": null
+        },
+        {
+          "name": "RateLimitHelper",
+          "kind": "own",
+          "fromSpec": null,
+          "exportedAs": null
+        },
+        {
+          "name": "API_KEY_RATE_LIMIT",
+          "kind": "own",
+          "fromSpec": null,
+          "exportedAs": null
+        },
+        {
+          "name": "rateLimiter",
+          "kind": "own",
+          "fromSpec": null,
+          "exportedAs": null
+        }
+      ],
+      "importSymbolMap": [
+        {
+          "symbol": "Ratelimit",
+          "module": "@unkey/ratelimit",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "LimitOptions",
+          "module": "@unkey/ratelimit",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "RatelimitResponse",
+          "module": "@unkey/ratelimit",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "isIpInBanListString",
+          "module": "./getIP",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "logger",
+          "module": "./logger",
+          "alias": null,
+          "kind": "internal"
+        }
+      ],
+      "fileConstants": [
+        {
+          "name": "API_KEY_RATE_LIMIT",
+          "value": "30",
+          "kind": "number"
+        }
+      ],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/lib/rateLimit.ts__RateLimitHelper_1#type_alias:RateLimitHelper",
+        "unitKind": "type_alias",
+        "name": "RateLimitHelper",
+        "qualifiedName": "RateLimitHelper",
+        "parentUnitId": null,
+        "startLine": 10,
+        "endLine": 19,
+        "isBehavioral": false,
+        "source": "export type RateLimitHelper = {\n  rateLimitingType?: \"core\" | \"forcedSlowMode\" | \"common\" | \"api\" | \"ai\" | \"sms\" | \"smsMonth\";\n  identifier: string;\n  opts?: LimitOptions;\n  /**\n   * Using a callback instead of a regular return to provide headers even\n   * when the rate limit is reached and an error is thrown.\n   **/\n  onRateLimiterResponse?: (response: RatelimitResponse) => void;\n};"
+      },
+      {
+        "unitId": "packages/lib/rateLimit.ts__API_KEY_RATE_LIMIT_2#constant:API_KEY_RATE_LIMIT",
+        "unitKind": "constant",
+        "name": "API_KEY_RATE_LIMIT",
+        "qualifiedName": "API_KEY_RATE_LIMIT",
+        "parentUnitId": null,
+        "startLine": 21,
+        "endLine": 21,
+        "isBehavioral": false,
+        "source": "export const API_KEY_RATE_LIMIT = 30;"
+      },
+      {
+        "unitId": "packages/lib/rateLimit.ts__rateLimiter_3#function:rateLimiter",
+        "unitKind": "function",
+        "name": "rateLimiter",
+        "qualifiedName": "rateLimiter",
+        "parentUnitId": null,
+        "startLine": 23,
+        "endLine": 113,
+        "isBehavioral": true,
+        "source": "export function rateLimiter() {\n  const { UNKEY_ROOT_KEY } = process.env;\n\n  if (!UNKEY_ROOT_KEY) {\n    log.warn(\"Disabled because the UNKEY_ROOT_KEY environment variable was not found.\");\n    return () => ({ success: true, limit: 10, remaining: 999, reset: 0 } as RatelimitResponse);\n  }\n  const timeout = {\n    fallback: { success: true, limit: 10, remaining: 999, reset: 0 },\n    ms: 5000,\n  };\n\n  const onError = (err: Error, identifier: string) => {\n    log.error(\"Unkey rate limiter encountered unknown error\", {\n      error: err.message,\n      stack: err.stack,\n      identifier,\n      timestamp: new Date().toISOString(),\n    });\n    return { success: true, limit: 10, remaining: 999, reset: 0 };\n  };\n\n  const limiter = {\n    core: new Ratelimit({\n      rootKey: UNKEY_ROOT_KEY,\n      namespace: \"core\",\n      limit: 10,\n      duration: \"60s\",\n      timeout,\n      onError,\n    }),\n    common: new Ratelimit({\n      rootKey: UNKEY_ROOT_KEY,\n      namespace: \"common\",\n      limit: 200,\n      duration: \"60s\",\n      timeout,\n      onError,\n    }),\n    forcedSlowMode: new Ratelimit({\n      rootKey: UNKEY_ROOT_KEY,\n      namespace: \"forcedSlowMode\",\n      limit: 1,\n      duration: \"30s\",\n      timeout,\n      onError,\n    }),\n    api: new Ratelimit({\n      rootKey: UNKEY_ROOT_KEY,\n      namespace: \"api\",\n      limit: API_KEY_RATE_LIMIT,\n      duration: \"60s\",\n      timeout,\n      onError,\n    }),\n    ai: new Ratelimit({\n      rootKey: UNKEY_ROOT_KEY,\n      namespace: \"ai\",\n      limit: 20,\n      duration: \"1d\",\n      timeout,\n      onError,\n    }),\n    sms: new Ratelimit({\n      rootKey: UNKEY_ROOT_KEY,\n      namespace: \"sms\",\n      limit: 50,\n      duration: \"5m\",\n      timeout,\n      onError,\n    }),\n    smsMonth: new Ratelimit({\n      rootKey: UNKEY_ROOT_KEY,\n      namespace: \"smsMonth\",\n      limit: 250,\n      duration: \"30d\",\n      timeout,\n      onError,\n    }),\n  };\n\n  async function rateLimit({ rateLimitingType = \"core\", identifier, opts }: RateLimitHelper) {\n    if (isIpInBanListString(identifier)) {\n      return await limiter.forcedSlowMode.limit(identifier, opts);\n    }\n\n    return await limiter[rateLimitingType].limit(identifier, opts);\n  }\n\n  return rateLimit;\n}"
+      },
+      {
+        "unitId": "packages/lib/rateLimit.ts__rateLimiter.onError_4#function:rateLimiter.onError",
+        "unitKind": "function",
+        "name": "onError",
+        "qualifiedName": "rateLimiter.onError",
+        "parentUnitId": "packages/lib/rateLimit.ts__rateLimiter_3#function:rateLimiter",
+        "startLine": 35,
+        "endLine": 43,
+        "isBehavioral": true,
+        "source": "  const onError = (err: Error, identifier: string) => {\n    log.error(\"Unkey rate limiter encountered unknown error\", {\n      error: err.message,\n      stack: err.stack,\n      identifier,\n      timestamp: new Date().toISOString(),\n    });\n    return { success: true, limit: 10, remaining: 999, reset: 0 };\n  };"
+      },
+      {
+        "unitId": "packages/lib/rateLimit.ts__rateLimiter.rateLimit_5#function:rateLimiter.rateLimit",
+        "unitKind": "function",
+        "name": "rateLimit",
+        "qualifiedName": "rateLimiter.rateLimit",
+        "parentUnitId": "packages/lib/rateLimit.ts__rateLimiter_3#function:rateLimiter",
+        "startLine": 104,
+        "endLine": 110,
+        "isBehavioral": true,
+        "source": "  async function rateLimit({ rateLimitingType = \"core\", identifier, opts }: RateLimitHelper) {\n    if (isIpInBanListString(identifier)) {\n      return await limiter.forcedSlowMode.limit(identifier, opts);\n    }\n\n    return await limiter[rateLimitingType].limit(identifier, opts);\n  }"
+      }
+    ],
+    "extractedUnitCount": 5,
+    "unreconciledUnitNames": []
+  },
+  "tokenUsage": {
+    "inputTokens": 10940,
+    "outputTokens": 5877,
+    "costUsd": 0.0034116550000000004
+  },
+  "model": "z-ai/glm-5.3-flash"
+}

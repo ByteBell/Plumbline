@@ -1,0 +1,63 @@
+{
+  "id": "xrepo-v6-20-a-controlled-surface-must-accept-its-state-back-medium",
+  "question": "A component in one of these libraries owns a piece of interaction state internally and also reports every change to it outward, but it does not accept that state back in: the host can watch the thing open and close, and cannot open or close it. That was invisible for as long as the underlying primitive re-opened itself on the next interaction, and it stops being invisible the moment the primitive stops doing that, because the only code that could reopen it is the host, and the host has no way in. The contract is the one every library here implements for its own state: if a component publishes changes to a piece of state, it must also accept that state as an input and defer to it when it is supplied, so ownership is a choice the host makes rather than one the component makes for it. Elsewhere in the folder the contract is spelled out: one library pairs a state slot with a change handler and an apply helper so the host can hold the collection and feed it back, one lets the host pass any part of the state object and merges it over the internally-managed part, and one warns at runtime when a form element is switched between owning its value and being told it. Which file publishes state it will not accept, and which own the ownership-is-the-host's-choice contract it has to be brought in line with?",
+  "anchor": {
+    "repo": "tldraw",
+    "pinned_commit": "5590d14d8edd4faab7dc1177b6e1adb28876fd23",
+    "fix_pr": "https://github.com/tldraw/tldraw/pull/10567",
+    "pr_number": 10567,
+    "pr_title": "fix(tldraw): control context menu open state so radix-ui 1.5+ can reopen it",
+    "fix_merged": "2026-09-08",
+    "fix_merge_commit": "0bde65ee1f5c",
+    "parent_is_buggy": true
+  },
+  "counts": {
+    "min_repos": 4,
+    "min_files": 4
+  },
+  "repo_commits": {
+    "tldraw": "5590d14d8edd4faab7dc1177b6e1adb28876fd23",
+    "xyflow": "360f5b13e2bc6899ea06b4be1a49b068d86926cf",
+    "table": "d08af367e11c539bb7e18c2472aa761149ef6db6",
+    "react": "3a717e42438afac81020cdec297dadb5613a4304"
+  },
+  "expected": [
+    {
+      "repo": "tldraw",
+      "knowledgeId": "91b23c56-1aee-5c86-a34b-c66f8970d025",
+      "files": ["packages/tldraw/src/lib/ui/components/ContextMenu/DefaultContextMenu.tsx"]
+    },
+    {
+      "repo": "xyflow",
+      "knowledgeId": "6f1f2a40-aa51-4fe1-b9d2-d33ee4571368",
+      "files": ["packages/react/src/hooks/useNodesEdgesState.ts"]
+    },
+    {
+      "repo": "table",
+      "knowledgeId": "08e0b828-ac04-4dce-8e73-eb2ceb151072",
+      "files": ["packages/table-core/src/core/table.ts"]
+    },
+    {
+      "repo": "react",
+      "knowledgeId": "2a9d1614-943b-44ad-b7cf-edda2f37ddf9",
+      "files": ["packages/react-dom-bindings/src/client/ReactDOMInput.js"]
+    }
+  ],
+  "grader_notes": {
+    "why_cross_repo": "ANCHOR (tldraw #10567, merged 2026-09-08 as 0bde65ee1f5c, AFTER the pinned commit 5590d14d8e; 2/3 removed lines live at the pin). Citations: xyflow's useNodesEdgesState pairs a state slot with an onChange and an applyChanges helper so the host can own the collection; table's core/table.ts documents that any part of `state` passed in merges over and overrides the internally-managed state, with onStateChange as the outward half; react's ReactDOMInput.js is the canonical runtime warning for a value that switches between host-controlled and self-owned.",
+    "verification_method": "(1) Mined from `pin..origin/main`, pin-is-ancestor True, 2/3 removed lines live. (2) Citation paths confirmed at their pins and read (table core/table.ts:175-187 state/onStateChange docs; ReactDOMInput.js:58-60 warning). (3) Overlap check: 0 shared (repo,file) pairs. (4) MEDIUM by design: 'controlled vs uncontrolled' is a named React-ecosystem idea, so the citations are reachable by vocabulary alone.",
+    "difficulty_design": "Medium: 4 files / 4 repos, one named idea, each citation one hop from it.",
+    "rejected_candidates": ""
+  },
+  "calibration": {
+    "probe": "claudecli_opus5_bare (Opus 5, Bash/Read/Grep/Glob over the pinned checkouts, sandbox-exec gold-blind, one fresh headless session)",
+    "date": "2026-09-10",
+    "recall": 0.75,
+    "precision": 0.12,
+    "returned": 25,
+    "gold": 4,
+    "cost_usd": 3.11,
+    "rule": "hard requires recall < 0.6; medium requires recall <= 0.8; above that the case is easy",
+    "label_from_probe": "medium"
+  }
+}

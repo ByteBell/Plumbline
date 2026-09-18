@@ -1,0 +1,71 @@
+{
+  "duration_api_ms": 98962,
+  "stop_reason": "end_turn",
+  "session_id": "07675702-e9a9-48e3-92ea-d57efe611f00",
+  "total_cost_usd": 0.909966,
+  "usage": {
+    "input_tokens": 18,
+    "cache_creation_input_tokens": 45238,
+    "cache_read_input_tokens": 525492,
+    "output_tokens": 7790,
+    "output_tokens_details": { "thinking_tokens": 2423 },
+    "server_tool_use": { "web_search_requests": 0, "web_fetch_requests": 0 },
+    "service_tier": "standard",
+    "cache_creation": { "ephemeral_1h_input_tokens": 45238, "ephemeral_5m_input_tokens": 0 },
+    "inference_geo": "not_available",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 1931,
+        "cache_read_input_tokens": 74502,
+        "cache_creation_input_tokens": 1680,
+        "cache_creation": { "ephemeral_5m_input_tokens": 0, "ephemeral_1h_input_tokens": 1680 },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-opus-5": {
+      "inputTokens": 18,
+      "outputTokens": 7790,
+      "cacheReadInputTokens": 525492,
+      "cacheCreationInputTokens": 45238,
+      "webSearchRequests": 0,
+      "costUSD": 0.909966,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "canonicalModel": "claude-opus-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": { "background": 0, "foreground": 0, "unset": 0 },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": { "parent": 0, "user": 0, "system": 0 },
+    "refused": { "depth_limit": 0, "concurrency_limit": 0, "budget": 0 },
+    "by_type": {}
+  },
+  "is_error": false,
+  "num_turns": 13,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "**Read order.** I read `ranked.json` in full before opening any gold file. Gold used: `gold.json` (this case has no `golden.json`). Answer shape: a **flat array of 75 paths** — single-repo form, which is already the shape `gold.json` uses, so no flattening was needed.\n\n**Scorer.** `python3 score_arm.py cal.com.processed/f66fffd13b0bb1828248bc89c687e23a7481a40a claudecli_opus5_mcp_plumbline_rejection_selection_v3_s1` ran clean (exit 0, empty stderr).\n\n**Metrics**\n\n```\nhits / gold_total      5 / 8          (retrieved 75, list_cap 75)\nrecall@10              0.250\nrecall@20              0.375\nrecall@25              0.375\nrecall@50              0.500\nrecall@75 (full)       0.625\nprecision@5            0.200\nMRR                    1.000\n```\n\nThe scorer does not emit `precision@10`, `precision@20`, `F1@20` or `F1_full_list` — its metric set is `recall@{10,20,25,50,75}`, `precision@5`, `MRR`, plus the two split-recalls (null here, gold schema is `verified-no-split`). I did not hand-compute the four it omits, since hand-computed numbers aren't comparable with the rest of the series.\n\n**found** (rank in parentheses)\n- (1) `packages/features/ee/workflows/api/scheduleEmailReminders.ts`\n- (7) `packages/features/bookings/lib/service/RegularBookingService.ts`\n- (18) `packages/features/ee/workflows/lib/service/EmailWorkflowService.ts`\n- (45) `packages/prisma/zod-utils.ts`\n- (52) `packages/features/tasker/tasks/sendWorkflowEmails.ts`\n\n**missed_gold**\n- `apps/api/v2/src/ee/bookings/2024-04-15/controllers/bookings.controller.ts`\n- `apps/api/v2/src/ee/bookings/2024-08-13/services/input.service.ts`\n- `packages/features/ee/workflows/lib/types.ts`\n\n**Surface verdict: NOT COMPARABLE — one reason.**\n\nDerived from `commands.log` (60 numbered calls), independently counted and matching what the scorer read: `collateral_damage` 23, `stakeout` 14, `case_file` 7, `the_receipts` 6, `ToolSearch` 3, `manhunt` 2, `shakedown` 2, `blueprint` 1, `rap_sheet` 1, `roll_call` 1. No filesystem or shell tool appears; `ToolSearch` is the schema loader and is exempt. `stakeout`, the tool this retriever is built around, was called 14 times, so what was measured is that retriever. The single disqualifier is caching: `cache_read=5769721`, `cache_creation=260371` — a warm run, so its $6.65 is not comparable to cold-run cost. The scorer's own surface block emitted `not_comparable: []` / `comparable: true` because it does not consult cost; I kept that block verbatim under `surface.scorer_emitted` and wrote the corrected block over `surface`.\n\n**What the misses share.** All three sit in the declaration layer rather than the execution layer. `workflows/lib/types.ts` is a pure type module — it declares the shape the branding flag travels in and contains no read of it, so it has neither a runtime call edge to be folded along nor a textual mechanism to be searched for. The two `apps/api/v2/src/ee/bookings/<date>/` files are the versioned platform-API boundary: a controller and an input-mapping service whose job is to translate an external request into the internal booking shape. The five that landed are all places where the flag is actually computed, forwarded or persisted — a cron handler, two services, a task, a zod schema — and they are the files the graph fold naturally reaches from a branding seed. The gold's other half is the contract the changed field has to thread through: the type declaration and the versioned request boundary, neither of which participates in the call graph the way an execution site does.",
+  "ttft_ms": 1459,
+  "type": "result",
+  "duration_ms": 100245,
+  "uuid": "207f00e7-1274-49ac-807c-e56ab3415e51",
+  "ttft_stream_ms": 1006,
+  "time_to_request_ms": 20,
+  "queued_turn_count": 0
+}

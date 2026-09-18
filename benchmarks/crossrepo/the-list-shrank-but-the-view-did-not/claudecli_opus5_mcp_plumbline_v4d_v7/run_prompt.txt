@@ -1,0 +1,146 @@
+CROSS-REPOSITORY RETRIEVAL TASK — run the algorithm below, in order.
+
+CASE:      xrepo-v6-21-the-list-shrank-but-the-view-did-not-medium
+SURFACE:   the plumbline MCP server, and nothing else. No Bash, Read, Grep, Glob,
+           no other MCP server, no network, no subagents. Every path you name must
+           have come back from a plumbline call. Reaching the answer by any other
+           route voids the run.
+ROSTER:    16 repositories, each pinned at exactly one commit. This is the whole
+           world for the task; do not use another revision or later history.
+
+  repo             commit                                     repo             commit
+  redux            3084fc33bb23ab4cab4796172eafe342da4e73d9   query            46d7f02f1c7b9fcd3255082cc7103e8bfa3dab76
+  redux-toolkit    b1c5130154c454ca8387f55da6122fcb507c560c   table            ce123bc6651bcbf188f3198627c6bb0b10588162
+  react-redux      ad5d1e0816d0cb1464b25cf2853f2a7d73433f5b   tldraw           5590d14d8edd4faab7dc1177b6e1adb28876fd23
+  reselect         950112a328f71d97d18fd543159d6fdefa432b38   redux-devtools   f4b4668c30ae08920c59a76cc4629c35c16ef0fa
+  react            1d4758e0f6aae560024b36ce07ed8a67b3f7d78f   router           3dee5b2e9453d01a3172c73426959007b290b3fc
+  jotai            5c4ca26b0db5571114be58393e17854a771f7790   primitives       58164e06ca67dff9a68dd375d858180cfdc8ec27
+  zustand          b57db4f86ef179285da216eeb291266da82c361c   zod              912f0f51b0ced654d0069741e7160834dca742ee
+  db               7f0fa36ff6d48b0494ed5f6a1223fd18c317e41f   xyflow           360f5b13e2bc6899ea06b4be1a49b068d86926cf
+
+PROBLEM (identifiers are deliberately withheld — searching these words will not
+find the answer):
+
+A reactive projection of a collection in one of these libraries is maintained in place: when the underlying collection changes, the projection's existing slots are overwritten one by one and new slots are appended. Nothing removes slots. So the projection is correct whenever the collection grows or stays the same size and wrong whenever it shrinks - the tail of the previous, longer collection is still there, still reactive, and still rendered, and shrinking by more than one at a time leaves more than one stale entry behind. The bug is structural rather than arithmetic: the update path was written as 'assign each new item to a slot' rather than 'make the projection equal to the new collection'. The contract is that a projection must converge on the source in both directions, and that removals are as much a part of an update as insertions. Elsewhere in the folder that symmetry is explicit: one library's incremental builder records additions and removals as it goes and can still yield the whole, and another renders its collection through a keyed pass that drops the elements whose keys are gone. Which files update a projection without shrinking it, and which own the converge-in-both-directions contract they have to be brought in line with?
+
+GOAL: name every file, in every repository above, that must change to satisfy that
+contract. The answer spans multiple repositories that do not import one another.
+
+
+================================ ALGORITHM ================================
+
+STEP 0 — VERIFY THE SURFACE
+  0.1  Call roll_call once. Keep the response; reuse it all run.
+  0.2  For every repo you intend to answer from, confirm lastIndexedCommit equals
+       the pin above.
+  0.3  IF a repo is missing or drifted -> STOP and say so plainly. A drifted run is
+       a failed run to relaunch, not an empty answer. Never answer from memory.
+
+STEP 1 — STATE THE CONTRACT
+  1.1  In one sentence, write the rule the defect breaks, in your own words.
+  1.2  Derive two vocabularies from it and keep both:
+         V-contract = the words the RULE uses.
+         V-symptom  = the words the BUG description uses.
+       V-contract finds owners of the rule; V-symptom finds violators.
+
+STEP 2 — OPEN THREE LINES, RUN THEM INTERLEAVED (never one to exhaustion)
+       L1 ANCHOR-FOLD    walk edges out of your best file (STEP 3 governs this).
+       L2 BREADTH-LEDGER one search per roster repo, scoped to its knowledgeId,
+                         phrased in V-contract.
+       L3 CONCEPT-BRIDGE cross_repo_lookup / dragnet / keyword-seeded
+                         collateral_damage, to cross repo boundaries where no
+                         import edge exists. For most of these repos this is the
+                         ONLY route that connects them at all.
+
+STEP 3 — THE CORE-FIRST GATE  (checked before EVERY path-seeded fold)
+       Some repositories ship ONE capability as several sibling packages that each
+       wrap a shared core: adapters, bindings, backends, drivers, plugins, engines.
+       They sit side by side under one parent and share a stem
+       (<parent>/<variant>-<stem>/ or <parent>/<stem>-<variant>/); exactly one is
+       the core, its name usually carrying core / vanilla / common / base /
+       headless / internal. Siblings have NO edge to one another — they couple by
+       PUBLISHED package name, not by a path the indexer resolves, so between two
+       siblings `imports` returns 0 and `packages` returns nothing.
+
+  3.1  Read the seed path you are about to send.
+  3.2  IF it is keyword-seeded (no path) -> gate does not apply, send it.
+  3.3  IF the path names a VARIANT package -> the call is FORBIDDEN as written.
+       Do not send it. Instead:
+         a. identify the CORE it wraps, in the same parent directory;
+         b. fold off the CORE with lens `contracts`, and again with lens `types`;
+         c. only after a core fold returns may you fold off a single variant, and
+            only to answer a question that core fold raised.
+  3.4  ELSE send it.
+  3.5  Always pass commitHash. A file indexed at several commits returns an ERROR
+       without it, and that error is easy to misread as an empty result.
+  3.6  This gate OUTRANKS "fold off your highest-ranked file". A variant-seeded
+       fold cannot reach its siblings: what returns is large, plausible and
+       useless — it looks like a real result and contains none of the files you
+       want. Spending your fold on the variant you found first is the most
+       expensive mistake available here.
+  3.7  Then check the behaviour in EACH sibling under ITS OWN name. Counterparts
+       are routinely renamed to that variant's conventions, so searching the name
+       you already have will miss them. Ask what the file DOES.
+
+STEP 4 — CHECKPOINT, EVERY 4 CALLS PER LINE
+       Write in plain text before any further call:
+
+         CHECKPOINT <n>
+         L1  calls spent: <k>  new candidate files: <count>  KEEP | ABANDON
+         L2  calls spent: <k>  new candidate files: <count>  KEEP | ABANDON
+         L3  calls spent: <k>  new candidate files: <count>  KEEP | ABANDON
+
+  4.1  A "new candidate file" = a SOURCE file you had not seen AND would genuinely
+       name. Not a row count. Never a test, doc, example, fixture or benchmark.
+  4.2  A line scoring 0 is ABANDONED — do not retry it with different wording.
+  4.3  Surviving lines split the abandoned budget, weighted to the highest scorer.
+  4.4  IF all three score 0 at one checkpoint -> stop searching, answer now.
+  4.5  Abandoning early is the point of the structure, not a failure of it.
+
+STEP 5 — PROMOTE WHAT YOU FOUND
+       Evidence bands, strongest first:
+         band 1  you OPENED it and confirmed it owns or violates the contract
+         band 2  a scoped search returned it; path and purpose fit the contract
+         band 3  it appeared ONLY as a neighbour in a fold
+  5.1  Band 3 NEVER outranks band 1 or 2. An edge proves connection, not ownership.
+  5.2  A file reached only by the STEP 3 core fold starts in band 3. Do not leave
+       it there: open it (case_file, then the_receipts on the range that matters)
+       and re-rank on what you read. The gate reaches the file; opening earns it
+       a rank.
+  5.3  Do not pad toward the cap. Twenty files with real evidence means twenty.
+
+STEP 6 — EMIT
+  6.1  Rank most likely first. Cap 75 paths across all repositories.
+  6.2  Repo-relative paths only: no leading slash, no repo-name prefix.
+       Example: packages/<package-name>/src/<SomeFile>.ts
+  6.3  Source files only — no tests, docs, examples, fixtures, benchmarks, build
+       output, dependency dirs, generated API reports.
+  6.4  Every path must have been RETURNED by a call. A path you completed from
+       memory or inferred from directory layout is not a result.
+  6.5  Pinpoints (optional, best effort): for files you actually READ, give symbol
+       and line range as the source spells them. A symbol or range you did not
+       read is a fabrication and discredits the whole answer — omit the pinpoint
+       instead. Pinpoints never change WHICH files you name or their order.
+  6.6  Output ONLY this JSON array. No prose, no markdown fence, nothing before or
+       after it:
+
+[{"repo": "<repo>",
+  "files": ["<path>", "..."],
+  "pinpoints": [{"path": "<a path already in files>",
+                 "symbol": "<function/method/class, as the source spells it>",
+                 "lines": "<start-end>",
+                 "change": "<what has to change there, one line>"}]}, ...]
+
+       "files" MUST be a flat array of path strings in rank order — it is what is
+       scored, and an object inside it voids the run. "pinpoints" is separate and
+       optional; omit the key entirely where you pinned nothing down, and never
+       name a path there that is not already in "files".
+
+RUN CONDITIONS (the run is invalid if any fails)
+  R1  One fresh session. Cache created and read back WITHIN this run is fine;
+      inheriting cache from an earlier session is not. Do not resume, reuse, or
+      re-attempt a case in a session that already attempted it.
+  R2  STEP 0 must pass before any search.
+  R3  The harness records the transcript, every call and the cost, and writes
+      ranked.json from your final message. You have no write tools — do not try to
+      create files. Your only job is the ranked answer.

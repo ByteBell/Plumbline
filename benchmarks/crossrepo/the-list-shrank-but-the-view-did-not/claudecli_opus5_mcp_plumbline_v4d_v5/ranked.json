@@ -1,0 +1,69 @@
+[
+  {
+    "repo": "query",
+    "files": [
+      "packages/solid-query/src/useQueries.ts",
+      "packages/query-core/src/queriesObserver.ts",
+      "packages/solid-query/src/useBaseQuery.ts",
+      "packages/solid-query/src/QueryClient.ts"
+    ],
+    "pinpoints": [
+      {
+        "path": "packages/solid-query/src/useQueries.ts",
+        "symbol": "subscribeToObserver",
+        "lines": "271-292",
+        "change": "The `for (let index = 0; index < dataResources_.length; index++)` loop calls `setState(index, unwrap(unwrappedResult))` per slot, so results are overwritten in place and never removed; make the store equal the new result array instead (e.g. `setState(reconcile(...))`)."
+      },
+      {
+        "path": "packages/solid-query/src/useQueries.ts",
+        "symbol": "useQueries",
+        "lines": "232-244",
+        "change": "`createRenderEffect(on(() => queriesOptions().queries.length, () => setState(observer.getOptimisticResult(...)[1]()))` merges the new array by index without truncating; it must shrink `state` to the new length."
+      },
+      {
+        "path": "packages/solid-query/src/useQueries.ts",
+        "symbol": "getProxies",
+        "lines": "334-340",
+        "change": "`createRenderEffect(() => setProxyState(getProxies()))` writes the proxy array into the existing store slot-by-slot, so stale proxies for removed queries stay reactive and rendered."
+      },
+      {
+        "path": "packages/query-core/src/queriesObserver.ts",
+        "symbol": "setQueries",
+        "lines": "88-158",
+        "change": "Owns the converge-in-both-directions contract: `difference(prevObservers, newObservers).forEach((observer) => observer.destroy())` plus `this.#result = newResult`; the adapter projections must mirror this removal half."
+      },
+      {
+        "path": "packages/query-core/src/queriesObserver.ts",
+        "symbol": "#onUpdate",
+        "lines": "298-304",
+        "change": "`replaceAt` only substitutes at an existing index \u2014 the length-changing path is `setQueries`, so consumers must not treat per-index notification as the whole update."
+      }
+    ]
+  },
+  {
+    "repo": "tldraw",
+    "files": [
+      "packages/store/src/lib/IncrementalSetConstructor.ts",
+      "packages/store/src/lib/Store.ts",
+      "packages/store/src/lib/StoreQueries.ts",
+      "packages/state/src/lib/types.ts",
+      "packages/store/src/lib/setUtils.ts"
+    ],
+    "pinpoints": [
+      {
+        "path": "packages/store/src/lib/Store.ts",
+        "symbol": "CollectionDiff",
+        "lines": "54-58",
+        "change": "Declares the symmetry the projection must honour \u2014 `added?: Set<T>` and `removed?: Set<T>` \u2014 removals are as much a part of an update as insertions."
+      }
+    ]
+  },
+  {
+    "repo": "react",
+    "files": ["packages/react-reconciler/src/ReactChildFiber.js"]
+  },
+  {
+    "repo": "xyflow",
+    "files": ["packages/system/src/utils/store.ts", "packages/react/src/utils/changes.ts"]
+  }
+]

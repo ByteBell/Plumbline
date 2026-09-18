@@ -1,0 +1,71 @@
+{
+  "duration_api_ms": 56999,
+  "stop_reason": "end_turn",
+  "session_id": "d2d50feb-ec72-47b0-88d4-7a84ea0c0d77",
+  "total_cost_usd": 0.67635,
+  "usage": {
+    "input_tokens": 12,
+    "cache_creation_input_tokens": 42886,
+    "cache_read_input_tokens": 277860,
+    "output_tokens": 4340,
+    "output_tokens_details": { "thinking_tokens": 752 },
+    "server_tool_use": { "web_search_requests": 0, "web_fetch_requests": 0 },
+    "service_tier": "standard",
+    "cache_creation": { "ephemeral_1h_input_tokens": 42886, "ephemeral_5m_input_tokens": 0 },
+    "inference_geo": "not_available",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 1125,
+        "cache_read_input_tokens": 58426,
+        "cache_creation_input_tokens": 1652,
+        "cache_creation": { "ephemeral_5m_input_tokens": 0, "ephemeral_1h_input_tokens": 1652 },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-opus-5": {
+      "inputTokens": 12,
+      "outputTokens": 4340,
+      "cacheReadInputTokens": 277860,
+      "cacheCreationInputTokens": 42886,
+      "webSearchRequests": 0,
+      "costUSD": 0.67635,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "canonicalModel": "claude-opus-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": { "background": 0, "foreground": 0, "unset": 0 },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": { "parent": 0, "user": 0, "system": 0 },
+    "refused": { "depth_limit": 0, "concurrency_limit": 0, "budget": 0 },
+    "by_type": {}
+  },
+  "is_error": false,
+  "num_turns": 9,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Scored. Report:\n\n**Gold file**: `gold.json` (no `golden.json` present). I read `ranked.json` in full before opening the gold — it is a flat, single-repo array of 60 paths (the scorer de-duplicated to 59 ranked entries), matching the shape `gold.json` uses, so no flattening was needed.\n\n**Metrics** (from `score_arm.py`, exit 0):\n\n| metric | value |\n|---|---|\n| hits / gold_total | 3 / 8 |\n| recall@10 | 0.250 |\n| recall@20 | 0.250 |\n| recall@25 | 0.250 |\n| recall@50 | 0.375 |\n| recall@75 (full, degenerate k) | 0.375 |\n| precision@5 | 0.200 |\n| MRR | 1.000 |\n\n`score_arm.py` does not emit precision@10, precision@20, F1@20 or F1_full_list, so those cells are unfilled — per the rules I did not substitute hand arithmetic.\n\n**Found (3)**\n- `packages/features/ee/workflows/api/scheduleEmailReminders.ts` (rank 1)\n- `packages/features/bookings/lib/service/RegularBookingService.ts` (rank 9)\n- `packages/features/ee/workflows/lib/service/EmailWorkflowService.ts` (rank 27)\n\n**missed_gold (5)**\n- `apps/api/v2/src/ee/bookings/2024-04-15/controllers/bookings.controller.ts`\n- `apps/api/v2/src/ee/bookings/2024-08-13/services/input.service.ts`\n- `packages/features/ee/workflows/lib/types.ts`\n- `packages/features/tasker/tasks/sendWorkflowEmails.ts`\n- `packages/prisma/zod-utils.ts`\n\n**Surface verdict: NOT comparable.** Derived from `commands.log` (19 entries), which matches the run's self-reported `tools_called` exactly: stakeout 5, ToolSearch 3, the_receipts 3, collateral_damage 2, shakedown 2, roll_call/blueprint/rap_sheet/manhunt 1 each. The arm stayed inside its declared MCP surface — no filesystem or shell tool — and did call its retriever's search tools. The single disqualifying reason is caching: `cache_read=1265219`, `cache_creation=117403` (the run was warm), so the $2.17 cost is not comparable with cold runs in the series. The scorer's own `not_comparable` list was empty; I recorded that alongside mine in `result.json`.\n\n**What the misses share**: all five sit one layer below the handlers the run actually walked. Three are shared declaration surfaces — `workflows/lib/types.ts`, `prisma/zod-utils.ts`, and the tasker payload entry `sendWorkflowEmails.ts` — schema and type definitions that carry no behaviour of their own and read as plumbing rather than as branding or workflow logic; the other two are the API-v2 versioned booking layer (`bookings.controller.ts`, `input.service.ts`), a parallel entry path into the same booking service the run did retrieve at rank 9. The three hits are all in the workflow-email execution register the answer concentrated on; everything missed is either the type/validation substrate beneath that register or the second, versioned front door into it.",
+  "ttft_ms": 1624,
+  "type": "result",
+  "duration_ms": 57254,
+  "uuid": "a6631a94-89f9-4468-86d0-a8421ded039e",
+  "ttft_stream_ms": 1110,
+  "time_to_request_ms": 20,
+  "queued_turn_count": 0
+}

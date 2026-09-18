@@ -1,0 +1,63 @@
+{
+  "id": "xrepo-v6-15-a-fresh-instance-that-remembers-medium",
+  "question": "Handing one of these containers a new configuration is supposed to leave it indistinguishable from one that had been created with that configuration from the start. It is not. The re-initialisation path was written once, against the fields that existed then, and every field added since - the per-item defaults, the callbacks the host passes down, the derived slots that were introduced alongside them - is simply not mentioned in it. So the fields the original author listed are replaced and everything else survives from the previous configuration, invisibly, until something reads one of the survivors and behaves according to a configuration the caller has already replaced. The bug is not in any one field: it is that the reset enumerates rather than derives, so it goes stale every time the shape grows, and nothing fails when it does. The contract is that there is exactly one description of what a fresh instance contains and both creation and re-initialisation must be expressed in terms of it. Elsewhere in the folder that is done deliberately: one library demands that every constituent reducer answer the initialisation probe with its own starting value and refuses to assemble the whole if any of them cannot, one gives its state slots an explicit reset-to-initial protocol so a caller never has to enumerate them, and one keeps its default state in a single description that the constructor consumes. Which files re-initialise by enumeration, and which own the single-description contract they have to be brought in line with?",
+  "anchor": {
+    "repo": "xyflow",
+    "pinned_commit": "360f5b13e2bc6899ea06b4be1a49b068d86926cf",
+    "fix_pr": "https://github.com/xyflow/xyflow/pull/5991",
+    "pr_number": 5991,
+    "pr_title": "fix(react/store): reset functions",
+    "fix_merged": "2026-08-31",
+    "fix_merge_commit": "2acefb5b4f37",
+    "parent_is_buggy": true
+  },
+  "counts": {
+    "min_repos": 4,
+    "min_files": 5
+  },
+  "repo_commits": {
+    "xyflow": "360f5b13e2bc6899ea06b4be1a49b068d86926cf",
+    "tldraw": "5590d14d8edd4faab7dc1177b6e1adb28876fd23",
+    "redux": "3aa561f9fc13f3287e6d83764f85fe0e82437c5f",
+    "jotai": "5c4ca26b0db5571114be58393e17854a771f7790"
+  },
+  "expected": [
+    {
+      "repo": "xyflow",
+      "knowledgeId": "6f1f2a40-aa51-4fe1-b9d2-d33ee4571368",
+      "files": ["packages/react/src/types/store.ts", "packages/react/src/container/ReactFlow/init-values.ts"]
+    },
+    {
+      "repo": "tldraw",
+      "knowledgeId": "91b23c56-1aee-5c86-a34b-c66f8970d025",
+      "files": ["packages/store/src/lib/Store.ts"]
+    },
+    {
+      "repo": "redux",
+      "knowledgeId": "c0c638c58b7d1844702ea4c7f14c62db",
+      "files": ["src/combineReducers.ts"]
+    },
+    {
+      "repo": "jotai",
+      "knowledgeId": "581a242e-3f4c-45db-8e84-c69cf159ac44",
+      "files": ["src/vanilla/utils/atomWithReset.ts"]
+    }
+  ],
+  "grader_notes": {
+    "why_cross_repo": "ANCHOR: two post-pin xyflow fixes, both live at the pin, both patching the same enumerating reset - 'fix(react/store): reset functions' (2acefb5b4f37, types/store.ts 23/23 removed lines live) and 'fix(react/store): reset defaultEdgeOptions' (19f9c2ad98ac, 1/1 live). init-values.ts is the single description of a fresh instance that the reset should have been expressed in terms of. Citations: redux's combineReducers.ts probes every constituent reducer with the initialisation action and refuses to assemble a store if any of them cannot produce a starting value; jotai's atomWithReset.ts gives a slot an explicit reset-to-initial protocol (the RESET sentinel) so callers never enumerate; tldraw's Store.ts constructs and clears from one description of its contents.",
+    "verification_method": "(1) Both anchors mined from `pin..origin/main`, pin-is-ancestor True; store/initialState.ts is touched by both but is pure-addition there AND is already gold in an existing case, so it is deliberately excluded from gold in favour of types/store.ts, which carries the live removed lines. (2) Citation paths confirmed at their pins and read (combineReducers.ts:67-72 initialisation probe; atomWithReset.ts RESET sentinel). (3) Overlap check: 0 shared (repo,file) pairs; NOTE redux/src/combineReducers.ts is untouched by every existing case directory. (4) Contract check: no v5 or v6 case covers re-initialisation completeness.",
+    "difficulty_design": "The defect is an absence - fields that are NOT mentioned in a reset - so there is nothing to search for, and the second xyflow file is the description an arm only reaches by asking what a fresh instance should contain. 5 files / 4 repos.",
+    "rejected_candidates": ""
+  },
+  "calibration": {
+    "probe": "claudecli_opus5_bare (Opus 5, Bash/Read/Grep/Glob over the pinned checkouts, sandbox-exec gold-blind, one fresh headless session)",
+    "date": "2026-09-10",
+    "recall": 0.8,
+    "precision": 0.111,
+    "returned": 36,
+    "gold": 5,
+    "cost_usd": 6.25,
+    "rule": "hard requires recall < 0.6; medium requires recall <= 0.8; above that the case is easy",
+    "label_from_probe": "medium"
+  }
+}

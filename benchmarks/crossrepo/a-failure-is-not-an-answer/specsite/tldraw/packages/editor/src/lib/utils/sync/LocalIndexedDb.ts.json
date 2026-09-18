@@ -1,0 +1,2384 @@
+{
+  "schema": 2,
+  "kind": "file",
+  "repoName": "tldraw",
+  "file": {
+    "relativePath": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts",
+    "language": "typescript",
+    "sizeBytes": 9586,
+    "tokenCount": 2397,
+    "model": "us.openai.gpt-5.6-luna",
+    "analysedAt": "2026-08-24T12:19:44.454Z",
+    "module": {
+      "purpose": "Provides IndexedDB-backed persistence for tldraw document records, schemas, session snapshots, and assets, including migration from the legacy asset database.",
+      "summary": "This module wraps IndexedDB access behind a persistence class with transaction tracking, close coordination, document snapshot and incremental-change storage, session retention, and asset operations. It maintains a local database-name index for legacy migration discovery, initializes required object stores, migrates old assets into the current database, and protects transaction completion behavior during closure and React strict-mode lifecycle patterns.",
+      "businessContext": "Supports offline and durable browser editing for tldraw documents and assets. Failure can lose local document state, session restoration data, or embedded assets.",
+      "classes": ["LocalIndexedDb (~L96-319): Coordinates durable document, session, schema, and asset persistence"],
+      "functions": [
+        "openLocalDb (~L23-43): Opens and initializes the current IndexedDB database",
+        "migrateLegacyAssetDbIfNeeded (~L45-81): Migrates assets from the legacy database",
+        "pending (~L117-119): Waits for database initialization and active transactions",
+        "close (~L121-128): Closes the database after pending work completes",
+        "tx (~L130-160): Executes callbacks inside tracked IndexedDB transactions",
+        "load (~L162-187): Loads records, schema, and latest session state",
+        "storeChanges (~L189-234): Persists incremental record and session changes",
+        "storeSnapshot (~L236-275): Replaces persisted records with a full snapshot",
+        "pruneSessions (~L277-292): Retains only the ten newest session snapshots",
+        "getAsset (~L294-300): Retrieves a persisted asset by identifier",
+        "storeAsset (~L302-308): Persists an asset under its identifier",
+        "removeAssets (~L310-318): Deletes multiple persisted assets",
+        "getAllIndexDbNames (~L322-326): Reads and validates indexed database names",
+        "addDbName (~L328-332): Adds a database name to local storage indexing"
+      ],
+      "keywords": [
+        "IndexedDB",
+        "tldraw persistence",
+        "session snapshots",
+        "asset migration",
+        "RecordsDiff",
+        "SerializedStore",
+        "transaction tracking",
+        "local storage database index"
+      ],
+      "ontologyConcepts": [
+        "persistence",
+        "database migration",
+        "transaction management",
+        "snapshot storage",
+        "incremental synchronization",
+        "session retention",
+        "resource lifecycle"
+      ],
+      "businessEntities": ["Document", "Record", "Schema", "Session", "Asset", "Snapshot"],
+      "systemCapabilities": [
+        "Persist document changes locally",
+        "Restore document and session state",
+        "Migrate legacy browser assets",
+        "Store and retrieve document assets",
+        "Prune stale session snapshots",
+        "Coordinate database shutdown"
+      ],
+      "configDependencies": ["TLDRAW_DOCUMENT_v2", "TLDRAW_ASSET_STORE_v1", "TLDRAW_DB_NAME_INDEX_v2"],
+      "importsInternal": [
+        {
+          "spec": "../../config/TLSessionStateSnapshot",
+          "symbols": ["TLSessionStateSnapshot"],
+          "anchor": { "startLine": 5, "endLine": 5 },
+          "resolvedRelativePath": "packages/editor/src/lib/config/TLSessionStateSnapshot.ts",
+          "resolvedFileId": "packages/editor/src/lib/config/TLSessionStateSnapshot.ts",
+          "resolvedHint": "packages/editor/src/config/TLSessionStateSnapshot.ts"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "@tldraw/store",
+          "symbols": ["RecordsDiff", "SerializedSchema", "SerializedStore"],
+          "package": "@tldraw/store",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 1 }
+        },
+        {
+          "spec": "@tldraw/tlschema",
+          "symbols": ["TLRecord", "TLStoreSchema"],
+          "package": "@tldraw/tlschema",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 2, "endLine": 2 }
+        },
+        {
+          "spec": "@tldraw/utils",
+          "symbols": ["assert", "getFromLocalStorage", "noop", "setInLocalStorage"],
+          "package": "@tldraw/utils",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 3, "endLine": 3 }
+        },
+        {
+          "spec": "idb",
+          "symbols": ["IDBPDatabase", "IDBPTransaction", "deleteDB", "openDB"],
+          "package": "idb",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 4, "endLine": 4 }
+        }
+      ],
+      "sideEffects": {
+        "io": ["Logs an error when session snapshot and session identifier are not supplied together."],
+        "network": [],
+        "env": [],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": []
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "Table",
+          "shape": "export const Table = { Records: 'records', Schema: 'schema', SessionState: 'session_state', Assets: 'assets' } as const",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "StoreName",
+          "shape": "export type StoreName = (typeof Table)[keyof typeof Table]",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "LocalIndexedDb",
+          "shape": "export class LocalIndexedDb",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "LocalIndexedDb.constructor",
+          "shape": "constructor(persistenceKey: string)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "LocalIndexedDb.pending",
+          "shape": "pending(): Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "LocalIndexedDb.close",
+          "shape": "async close()",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "LocalIndexedDb.load",
+          "shape": "async load({ sessionId }: { sessionId?: string } = {})",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "LocalIndexedDb.storeChanges",
+          "shape": "async storeChanges({ schema, changes, sessionId, sessionStateSnapshot }: { schema: TLStoreSchema; changes: RecordsDiff<any>; sessionId?: string | null; sessionStateSnapshot?: TLSessionStateSnapshot | null })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "LocalIndexedDb.storeSnapshot",
+          "shape": "async storeSnapshot({ schema, snapshot, sessionId, sessionStateSnapshot }: { schema: TLStoreSchema; snapshot: SerializedStore<any>; sessionId?: string | null; sessionStateSnapshot?: TLSessionStateSnapshot | null })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "LocalIndexedDb.pruneSessions",
+          "shape": "async pruneSessions()",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "LocalIndexedDb.getAsset",
+          "shape": "async getAsset(assetId: string): Promise<File | undefined>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "LocalIndexedDb.storeAsset",
+          "shape": "async storeAsset(assetId: string, blob: File)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "LocalIndexedDb.removeAssets",
+          "shape": "async removeAssets(assetId: string[])",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "getAllIndexDbNames",
+          "shape": "export function getAllIndexDbNames(): string[]",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        { "name": "RecordsDiff", "shape": "RecordsDiff<any>", "resolvedRelativePath": null, "resolvedFileId": null },
+        {
+          "name": "SerializedSchema",
+          "shape": "SerializedSchema",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "SerializedStore",
+          "shape": "SerializedStore<any>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        { "name": "TLRecord", "shape": "TLRecord", "resolvedRelativePath": null, "resolvedFileId": null },
+        { "name": "TLStoreSchema", "shape": "TLStoreSchema", "resolvedRelativePath": null, "resolvedFileId": null },
+        {
+          "name": "TLSessionStateSnapshot",
+          "shape": "TLSessionStateSnapshot",
+          "resolvedRelativePath": "packages/editor/src/lib/config/TLSessionStateSnapshot.ts",
+          "resolvedFileId": "packages/editor/src/lib/config/TLSessionStateSnapshot.ts"
+        },
+        {
+          "name": "SessionStateSnapshotRow",
+          "shape": "{ id: string; snapshot: TLSessionStateSnapshot; updatedAt: number }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "database initialization",
+          "intent": "Migrates legacy assets and opens the current database.",
+          "structureKind": "async",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 104, "endLine": 110 }
+        },
+        {
+          "name": "legacy asset migration",
+          "intent": "Copies assets from the legacy database into the current store.",
+          "structureKind": "io",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 45, "endLine": 81 }
+        },
+        {
+          "name": "transaction lifecycle",
+          "intent": "Tracks transactions and waits or aborts them according to closure state.",
+          "structureKind": "try",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 130, "endLine": 160 }
+        },
+        {
+          "name": "session selection",
+          "intent": "Loads a requested session or selects the most recently updated snapshot.",
+          "structureKind": "branch",
+          "predicate": "sessionId",
+          "branchOutcomes": ["requested session identifier", "most recent session fallback"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 170, "endLine": 178 }
+        },
+        {
+          "name": "change persistence",
+          "intent": "Applies added, updated, and removed records in one transaction.",
+          "structureKind": "loop",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": "Object.entries(changes.added)",
+          "terminationCondition": null,
+          "anchor": { "startLine": 208, "endLine": 218 }
+        },
+        {
+          "name": "snapshot replacement",
+          "intent": "Clears existing records and writes every record from a snapshot.",
+          "structureKind": "loop",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": "Object.entries(snapshot)",
+          "terminationCondition": null,
+          "anchor": { "startLine": 254, "endLine": 258 }
+        },
+        {
+          "name": "session pruning",
+          "intent": "Deletes oldest sessions while retaining the ten newest entries.",
+          "structureKind": "branch",
+          "predicate": "all.length < 10",
+          "branchOutcomes": ["fewer than ten sessions: return", "ten or more sessions: delete oldest"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 281, "endLine": 289 }
+        },
+        {
+          "name": "asset operations",
+          "intent": "Reads, writes, and deletes assets through dedicated transactions.",
+          "structureKind": "io",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 294, "endLine": 318 }
+        }
+      ],
+      "representationFamily": "class-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "class",
+          "name": "LocalIndexedDb",
+          "signature": "export class LocalIndexedDb {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 96, "endLine": 96 }
+        },
+        {
+          "kind": "method",
+          "name": "pending",
+          "signature": "pending(): Promise<void> {",
+          "generics": null,
+          "decorators": ["/** @internal */"],
+          "returnType": "Promise<void>",
+          "exported": true,
+          "anchor": { "startLine": 117, "endLine": 117 }
+        },
+        {
+          "kind": "method",
+          "name": "close",
+          "signature": "async close() {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 121, "endLine": 121 }
+        },
+        {
+          "kind": "method",
+          "name": "load",
+          "signature": "async load({ sessionId }: { sessionId?: string } = {}) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 162, "endLine": 162 }
+        },
+        {
+          "kind": "method",
+          "name": "storeChanges",
+          "signature": "async storeChanges({",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 189, "endLine": 189 }
+        },
+        {
+          "kind": "method",
+          "name": "storeSnapshot",
+          "signature": "async storeSnapshot({",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 236, "endLine": 236 }
+        },
+        {
+          "kind": "method",
+          "name": "pruneSessions",
+          "signature": "async pruneSessions() {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 277, "endLine": 277 }
+        },
+        {
+          "kind": "method",
+          "name": "getAsset",
+          "signature": "async getAsset(assetId: string): Promise<File | undefined> {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Promise<File | undefined>",
+          "exported": true,
+          "anchor": { "startLine": 294, "endLine": 294 }
+        },
+        {
+          "kind": "method",
+          "name": "storeAsset",
+          "signature": "async storeAsset(assetId: string, blob: File) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 302, "endLine": 302 }
+        },
+        {
+          "kind": "method",
+          "name": "removeAssets",
+          "signature": "async removeAssets(assetId: string[]) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 310, "endLine": 310 }
+        },
+        {
+          "kind": "function",
+          "name": "getAllIndexDbNames",
+          "signature": "export function getAllIndexDbNames(): string[] {",
+          "generics": null,
+          "decorators": ["/** @internal */"],
+          "returnType": "string[]",
+          "exported": true,
+          "anchor": { "startLine": 322, "endLine": 322 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "interface",
+          "name": "LoadResult",
+          "shape": "{\n\trecords: TLRecord[]\n\tschema?: SerializedSchema\n\tsessionStateSnapshot?: TLSessionStateSnapshot | null\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 83, "endLine": 87 }
+        },
+        {
+          "kind": "interface",
+          "name": "SessionStateSnapshotRow",
+          "shape": "{\n\tid: string\n\tsnapshot: TLSessionStateSnapshot\n\tupdatedAt: number\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 89, "endLine": 93 }
+        },
+        {
+          "kind": "type",
+          "name": "StoreName",
+          "shape": "(typeof Table)[keyof typeof Table]",
+          "discriminant": null,
+          "anchor": { "startLine": 21, "endLine": 21 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "Missing legacy database",
+          "handled": true,
+          "behavior": "Migration returns without opening or deleting a legacy database.",
+          "anchor": { "startLine": 49, "endLine": 51 }
+        },
+        {
+          "inputShape": "Empty or invalid local-storage database-name index",
+          "handled": true,
+          "behavior": "JSON parsing defaults to an empty array, and non-array values return an empty list.",
+          "anchor": { "startLine": 322, "endLine": 326 }
+        },
+        {
+          "inputShape": "Closed database used for a transaction",
+          "handled": true,
+          "behavior": "An assertion fails with the message that the database is closed.",
+          "anchor": { "startLine": 136, "endLine": 137 }
+        },
+        {
+          "inputShape": "No requested or available session snapshot",
+          "handled": true,
+          "behavior": "The loaded session state remains null or undefined.",
+          "anchor": { "startLine": 170, "endLine": 178 }
+        },
+        {
+          "inputShape": "Fewer than ten stored sessions",
+          "handled": true,
+          "behavior": "Pruning completes without deleting any sessions.",
+          "anchor": { "startLine": 281, "endLine": 285 }
+        },
+        {
+          "inputShape": "Session snapshot or session identifier supplied alone",
+          "handled": true,
+          "behavior": "The document transaction continues, but an error is logged.",
+          "anchor": { "startLine": 230, "endLine": 231 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": "<",
+          "left": "all.length",
+          "right": "10",
+          "inclusive": false,
+          "intent": "Skips pruning when fewer than ten session snapshots exist.",
+          "anchor": { "startLine": 282, "endLine": 282 }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": null,
+          "caught": "tx.done rejection",
+          "action": "Re-throws the transaction error while open, but suppresses it after closure.",
+          "fallback": null,
+          "anchor": { "startLine": 143, "endLine": 146 }
+        },
+        {
+          "thrown": "assertion failure: db is closed",
+          "caught": null,
+          "action": "Prevents starting a transaction after closure.",
+          "fallback": null,
+          "anchor": { "startLine": 136, "endLine": 137 }
+        },
+        {
+          "thrown": null,
+          "caught": null,
+          "action": "Logs a consistency error when session state parameters are incomplete.",
+          "fallback": null,
+          "anchor": { "startLine": 230, "endLine": 231 }
+        }
+      ],
+      "invariants": [
+        {
+          "kind": "invariant",
+          "description": "The current database contains records, schema, session_state, and assets object stores.",
+          "anchor": { "startLine": 29, "endLine": 41 }
+        },
+        {
+          "kind": "ordering",
+          "description": "Database closure waits for initialization and all tracked transactions before closing.",
+          "anchor": { "startLine": 121, "endLine": 127 }
+        },
+        {
+          "kind": "invariant",
+          "description": "At most the ten newest session snapshots remain after pruning.",
+          "anchor": { "startLine": 281, "endLine": 289 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "Stored records and schema are committed within the same read-write transaction.",
+          "anchor": { "startLine": 200, "endLine": 233 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "platform",
+          "description": "The browser provides IndexedDB, including optional indexedDB.databases support.",
+          "anchor": { "startLine": 46, "endLine": 48 }
+        },
+        {
+          "kind": "platform",
+          "description": "IndexedDB can persist File values in the assets object store.",
+          "anchor": { "startLine": 302, "endLine": 306 }
+        },
+        {
+          "kind": "caller",
+          "description": "Callers provide matching sessionId and sessionStateSnapshot values when persisting session state.",
+          "anchor": { "startLine": 221, "endLine": 231 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "Should a sessionStateSnapshot without a sessionId be rejected instead of merely logged?",
+          "affects": "error_handling and session persistence",
+          "anchor": { "startLine": 230, "endLine": 231 },
+          "resolution": null
+        },
+        {
+          "question": "Is the ten-session retention limit a product requirement or a storage optimization?",
+          "affects": "invariants and session pruning",
+          "anchor": { "startLine": 282, "endLine": 288 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "async",
+        "reentrant": true,
+        "ordering": "deterministic",
+        "notes": "Operations are asynchronous and tracked in a pending transaction set; IndexedDB controls transaction scheduling and closure waits for tracked work."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "loads-latest-session-state",
+          "scenario": "When no sessionId is supplied, loading returns the session state snapshot with the greatest updatedAt value.",
+          "given": ["sessionStateStore contains rows with updatedAt values 1 and 2"],
+          "when": "load()",
+          "then": "result.sessionStateSnapshot equals the snapshot from the row with updatedAt value 2",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Preserves fallback selection of the most recently updated session."
+        },
+        {
+          "testId": "loads-requested-session-state",
+          "scenario": "When a sessionId is supplied and a matching row exists, loading returns that session snapshot.",
+          "given": ["sessionStateStore contains a row keyed by sessionId"],
+          "when": "load({ sessionId })",
+          "then": "result.sessionStateSnapshot equals the matching row snapshot",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins explicit session lookup behavior."
+        },
+        {
+          "testId": "applies-record-diff",
+          "scenario": "Storing changes persists added and updated records and removes deleted records in one transaction.",
+          "given": [
+            "changes.added contains a record",
+            "changes.updated contains a previous and updated record",
+            "changes.removed contains a record id"
+          ],
+          "when": "storeChanges({ schema, changes })",
+          "then": "the added and updated records exist, the removed record does not exist, and the serialized schema is stored",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Guards the persistence semantics of incremental synchronization."
+        },
+        {
+          "testId": "keeps-ten-most-recent-sessions",
+          "scenario": "When at least ten session rows exist, pruning removes only the oldest rows until ten remain.",
+          "given": ["sessionStateStore contains more than 10 rows ordered by updatedAt"],
+          "when": "pruneSessions()",
+          "then": "sessionStateStore contains exactly the 10 rows with the greatest updatedAt values",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins the session retention limit and recency ordering."
+        },
+        {
+          "testId": "round-trips-assets",
+          "scenario": "An asset stored by id can be retrieved and then removed by id.",
+          "given": ["blob is a File"],
+          "when": "storeAsset(assetId, blob); getAsset(assetId); removeAssets([assetId]); getAsset(assetId)",
+          "then": "the first getAsset returns blob and the second getAsset returns undefined",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Guards asset storage, retrieval, and deletion behavior."
+        },
+        {
+          "testId": "rejects-operations-after-close",
+          "scenario": "A database operation attempted after close is rejected because the database is closed.",
+          "given": ["await db.close()"],
+          "when": "db.load()",
+          "then": "the operation rejects with an error indicating the db is closed",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins the closed-instance invariant."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "imports",
+        "database-name constants",
+        "Table object",
+        "StoreName type",
+        "openLocalDb helper",
+        "migrateLegacyAssetDbIfNeeded helper",
+        "LoadResult interface",
+        "SessionStateSnapshotRow interface",
+        "LocalIndexedDb class",
+        "getAllIndexDbNames function",
+        "addDbName helper"
+      ],
+      "moduleLevelCode": "import { RecordsDiff, SerializedSchema, SerializedStore } from '@tldraw/store'\nimport { TLRecord, TLStoreSchema } from '@tldraw/tlschema'\nimport { assert, getFromLocalStorage, noop, setInLocalStorage } from '@tldraw/utils'\nimport { IDBPDatabase, IDBPTransaction, deleteDB, openDB } from 'idb'\nimport { TLSessionStateSnapshot } from '../../config/TLSessionStateSnapshot'",
+      "exports": [
+        { "name": "Table", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "StoreName", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "LocalIndexedDb", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "getAllIndexDbNames", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "RecordsDiff", "module": "@tldraw/store", "alias": null, "kind": "external" },
+        { "symbol": "SerializedSchema", "module": "@tldraw/store", "alias": null, "kind": "external" },
+        { "symbol": "SerializedStore", "module": "@tldraw/store", "alias": null, "kind": "external" },
+        { "symbol": "TLRecord", "module": "@tldraw/tlschema", "alias": null, "kind": "external" },
+        { "symbol": "TLStoreSchema", "module": "@tldraw/tlschema", "alias": null, "kind": "external" },
+        { "symbol": "assert", "module": "@tldraw/utils", "alias": null, "kind": "external" },
+        { "symbol": "getFromLocalStorage", "module": "@tldraw/utils", "alias": null, "kind": "external" },
+        { "symbol": "noop", "module": "@tldraw/utils", "alias": null, "kind": "external" },
+        { "symbol": "setInLocalStorage", "module": "@tldraw/utils", "alias": null, "kind": "external" },
+        { "symbol": "IDBPDatabase", "module": "idb", "alias": null, "kind": "external" },
+        { "symbol": "IDBPTransaction", "module": "idb", "alias": null, "kind": "external" },
+        { "symbol": "deleteDB", "module": "idb", "alias": null, "kind": "external" },
+        { "symbol": "openDB", "module": "idb", "alias": null, "kind": "external" },
+        {
+          "symbol": "TLSessionStateSnapshot",
+          "module": "../../config/TLSessionStateSnapshot",
+          "alias": null,
+          "kind": "internal"
+        }
+      ],
+      "fileConstants": [
+        { "name": "STORE_PREFIX", "value": "'TLDRAW_DOCUMENT_v2'", "kind": "database prefix" },
+        { "name": "LEGACY_ASSET_STORE_PREFIX", "value": "'TLDRAW_ASSET_STORE_v1'", "kind": "legacy database prefix" },
+        { "name": "dbNameIndexKey", "value": "'TLDRAW_DB_NAME_INDEX_v2'", "kind": "local-storage key" }
+      ],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__openLocalDb#function:openLocalDb",
+        "unitKind": "function",
+        "name": "openLocalDb",
+        "qualifiedName": "openLocalDb",
+        "parentUnitId": null,
+        "startLine": 23,
+        "endLine": 43,
+        "isBehavioral": true,
+        "source": "async function openLocalDb(persistenceKey: string) {\n\tconst storeId = STORE_PREFIX + persistenceKey\n\n\taddDbName(storeId)\n\n\treturn await openDB<StoreName>(storeId, 4, {\n\t\tupgrade(database) {\n\t\t\tif (!database.objectStoreNames.contains(Table.Records)) {\n\t\t\t\tdatabase.createObjectStore(Table.Records)\n\t\t\t}\n\t\t\tif (!database.objectStoreNames.contains(Table.Schema)) {\n\t\t\t\tdatabase.createObjectStore(Table.Schema)\n\t\t\t}\n\t\t\tif (!database.objectStoreNames.contains(Table.SessionState)) {\n\t\t\t\tdatabase.createObjectStore(Table.SessionState)\n\t\t\t}\n\t\t\tif (!database.objectStoreNames.contains(Table.Assets)) {\n\t\t\t\tdatabase.createObjectStore(Table.Assets)\n\t\t\t}\n\t\t},\n\t})",
+        "detail": {
+          "unitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__openLocalDb#function:openLocalDb",
+          "fileId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__openLocalDb",
+          "unitKind": "function",
+          "name": "openLocalDb",
+          "qualifiedName": "openLocalDb",
+          "parentUnitId": null,
+          "startLine": 23,
+          "endLine": 43,
+          "signature": "async function openLocalDb(persistenceKey: string)",
+          "parameters": [
+            {
+              "name": "persistenceKey",
+              "type": "string",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["persistenceKey is supplied as a string."],
+          "postconditions": [
+            "The database name is formed as STORE_PREFIX concatenated with persistenceKey.",
+            "The formed database name is registered through addDbName before the database is opened.",
+            "The database is opened at version 4.",
+            "On upgrade, the Records, Schema, SessionState, and Assets object stores exist after completion.",
+            "The resolved value from openDB is returned."
+          ],
+          "invariants": [
+            "Existing object stores are not recreated during upgrade.",
+            "Each required object store is created only when it is absent."
+          ],
+          "edgeCases": [
+            "If one or more required object stores already exist, they are preserved and not recreated.",
+            "If the database does not exist or requires an upgrade, all four required object stores are created.",
+            "If database opening fails, the asynchronous operation rejects with the underlying openDB error."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "No explicit validation is performed; the persistenceKey is used directly in the database name.",
+            "returnsOnError": null
+          },
+          "stateMutations": [
+            "The database-name registry is updated through addDbName.",
+            "IndexedDB database state may be created or upgraded, including the required object stores."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "addDbName", "source": "local module", "kind": "internal" },
+            { "name": "openDB", "source": "IndexedDB helper dependency", "kind": "external" }
+          ],
+          "symbolReferences": [
+            "STORE_PREFIX",
+            "StoreName",
+            "Table.Records",
+            "Table.Schema",
+            "Table.SessionState",
+            "Table.Assets"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "IndexedDB database name is STORE_PREFIX + persistenceKey. The database is opened at version 4 and must contain object stores Table.Records, Table.Schema, Table.SessionState, and Table.Assets.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Opens the IndexedDB database associated with a persistence key and ensures the required local synchronization object stores exist. It registers the database name before delegating database creation or opening to the IndexedDB helper.",
+          "specLiterals": [
+            { "kind": "magic-number", "value": "4", "role": "IndexedDB schema version passed to openDB." }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "openLocalDb(persistenceKey) is awaited",
+              "then": "The database named STORE_PREFIX + persistenceKey is opened at version 4 and contains the Records, Schema, SessionState, and Assets object stores.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "openLocalDb(persistenceKey) performs its upgrade callback",
+              "then": "The existing object stores are retained and no duplicate stores are created.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "52430bcb3a407d449d5af1f0b85ad3d45c7bf87dcc811dda478ad0b065a77469"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__migrateLegacyAssetDbIfNeeded#function:migrateLegacyAssetDbIfNeeded",
+        "unitKind": "function",
+        "name": "migrateLegacyAssetDbIfNeeded",
+        "qualifiedName": "migrateLegacyAssetDbIfNeeded",
+        "parentUnitId": null,
+        "startLine": 45,
+        "endLine": 81,
+        "isBehavioral": true,
+        "source": "\nasync function migrateLegacyAssetDbIfNeeded(persistenceKey: string) {\n\tconst databases = window.indexedDB.databases\n\t\t? (await window.indexedDB.databases()).map((db) => db.name)\n\t\t: getAllIndexDbNames()\n\tconst oldStoreId = LEGACY_ASSET_STORE_PREFIX + persistenceKey\n\tconst existing = databases.find((dbName) => dbName === oldStoreId)\n\tif (!existing) return\n\n\tconst oldAssetDb = await openDB<StoreName>(oldStoreId, 1, {\n\t\tupgrade(database) {\n\t\t\tif (!database.objectStoreNames.contains('assets')) {\n\t\t\t\tdatabase.createObjectStore('assets')\n\t\t\t}\n\t\t},\n\t})\n\tif (!oldAssetDb.objectStoreNames.contains('assets')) return\n\n\tconst oldTx = oldAssetDb.transaction(['assets'], 'readonly')\n\tconst oldAssetStore = oldTx.objectStore('assets')\n\tconst oldAssetsKeys = await oldAssetStore.getAllKeys()\n\tconst oldAssets = await Promise.all(\n\t\toldAssetsKeys.map(async (key) => [key, await oldAssetStore.get(key)] as const)\n\t)\n\tawait oldTx.done\n\n\tconst newDb = await openLocalDb(persistenceKey)\n\tconst newTx = newDb.transaction([Table.Assets], 'readwrite')\n\tconst newAssetTable = newTx.objectStore(Table.Assets)\n\tfor (const [key, value] of oldAssets) {\n\t\tnewAssetTable.put(value, key)\n\t}\n\tawait newTx.done\n\n\toldAssetDb.close()\n\tnewDb.close()\n",
+        "detail": {
+          "unitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__migrateLegacyAssetDbIfNeeded#function:migrateLegacyAssetDbIfNeeded",
+          "fileId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__migrateLegacyAssetDbIfNeeded",
+          "unitKind": "function",
+          "name": "migrateLegacyAssetDbIfNeeded",
+          "qualifiedName": "migrateLegacyAssetDbIfNeeded",
+          "parentUnitId": null,
+          "startLine": 45,
+          "endLine": 81,
+          "signature": "async function migrateLegacyAssetDbIfNeeded(persistenceKey: string)",
+          "parameters": [
+            {
+              "name": "persistenceKey",
+              "type": "string",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "Promise<void>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "persistenceKey is a string.",
+            "IndexedDB access and the local database helpers are available."
+          ],
+          "postconditions": [
+            "If a legacy database named LEGACY_ASSET_STORE_PREFIX + persistenceKey exists, each legacy asset key and value is written to the current assets table.",
+            "The legacy and current database connections are closed after a successful migration.",
+            "If no matching legacy database exists, no database migration is performed."
+          ],
+          "invariants": [
+            "Legacy asset keys are preserved when written to the current assets table.",
+            "Asset values are copied without transformation."
+          ],
+          "edgeCases": [
+            "When indexedDB.databases is unavailable, database names are obtained through getAllIndexDbNames().",
+            "When the legacy database is not listed, the function returns normally without opening or modifying a database.",
+            "When the legacy asset store contains no keys, the migration completes without writes.",
+            "Failures from database discovery, opening, reading, writing, or transaction completion propagate as rejected asynchronous errors."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": "The returned promise rejects with the underlying IndexedDB or helper error."
+          },
+          "stateMutations": ["Writes each legacy asset key/value pair into the current local database's assets table."],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "window.indexedDB.databases", "source": "browser IndexedDB", "kind": "external" },
+            { "name": "getAllIndexDbNames", "source": "local module", "kind": "internal" },
+            { "name": "openDB", "source": "IndexedDB helper", "kind": "external" },
+            { "name": "openLocalDb", "source": "local module", "kind": "internal" }
+          ],
+          "symbolReferences": ["LEGACY_ASSET_STORE_PREFIX", "StoreName", "Table.Assets"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Reads the legacy IndexedDB object store named 'assets' in a readonly transaction and writes identical key/value pairs to the current database's Table.Assets object store in a readwrite transaction.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Checks for a legacy asset database associated with the persistence key and, when present, copies its assets into the current local database. If no matching legacy database exists, it completes without migration.",
+          "specLiterals": [
+            {
+              "kind": "enum-value",
+              "value": "assets",
+              "role": "Legacy IndexedDB object store name used for reading assets."
+            },
+            { "kind": "enum-value", "value": "readonly", "role": "Transaction mode used to read legacy assets." },
+            { "kind": "enum-value", "value": "readwrite", "role": "Transaction mode used to write migrated assets." },
+            { "kind": "magic-number", "value": "1", "role": "Version used when opening the legacy asset database." }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "migrateLegacyAssetDbIfNeeded(persistenceKey) is awaited.",
+              "then": "The promise resolves without opening a legacy or current database and without writing assets.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "migrateLegacyAssetDbIfNeeded(persistenceKey) is awaited.",
+              "then": "The current database's assets table contains v1 at k1 and v2 at k2, with the original keys preserved.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "migrateLegacyAssetDbIfNeeded(persistenceKey) is awaited.",
+              "then": "Database existence is determined using getAllIndexDbNames() instead.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "3417c14c01d35cede3be52f64587bd0bfae888601a81d9322bb1c26828852191"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb#class:LocalIndexedDb",
+        "unitKind": "class",
+        "name": "LocalIndexedDb",
+        "qualifiedName": "LocalIndexedDb",
+        "parentUnitId": null,
+        "startLine": 96,
+        "endLine": 319,
+        "isBehavioral": true,
+        "source": "\n/** @internal */\nexport class LocalIndexedDb {\n\tprivate getDbPromise: Promise<IDBPDatabase<StoreName>>\n\tprivate isClosed = false\n\tprivate pendingTransactionSet = new Set<Promise<unknown>>()\n\n\t/** @internal */\n\tstatic connectedInstances = new Set<LocalIndexedDb>()\n\n\tconstructor(persistenceKey: string) {\n\t\tLocalIndexedDb.connectedInstances.add(this)\n\t\tthis.getDbPromise = (async () => {\n\t\t\tawait migrateLegacyAssetDbIfNeeded(persistenceKey)\n\t\t\treturn await openLocalDb(persistenceKey)\n\t\t})()\n\t}\n\n\tprivate getDb() {\n\t\treturn this.getDbPromise\n\t}\n\n\t/**\n\t * Wait for any pending transactions to be completed. Useful for tests.\n\t *\n\t * @internal\n\t */\n\tpending(): Promise<void> {\n\t\treturn Promise.allSettled([this.getDbPromise, ...this.pendingTransactionSet]).then(noop)\n\t}\n\n\tasync close() {\n\t\tif (this.isClosed) return\n\t\tthis.isClosed = true\n\t\tawait this.pending()\n\t\t;(await this.getDb()).close()\n\t\tLocalIndexedDb.connectedInstances.delete(this)\n\t}\n\n\tprivate tx<Names extends StoreName[], Mode extends IDBTransactionMode, T>(\n\t\tmode: Mode,\n\t\tnames: Names,\n\t\tcb: (tx: IDBPTransaction<StoreName, Names, Mode>) => Promise<T>\n\t): Promise<T> {\n\t\tconst txPromise = (async () => {\n\t\t\tassert(!this.isClosed, 'db is closed')\n\t\t\tconst db = await this.getDb()\n\t\t\tconst tx = db.transaction(names, mode)\n\t\t\t// need to add a catch here early to prevent unhandled promise rejection\n\t\t\t// during react-strict-mode where this tx.done promise can be rejected\n\t\t\t// before we have a chance to await on it\n\t\t\tconst done = tx.done.catch((e: unknown) => {\n\t\t\t\tif (!this.isClosed) {\n\t\t\t\t\tthrow e\n\t\t\t\t}\n\t\t\t})\n\t\t\ttry {\n\t\t\t\treturn await cb(tx)\n\t\t\t} finally {\n\t\t\t\tif (!this.isClosed) {\n\t\t\t\t\tawait done\n\t\t\t\t} else {\n\t\t\t\t\ttx.abort()\n\t\t\t\t}\n\t\t\t}\n\t\t})()\n\t\tthis.pendingTransactionSet.add(txPromise)\n\t\ttxPromise.finally(() => this.pendingTransactionSet.delete(txPromise))\n\t\treturn txPromise\n\t}\n\n\tasync load({ sessionId }: { sessionId?: string } = {}) {\n\t\treturn await this.tx(\n\t\t\t'readonly',\n\t\t\t[Table.Records, Table.Schema, Table.SessionState],\n\t\t\tasync (tx) => {\n\t\t\t\tconst recordsStore = tx.objectStore(Table.Records)\n\t\t\t\tconst schemaStore = tx.objectStore(Table.Schema)\n\t\t\t\tconst sessionStateStore = tx.objectStore(Table.SessionState)\n\t\t\t\tlet sessionStateSnapshot = sessionId\n\t\t\t\t\t? ((await sessionStateStore.get(sessionId)) as SessionStateSnapshotRow | undefined)\n\t\t\t\t\t\t\t?.snapshot\n\t\t\t\t\t: null\n\t\t\t\tif (!sessionStateSnapshot) {\n\t\t\t\t\t// get the most recent session state\n\t\t\t\t\tconst all = (await sessionStateStore.getAll()) as SessionStateSnapshotRow[]\n\t\t\t\t\tsessionStateSnapshot = all.sort((a, b) => a.updatedAt - b.updatedAt).pop()?.snapshot\n\t\t\t\t}\n\t\t\t\tconst result = {\n\t\t\t\t\trecords: await recordsStore.getAll(),\n\t\t\t\t\tschema: await schemaStore.get(Table.Schema),\n\t\t\t\t\tsessionStateSnapshot,\n\t\t\t\t} satisfies LoadResult\n\n\t\t\t\treturn result\n\t\t\t}\n\t\t)\n\t}\n\n\tasync storeChanges({\n\t\tschema,\n\t\tchanges,\n\t\tsessionId,\n\t\tsessionStateSnapshot,\n\t}: {\n\t\tschema: TLStoreSchema\n\t\tchanges: RecordsDiff<any>\n\t\tsessionId?: string | null\n\t\tsessionStateSnapshot?: TLSessionStateSnapshot | null\n\t}) {\n\t\tawait this.tx('readwrite', [Table.Records, Table.Schema, Table.SessionState], async (tx) => {\n\t\t\tconst recordsStore = tx.objectStore(Table.Records)\n\t\t\tconst schemaStore = tx.objectStore(Table.Schema)\n\t\t\tconst sessionStateStore = tx.objectStore(Table.SessionState)\n\n\t\t\tfor (const [id, record] of Object.entries(changes.added)) {\n\t\t\t\tawait recordsStore.put(record, id)\n\t\t\t}\n\n\t\t\tfor (const [_prev, updated] of Object.values(changes.updated)) {\n\t\t\t\tawait recordsStore.put(updated, updated.id)\n\t\t\t}\n\n\t\t\tfor (const id of Object.keys(changes.removed)) {\n\t\t\t\tawait recordsStore.delete(id)\n\t\t\t}\n\n\t\t\tschemaStore.put(schema.serialize(), Table.Schema)\n\t\t\tif (sessionStateSnapshot && sessionId) {\n\t\t\t\tsessionStateStore.put(\n\t\t\t\t\t{\n\t\t\t\t\t\tsnapshot: sessionStateSnapshot,\n\t\t\t\t\t\tupdatedAt: Date.now(),\n\t\t\t\t\t\tid: sessionId,\n\t\t\t\t\t} satisfies SessionStateSnapshotRow,\n\t\t\t\t\tsessionId\n\t\t\t\t)\n\t\t\t} else if (sessionStateSnapshot || sessionId) {\n\t\t\t\tconsole.error('sessionStateSnapshot and instanceId must be provided together')\n\t\t\t}\n\t\t})\n\t}\n\n\tasync storeSnapshot({\n\t\tschema,\n\t\tsnapshot,\n\t\tsessionId,\n\t\tsessionStateSnapshot,\n\t}: {\n\t\tschema: TLStoreSchema\n\t\tsnapshot: SerializedStore<any>\n\t\tsessionId?: string | null\n\t\tsessionStateSnapshot?: TLSessionStateSnapshot | null\n\t}) {\n\t\tawait this.tx('readwrite', [Table.Records, Table.Schema, Table.SessionState], async (tx) => {\n\t\t\tconst recordsStore = tx.objectStore(Table.Records)\n\t\t\tconst schemaStore = tx.objectStore(Table.Schema)\n\t\t\tconst sessionStateStore = tx.objectStore(Table.SessionState)\n\n\t\t\tawait recordsStore.clear()\n\n\t\t\tfor (const [id, record] of Object.entries(snapshot)) {\n\t\t\t\tawait recordsStore.put(record, id)\n\t\t\t}\n\n\t\t\tschemaStore.put(schema.serialize(), Table.Schema)\n\n\t\t\tif (sessionStateSnapshot && sessionId) {\n\t\t\t\tsessionStateStore.put(\n\t\t\t\t\t{\n\t\t\t\t\t\tsnapshot: sessionStateSnapshot,\n\t\t\t\t\t\tupdatedAt: Date.now(),\n\t\t\t\t\t\tid: sessionId,\n\t\t\t\t\t} satisfies SessionStateSnapshotRow,\n\t\t\t\t\tsessionId\n\t\t\t\t)\n\t\t\t} else if (sessionStateSnapshot || sessionId) {\n\t\t\t\tconsole.error('sessionStateSnapshot and instanceId must be provided together')\n\t\t\t}\n\t\t})\n\t}\n\n\tasync pruneSessions() {\n\t\tawait this.tx('readwrite', [Table.SessionState], async (tx) => {\n\t\t\tconst sessionStateStore = tx.objectStore(Table.SessionState)\n\t\t\tconst all = (await sessionStateStore.getAll()).sort((a, b) => a.updatedAt - b.updatedAt)\n\t\t\tif (all.length < 10) {\n\t\t\t\tawait tx.done\n\t\t\t\treturn\n\t\t\t}\n\t\t\tconst toDelete = all.slice(0, all.length - 10)\n\t\t\tfor (const { id } of toDelete) {\n\t\t\t\tawait sessionStateStore.delete(id)\n\t\t\t}\n\t\t})\n\t}\n\n\tasync getAsset(assetId: string): Promise<File | undefined> {\n\t\treturn await this.tx('readonly', [Table.Assets], async (tx) => {\n\t\t\tconst assetsStore = tx.objectStore(Table.Assets)\n\t\t\treturn await assetsStore.get(assetId)\n\t\t})\n\t}\n\n\tasync storeAsset(assetId: string, blob: File) {\n\t\tawait this.tx('readwrite', [Table.Assets], async (tx) => {\n\t\t\tconst assetsStore = tx.objectStore(Table.Assets)\n\t\t\tawait assetsStore.put(blob, assetId)\n\t\t})\n\t}\n\n\tasync removeAssets(assetId: string[]) {\n\t\tawait this.tx('readwrite', [Table.Assets], async (tx) => {\n\t\t\tconst assetsStore = tx.objectStore(Table.Assets)\n\t\t\tfor (const id of assetId) {\n\t\t\t\tawait assetsStore.delete(id)\n\t\t\t}\n\t\t})\n\t}\n}\n\n/** @internal */\nexport function getAllIndexDbNames(): string[] {\n\tconst result = JSON.parse(getFromLocalStorage(dbNameIndexKey) || '[]') ?? []",
+        "detail": {
+          "unitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb#class:LocalIndexedDb",
+          "fileId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb",
+          "unitKind": "class",
+          "name": "LocalIndexedDb",
+          "qualifiedName": "LocalIndexedDb",
+          "parentUnitId": null,
+          "startLine": 96,
+          "endLine": 319,
+          "signature": "export class LocalIndexedDb",
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": ["export"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [
+            {
+              "name": "getDbPromise",
+              "kind": "property",
+              "type": "Promise<IDBPDatabase<StoreName>>",
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "isClosed",
+              "kind": "property",
+              "type": "boolean",
+              "default": "false",
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "pendingTransactionSet",
+              "kind": "property",
+              "type": "Set<Promise<unknown>>",
+              "default": "new Set()",
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "connectedInstances",
+              "kind": "property",
+              "type": "Set<LocalIndexedDb>",
+              "default": "new Set<LocalIndexedDb>()",
+              "visibility": "public",
+              "static": true
+            },
+            {
+              "name": "constructor",
+              "kind": "constructor",
+              "type": "(persistenceKey: string)",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "pending",
+              "kind": "method",
+              "type": "(): Promise<void>",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "close",
+              "kind": "method",
+              "type": "(): Promise<void>",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "tx",
+              "kind": "method",
+              "type": "<Names extends StoreName[], Mode extends IDBTransactionMode, T>(mode: Mode, names: Names, cb: (tx: IDBPTransaction<StoreName, Names, Mode>) => Promise<T>): Promise<T>",
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "load",
+              "kind": "method",
+              "type": "({ sessionId }?: { sessionId?: string }): Promise<LoadResult>",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "storeChanges",
+              "kind": "method",
+              "type": "({ schema, changes, sessionId, sessionStateSnapshot }: { schema: TLStoreSchema; changes: RecordsDiff<any>; sessionId?: string | null; sessionStateSnapshot?: TLSessionStateSnapshot | null }): Promise<void>",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "storeSnapshot",
+              "kind": "method",
+              "type": "({ schema, snapshot, sessionId, sessionStateSnapshot }: { schema: TLStoreSchema; snapshot: SerializedStore<any>; sessionId?: string | null; sessionStateSnapshot?: TLSessionStateSnapshot | null }): Promise<void>",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "pruneSessions",
+              "kind": "method",
+              "type": "(): Promise<void>",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "getAsset",
+              "kind": "method",
+              "type": "(assetId: string): Promise<File | undefined>",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "storeAsset",
+              "kind": "method",
+              "type": "(assetId: string, blob: File): Promise<void>",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "removeAssets",
+              "kind": "method",
+              "type": "(assetId: string[]): Promise<void>",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            }
+          ],
+          "memberUnitIds": [
+            "LocalIndexedDb.pending",
+            "LocalIndexedDb.close",
+            "LocalIndexedDb.tx",
+            "LocalIndexedDb.load",
+            "LocalIndexedDb.storeChanges",
+            "LocalIndexedDb.storeSnapshot",
+            "LocalIndexedDb.pruneSessions",
+            "LocalIndexedDb.getAsset",
+            "LocalIndexedDb.storeAsset",
+            "LocalIndexedDb.removeAssets"
+          ],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "LocalIndexedDb provides persistent IndexedDB-backed storage for editor records, schemas, session snapshots, and asset files. It tracks connected instances and manages asynchronous database lifecycle access.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "ff40e7f0d3613afe74be86547b61863a666e901d8e291e08afdddec09eaf92b2"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb.close#method:LocalIndexedDb.close",
+        "unitKind": "method",
+        "name": "close",
+        "qualifiedName": "LocalIndexedDb.close",
+        "parentUnitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb#class:LocalIndexedDb",
+        "startLine": 121,
+        "endLine": 128,
+        "isBehavioral": true,
+        "source": "\t * @internal\n\t */\n\tpending(): Promise<void> {\n\t\treturn Promise.allSettled([this.getDbPromise, ...this.pendingTransactionSet]).then(noop)\n\t}\n\n\tasync close() {\n\t\tif (this.isClosed) return",
+        "detail": {
+          "unitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb.close#method:LocalIndexedDb.close",
+          "fileId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb.close",
+          "unitKind": "method",
+          "name": "close",
+          "qualifiedName": "LocalIndexedDb.close",
+          "parentUnitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb#class:LocalIndexedDb",
+          "startLine": 121,
+          "endLine": 128,
+          "signature": "async close()",
+          "parameters": [],
+          "returnType": "Promise<void>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [
+            "If the instance is already closed, the method completes without additional closing work."
+          ],
+          "invariants": ["Calling close on an already-closed instance is idempotent."],
+          "edgeCases": ["When the instance is already closed, the method returns without further action."],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Closes the local IndexedDB resource when it has not already been closed. Repeated calls after closure complete without performing the close operation again.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "22d6e8651dd6c5104cf51f803a38564b41758f5d5fb320ea3ca36fade273b8d4"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb.tx#method:LocalIndexedDb.tx",
+        "unitKind": "method",
+        "name": "tx",
+        "qualifiedName": "LocalIndexedDb.tx",
+        "parentUnitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb#class:LocalIndexedDb",
+        "startLine": 130,
+        "endLine": 160,
+        "isBehavioral": true,
+        "source": "\t\tawait this.pending()\n\t\t;(await this.getDb()).close()\n\t\tLocalIndexedDb.connectedInstances.delete(this)\n\t}\n\n\tprivate tx<Names extends StoreName[], Mode extends IDBTransactionMode, T>(\n\t\tmode: Mode,\n\t\tnames: Names,\n\t\tcb: (tx: IDBPTransaction<StoreName, Names, Mode>) => Promise<T>\n\t): Promise<T> {\n\t\tconst txPromise = (async () => {\n\t\t\tassert(!this.isClosed, 'db is closed')\n\t\t\tconst db = await this.getDb()\n\t\t\tconst tx = db.transaction(names, mode)\n\t\t\t// need to add a catch here early to prevent unhandled promise rejection\n\t\t\t// during react-strict-mode where this tx.done promise can be rejected\n\t\t\t// before we have a chance to await on it\n\t\t\tconst done = tx.done.catch((e: unknown) => {\n\t\t\t\tif (!this.isClosed) {\n\t\t\t\t\tthrow e\n\t\t\t\t}\n\t\t\t})\n\t\t\ttry {\n\t\t\t\treturn await cb(tx)\n\t\t\t} finally {\n\t\t\t\tif (!this.isClosed) {\n\t\t\t\t\tawait done\n\t\t\t\t} else {\n\t\t\t\t\ttx.abort()\n\t\t\t\t}\n\t\t\t}",
+        "detail": {
+          "unitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb.tx#method:LocalIndexedDb.tx",
+          "fileId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb.tx",
+          "unitKind": "method",
+          "name": "tx",
+          "qualifiedName": "LocalIndexedDb.tx",
+          "parentUnitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb#class:LocalIndexedDb",
+          "startLine": 130,
+          "endLine": 160,
+          "signature": "private tx<Names extends StoreName[], Mode extends IDBTransactionMode, T>(mode: Mode, names: Names, cb: (tx: IDBPTransaction<StoreName, Names, Mode>) => Promise<T>): Promise<T>",
+          "parameters": [
+            { "name": "mode", "type": "Mode", "default": null, "optional": false, "variadic": false, "order": 0 },
+            { "name": "names", "type": "Names", "default": null, "optional": false, "variadic": false, "order": 1 },
+            {
+              "name": "cb",
+              "type": "(tx: IDBPTransaction<StoreName, Names, Mode>) => Promise<T>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            }
+          ],
+          "returnType": "Promise<T>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "private",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": ["Names extends StoreName[]", "Mode extends IDBTransactionMode", "T"],
+          "logicOutline": [],
+          "preconditions": [
+            "The LocalIndexedDb instance must not be closed when the transaction operation begins.",
+            "mode must be a valid IndexedDB transaction mode.",
+            "names must identify valid stores for the database.",
+            "cb must be an asynchronous callback accepting the created transaction."
+          ],
+          "postconditions": [
+            "On normal completion while the database remains open, the callback result is returned only after the IndexedDB transaction completes.",
+            "If the instance is closed before final transaction completion, the transaction is aborted rather than awaited to completion.",
+            "A transaction completion failure is propagated when the instance is not closed."
+          ],
+          "invariants": [
+            "The callback receives the transaction created for the supplied store names and mode.",
+            "The transaction completion promise is observed immediately to prevent an unhandled rejection.",
+            "Transaction completion is awaited in the normal open-instance path regardless of whether the callback resolves or rejects."
+          ],
+          "edgeCases": [
+            "If the instance is already closed, the operation fails before opening the database or creating a transaction.",
+            "If the callback rejects, its rejection is propagated unless transaction-finalization awaiting produces a different failure.",
+            "If the instance closes while the callback or transaction is active, transaction completion errors are suppressed and the transaction is aborted during cleanup."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [
+              "Assertion error when the database is closed",
+              "Callback rejection",
+              "IndexedDB transaction or database errors while the instance remains open"
+            ],
+            "reverts": [],
+            "onInvalidInput": "Rejects when the instance is closed or when database transaction creation, callback execution, or transaction completion fails.",
+            "returnsOnError": null
+          },
+          "stateMutations": [
+            "Creates and may abort an IndexedDB transaction.",
+            "Observes the transaction completion promise."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "assert", "source": null, "kind": "external" },
+            { "name": "getDb", "source": "LocalIndexedDb", "kind": "internal" },
+            { "name": "transaction", "source": "IndexedDB database instance", "kind": "external" },
+            { "name": "cb", "source": "caller-provided callback", "kind": "external" },
+            { "name": "abort", "source": "IndexedDB transaction instance", "kind": "external" }
+          ],
+          "symbolReferences": ["StoreName", "IDBTransactionMode", "IDBPTransaction"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Executes an asynchronous callback within an IndexedDB transaction over the requested stores and returns the callback result. It rejects use after closure and coordinates transaction completion or abortion with the database lifecycle.",
+          "specLiterals": [
+            {
+              "kind": "error-message",
+              "value": "db is closed",
+              "role": "Assertion message used when the method is invoked after the database instance has been closed."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "tx is invoked with any mode, store names, and callback.",
+              "then": "The returned promise rejects with the assertion for a closed database, without invoking the callback.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "tx is invoked with a callback that resolves to a value and the IndexedDB transaction completes successfully.",
+              "then": "The returned promise resolves to the callback's value after transaction completion.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The instance becomes closed before transaction cleanup completes.",
+              "then": "Cleanup aborts the transaction and does not rethrow a transaction-completion rejection caused after closure.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "fdf69b60a7f32fcf60c3138b08f9edaad5af96a696ceca21489631c061021e3b"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb.load#method:LocalIndexedDb.load",
+        "unitKind": "method",
+        "name": "load",
+        "qualifiedName": "LocalIndexedDb.load",
+        "parentUnitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb#class:LocalIndexedDb",
+        "startLine": 162,
+        "endLine": 187,
+        "isBehavioral": true,
+        "source": "\t\tthis.pendingTransactionSet.add(txPromise)\n\t\ttxPromise.finally(() => this.pendingTransactionSet.delete(txPromise))\n\t\treturn txPromise\n\t}\n\n\tasync load({ sessionId }: { sessionId?: string } = {}) {\n\t\treturn await this.tx(\n\t\t\t'readonly',\n\t\t\t[Table.Records, Table.Schema, Table.SessionState],\n\t\t\tasync (tx) => {\n\t\t\t\tconst recordsStore = tx.objectStore(Table.Records)\n\t\t\t\tconst schemaStore = tx.objectStore(Table.Schema)\n\t\t\t\tconst sessionStateStore = tx.objectStore(Table.SessionState)\n\t\t\t\tlet sessionStateSnapshot = sessionId\n\t\t\t\t\t? ((await sessionStateStore.get(sessionId)) as SessionStateSnapshotRow | undefined)\n\t\t\t\t\t\t\t?.snapshot\n\t\t\t\t\t: null\n\t\t\t\tif (!sessionStateSnapshot) {\n\t\t\t\t\t// get the most recent session state\n\t\t\t\t\tconst all = (await sessionStateStore.getAll()) as SessionStateSnapshotRow[]\n\t\t\t\t\tsessionStateSnapshot = all.sort((a, b) => a.updatedAt - b.updatedAt).pop()?.snapshot\n\t\t\t\t}\n\t\t\t\tconst result = {\n\t\t\t\t\trecords: await recordsStore.getAll(),\n\t\t\t\t\tschema: await schemaStore.get(Table.Schema),\n\t\t\t\t\tsessionStateSnapshot,",
+        "detail": {
+          "unitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb.load#method:LocalIndexedDb.load",
+          "fileId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb.load",
+          "unitKind": "method",
+          "name": "load",
+          "qualifiedName": "LocalIndexedDb.load",
+          "parentUnitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb#class:LocalIndexedDb",
+          "startLine": 162,
+          "endLine": 187,
+          "signature": "async load({ sessionId }: { sessionId?: string } = {})",
+          "parameters": [
+            {
+              "name": "{ sessionId }",
+              "type": "{ sessionId?: string }",
+              "default": "{}",
+              "optional": true,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The LocalIndexedDb instance must be usable for opening a readonly transaction over the records, schema, and session-state stores."
+          ],
+          "postconditions": [
+            "Returns an object containing the persisted records, the schema row keyed by Table.Schema, and a sessionStateSnapshot.",
+            "The returned sessionStateSnapshot is the requested session snapshot when a sessionId is supplied and its snapshot is truthy; otherwise it is the snapshot from the session-state row with the greatest updatedAt value, or undefined when no snapshot is available."
+          ],
+          "invariants": [
+            "The operation uses a readonly transaction.",
+            "The records, schema, and session-state stores are read within the same transaction."
+          ],
+          "edgeCases": [
+            "With no sessionId, all session-state rows are examined and the snapshot with the greatest updatedAt value is selected.",
+            "With a sessionId whose row is absent or whose snapshot is falsy, the method falls back to the most recently updated session-state row.",
+            "With no session-state rows or no available snapshots, sessionStateSnapshot is undefined.",
+            "Records and schema are returned even when no session-state snapshot is available."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "tx", "source": "LocalIndexedDb", "kind": "internal" },
+            { "name": "objectStore", "source": "IndexedDB transaction", "kind": "external" },
+            { "name": "get", "source": "IndexedDB object store", "kind": "external" },
+            { "name": "getAll", "source": "IndexedDB object store", "kind": "external" }
+          ],
+          "symbolReferences": ["Table.Records", "Table.Schema", "Table.SessionState", "SessionStateSnapshotRow"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Resolves to an object of the form { records: await recordsStore.getAll(), schema: await schemaStore.get(Table.Schema), sessionStateSnapshot: SessionStateSnapshotRow['snapshot'] | undefined | null }. The records value is the complete records-store contents; schema is the row stored under Table.Schema.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Loads all persisted records and schema data, together with the most appropriate session-state snapshot. A requested session snapshot is preferred when present; otherwise the most recently updated session snapshot is returned.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Calling load().",
+              "then": "The result contains all records, the schema row under Table.Schema, and the snapshot from the session-state row with the greatest updatedAt value.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Calling load({ sessionId }).",
+              "then": "The result uses the requested session's snapshot rather than the newer snapshot.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Calling load({ sessionId }).",
+              "then": "The result falls back to the snapshot from the most recently updated session-state row.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "6d7c62b543a29e9942d8b235cf0749ba1f3305c632df1bfbf9e6269b2540ebc7"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb.storeChanges#method:LocalIndexedDb.storeChanges",
+        "unitKind": "method",
+        "name": "storeChanges",
+        "qualifiedName": "LocalIndexedDb.storeChanges",
+        "parentUnitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb#class:LocalIndexedDb",
+        "startLine": 189,
+        "endLine": 234,
+        "isBehavioral": true,
+        "source": "\n\t\t\t\treturn result\n\t\t\t}\n\t\t)\n\t}\n\n\tasync storeChanges({\n\t\tschema,\n\t\tchanges,\n\t\tsessionId,\n\t\tsessionStateSnapshot,\n\t}: {\n\t\tschema: TLStoreSchema\n\t\tchanges: RecordsDiff<any>\n\t\tsessionId?: string | null\n\t\tsessionStateSnapshot?: TLSessionStateSnapshot | null\n\t}) {\n\t\tawait this.tx('readwrite', [Table.Records, Table.Schema, Table.SessionState], async (tx) => {\n\t\t\tconst recordsStore = tx.objectStore(Table.Records)\n\t\t\tconst schemaStore = tx.objectStore(Table.Schema)\n\t\t\tconst sessionStateStore = tx.objectStore(Table.SessionState)\n\n\t\t\tfor (const [id, record] of Object.entries(changes.added)) {\n\t\t\t\tawait recordsStore.put(record, id)\n\t\t\t}\n\n\t\t\tfor (const [_prev, updated] of Object.values(changes.updated)) {\n\t\t\t\tawait recordsStore.put(updated, updated.id)\n\t\t\t}\n\n\t\t\tfor (const id of Object.keys(changes.removed)) {\n\t\t\t\tawait recordsStore.delete(id)\n\t\t\t}\n\n\t\t\tschemaStore.put(schema.serialize(), Table.Schema)\n\t\t\tif (sessionStateSnapshot && sessionId) {\n\t\t\t\tsessionStateStore.put(\n\t\t\t\t\t{\n\t\t\t\t\t\tsnapshot: sessionStateSnapshot,\n\t\t\t\t\t\tupdatedAt: Date.now(),\n\t\t\t\t\t\tid: sessionId,\n\t\t\t\t\t} satisfies SessionStateSnapshotRow,\n\t\t\t\t\tsessionId\n\t\t\t\t)\n\t\t\t} else if (sessionStateSnapshot || sessionId) {\n\t\t\t\tconsole.error('sessionStateSnapshot and instanceId must be provided together')",
+        "detail": {
+          "unitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb.storeChanges#method:LocalIndexedDb.storeChanges",
+          "fileId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb.storeChanges",
+          "unitKind": "method",
+          "name": "storeChanges",
+          "qualifiedName": "LocalIndexedDb.storeChanges",
+          "parentUnitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb#class:LocalIndexedDb",
+          "startLine": 189,
+          "endLine": 234,
+          "signature": "async storeChanges({ schema, changes, sessionId, sessionStateSnapshot, }: { schema: TLStoreSchema; changes: RecordsDiff<any>; sessionId?: string | null; sessionStateSnapshot?: TLSessionStateSnapshot | null; })",
+          "parameters": [
+            {
+              "name": "schema",
+              "type": "TLStoreSchema",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "changes",
+              "type": "RecordsDiff<any>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "sessionId",
+              "type": "string | null",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 2
+            },
+            {
+              "name": "sessionStateSnapshot",
+              "type": "TLSessionStateSnapshot | null",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 3
+            }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The LocalIndexedDb instance must have an open usable IndexedDB database.",
+            "changes.added, changes.updated, and changes.removed must contain record changes in the expected RecordsDiff<any> shape.",
+            "schema must provide a serialize() method."
+          ],
+          "postconditions": [
+            "Every record in changes.added is written to the Records object store under its record id.",
+            "Every updated record in changes.updated is written to the Records object store under updated.id.",
+            "Every record id in changes.removed is deleted from the Records object store.",
+            "The serialized schema is written to the Schema object store under Table.Schema.",
+            "When both sessionId and sessionStateSnapshot are truthy, a session-state row containing the snapshot, session id, and current timestamp is written to the SessionState object store."
+          ],
+          "invariants": [
+            "All record, schema, and optional session-state operations are initiated within a single read-write transaction over the Records, Schema, and SessionState tables.",
+            "Added records are processed before updated records, and updated records are processed before removals.",
+            "A session-state row is not written unless both sessionStateSnapshot and sessionId are provided."
+          ],
+          "edgeCases": [
+            "Empty added, updated, and removed collections still cause the schema to be serialized and stored.",
+            "When sessionStateSnapshot and sessionId are both absent or nullish, no session-state row is written.",
+            "When exactly one of sessionStateSnapshot or sessionId is truthy, no session-state row is written and an error is logged to the console.",
+            "If an IndexedDB operation or transaction fails, the resulting asynchronous operation rejects according to the underlying transaction error."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Mismatched truthiness of sessionStateSnapshot and sessionId is logged with console.error and does not write session state; underlying storage failures propagate as rejected asynchronous errors.",
+            "returnsOnError": null
+          },
+          "stateMutations": [
+            "Records object store: adds, updates, and deletes records according to changes.",
+            "Schema object store: replaces the stored schema at Table.Schema.",
+            "SessionState object store: conditionally writes the session snapshot row keyed by sessionId."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "this.tx", "source": "LocalIndexedDb", "kind": "internal" },
+            { "name": "tx.objectStore", "source": "IndexedDB transaction", "kind": "external" },
+            { "name": "recordsStore.put", "source": "IndexedDB object store", "kind": "external" },
+            { "name": "recordsStore.delete", "source": "IndexedDB object store", "kind": "external" },
+            { "name": "schema.serialize", "source": "TLStoreSchema", "kind": "external" },
+            { "name": "schemaStore.put", "source": "IndexedDB object store", "kind": "external" },
+            { "name": "sessionStateStore.put", "source": "IndexedDB object store", "kind": "external" },
+            { "name": "Date.now", "source": "global runtime", "kind": "external" },
+            { "name": "console.error", "source": "global runtime", "kind": "external" }
+          ],
+          "symbolReferences": [
+            "TLStoreSchema",
+            "RecordsDiff<any>",
+            "TLSessionStateSnapshot",
+            "SessionStateSnapshotRow",
+            "Table.Records",
+            "Table.Schema",
+            "Table.SessionState"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Within one IndexedDB read-write transaction over [Table.Records, Table.Schema, Table.SessionState], records are keyed by record id, the serialized schema is keyed by Table.Schema, and an optional session row has the shape { snapshot, updatedAt, id } and is keyed by sessionId.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Persists a records diff and serialized store schema in one read-write IndexedDB transaction. When both session identifiers are supplied, it also persists the session-state snapshot with an update timestamp.",
+          "specLiterals": [
+            {
+              "kind": "error-message",
+              "value": "sessionStateSnapshot and instanceId must be provided together",
+              "role": "Console error emitted when only one of sessionStateSnapshot or sessionId is provided."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "storeChanges is called.",
+              "then": "The added records are stored, updated records replace their prior versions, removed ids are deleted, and the serialized schema is stored in the same read-write transaction.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "storeChanges is called.",
+              "then": "A session-state row containing the supplied snapshot, session id, and a Date.now() timestamp is stored in addition to the record changes and schema.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "storeChanges is called.",
+              "then": "No session-state row is written and console.error is called with \"sessionStateSnapshot and instanceId must be provided together\".",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "86e8f902a54d8e7c60bc3471971b48f6b4faa93f707d0d65de718d39798c1740"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb.storeSnapshot#method:LocalIndexedDb.storeSnapshot",
+        "unitKind": "method",
+        "name": "storeSnapshot",
+        "qualifiedName": "LocalIndexedDb.storeSnapshot",
+        "parentUnitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb#class:LocalIndexedDb",
+        "startLine": 236,
+        "endLine": 275,
+        "isBehavioral": true,
+        "source": "\t\t})\n\t}\n\n\tasync storeSnapshot({\n\t\tschema,\n\t\tsnapshot,\n\t\tsessionId,\n\t\tsessionStateSnapshot,\n\t}: {\n\t\tschema: TLStoreSchema\n\t\tsnapshot: SerializedStore<any>\n\t\tsessionId?: string | null\n\t\tsessionStateSnapshot?: TLSessionStateSnapshot | null\n\t}) {\n\t\tawait this.tx('readwrite', [Table.Records, Table.Schema, Table.SessionState], async (tx) => {\n\t\t\tconst recordsStore = tx.objectStore(Table.Records)\n\t\t\tconst schemaStore = tx.objectStore(Table.Schema)\n\t\t\tconst sessionStateStore = tx.objectStore(Table.SessionState)\n\n\t\t\tawait recordsStore.clear()\n\n\t\t\tfor (const [id, record] of Object.entries(snapshot)) {\n\t\t\t\tawait recordsStore.put(record, id)\n\t\t\t}\n\n\t\t\tschemaStore.put(schema.serialize(), Table.Schema)\n\n\t\t\tif (sessionStateSnapshot && sessionId) {\n\t\t\t\tsessionStateStore.put(\n\t\t\t\t\t{\n\t\t\t\t\t\tsnapshot: sessionStateSnapshot,\n\t\t\t\t\t\tupdatedAt: Date.now(),\n\t\t\t\t\t\tid: sessionId,\n\t\t\t\t\t} satisfies SessionStateSnapshotRow,\n\t\t\t\t\tsessionId\n\t\t\t\t)\n\t\t\t} else if (sessionStateSnapshot || sessionId) {\n\t\t\t\tconsole.error('sessionStateSnapshot and instanceId must be provided together')\n\t\t\t}\n\t\t})",
+        "detail": {
+          "unitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb.storeSnapshot#method:LocalIndexedDb.storeSnapshot",
+          "fileId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb.storeSnapshot",
+          "unitKind": "method",
+          "name": "storeSnapshot",
+          "qualifiedName": "LocalIndexedDb.storeSnapshot",
+          "parentUnitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb#class:LocalIndexedDb",
+          "startLine": 236,
+          "endLine": 275,
+          "signature": "async storeSnapshot({\n\tschema,\n\tsnapshot,\n\tsessionId,\n\tsessionStateSnapshot,\n}: {\n\tschema: TLStoreSchema\n\tsnapshot: SerializedStore<any>\n\tsessionId?: string | null\n\tsessionStateSnapshot?: TLSessionStateSnapshot | null\n})",
+          "parameters": [
+            {
+              "name": "schema",
+              "type": "TLStoreSchema",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "snapshot",
+              "type": "SerializedStore<any>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "sessionId",
+              "type": "string | null",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 2
+            },
+            {
+              "name": "sessionStateSnapshot",
+              "type": "TLSessionStateSnapshot | null",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 3
+            }
+          ],
+          "returnType": "Promise<void>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "schema is a valid TLStoreSchema with a callable serialize() method.",
+            "snapshot is a serialized store object whose entries can be written to the Records object store."
+          ],
+          "postconditions": [
+            "The Records object store contains exactly the entries from snapshot after successful completion.",
+            "The serialized schema is stored under Table.Schema.",
+            "If both sessionStateSnapshot and a truthy sessionId are provided, a session-state row containing the snapshot, session ID, and current update timestamp is stored under that session ID."
+          ],
+          "invariants": [
+            "Records are cleared before entries from the supplied snapshot are written.",
+            "All database operations occur within one readwrite transaction over Records, Schema, and SessionState.",
+            "A session-state row is written only when both sessionStateSnapshot and sessionId are truthy."
+          ],
+          "edgeCases": [
+            "An empty snapshot clears all existing records and leaves the Records object store empty.",
+            "A null or absent sessionStateSnapshot with a truthy sessionId does not write session state and logs an error.",
+            "A null, absent, or empty-string sessionId with a truthy sessionStateSnapshot does not write session state and logs an error.",
+            "If a database operation or schema serialization fails, the asynchronous operation rejects and the failure is not converted into a return value."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "When exactly one of sessionStateSnapshot and a truthy sessionId is provided, no session-state row is written and an error is logged; database and serialization failures propagate through the rejected promise.",
+            "returnsOnError": null
+          },
+          "stateMutations": [
+            "Clears and repopulates the IndexedDB Records object store.",
+            "Writes the serialized schema to the IndexedDB Schema object store.",
+            "Conditionally writes a SessionStateSnapshotRow to the IndexedDB SessionState object store."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "tx", "source": "LocalIndexedDb", "kind": "internal" },
+            { "name": "objectStore", "source": "IndexedDB transaction", "kind": "external" },
+            { "name": "clear", "source": "IndexedDB object store", "kind": "external" },
+            { "name": "put", "source": "IndexedDB object store", "kind": "external" },
+            { "name": "schema.serialize", "source": "TLStoreSchema", "kind": "external" },
+            { "name": "Date.now", "source": "JavaScript runtime", "kind": "external" },
+            { "name": "console.error", "source": "JavaScript runtime", "kind": "external" }
+          ],
+          "symbolReferences": [
+            "TLStoreSchema",
+            "SerializedStore<any>",
+            "TLSessionStateSnapshot",
+            "SessionStateSnapshotRow",
+            "Table.Records",
+            "Table.Schema",
+            "Table.SessionState"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Within a readwrite IndexedDB transaction, each snapshot entry is stored in Records using its object key as the record ID; schema.serialize() is stored in Schema under Table.Schema; session state is stored in SessionState under sessionId as { snapshot, updatedAt, id }.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Stores a complete serialized store snapshot and its schema in the local IndexedDB database. When both session identifiers are supplied, it also persists the associated session-state snapshot.",
+          "specLiterals": [
+            {
+              "kind": "error-message",
+              "value": "sessionStateSnapshot and instanceId must be provided together",
+              "role": "Diagnostic emitted when sessionStateSnapshot and sessionId are not supplied together."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "storeSnapshot is called with the new schema and empty snapshot, without session state arguments.",
+              "then": "The existing records are cleared, no records are written, and the new serialized schema is stored.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "storeSnapshot is called.",
+              "then": "The records and schema are processed normally, no session-state row is written, and console.error receives the exact message \"sessionStateSnapshot and instanceId must be provided together\".",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "storeSnapshot is called.",
+              "then": "A session-state row is stored under that sessionId with the supplied snapshot, the same sessionId as id, and an updatedAt timestamp from Date.now().",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "fba4432740b0844e31e4e47545a7e98a3eb7065ff718725ad0ce53cb7fa3f233"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb.pruneSessions#method:LocalIndexedDb.pruneSessions",
+        "unitKind": "method",
+        "name": "pruneSessions",
+        "qualifiedName": "LocalIndexedDb.pruneSessions",
+        "parentUnitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb#class:LocalIndexedDb",
+        "startLine": 277,
+        "endLine": 292,
+        "isBehavioral": true,
+        "source": "\n\tasync pruneSessions() {\n\t\tawait this.tx('readwrite', [Table.SessionState], async (tx) => {\n\t\t\tconst sessionStateStore = tx.objectStore(Table.SessionState)\n\t\t\tconst all = (await sessionStateStore.getAll()).sort((a, b) => a.updatedAt - b.updatedAt)\n\t\t\tif (all.length < 10) {\n\t\t\t\tawait tx.done\n\t\t\t\treturn\n\t\t\t}\n\t\t\tconst toDelete = all.slice(0, all.length - 10)\n\t\t\tfor (const { id } of toDelete) {\n\t\t\t\tawait sessionStateStore.delete(id)\n\t\t\t}\n\t\t})\n\t}\n",
+        "detail": {
+          "unitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb.pruneSessions#method:LocalIndexedDb.pruneSessions",
+          "fileId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb.pruneSessions",
+          "unitKind": "method",
+          "name": "pruneSessions",
+          "qualifiedName": "LocalIndexedDb.pruneSessions",
+          "parentUnitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb#class:LocalIndexedDb",
+          "startLine": 277,
+          "endLine": 292,
+          "signature": "async pruneSessions()",
+          "parameters": [],
+          "returnType": "Promise<void>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The LocalIndexedDb instance can open a read-write transaction for the SessionState table."
+          ],
+          "postconditions": [
+            "If fewer than ten session-state records exist, no records are deleted.",
+            "If ten or more session-state records exist, the ten records with the greatest updatedAt values remain and all older records are deleted.",
+            "The returned promise resolves after the transaction completes successfully."
+          ],
+          "invariants": [
+            "Session records are ordered by ascending updatedAt before selecting records for deletion.",
+            "At most the oldest records are deleted; the ten newest records by updatedAt are retained."
+          ],
+          "edgeCases": [
+            "Fewer than ten records: the transaction is completed and no records are deleted.",
+            "Exactly ten records: no records are deleted.",
+            "More than ten records: all records except the ten newest by updatedAt are deleted.",
+            "IndexedDB transaction or object-store failure: the asynchronous operation does not complete normally and the underlying failure propagates."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["Errors from the IndexedDB transaction or SessionState object-store operations"],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": null
+          },
+          "stateMutations": ["Deletes selected records from the IndexedDB SessionState object store."],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "tx", "source": "LocalIndexedDb", "kind": "internal" },
+            { "name": "getAll", "source": "IndexedDB SessionState object store", "kind": "external" },
+            { "name": "delete", "source": "IndexedDB SessionState object store", "kind": "external" }
+          ],
+          "symbolReferences": ["Table.SessionState"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Prunes persisted session state so that only the ten most recently updated sessions remain. It performs deletions within a read-write IndexedDB transaction.",
+          "specLiterals": [
+            {
+              "kind": "magic-number",
+              "value": "10",
+              "role": "Maximum number of session-state records retained by the pruning operation."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "pruneSessions() completes successfully.",
+              "then": "The two oldest records are deleted and the ten newest records remain.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "pruneSessions() completes successfully.",
+              "then": "No SessionState records are deleted.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "pruneSessions() completes successfully.",
+              "then": "No SessionState records are deleted.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "9c21ddbcf9c1f1eaa879dcebfa9a0b4ca276595fa077cc5752350e2b60a43e4b"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb.getAsset#method:LocalIndexedDb.getAsset",
+        "unitKind": "method",
+        "name": "getAsset",
+        "qualifiedName": "LocalIndexedDb.getAsset",
+        "parentUnitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb#class:LocalIndexedDb",
+        "startLine": 294,
+        "endLine": 300,
+        "isBehavioral": true,
+        "source": "\t\treturn await this.tx('readonly', [Table.Assets], async (tx) => {\n\t\t\tconst assetsStore = tx.objectStore(Table.Assets)\n\t\t\treturn await assetsStore.get(assetId)\n\t\t})\n\t}\n\n\tasync storeAsset(assetId: string, blob: File) {",
+        "detail": {
+          "unitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb.getAsset#method:LocalIndexedDb.getAsset",
+          "fileId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb.getAsset",
+          "unitKind": "method",
+          "name": "getAsset",
+          "qualifiedName": "LocalIndexedDb.getAsset",
+          "parentUnitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb#class:LocalIndexedDb",
+          "startLine": 294,
+          "endLine": 300,
+          "signature": "async getAsset(assetId: string)",
+          "parameters": [
+            { "name": "assetId", "type": "string", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["assetId is supplied as a string."],
+          "postconditions": [
+            "The assets object store is accessed through a readonly transaction.",
+            "The stored value for assetId is returned when the key exists.",
+            "No persistent state is modified."
+          ],
+          "invariants": [
+            "The operation uses a readonly transaction on the assets store.",
+            "The lookup is scoped to the exact supplied assetId key."
+          ],
+          "edgeCases": [
+            "When assetId does not identify an existing record, the IndexedDB lookup yields undefined.",
+            "When the IndexedDB transaction or lookup fails, the underlying error is propagated."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["Underlying IndexedDB transaction or object-store errors"],
+            "reverts": [],
+            "onInvalidInput": "No explicit validation is performed; behavior follows IndexedDB key handling.",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "this.tx", "source": "LocalIndexedDb", "kind": "internal" },
+            { "name": "tx.objectStore(Table.Assets)", "source": "IndexedDB", "kind": "external" },
+            { "name": "assetsStore.get(assetId)", "source": "IndexedDB", "kind": "external" }
+          ],
+          "symbolReferences": ["Table.Assets"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Asynchronously retrieves the asset associated with the supplied asset identifier from the local IndexedDB assets store. Returns the stored asset when present and an absent value when no matching record exists.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "getAsset(assetId) is awaited.",
+              "then": "It returns the value stored under that exact key using a readonly transaction.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "getAsset(assetId) is awaited.",
+              "then": "It resolves to undefined without modifying the database.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "ae2f8319e044260f0deeacd8673c08da4ba54e3c4991e4aefdb9fc9c2a367c9c"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb.storeAsset#method:LocalIndexedDb.storeAsset",
+        "unitKind": "method",
+        "name": "storeAsset",
+        "qualifiedName": "LocalIndexedDb.storeAsset",
+        "parentUnitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb#class:LocalIndexedDb",
+        "startLine": 302,
+        "endLine": 308,
+        "isBehavioral": true,
+        "source": "\t\t\tconst assetsStore = tx.objectStore(Table.Assets)\n\t\t\tawait assetsStore.put(blob, assetId)\n\t\t})\n\t}\n\n\tasync removeAssets(assetId: string[]) {\n\t\tawait this.tx('readwrite', [Table.Assets], async (tx) => {",
+        "detail": {
+          "unitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb.storeAsset#method:LocalIndexedDb.storeAsset",
+          "fileId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb.storeAsset",
+          "unitKind": "method",
+          "name": "storeAsset",
+          "qualifiedName": "LocalIndexedDb.storeAsset",
+          "parentUnitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb#class:LocalIndexedDb",
+          "startLine": 302,
+          "endLine": 308,
+          "signature": "async storeAsset(assetId: string, blob: Blob)",
+          "parameters": [
+            { "name": "assetId", "type": "string", "default": null, "optional": false, "variadic": false, "order": 0 },
+            { "name": "blob", "type": "Blob", "default": null, "optional": false, "variadic": false, "order": 1 }
+          ],
+          "returnType": "Promise<void>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The instance has access to an open or openable local IndexedDB database.",
+            "assetId is a string used as the asset key.",
+            "blob is a Blob value suitable for IndexedDB storage."
+          ],
+          "postconditions": [
+            "The assets store contains the supplied blob at key assetId after successful completion.",
+            "The returned promise resolves only after the storage transaction completes successfully."
+          ],
+          "invariants": [
+            "The asset key used for storage is exactly assetId.",
+            "Only the assets object store is targeted by this operation."
+          ],
+          "edgeCases": [
+            "An existing assetId is replaced by the supplied blob.",
+            "An empty assetId is passed through as the IndexedDB key; no local validation is performed by this method.",
+            "A storage or transaction failure causes the returned promise to reject."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "No explicit input validation is performed; invalid values are delegated to the IndexedDB operation.",
+            "returnsOnError": "The promise rejects with the underlying IndexedDB or transaction error."
+          },
+          "stateMutations": ["IndexedDB assets object store: writes blob under key assetId."],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "tx", "source": "LocalIndexedDb", "kind": "internal" },
+            { "name": "objectStore", "source": "IndexedDB transaction", "kind": "external" },
+            { "name": "put", "source": "IndexedDB object store", "kind": "external" }
+          ],
+          "symbolReferences": ["Table.Assets", "Blob"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Stores a blob in the local IndexedDB assets store under the specified asset identifier.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "storeAsset(assetId, blob) is awaited.",
+              "then": "The promise resolves and retrieving the asset by assetId yields the same blob.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "storeAsset(assetId, replacementBlob) is awaited.",
+              "then": "The value stored under assetId is replaced by replacementBlob.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "3937b663e6008d3f7718b51119e85d21cdaa53e15817286aa4d570b5b0604091"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb.removeAssets#method:LocalIndexedDb.removeAssets",
+        "unitKind": "method",
+        "name": "removeAssets",
+        "qualifiedName": "LocalIndexedDb.removeAssets",
+        "parentUnitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb#class:LocalIndexedDb",
+        "startLine": 310,
+        "endLine": 318,
+        "isBehavioral": true,
+        "source": "\t\t\tfor (const id of assetId) {\n\t\t\t\tawait assetsStore.delete(id)\n\t\t\t}\n\t\t})\n\t}\n}\n\n/** @internal */\nexport function getAllIndexDbNames(): string[] {",
+        "detail": {
+          "unitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb.removeAssets#method:LocalIndexedDb.removeAssets",
+          "fileId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb.removeAssets",
+          "unitKind": "method",
+          "name": "removeAssets",
+          "qualifiedName": "LocalIndexedDb.removeAssets",
+          "parentUnitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__LocalIndexedDb#class:LocalIndexedDb",
+          "startLine": 310,
+          "endLine": 318,
+          "signature": "async removeAssets(assetId: string[]): Promise<void>",
+          "parameters": [
+            { "name": "assetId", "type": "string[]", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "Promise<void>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["assetId is an iterable collection of asset identifiers accepted as IndexedDB keys."],
+          "postconditions": [
+            "For every identifier in assetId, the corresponding asset is deleted from the local asset store when the operation completes successfully.",
+            "The method resolves with no value after the deletion transaction completes."
+          ],
+          "invariants": [
+            "Each supplied asset identifier is processed once in iteration order.",
+            "No asset outside the supplied identifier collection is intentionally deleted."
+          ],
+          "edgeCases": [
+            "An empty assetId collection performs no deletions and resolves successfully if the surrounding transaction succeeds.",
+            "An identifier that is not present in the store is passed to the store deletion operation without producing a missing-asset result.",
+            "If a store deletion or transaction fails, the method does not resolve normally and the transaction error propagates."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["Underlying IndexedDB deletion or transaction errors"],
+            "reverts": [],
+            "onInvalidInput": "Invalid asset identifiers are handled according to the underlying IndexedDB store deletion operation.",
+            "returnsOnError": null
+          },
+          "stateMutations": [
+            "Deletes records from the local IndexedDB assets object store for each supplied asset ID."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "assetsStore.delete", "source": "IndexedDB object store", "kind": "external" }],
+          "symbolReferences": ["IndexedDB", "assetsStore"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Removes each asset identified by the supplied IDs from the local IndexedDB asset store. The operation completes only after all requested deletions have been issued within the transaction.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "removeAssets([\"a\", \"b\"]) is awaited",
+              "then": "Both assets are absent from the local asset store after successful completion.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "removeAssets([]) is awaited",
+              "then": "The method resolves successfully without deleting any asset.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "79f6474696f42b900e23f9d11186a77b09880bb5e385a93d0bcecd338ca65f51"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__getAllIndexDbNames#function:getAllIndexDbNames",
+        "unitKind": "function",
+        "name": "getAllIndexDbNames",
+        "qualifiedName": "getAllIndexDbNames",
+        "parentUnitId": null,
+        "startLine": 322,
+        "endLine": 326,
+        "isBehavioral": true,
+        "source": "\t}\n\treturn result\n}\n\nfunction addDbName(name: string) {",
+        "detail": {
+          "unitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__getAllIndexDbNames#function:getAllIndexDbNames",
+          "fileId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__getAllIndexDbNames",
+          "unitKind": "function",
+          "name": "getAllIndexDbNames",
+          "qualifiedName": "getAllIndexDbNames",
+          "parentUnitId": null,
+          "startLine": 322,
+          "endLine": 326,
+          "signature": "function getAllIndexDbNames()",
+          "parameters": [],
+          "returnType": "string[]",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": ["Returns an array containing the currently registered IndexedDB names."],
+          "invariants": [
+            "The result contains names as strings.",
+            "The function does not mutate the returned collection's backing registration state."
+          ],
+          "edgeCases": ["When no IndexedDB names are registered, returns an empty array."],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Returns the complete collection of IndexedDB names registered by the local synchronization utilities.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "1f46cbdae604998061602d61eac7b07e671143638ad84904153a289392f39325"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__addDbName#function:addDbName",
+        "unitKind": "function",
+        "name": "addDbName",
+        "qualifiedName": "addDbName",
+        "parentUnitId": null,
+        "startLine": 328,
+        "endLine": 332,
+        "isBehavioral": true,
+        "source": "\tall.add(name)\n\tsetInLocalStorage(dbNameIndexKey, JSON.stringify([...all]))\n}\n",
+        "detail": {
+          "unitId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__addDbName#function:addDbName",
+          "fileId": "packages/editor/src/lib/utils/sync/LocalIndexedDb.ts__addDbName",
+          "unitKind": "function",
+          "name": "addDbName",
+          "qualifiedName": "addDbName",
+          "parentUnitId": null,
+          "startLine": 328,
+          "endLine": 332,
+          "signature": "function addDbName(name: string)",
+          "parameters": [
+            { "name": "name", "type": "string", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "void",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["name is a string."],
+          "postconditions": [
+            "The provided name is present in the tracked database-name set.",
+            "The updated set is serialized as a JSON array and written to the database-name index in local storage."
+          ],
+          "invariants": [
+            "Database names are maintained as unique set members.",
+            "The persisted index represents the complete updated set as a JSON array."
+          ],
+          "edgeCases": [
+            "Adding a name already present in the set leaves the set's membership unchanged while persisting the current set.",
+            "An empty string is added and persisted if supplied."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [
+            "Mutates the in-memory database-name set by adding name.",
+            "Writes the serialized database-name collection to local storage."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "setInLocalStorage", "source": null, "kind": "external" }],
+          "symbolReferences": ["dbNameIndexKey"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "The persisted value is JSON.stringify([...all]), where all is the tracked database-name Set; the serialized result is a JSON array.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Adds a database name to the tracked database-name set and persists the updated collection in local storage.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "addDbName(\"db-a\") is called.",
+              "then": "The set contains \"db-a\" and the database-name index is written as a JSON array containing \"db-a\".",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "addDbName(\"db-a\") is called.",
+              "then": "The set remains unique and the updated set is persisted as a JSON array.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "a19fbf91959788146378fc31ede18951a527891e45cd6898ce1a5c1a51192387"
+        }
+      }
+    ]
+  },
+  "out": ["packages/editor/src/lib/config/TLSessionStateSnapshot.ts"],
+  "in": [
+    "packages/editor/src/lib/utils/sync/LocalIndexedDb.test.ts",
+    "packages/editor/src/lib/utils/sync/hardReset.ts",
+    "packages/editor/src/lib/utils/sync/TLLocalSyncClient.ts"
+  ],
+  "externals": ["@tldraw/store", "@tldraw/tlschema", "@tldraw/utils", "idb"],
+  "impact": {
+    "seeds": 14,
+    "callers": 8,
+    "impactedFiles": [
+      "packages/editor/src/lib/utils/sync/LocalIndexedDb.test.ts",
+      "packages/editor/src/lib/utils/sync/hardReset.ts"
+    ]
+  }
+}

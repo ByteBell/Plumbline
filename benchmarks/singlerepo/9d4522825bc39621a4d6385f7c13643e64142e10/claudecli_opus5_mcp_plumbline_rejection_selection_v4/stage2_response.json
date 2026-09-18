@@ -1,0 +1,71 @@
+{
+  "duration_api_ms": 124933,
+  "stop_reason": "end_turn",
+  "session_id": "30095937-9902-461f-b551-8d2e89f79677",
+  "total_cost_usd": 0.925123,
+  "usage": {
+    "input_tokens": 20,
+    "cache_creation_input_tokens": 40054,
+    "cache_read_input_tokens": 557866,
+    "output_tokens": 9822,
+    "output_tokens_details": { "thinking_tokens": 2701 },
+    "server_tool_use": { "web_search_requests": 0, "web_fetch_requests": 0 },
+    "service_tier": "standard",
+    "cache_creation": { "ephemeral_1h_input_tokens": 40054, "ephemeral_5m_input_tokens": 0 },
+    "inference_geo": "not_available",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 1430,
+        "cache_read_input_tokens": 68683,
+        "cache_creation_input_tokens": 2315,
+        "cache_creation": { "ephemeral_5m_input_tokens": 0, "ephemeral_1h_input_tokens": 2315 },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-opus-5": {
+      "inputTokens": 20,
+      "outputTokens": 9822,
+      "cacheReadInputTokens": 557866,
+      "cacheCreationInputTokens": 40054,
+      "webSearchRequests": 0,
+      "costUSD": 0.925123,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "canonicalModel": "claude-opus-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": { "background": 0, "foreground": 0, "unset": 0 },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": { "parent": 0, "user": 0, "system": 0 },
+    "refused": { "depth_limit": 0, "concurrency_limit": 0, "budget": 0 },
+    "by_type": {}
+  },
+  "is_error": false,
+  "num_turns": 18,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Both files written.\n\n**Stage 2 report — `cal.com.processed/9d4522825bc39621a4d6385f7c13643e64142e10`, arm `claudecli_opus5_mcp_plumbline_rejection_selection_v4`**\n\nI read `ranked.json` in full before opening any gold file. Gold used: **`gold.json`** (no `golden.json` in this case dir); 7 gold paths, 3 excluded (1 test, 2 added-by-fix). Both the answer and the gold are **flat single-repo arrays** — no flattening was needed. Scored with `python3 score_arm.py …`, which exited 0; `result.json` carries its output verbatim.\n\nMetrics (scorer's, unedited):\n\n| metric | value |\n|---|---|\n| hits / gold_total | 4 / 7 |\n| recall@10 | 0.286 |\n| recall@20 | 0.429 |\n| recall@25 | 0.429 |\n| recall@50 | 0.571 |\n| recall@75 (= full list, 75 emitted, cap 75) | 0.571 |\n| precision@5 | 0.200 |\n| MRR | 0.500 |\n\nThe scorer does not compute precision@10, precision@20, F1@20 or F1_full_list — it emits only `precision@5` and `MRR` alongside the recall ladder. Per the rules I did not substitute my own arithmetic for those four cells; they are simply absent from this series. `degenerate_ks` is empty (the list is exactly as long as the cap).\n\nFound (with rank):\n- 2 — `apps/web/server/lib/[user]/getServerSideProps.ts`\n- 7 — `packages/features/profile/repositories/ProfileRepository.ts`\n- 12 — `packages/features/eventtypes/lib/defaultEvents.ts`\n- 47 — `apps/web/lib/team/[slug]/[type]/getServerSideProps.tsx`\n\nmissed_gold:\n- `apps/web/lib/apps/routing-forms/[...pages]/getServerSidePropsRoutingLink.ts`\n- `apps/web/lib/booking.ts`\n- `apps/web/modules/bookings/views/bookings-single-view.getServerSideProps.tsx`\n\nSurface verdict: **not comparable**, one reason — `cache_read=11931993` and `cache_creation=242086` are both nonzero, so the $9.61 figure is a warm-cache cost and cannot be put beside cold runs. The retrieval metrics are unaffected. Everything else is clean: `commands.log` is present and my independent count matches the scorer's exactly (collateral_damage 23, stakeout 22, the_receipts 14, case_file 3, manhunt 2, roll_call/blueprint/rap_sheet/ToolSearch 1 each; 68 calls total). No filesystem or shell tool appears; every tool is inside the launcher's `--allowedTools` (including `rap_sheet`, which entered the list on 2026-09-17), and `ToolSearch` is the schema loader, not a checkout read. `stakeout` was exercised 22 times, so the retriever the arm is named for is the one measured. The fold probe reports all five of the arm's own top-5 seeded into `collateral_damage` across all seven lenses.\n\nWhat the three misses share: they are the *consumer* server-side entry points for booking surfaces other than the two the run committed to. The arm locked onto the user/org and team **booking-page** axis — `[user]`, `[user]/[type]`, `org/[orgSlug]/…`, `team/[slug]/…` — and ranked that family densely and deeply, down to the embed and `queries.ts` variants. The three it never reached sit in adjacent booking surfaces that resolve the same branding through a different route: the routing-forms link page, the shared `lib/booking.ts` helper, and the booking-confirmation single view's own `getServerSideProps`. All three are `getServerSideProps`/lib-layer callers rather than view or repository code, and none of them carries the org/team-slug vocabulary the sweep was built around — `bookings-single-view.getServerSideProps.tsx` is the sharpest case, since its sibling `bookings-single-view.tsx` was ranked at 68 while the data-fetching half beside it was not.",
+  "ttft_ms": 1810,
+  "type": "result",
+  "duration_ms": 125947,
+  "uuid": "3da0b3f2-2615-4d92-ad84-98c6a81e533d",
+  "ttft_stream_ms": 1212,
+  "time_to_request_ms": 21,
+  "queued_turn_count": 0
+}

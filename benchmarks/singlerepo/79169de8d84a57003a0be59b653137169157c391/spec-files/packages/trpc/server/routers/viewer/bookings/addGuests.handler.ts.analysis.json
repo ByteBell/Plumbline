@@ -1,0 +1,763 @@
+{
+  "relativePath": "packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts",
+  "language": "typescript",
+  "sha256": "d2e1363518800731d2497b8406f7bb542e81726ce691ba5d26b052d742c96932",
+  "sizeBytes": 5712,
+  "tokenCount": 1428,
+  "lineCount": 185,
+  "analysedAt": "2026-09-04T15:43:01.102Z",
+  "analysis": {
+    "module": {
+      "purpose": "This handler authorizes users to add guests to an existing booking, persists attendee and response changes, updates connected calendars, and sends guest notification emails.",
+      "summary": "The file implements a tRPC booking mutation that loads a booking with related attendees, event, organizer, calendar, and meeting data. It validates access for team administrators, owners, organizers, or existing attendees; filters duplicate and blacklisted guests; creates attendee records; updates booking responses; constructs a localized calendar event; synchronizes calendar attendees; and sends notification emails. Calendar synchronization is performed as the primary external side effect, while email failures are logged without failing the mutation.",
+      "businessContext": "This supports scheduling workflows where participants can be added after a booking is created.\nFailure can leave attendee records, calendars, and guest notifications inconsistent.",
+      "classes": [
+        "AddGuestsOptions (~L17-22): Defines authenticated context and validated input for adding booking guests."
+      ],
+      "functions": [
+        "addGuestsHandler (~L23-184): Authorizes guest additions, updates booking data, synchronizes calendars, and sends notifications."
+      ],
+      "keywords": [
+        "booking attendee management",
+        "tRPC mutation",
+        "team authorization",
+        "blacklisted guest emails",
+        "calendar attendee synchronization",
+        "recurring event parsing",
+        "localized guest notifications",
+        "video call metadata"
+      ],
+      "ontologyConcepts": [
+        "authorization",
+        "booking modification",
+        "attendee deduplication",
+        "data persistence",
+        "calendar synchronization",
+        "notification delivery",
+        "localization",
+        "failure tolerance"
+      ],
+      "businessEntities": ["Booking", "Guest", "Attendee", "Organizer", "Event", "Calendar", "Team", "Video Call"],
+      "systemCapabilities": [
+        "Authorize booking guest additions",
+        "Persist new booking attendees",
+        "Synchronize external calendar attendees",
+        "Send guest addition notifications",
+        "Filter duplicate and blacklisted guests",
+        "Construct localized calendar event data"
+      ],
+      "configDependencies": ["BLACKLISTED_GUEST_EMAILS"],
+      "importsInternal": [
+        {
+          "spec": "../../../types",
+          "symbols": ["TrpcSessionUser"],
+          "anchor": {
+            "startLine": 14,
+            "endLine": 14
+          },
+          "resolvedRelativePath": "packages/trpc/server/types.ts",
+          "resolvedFileId": "packages/trpc/server/types.ts",
+          "resolvedHint": "packages/trpc/server/types.ts"
+        },
+        {
+          "spec": "./addGuests.schema",
+          "symbols": ["TAddGuestsInputSchema"],
+          "anchor": {
+            "startLine": 15,
+            "endLine": 15
+          },
+          "resolvedRelativePath": "packages/trpc/server/routers/viewer/bookings/addGuests.schema.ts",
+          "resolvedFileId": "packages/trpc/server/routers/viewer/bookings/addGuests.schema.ts",
+          "resolvedHint": "packages/trpc/server/routers/viewer/bookings/addGuests.schema.ts"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "@calcom/dayjs",
+          "symbols": ["dayjs"],
+          "package": "@calcom/dayjs",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 1,
+            "endLine": 1
+          }
+        },
+        {
+          "spec": "@calcom/emails",
+          "symbols": ["sendAddGuestsEmails"],
+          "package": "@calcom/emails",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 2,
+            "endLine": 2
+          }
+        },
+        {
+          "spec": "@calcom/lib/EventManager",
+          "symbols": ["EventManager"],
+          "package": "@calcom/lib",
+          "subpath": "EventManager",
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 3,
+            "endLine": 3
+          }
+        },
+        {
+          "spec": "@calcom/lib/isRecurringEvent",
+          "symbols": ["parseRecurringEvent"],
+          "package": "@calcom/lib",
+          "subpath": "isRecurringEvent",
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 4,
+            "endLine": 4
+          }
+        },
+        {
+          "spec": "@calcom/lib/server/getUsersCredentials",
+          "symbols": ["getUsersCredentialsIncludeServiceAccountKey"],
+          "package": "@calcom/lib",
+          "subpath": "server/getUsersCredentials",
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 5,
+            "endLine": 5
+          }
+        },
+        {
+          "spec": "@calcom/lib/server/i18n",
+          "symbols": ["getTranslation"],
+          "package": "@calcom/lib",
+          "subpath": "server/i18n",
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 6,
+            "endLine": 6
+          }
+        },
+        {
+          "spec": "@calcom/lib/server/queries/teams",
+          "symbols": ["isTeamAdmin", "isTeamOwner"],
+          "package": "@calcom/lib",
+          "subpath": "server/queries/teams",
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 7,
+            "endLine": 7
+          }
+        },
+        {
+          "spec": "@calcom/prisma",
+          "symbols": ["prisma"],
+          "package": "@calcom/prisma",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 8,
+            "endLine": 8
+          }
+        },
+        {
+          "spec": "@calcom/prisma/zod-utils",
+          "symbols": ["BookingResponses"],
+          "package": "@calcom/prisma",
+          "subpath": "zod-utils",
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 9,
+            "endLine": 9
+          }
+        },
+        {
+          "spec": "@calcom/types/Calendar",
+          "symbols": ["CalendarEvent"],
+          "package": "@calcom/types",
+          "subpath": "Calendar",
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 10,
+            "endLine": 10
+          }
+        },
+        {
+          "spec": "@trpc/server",
+          "symbols": ["TRPCError"],
+          "package": "@trpc/server",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": {
+            "startLine": 12,
+            "endLine": 12
+          }
+        }
+      ],
+      "sideEffects": {
+        "io": [
+          "Reads the booking, related attendees, event type, calendars, references, and organizer data from the database.",
+          "Reads the organizer record from the database.",
+          "Writes newly accepted attendees and updated guest responses to the database.",
+          "Logs an error to the console when sending add-guest emails fails."
+        ],
+        "network": [
+          "Updates calendar attendees through EventManager.",
+          "Sends add-guest emails through sendAddGuestsEmails."
+        ],
+        "env": ["Reads BLACKLISTED_GUEST_EMAILS from the environment."],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": []
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "addGuestsHandler",
+          "shape": "export const addGuestsHandler = async ({ ctx, input }: AddGuestsOptions) => {",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "TAddGuestsInputSchema",
+          "shape": "input: TAddGuestsInputSchema",
+          "resolvedRelativePath": "packages/trpc/server/routers/viewer/bookings/addGuests.schema.ts",
+          "resolvedFileId": "packages/trpc/server/routers/viewer/bookings/addGuests.schema.ts"
+        },
+        {
+          "name": "TrpcSessionUser",
+          "shape": "user: NonNullable<TrpcSessionUser>",
+          "resolvedRelativePath": "packages/trpc/server/types.ts",
+          "resolvedFileId": "packages/trpc/server/types.ts"
+        },
+        {
+          "name": "BookingResponses",
+          "shape": "const bookingResponses = booking.responses as BookingResponses;",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "CalendarEvent",
+          "shape": "const evt: CalendarEvent = {",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "booking lookup",
+          "intent": "Load the booking and all related data needed for authorization and updates.",
+          "structureKind": "io",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 27,
+            "endLine": 43
+          }
+        },
+        {
+          "name": "booking and permission validation",
+          "intent": "Reject missing bookings and callers without organizer, attendee, or team authority.",
+          "structureKind": "branch",
+          "predicate": "!booking",
+          "branchOutcomes": ["booking missing", "booking found"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 45,
+            "endLine": 57
+          }
+        },
+        {
+          "name": "guest filtering",
+          "intent": "Remove existing attendees and configured blacklisted guest emails.",
+          "structureKind": "branch",
+          "predicate": "uniqueGuests.length === 0",
+          "branchOutcomes": ["no acceptable guests", "one or more acceptable guests"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 71,
+            "endLine": 82
+          }
+        },
+        {
+          "name": "attendee persistence",
+          "intent": "Create accepted attendees and append accepted emails to booking responses.",
+          "structureKind": "io",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 93,
+            "endLine": 113
+          }
+        },
+        {
+          "name": "calendar event construction",
+          "intent": "Build the calendar event payload from booking, organizer, attendee, and reference data.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 115,
+            "endLine": 157
+          }
+        },
+        {
+          "name": "video call data attachment",
+          "intent": "Attach video call details when a video reference exists.",
+          "structureKind": "branch",
+          "predicate": "videoCallReference",
+          "branchOutcomes": ["video reference exists", "video reference absent"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 129,
+            "endLine": 165
+          }
+        },
+        {
+          "name": "calendar update and email notification",
+          "intent": "Update calendar attendees and attempt to send add-guest emails.",
+          "structureKind": "try",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 168,
+            "endLine": 181
+          }
+        },
+        {
+          "name": "success response",
+          "intent": "Return a fixed success message after calendar processing and email attempt.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": {
+            "startLine": 183,
+            "endLine": 183
+          }
+        }
+      ],
+      "representationFamily": "function-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "type",
+          "name": "AddGuestsOptions",
+          "signature": "type AddGuestsOptions = {\n  ctx: {\n    user: NonNullable<TrpcSessionUser>;\n  };\n  input: TAddGuestsInputSchema;\n};",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": {
+            "startLine": 17,
+            "endLine": 22
+          }
+        },
+        {
+          "kind": "function",
+          "name": "addGuestsHandler",
+          "signature": "export const addGuestsHandler = async ({ ctx, input }: AddGuestsOptions) => {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": {
+            "startLine": 23,
+            "endLine": 23
+          }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "type",
+          "name": "AddGuestsOptions",
+          "shape": "{\n  ctx: {\n    user: NonNullable<TrpcSessionUser>;\n  };\n  input: TAddGuestsInputSchema;\n}",
+          "discriminant": null,
+          "anchor": {
+            "startLine": 17,
+            "endLine": 22
+          }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": {
+        "paragraph": "",
+        "tokenEstimate": 0
+      },
+      "edgeCases": [
+        {
+          "inputShape": "Missing bookingId or booking that cannot be found",
+          "handled": true,
+          "behavior": "Throws TRPCError with code NOT_FOUND and message booking_not_found.",
+          "anchor": {
+            "startLine": 27,
+            "endLine": 45
+          }
+        },
+        {
+          "inputShape": "Caller who is not a team admin or owner, organizer, or attendee",
+          "handled": true,
+          "behavior": "Throws TRPCError with code FORBIDDEN and message you_do_not_have_permission.",
+          "anchor": {
+            "startLine": 47,
+            "endLine": 57
+          }
+        },
+        {
+          "inputShape": "Empty guests array",
+          "handled": true,
+          "behavior": "Produces no unique guests and throws TRPCError with code BAD_REQUEST and message emails_must_be_unique_valid.",
+          "anchor": {
+            "startLine": 75,
+            "endLine": 82
+          }
+        },
+        {
+          "inputShape": "Guests consisting only of existing attendees or configured blacklisted emails",
+          "handled": true,
+          "behavior": "Filters all guests out and throws TRPCError with code BAD_REQUEST and message emails_must_be_unique_valid.",
+          "anchor": {
+            "startLine": 75,
+            "endLine": 82
+          }
+        },
+        {
+          "inputShape": "Duplicate guest values within the input that are not existing attendees or blacklisted",
+          "handled": true,
+          "behavior": "Does not deduplicate the input values; repeated values remain in uniqueGuests and are persisted and appended to responses.",
+          "anchor": {
+            "startLine": 75,
+            "endLine": 110
+          }
+        },
+        {
+          "inputShape": "Configured blacklist emails with mixed casing",
+          "handled": true,
+          "behavior": "Lowercases blacklist entries before comparison, while guest values are compared without lowercasing.",
+          "anchor": {
+            "startLine": 71,
+            "endLine": 79
+          }
+        },
+        {
+          "inputShape": "Booking without a matching video reference",
+          "handled": true,
+          "behavior": "Leaves evt.videoCallData unset.",
+          "anchor": {
+            "startLine": 129,
+            "endLine": 165
+          }
+        },
+        {
+          "inputShape": "Email notification failure",
+          "handled": true,
+          "behavior": "Logs Error sending AddGuestsEmails and still returns the success response.",
+          "anchor": {
+            "startLine": 177,
+            "endLine": 183
+          }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": "TRPCError({ code: \"NOT_FOUND\", message: \"booking_not_found\" })",
+          "caught": null,
+          "action": "Immediately reject the handler.",
+          "fallback": null,
+          "anchor": {
+            "startLine": 45,
+            "endLine": 45
+          }
+        },
+        {
+          "thrown": "TRPCError({ code: \"FORBIDDEN\", message: \"you_do_not_have_permission\" })",
+          "caught": null,
+          "action": "Immediately reject the handler.",
+          "fallback": null,
+          "anchor": {
+            "startLine": 55,
+            "endLine": 57
+          }
+        },
+        {
+          "thrown": "TRPCError({ code: \"BAD_REQUEST\", message: \"emails_must_be_unique_valid\" })",
+          "caught": null,
+          "action": "Immediately reject the handler.",
+          "fallback": null,
+          "anchor": {
+            "startLine": 81,
+            "endLine": 82
+          }
+        },
+        {
+          "thrown": "Any error from sendAddGuestsEmails",
+          "caught": "err",
+          "action": "Log Error sending AddGuestsEmails and continue.",
+          "fallback": "Return { message: \"Guests added\" }.",
+          "anchor": {
+            "startLine": 177,
+            "endLine": 181
+          }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "ctx.user is present and contains id and email values used for authorization.",
+          "anchor": {
+            "startLine": 17,
+            "endLine": 25
+          }
+        },
+        {
+          "kind": "schema",
+          "description": "input conforms to TAddGuestsInputSchema and supplies bookingId and guests.",
+          "anchor": {
+            "startLine": 15,
+            "endLine": 25
+          }
+        },
+        {
+          "kind": "env",
+          "description": "BLACKLISTED_GUEST_EMAILS, when set, is a comma-separated string of email values.",
+          "anchor": {
+            "startLine": 71,
+            "endLine": 73
+          }
+        },
+        {
+          "kind": "schema",
+          "description": "The booking includes responses compatible with BookingResponses and the requested related records.",
+          "anchor": {
+            "startLine": 31,
+            "endLine": 41
+          }
+        }
+      ],
+      "ambiguities": [],
+      "stateModel": null,
+      "fileFingerprint": {
+        "lineCount": 0,
+        "declarationCount": 0,
+        "maxNestingDepth": 0,
+        "roughCyclomatic": 0
+      },
+      "reconstructionHints": {
+        "namingStyle": "unknown",
+        "returnStyle": "n/a",
+        "commentStyle": "none",
+        "dialect": ""
+      },
+      "moduleContractTests": [
+        {
+          "testId": "rejects-missing-booking",
+          "scenario": "A guest-addition request references a booking that does not exist.",
+          "given": ["prisma.booking.findUnique(...) returns null"],
+          "when": "addGuestsHandler({ ctx, input })",
+          "then": "throws new TRPCError({ code: \"NOT_FOUND\", message: \"booking_not_found\" })",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "rejects-unauthorized-user",
+          "scenario": "A user who is not a team administrator, organizer, or attendee attempts to add guests.",
+          "given": ["!isTeamAdminOrOwner && !isOrganizer && !isAttendee"],
+          "when": "addGuestsHandler({ ctx, input })",
+          "then": "throws new TRPCError({ code: \"FORBIDDEN\", message: \"you_do_not_have_permission\" })",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "rejects-non-unique-guests",
+          "scenario": "All requested guests are already attendees or are blacklisted.",
+          "given": ["uniqueGuests.length === 0"],
+          "when": "addGuestsHandler({ ctx, input })",
+          "then": "throws new TRPCError({ code: \"BAD_REQUEST\", message: \"emails_must_be_unique_valid\" })",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "creates-new-attendees",
+          "scenario": "An authorized user submits at least one valid guest email.",
+          "given": ["uniqueGuests.length > 0"],
+          "when": "addGuestsHandler({ ctx, input })",
+          "then": "bookingAttendees.attendees includes the newly created guests and the booking responses include uniqueGuests",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Pins persistence of both attendee records and guest response metadata."
+        },
+        {
+          "testId": "returns-success-after-guest-addition",
+          "scenario": "Guest records are persisted and calendar attendee updates complete.",
+          "given": ["await eventManager.updateCalendarAttendees(evt, booking) completes"],
+          "when": "addGuestsHandler({ ctx, input })",
+          "then": "returns { message: \"Guests added\" }",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "email-failure-does-not-fail-request",
+          "scenario": "Sending add-guest notification emails fails after the calendar update.",
+          "given": ["sendAddGuestsEmails(evt, guests) rejects"],
+          "when": "addGuestsHandler({ ctx, input })",
+          "then": "returns { message: \"Guests added\" }",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Notification delivery is best-effort and must not roll back the guest addition."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": ["AddGuestsOptions", "addGuestsHandler"],
+      "moduleLevelCode": "import dayjs from \"@calcom/dayjs\";\nimport { sendAddGuestsEmails } from \"@calcom/emails\";\nimport EventManager from \"@calcom/lib/EventManager\";\nimport { parseRecurringEvent } from \"@calcom/lib/isRecurringEvent\";\nimport { getUsersCredentialsIncludeServiceAccountKey } from \"@calcom/lib/server/getUsersCredentials\";\nimport { getTranslation } from \"@calcom/lib/server/i18n\";\nimport { isTeamAdmin, isTeamOwner } from \"@calcom/lib/server/queries/teams\";\nimport { prisma } from \"@calcom/prisma\";\nimport type { BookingResponses } from \"@calcom/prisma/zod-utils\";\nimport type { CalendarEvent } from \"@calcom/types/Calendar\";\n\nimport { TRPCError } from \"@trpc/server\";\n\nimport type { TrpcSessionUser } from \"../../../types\";\nimport type { TAddGuestsInputSchema } from \"./addGuests.schema\";",
+      "exports": [
+        {
+          "name": "addGuestsHandler",
+          "kind": "own",
+          "fromSpec": null,
+          "exportedAs": null
+        }
+      ],
+      "importSymbolMap": [
+        {
+          "symbol": "dayjs",
+          "module": "@calcom/dayjs",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "sendAddGuestsEmails",
+          "module": "@calcom/emails",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "EventManager",
+          "module": "@calcom/lib/EventManager",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "parseRecurringEvent",
+          "module": "@calcom/lib/isRecurringEvent",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "getUsersCredentialsIncludeServiceAccountKey",
+          "module": "@calcom/lib/server/getUsersCredentials",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "getTranslation",
+          "module": "@calcom/lib/server/i18n",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "isTeamAdmin",
+          "module": "@calcom/lib/server/queries/teams",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "isTeamOwner",
+          "module": "@calcom/lib/server/queries/teams",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "prisma",
+          "module": "@calcom/prisma",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "BookingResponses",
+          "module": "@calcom/prisma/zod-utils",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "CalendarEvent",
+          "module": "@calcom/types/Calendar",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "TRPCError",
+          "module": "@trpc/server",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "TrpcSessionUser",
+          "module": "../../../types",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "TAddGuestsInputSchema",
+          "module": "./addGuests.schema",
+          "alias": null,
+          "kind": "internal"
+        }
+      ],
+      "fileConstants": [],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts__AddGuestsOptions_1#type_alias:AddGuestsOptions",
+        "unitKind": "type_alias",
+        "name": "AddGuestsOptions",
+        "qualifiedName": "AddGuestsOptions",
+        "parentUnitId": null,
+        "startLine": 17,
+        "endLine": 22,
+        "isBehavioral": false,
+        "source": "type AddGuestsOptions = {\n  ctx: {\n    user: NonNullable<TrpcSessionUser>;\n  };\n  input: TAddGuestsInputSchema;\n};"
+      },
+      {
+        "unitId": "packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts__addGuestsHandler_2#function:addGuestsHandler",
+        "unitKind": "function",
+        "name": "addGuestsHandler",
+        "qualifiedName": "addGuestsHandler",
+        "parentUnitId": null,
+        "startLine": 23,
+        "endLine": 184,
+        "isBehavioral": true,
+        "source": "export const addGuestsHandler = async ({ ctx, input }: AddGuestsOptions) => {\n  const { user } = ctx;\n  const { bookingId, guests } = input;\n\n  const booking = await prisma.booking.findUnique({\n    where: {\n      id: bookingId,\n    },\n    include: {\n      attendees: true,\n      eventType: true,\n      destinationCalendar: true,\n      references: true,\n      user: {\n        include: {\n          destinationCalendar: true,\n          credentials: true,\n        },\n      },\n    },\n  });\n\n  if (!booking) throw new TRPCError({ code: \"NOT_FOUND\", message: \"booking_not_found\" });\n\n  const isTeamAdminOrOwner =\n    (await isTeamAdmin(user.id, booking.eventType?.teamId ?? 0)) ||\n    (await isTeamOwner(user.id, booking.eventType?.teamId ?? 0));\n\n  const isOrganizer = booking.userId === user.id;\n\n  const isAttendee = !!booking.attendees.find((attendee) => attendee.email === user.email);\n\n  if (!isTeamAdminOrOwner && !isOrganizer && !isAttendee) {\n    throw new TRPCError({ code: \"FORBIDDEN\", message: \"you_do_not_have_permission\" });\n  }\n\n  const organizer = await prisma.user.findUniqueOrThrow({\n    where: {\n      id: booking.userId || 0,\n    },\n    select: {\n      name: true,\n      email: true,\n      timeZone: true,\n      locale: true,\n    },\n  });\n\n  const blacklistedGuestEmails = process.env.BLACKLISTED_GUEST_EMAILS\n    ? process.env.BLACKLISTED_GUEST_EMAILS.split(\",\").map((email) => email.toLowerCase())\n    : [];\n\n  const uniqueGuests = guests.filter(\n    (guest) =>\n      !booking.attendees.some((attendee) => guest === attendee.email) &&\n      !blacklistedGuestEmails.includes(guest)\n  );\n\n  if (uniqueGuests.length === 0)\n    throw new TRPCError({ code: \"BAD_REQUEST\", message: \"emails_must_be_unique_valid\" });\n\n  const guestsFullDetails = uniqueGuests.map((guest) => {\n    return {\n      name: \"\",\n      email: guest,\n      timeZone: organizer.timeZone,\n      locale: organizer.locale,\n    };\n  });\n\n  const bookingResponses = booking.responses as BookingResponses;\n\n  const bookingAttendees = await prisma.booking.update({\n    where: {\n      id: bookingId,\n    },\n    include: {\n      attendees: true,\n    },\n    data: {\n      attendees: {\n        createMany: {\n          data: guestsFullDetails,\n        },\n      },\n      responses: {\n        ...bookingResponses,\n        guests: [...(bookingResponses?.guests || []), ...uniqueGuests],\n      },\n    },\n  });\n\n  const attendeesListPromises = bookingAttendees.attendees.map(async (attendee) => {\n    return {\n      name: attendee.name,\n      email: attendee.email,\n      timeZone: attendee.timeZone,\n      language: {\n        translate: await getTranslation(attendee.locale ?? \"en\", \"common\"),\n        locale: attendee.locale ?? \"en\",\n      },\n    };\n  });\n\n  const attendeesList = await Promise.all(attendeesListPromises);\n  const tOrganizer = await getTranslation(organizer.locale ?? \"en\", \"common\");\n  const videoCallReference = booking.references.find((reference) => reference.type.includes(\"_video\"));\n\n  const evt: CalendarEvent = {\n    title: booking.title || \"\",\n    type: (booking.eventType?.title as string) || booking?.title || \"\",\n    description: booking.description || \"\",\n    startTime: booking.startTime ? dayjs(booking.startTime).format() : \"\",\n    endTime: booking.endTime ? dayjs(booking.endTime).format() : \"\",\n    organizer: {\n      email: booking?.userPrimaryEmail ?? organizer.email,\n      name: organizer.name ?? \"Nameless\",\n      timeZone: organizer.timeZone,\n      language: { translate: tOrganizer, locale: organizer.locale ?? \"en\" },\n    },\n    hideOrganizerEmail: booking.eventType?.hideOrganizerEmail,\n    attendees: attendeesList,\n    uid: booking.uid,\n    iCalUID: booking.iCalUID,\n    recurringEvent: parseRecurringEvent(booking.eventType?.recurringEvent),\n    location: booking.location,\n    destinationCalendar: booking?.destinationCalendar\n      ? [booking?.destinationCalendar]\n      : booking?.user?.destinationCalendar\n      ? [booking?.user?.destinationCalendar]\n      : [],\n    seatsPerTimeSlot: booking.eventType?.seatsPerTimeSlot,\n    seatsShowAttendees: booking.eventType?.seatsShowAttendees,\n    customReplyToEmail: booking.eventType?.customReplyToEmail,\n  };\n\n  if (videoCallReference) {\n    evt.videoCallData = {\n      type: videoCallReference.type,\n      id: videoCallReference.meetingId,\n      password: videoCallReference?.meetingPassword,\n      url: videoCallReference.meetingUrl,\n    };\n  }\n\n  const credentials = await getUsersCredentialsIncludeServiceAccountKey(ctx.user);\n\n  const eventManager = new EventManager({\n    ...user,\n    credentials: [...credentials],\n  });\n\n  await eventManager.updateCalendarAttendees(evt, booking);\n\n  try {\n    await sendAddGuestsEmails(evt, guests);\n  } catch (err) {\n    console.log(\"Error sending AddGuestsEmails\");\n  }\n\n  return { message: \"Guests added\" };\n};"
+      }
+    ],
+    "extractedUnitCount": 2,
+    "unreconciledUnitNames": []
+  },
+  "tokenUsage": {
+    "inputTokens": 14555,
+    "outputTokens": 8130,
+    "costUsd": 0
+  },
+  "model": "us.openai.gpt-5.6-luna"
+}

@@ -1,0 +1,83 @@
+{
+  "duration_api_ms": 382690,
+  "stop_reason": "end_turn",
+  "session_id": "f0107c70-ae65-4ab2-bdf0-0c26f782b9cf",
+  "total_cost_usd": 9.362876,
+  "usage": {
+    "input_tokens": 1726766,
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "output_tokens": 28990,
+    "output_tokens_details": { "thinking_tokens": 21423 },
+    "server_tool_use": { "web_search_requests": 0, "web_fetch_requests": 0 },
+    "service_tier": "standard",
+    "cache_creation": { "ephemeral_1h_input_tokens": 0, "ephemeral_5m_input_tokens": 0 },
+    "inference_geo": "not_available",
+    "iterations": [
+      {
+        "input_tokens": 240003,
+        "output_tokens": 5189,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+        "cache_creation": { "ephemeral_5m_input_tokens": 0, "ephemeral_1h_input_tokens": 0 },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 4191,
+      "outputTokens": 21,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.004296,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "claude-haiku-4-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    },
+    "claude-opus-5": {
+      "inputTokens": 1726766,
+      "outputTokens": 28990,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 9.35858,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "canonicalModel": "claude-opus-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": { "background": 0, "foreground": 0, "unset": 0 },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": { "parent": 0, "user": 0, "system": 0 },
+    "refused": { "depth_limit": 0, "concurrency_limit": 0, "budget": 0 },
+    "by_type": {}
+  },
+  "is_error": false,
+  "num_turns": 23,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "CHECKPOINT 5 — resolved.\n\nThe anchor is TanStack Query's **Solid** adapter. `packages/solid-query/src/useQueries.ts` keeps a Solid `createStore` projection of the observer's result array and updates it with `setState(index, …)` inside a loop bounded by the *previous* length (`subscribeToObserver`, lines 271–292), plus `setState(<new array>)` / `setProxyState(getProxies())`, all of which merge by index and append but never truncate — so a shrunken queries array leaves a live, rendered tail. The sibling adapters do not: Svelte's `createQueries.svelte.ts` replaces the whole ref, and Vue's `useQueries.ts` assigns `state.value = getOptimisticResult()`. The contract it must be brought in line with is `QueriesObserver.setQueries` (lines 88–158), which converges in both directions — `difference(prevObservers, newObservers).forEach((observer) => observer.destroy())` — and, across the folder, tldraw's `IncrementalSetConstructor` (adds *and* removes, still yields the whole) and React's keyed child reconciliation.\n\n[{\"repo\": \"query\",\n  \"files\": [\"packages/solid-query/src/useQueries.ts\", \"packages/query-core/src/queriesObserver.ts\", \"packages/solid-query/src/useBaseQuery.ts\", \"packages/solid-query/src/QueryClient.ts\"],\n  \"pinpoints\": [{\"path\": \"packages/solid-query/src/useQueries.ts\", \"symbol\": \"subscribeToObserver\", \"lines\": \"271-292\", \"change\": \"The `for (let index = 0; index < dataResources_.length; index++)` loop calls `setState(index, unwrap(unwrappedResult))` per slot, so results are overwritten in place and never removed; make the store equal the new result array instead (e.g. `setState(reconcile(...))`).\"},\n                {\"path\": \"packages/solid-query/src/useQueries.ts\", \"symbol\": \"useQueries\", \"lines\": \"232-244\", \"change\": \"`createRenderEffect(on(() => queriesOptions().queries.length, () => setState(observer.getOptimisticResult(...)[1]()))` merges the new array by index without truncating; it must shrink `state` to the new length.\"},\n                {\"path\": \"packages/solid-query/src/useQueries.ts\", \"symbol\": \"getProxies\", \"lines\": \"334-340\", \"change\": \"`createRenderEffect(() => setProxyState(getProxies()))` writes the proxy array into the existing store slot-by-slot, so stale proxies for removed queries stay reactive and rendered.\"},\n                {\"path\": \"packages/query-core/src/queriesObserver.ts\", \"symbol\": \"setQueries\", \"lines\": \"88-158\", \"change\": \"Owns the converge-in-both-directions contract: `difference(prevObservers, newObservers).forEach((observer) => observer.destroy())` plus `this.#result = newResult`; the adapter projections must mirror this removal half.\"},\n                {\"path\": \"packages/query-core/src/queriesObserver.ts\", \"symbol\": \"#onUpdate\", \"lines\": \"298-304\", \"change\": \"`replaceAt` only substitutes at an existing index — the length-changing path is `setQueries`, so consumers must not treat per-index notification as the whole update.\"}]},\n {\"repo\": \"tldraw\",\n  \"files\": [\"packages/store/src/lib/IncrementalSetConstructor.ts\", \"packages/store/src/lib/Store.ts\", \"packages/store/src/lib/StoreQueries.ts\", \"packages/state/src/lib/types.ts\", \"packages/store/src/lib/setUtils.ts\"],\n  \"pinpoints\": [{\"path\": \"packages/store/src/lib/Store.ts\", \"symbol\": \"CollectionDiff\", \"lines\": \"54-58\", \"change\": \"Declares the symmetry the projection must honour — `added?: Set<T>` and `removed?: Set<T>` — removals are as much a part of an update as insertions.\"}]},\n {\"repo\": \"react\",\n  \"files\": [\"packages/react-reconciler/src/ReactChildFiber.js\"]},\n {\"repo\": \"xyflow\",\n  \"files\": [\"packages/system/src/utils/store.ts\", \"packages/react/src/utils/changes.ts\"]}]",
+  "ttft_ms": 1480,
+  "type": "result",
+  "duration_ms": 779135,
+  "uuid": "5e6f9255-1b6b-41b8-9735-eadbbf8495a6",
+  "ttft_stream_ms": 1023,
+  "time_to_request_ms": 24,
+  "queued_turn_count": 0
+}

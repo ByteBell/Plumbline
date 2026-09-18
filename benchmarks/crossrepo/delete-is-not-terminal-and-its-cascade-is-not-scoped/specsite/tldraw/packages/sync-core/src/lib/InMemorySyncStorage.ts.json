@@ -1,0 +1,2180 @@
+{
+  "schema": 2,
+  "kind": "file",
+  "repoName": "tldraw",
+  "file": {
+    "relativePath": "packages/sync-core/src/lib/InMemorySyncStorage.ts",
+    "language": "typescript",
+    "sizeBytes": 13909,
+    "tokenCount": 3478,
+    "model": "us.openai.gpt-5.6-luna",
+    "analysedAt": "2026-08-24T12:17:50.404Z",
+    "module": {
+      "purpose": "Provides an in-memory implementation of the synchronization storage contract, including document and object partitions, schemas, clocks, tombstones, snapshots, transactions, change feeds, and change notifications.",
+      "summary": "This module implements synchronous transactional storage for synchronized records. It initializes room state from snapshots, separates object-lane records from document records, tracks shared document clocks and tombstone history, supports snapshots and incremental diffs, freezes stored records, and notifies subscribers after committed changes. Tombstone pruning is throttled to avoid blocking request handling, while transaction iterators reject consumption after closure.",
+      "businessContext": "Supports collaborative document synchronization and room state management. Failures can lose records, tombstone history, schema state, or incremental changes required by connected clients.",
+      "classes": [
+        "InMemorySyncStorage (~L108-282): In-memory room storage for documents, objects, clocks, schemas, and tombstones",
+        "InMemorySyncStorageTransaction (~L288-425): Transaction-scoped access to shared records, metadata, and change history"
+      ],
+      "functions": [
+        "computeTombstonePruning (~L49-81): Selects buffered tombstones for safe history-preserving deletion",
+        "onChange (~L129-131): Registers a callback for committed storage changes",
+        "transaction (~L192-230): Executes a synchronous storage transaction and optionally emits its diff",
+        "getClock (~L232-233): Returns the current shared document clock",
+        "pruneTombstones (~L235-255): Throttled removal of excess tombstones from history",
+        "getSnapshot (~L257-265): Returns the pure-document room snapshot",
+        "getObjectsSnapshot (~L267-269): Returns records stored in the object lane",
+        "getObjectsByIds (~L271-281): Returns unique existing object-lane records for requested identifiers",
+        "getClock (~L304-305): Returns the transaction's captured clock",
+        "getNextClock (~L308-314): Advances the shared clock once per transaction",
+        "mapContaining (~L317-321): Locates the partition containing a record identifier",
+        "get (~L323-326): Retrieves a record from either storage partition",
+        "set (~L328-344): Validates, freezes, routes, and stores a record",
+        "delete (~L346-356): Removes an existing record and records its tombstone",
+        "entries (~L360-367): Iterates identifiers and records across both partitions",
+        "keys (~L369-376): Iterates identifiers across both partitions",
+        "values (~L378-385): Iterates record values across both partitions",
+        "getSchema (~L387-391): Returns the current serialized schema",
+        "setSchema (~L393-396): Replaces the transaction's serialized schema",
+        "getChangesSince (~L397-424): Builds an incremental or wipe-all synchronization diff"
+      ],
+      "keywords": [
+        "TLSyncStorage",
+        "AtomMap",
+        "tombstone pruning",
+        "incremental synchronization",
+        "object-store lane",
+        "document clock",
+        "serialized schema",
+        "MicrotaskNotifier",
+        "transactional storage"
+      ],
+      "ontologyConcepts": [
+        "transaction",
+        "change feed",
+        "tombstone history",
+        "partitioned storage",
+        "snapshot",
+        "schema migration",
+        "clock-based versioning"
+      ],
+      "businessEntities": ["Document", "Page", "Room", "Tombstone", "Record", "Schema"],
+      "systemCapabilities": [
+        "Store synchronized records in memory",
+        "Partition object records from documents",
+        "Generate snapshots and incremental diffs",
+        "Track and prune tombstone history",
+        "Execute synchronous storage transactions",
+        "Notify consumers after committed changes"
+      ],
+      "configDependencies": [],
+      "importsInternal": [
+        {
+          "spec": "./MicrotaskNotifier",
+          "symbols": ["MicrotaskNotifier"],
+          "anchor": { "startLine": 11, "endLine": 11 },
+          "resolvedRelativePath": "packages/sync-core/src/lib/MicrotaskNotifier.ts",
+          "resolvedFileId": "packages/sync-core/src/lib/MicrotaskNotifier.ts",
+          "resolvedHint": "packages/sync-core/src/lib/MicrotaskNotifier.ts"
+        },
+        {
+          "spec": "./TLSyncRoom",
+          "symbols": ["RoomSnapshot"],
+          "anchor": { "startLine": 12, "endLine": 12 },
+          "resolvedRelativePath": "packages/sync-core/src/lib/TLSyncRoom.ts",
+          "resolvedFileId": "packages/sync-core/src/lib/TLSyncRoom.ts",
+          "resolvedHint": "packages/sync-core/src/lib/TLSyncRoom.ts"
+        },
+        {
+          "spec": "./TLSyncStorage",
+          "symbols": [
+            "TLSyncForwardDiff",
+            "TLSyncStorage",
+            "TLSyncStorageGetChangesSinceResult",
+            "TLSyncStorageOnChangeCallbackProps",
+            "TLSyncStorageTransaction",
+            "TLSyncStorageTransactionCallback",
+            "TLSyncStorageTransactionOptions",
+            "TLSyncStorageTransactionResult"
+          ],
+          "anchor": { "startLine": 13, "endLine": 22 },
+          "resolvedRelativePath": "packages/sync-core/src/lib/TLSyncStorage.ts",
+          "resolvedFileId": "packages/sync-core/src/lib/TLSyncStorage.ts",
+          "resolvedHint": "packages/sync-core/src/lib/TLSyncStorage.ts"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "@tldraw/state",
+          "symbols": ["atom", "Atom", "transaction"],
+          "package": "@tldraw/state",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 1 }
+        },
+        {
+          "spec": "@tldraw/store",
+          "symbols": ["AtomMap", "devFreeze", "SerializedSchema", "UnknownRecord"],
+          "package": "@tldraw/store",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 2, "endLine": 2 }
+        },
+        {
+          "spec": "@tldraw/tlschema",
+          "symbols": ["createTLSchema", "DocumentRecordType", "PageRecordType", "TLDOCUMENT_ID", "TLPageId"],
+          "package": "@tldraw/tlschema",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 3, "endLine": 9 }
+        },
+        {
+          "spec": "@tldraw/utils",
+          "symbols": ["assert", "IndexKey", "objectMapEntries", "throttle"],
+          "package": "@tldraw/utils",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 10, "endLine": 10 }
+        }
+      ],
+      "sideEffects": {
+        "io": ["Logs transaction failures and rejected promise-returning transactions to the console."],
+        "network": [],
+        "env": [],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": []
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "TOMBSTONE_PRUNE_BUFFER_SIZE",
+          "shape": "export const TOMBSTONE_PRUNE_BUFFER_SIZE = 1000",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "MAX_TOMBSTONES",
+          "shape": "export const MAX_TOMBSTONES = 5000",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "TombstonePruneResult",
+          "shape": "export interface TombstonePruneResult",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "computeTombstonePruning",
+          "shape": "export function computeTombstonePruning({ tombstones, documentClock, maxTombstones = MAX_TOMBSTONES, pruneBufferSize = TOMBSTONE_PRUNE_BUFFER_SIZE }: { tombstones: Array<{ id: string; clock: number }>; documentClock: number; maxTombstones?: number; pruneBufferSize?: number }): TombstonePruneResult | null",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "DEFAULT_INITIAL_SNAPSHOT",
+          "shape": "export const DEFAULT_INITIAL_SNAPSHOT = { documentClock: 0, tombstoneHistoryStartsAtClock: 0, schema: createTLSchema().serialize(), documents: [...] }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "InMemorySyncStorage",
+          "shape": "export class InMemorySyncStorage<R extends UnknownRecord> implements TLSyncStorage<R>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "TLSyncStorage",
+          "shape": "TLSyncStorage<R>",
+          "resolvedRelativePath": "packages/sync-core/src/lib/TLSyncStorage.ts",
+          "resolvedFileId": "packages/sync-core/src/lib/TLSyncStorage.ts"
+        },
+        {
+          "name": "TLSyncStorageTransaction",
+          "shape": "TLSyncStorageTransaction<R>",
+          "resolvedRelativePath": "packages/sync-core/src/lib/TLSyncStorage.ts",
+          "resolvedFileId": "packages/sync-core/src/lib/TLSyncStorage.ts"
+        },
+        {
+          "name": "TLSyncStorageTransactionCallback",
+          "shape": "TLSyncStorageTransactionCallback<R, T>",
+          "resolvedRelativePath": "packages/sync-core/src/lib/TLSyncStorage.ts",
+          "resolvedFileId": "packages/sync-core/src/lib/TLSyncStorage.ts"
+        },
+        {
+          "name": "TLSyncStorageTransactionOptions",
+          "shape": "TLSyncStorageTransactionOptions",
+          "resolvedRelativePath": "packages/sync-core/src/lib/TLSyncStorage.ts",
+          "resolvedFileId": "packages/sync-core/src/lib/TLSyncStorage.ts"
+        },
+        {
+          "name": "TLSyncStorageTransactionResult",
+          "shape": "TLSyncStorageTransactionResult<T, R>",
+          "resolvedRelativePath": "packages/sync-core/src/lib/TLSyncStorage.ts",
+          "resolvedFileId": "packages/sync-core/src/lib/TLSyncStorage.ts"
+        },
+        {
+          "name": "TLSyncStorageGetChangesSinceResult",
+          "shape": "TLSyncStorageGetChangesSinceResult<R>",
+          "resolvedRelativePath": "packages/sync-core/src/lib/TLSyncStorage.ts",
+          "resolvedFileId": "packages/sync-core/src/lib/TLSyncStorage.ts"
+        },
+        {
+          "name": "TLSyncForwardDiff",
+          "shape": "TLSyncForwardDiff<R>",
+          "resolvedRelativePath": "packages/sync-core/src/lib/TLSyncStorage.ts",
+          "resolvedFileId": "packages/sync-core/src/lib/TLSyncStorage.ts"
+        },
+        {
+          "name": "TLSyncStorageOnChangeCallbackProps",
+          "shape": "TLSyncStorageOnChangeCallbackProps",
+          "resolvedRelativePath": "packages/sync-core/src/lib/TLSyncStorage.ts",
+          "resolvedFileId": "packages/sync-core/src/lib/TLSyncStorage.ts"
+        },
+        {
+          "name": "RoomSnapshot",
+          "shape": "RoomSnapshot",
+          "resolvedRelativePath": "packages/sync-core/src/lib/TLSyncRoom.ts",
+          "resolvedFileId": "packages/sync-core/src/lib/TLSyncRoom.ts"
+        },
+        {
+          "name": "SerializedSchema",
+          "shape": "SerializedSchema",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        { "name": "UnknownRecord", "shape": "UnknownRecord", "resolvedRelativePath": null, "resolvedFileId": null }
+      ],
+      "sectionMap": [
+        {
+          "name": "tombstone-pruning-calculation",
+          "intent": "Determines a buffered cutoff that preserves complete clock histories.",
+          "structureKind": "branch",
+          "predicate": "tombstones.length <= maxTombstones",
+          "branchOutcomes": ["no pruning", "pruning required"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 61, "endLine": 81 }
+        },
+        {
+          "name": "storage-initialization",
+          "intent": "Builds partitioned maps, clocks, schema, and tombstone state from a snapshot.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 148, "endLine": 190 }
+        },
+        {
+          "name": "transaction-execution",
+          "intent": "Runs a callback, closes its transaction, validates synchronous completion, and notifies changes.",
+          "structureKind": "try",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 201, "endLine": 230 }
+        },
+        {
+          "name": "throttled-pruning",
+          "intent": "Sorts and deletes excess tombstones after the throttle delay.",
+          "structureKind": "io",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 235, "endLine": 255 }
+        },
+        {
+          "name": "object-record-selection",
+          "intent": "Returns unique existing object records while preserving request order.",
+          "structureKind": "loop",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": "ids",
+          "terminationCondition": null,
+          "anchor": { "startLine": 271, "endLine": 281 }
+        },
+        {
+          "name": "transaction-partition-iteration",
+          "intent": "Iterates documents and objects while checking transaction validity.",
+          "structureKind": "loop",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": "[this.storage.documents, this.storage.objects]",
+          "terminationCondition": null,
+          "anchor": { "startLine": 360, "endLine": 385 }
+        },
+        {
+          "name": "change-feed-generation",
+          "intent": "Builds puts and deletes across both partitions from a requested clock.",
+          "structureKind": "loop",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": "[this.storage.documents, this.storage.objects]",
+          "terminationCondition": null,
+          "anchor": { "startLine": 397, "endLine": 424 }
+        }
+      ],
+      "representationFamily": "class-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "function",
+          "name": "computeTombstonePruning",
+          "signature": "export function computeTombstonePruning({\n\ttombstones,\n\tdocumentClock,\n\tmaxTombstones = MAX_TOMBSTONES,\n\tpruneBufferSize = TOMBSTONE_PRUNE_BUFFER_SIZE,\n}: {\n\ttombstones: Array<{ id: string; clock: number }>\n\tdocumentClock: number\n\tmaxTombstones?: number\n\tpruneBufferSize?: number\n}): TombstonePruneResult | null",
+          "generics": null,
+          "decorators": [],
+          "returnType": "TombstonePruneResult | null",
+          "exported": true,
+          "anchor": { "startLine": 49, "endLine": 59 }
+        },
+        {
+          "kind": "interface",
+          "name": "TombstonePruneResult",
+          "signature": "export interface TombstonePruneResult",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 32, "endLine": 35 }
+        },
+        {
+          "kind": "class",
+          "name": "InMemorySyncStorage",
+          "signature": "export class InMemorySyncStorage<R extends UnknownRecord> implements TLSyncStorage<R>",
+          "generics": "<R extends UnknownRecord>",
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 108, "endLine": 282 }
+        },
+        {
+          "kind": "method",
+          "name": "onChange",
+          "signature": "onChange(callback: (arg: TLSyncStorageOnChangeCallbackProps) => unknown): () => void",
+          "generics": null,
+          "decorators": [],
+          "returnType": "() => void",
+          "exported": false,
+          "anchor": { "startLine": 129, "endLine": 131 }
+        },
+        {
+          "kind": "method",
+          "name": "transaction",
+          "signature": "transaction<T>(\n\t\tcallback: TLSyncStorageTransactionCallback<R, T>,\n\t\topts?: TLSyncStorageTransactionOptions\n\t): TLSyncStorageTransactionResult<T, R>",
+          "generics": "<T>",
+          "decorators": [],
+          "returnType": "TLSyncStorageTransactionResult<T, R>",
+          "exported": false,
+          "anchor": { "startLine": 192, "endLine": 195 }
+        },
+        {
+          "kind": "method",
+          "name": "getClock",
+          "signature": "getClock(): number",
+          "generics": null,
+          "decorators": [],
+          "returnType": "number",
+          "exported": false,
+          "anchor": { "startLine": 232, "endLine": 233 }
+        },
+        {
+          "kind": "method",
+          "name": "getSnapshot",
+          "signature": "getSnapshot(): RoomSnapshot",
+          "generics": null,
+          "decorators": [],
+          "returnType": "RoomSnapshot",
+          "exported": false,
+          "anchor": { "startLine": 257, "endLine": 265 }
+        },
+        {
+          "kind": "method",
+          "name": "getObjectsSnapshot",
+          "signature": "getObjectsSnapshot(): RoomSnapshot['documents']",
+          "generics": null,
+          "decorators": [],
+          "returnType": "RoomSnapshot['documents']",
+          "exported": false,
+          "anchor": { "startLine": 267, "endLine": 269 }
+        },
+        {
+          "kind": "method",
+          "name": "getObjectsByIds",
+          "signature": "getObjectsByIds(ids: Iterable<string>): RoomSnapshot['documents']",
+          "generics": null,
+          "decorators": [],
+          "returnType": "RoomSnapshot['documents']",
+          "exported": false,
+          "anchor": { "startLine": 271, "endLine": 281 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "interface",
+          "name": "TombstonePruneResult",
+          "shape": "{\n\t/** The new value for tombstoneHistoryStartsAtClock */\n\tnewTombstoneHistoryStartsAtClock: number\n\t/** IDs of tombstones to delete */\n\tidsToDelete: string[]\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 32, "endLine": 35 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "Tombstone count at or below the configured maximum",
+          "handled": true,
+          "behavior": "Returns null and performs no pruning.",
+          "anchor": { "startLine": 61, "endLine": 63 }
+        },
+        {
+          "inputShape": "Multiple tombstones sharing the cutoff clock",
+          "handled": true,
+          "behavior": "Extends the cutoff so all tombstones for that clock are deleted together.",
+          "anchor": { "startLine": 67, "endLine": 71 }
+        },
+        {
+          "inputShape": "Snapshot with no tombstone history or history starting at the current clock",
+          "handled": true,
+          "behavior": "Initializes the tombstone map empty.",
+          "anchor": { "startLine": 179, "endLine": 185 }
+        },
+        {
+          "inputShape": "Transaction callback throws",
+          "handled": true,
+          "behavior": "Logs the error, closes the transaction, and rethrows it.",
+          "anchor": { "startLine": 208, "endLine": 212 }
+        },
+        {
+          "inputShape": "Transaction callback returns a promise",
+          "handled": true,
+          "behavior": "Logs and throws an error requiring a synchronous return value.",
+          "anchor": { "startLine": 214, "endLine": 223 }
+        },
+        {
+          "inputShape": "Delete request for an absent identifier",
+          "handled": true,
+          "behavior": "Returns without advancing the clock or creating a tombstone.",
+          "anchor": { "startLine": 349, "endLine": 351 }
+        },
+        {
+          "inputShape": "Iterator consumed after transaction closure",
+          "handled": true,
+          "behavior": "Throws an assertion error before yielding further values.",
+          "anchor": { "startLine": 301, "endLine": 302 }
+        },
+        {
+          "inputShape": "Requested change clock newer than the current clock",
+          "handled": true,
+          "behavior": "Resets the requested clock to -1 and produces a wipe-all-compatible diff.",
+          "anchor": { "startLine": 402, "endLine": 405 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": "<=",
+          "left": "tombstones.length",
+          "right": "maxTombstones",
+          "inclusive": true,
+          "intent": "Avoid pruning when the tombstone count is within the configured limit.",
+          "anchor": { "startLine": 61, "endLine": 61 }
+        },
+        {
+          "operator": "<",
+          "left": "cutoff",
+          "right": "tombstones.length",
+          "inclusive": false,
+          "intent": "Keep cutoff indexing within the tombstone array.",
+          "anchor": { "startLine": 67, "endLine": 67 }
+        },
+        {
+          "operator": "==",
+          "left": "tombstones[cutoff - 1]?.clock",
+          "right": "tombstones[cutoff]?.clock",
+          "inclusive": true,
+          "intent": "Detect adjacent tombstones sharing a clock boundary.",
+          "anchor": { "startLine": 68, "endLine": 68 }
+        },
+        {
+          "operator": ">",
+          "left": "this.tombstones.size",
+          "right": "MAX_TOMBSTONES",
+          "inclusive": false,
+          "intent": "Schedule pruning only when tombstones exceed the maximum.",
+          "anchor": { "startLine": 237, "endLine": 237 }
+        },
+        {
+          "operator": ">",
+          "left": "clockAfter",
+          "right": "clockBefore",
+          "inclusive": false,
+          "intent": "Determine whether a transaction changed storage.",
+          "anchor": { "startLine": 225, "endLine": 225 }
+        },
+        {
+          "operator": "==",
+          "left": "sinceClock",
+          "right": "clock",
+          "inclusive": true,
+          "intent": "Return no diff when the requested clock is current.",
+          "anchor": { "startLine": 400, "endLine": 400 }
+        },
+        {
+          "operator": ">",
+          "left": "sinceClock",
+          "right": "clock",
+          "inclusive": false,
+          "intent": "Treat a future requested clock as invalid and wipe history.",
+          "anchor": { "startLine": 402, "endLine": 402 }
+        },
+        {
+          "operator": "<",
+          "left": "sinceClock",
+          "right": "this.storage.tombstoneHistoryStartsAtClock.get()",
+          "inclusive": false,
+          "intent": "Require a full wipe when requested history predates retained tombstones.",
+          "anchor": { "startLine": 407, "endLine": 407 }
+        },
+        {
+          "operator": ">",
+          "left": "doc.lastChangedClock",
+          "right": "sinceClock",
+          "inclusive": false,
+          "intent": "Include records changed after the requested clock.",
+          "anchor": { "startLine": 411, "endLine": 411 }
+        },
+        {
+          "operator": ">",
+          "left": "clock",
+          "right": "sinceClock",
+          "inclusive": false,
+          "intent": "Include tombstones created after the requested clock.",
+          "anchor": { "startLine": 418, "endLine": 418 }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": null,
+          "caught": "error",
+          "action": "Logs the transaction error and rethrows it after closing the transaction.",
+          "fallback": null,
+          "anchor": { "startLine": 208, "endLine": 212 }
+        },
+        {
+          "thrown": "new Error('Transaction must return a value, not a promise')",
+          "caught": null,
+          "action": "Logs the error and aborts transaction result processing.",
+          "fallback": null,
+          "anchor": { "startLine": 220, "endLine": 222 }
+        },
+        {
+          "thrown": "assert(!this._closed, 'Transaction has ended, iterator cannot be consumed')",
+          "caught": null,
+          "action": "Rejects access to a closed transaction.",
+          "fallback": null,
+          "anchor": { "startLine": 301, "endLine": 302 }
+        },
+        {
+          "thrown": "assert(id === record.id, `Record id mismatch: key does not match record.id`)",
+          "caught": null,
+          "action": "Rejects storing a record whose key differs from its identifier.",
+          "fallback": null,
+          "anchor": { "startLine": 329, "endLine": 330 }
+        }
+      ],
+      "invariants": [
+        {
+          "kind": "invariant",
+          "description": "Stored records are frozen before entering either partition.",
+          "anchor": { "startLine": 157, "endLine": 160 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Object-lane records are excluded from the document snapshot.",
+          "anchor": { "startLine": 161, "endLine": 167 }
+        },
+        {
+          "kind": "ordering",
+          "description": "A transaction increments the shared document clock at most once.",
+          "anchor": { "startLine": 308, "endLine": 314 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "Successful clock changes notify registered listeners after transaction closure.",
+          "anchor": { "startLine": 224, "endLine": 230 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Tombstone history starts at or before the current document clock.",
+          "anchor": { "startLine": 170, "endLine": 177 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "Transaction callbacks must return synchronously rather than a promise.",
+          "anchor": { "startLine": 214, "endLine": 223 }
+        },
+        {
+          "kind": "caller",
+          "description": "Record keys passed to set must equal record.id.",
+          "anchor": { "startLine": 328, "endLine": 330 }
+        },
+        {
+          "kind": "schema",
+          "description": "The supplied snapshot uses the RoomSnapshot shape and compatible record types.",
+          "anchor": { "startLine": 133, "endLine": 147 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "Which record type names are configured as object-lane types by callers?",
+          "affects": "objectTypes and document/object partitioning",
+          "anchor": { "startLine": 133, "endLine": 148 },
+          "resolution": null
+        },
+        {
+          "question": "What downstream consumer behavior is expected when getChangesSince returns wipeAll true?",
+          "affects": "incremental synchronization and snapshot recovery",
+          "anchor": { "startLine": 407, "endLine": 423 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "sync",
+        "reentrant": false,
+        "ordering": "deterministic",
+        "notes": "Transactions execute synchronously through the state transaction primitive. Change callbacks are scheduled through MicrotaskNotifier, and tombstone pruning is throttled with leading execution disabled."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "returns-null-within-tombstone-limit",
+          "scenario": "The tombstone count does not exceed the configured maximum.",
+          "given": ["tombstones = [{ id: 'a', clock: 1 }]", "maxTombstones = 1"],
+          "when": "computeTombstonePruning({ tombstones, documentClock: 2, maxTombstones })",
+          "then": "result === null",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "prunes-buffer-and-preserves-clock-groups",
+          "scenario": "More tombstones than the limit exist and adjacent tombstones share a clock.",
+          "given": [
+            "tombstones = [{ id: 'a', clock: 1 }, { id: 'b', clock: 2 }, { id: 'c', clock: 2 }, { id: 'd', clock: 3 }]",
+            "maxTombstones = 2",
+            "pruneBufferSize = 0"
+          ],
+          "when": "computeTombstonePruning({ tombstones, documentClock: 3, maxTombstones, pruneBufferSize })",
+          "then": "result.idsToDelete === ['a', 'b', 'c'] && result.newTombstoneHistoryStartsAtClock === 3",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "History must not begin inside a clock group."
+        },
+        {
+          "testId": "routes-object-records-to-object-snapshot",
+          "scenario": "A record type configured as an object type is written in a transaction.",
+          "given": [
+            "storage = new InMemorySyncStorage({ objectTypes: ['asset'] })",
+            "record = { id: 'asset:1', typeName: 'asset' }"
+          ],
+          "when": "storage.transaction((txn) => txn.set(record.id, record))",
+          "then": "storage.getSnapshot().documents does not contain record && storage.getObjectsSnapshot() contains record",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Object-lane records must remain excluded from document snapshots."
+        },
+        {
+          "testId": "deletes-existing-record-with-tombstone",
+          "scenario": "An existing document is deleted inside a transaction.",
+          "given": [
+            "storage = new InMemorySyncStorage()",
+            "storage.transaction((txn) => txn.set('doc:1', { id: 'doc:1', typeName: 'doc' }))"
+          ],
+          "when": "storage.transaction((txn) => txn.delete('doc:1'))",
+          "then": "storage.get('doc:1') === undefined && storage.getSnapshot().tombstones['doc:1'] !== undefined",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "rejects-record-id-mismatch",
+          "scenario": "A transaction attempts to store a record under a different key.",
+          "given": ["storage = new InMemorySyncStorage()"],
+          "when": "storage.transaction((txn) => txn.set('doc:1', { id: 'doc:2', typeName: 'doc' }))",
+          "then": "the transaction throws an error matching 'Record id mismatch'",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "rejects-async-transaction-result",
+          "scenario": "A transaction callback returns a promise.",
+          "given": ["storage = new InMemorySyncStorage()"],
+          "when": "storage.transaction(() => Promise.resolve())",
+          "then": "the transaction throws an error matching 'Transaction must return a value, not a promise'",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Transactions are required to complete synchronously."
+        },
+        {
+          "testId": "returns-wipe-all-for-pruned-history",
+          "scenario": "Changes are requested from before the retained tombstone history.",
+          "given": [
+            "storage = new InMemorySyncStorage()",
+            "storage.tombstoneHistoryStartsAtClock.set(5)",
+            "storage.documentClock.set(6)"
+          ],
+          "when": "storage.transaction((txn) => txn.getChangesSince(4))",
+          "then": "result.wipeAll === true",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pruned history requires consumers to wipe and resynchronize."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "imports",
+        "file constants",
+        "TombstonePruneResult interface",
+        "computeTombstonePruning function",
+        "DEFAULT_INITIAL_SNAPSHOT constant",
+        "InMemorySyncStorage class",
+        "InMemorySyncStorageTransaction class"
+      ],
+      "moduleLevelCode": "import { atom, Atom, transaction } from '@tldraw/state'\nimport { AtomMap, devFreeze, SerializedSchema, UnknownRecord } from '@tldraw/store'\nimport {\n\tcreateTLSchema,\n\tDocumentRecordType,\n\tPageRecordType,\n\tTLDOCUMENT_ID,\n\tTLPageId,\n} from '@tldraw/tlschema'\nimport { assert, IndexKey, objectMapEntries, throttle } from '@tldraw/utils'\nimport { MicrotaskNotifier } from './MicrotaskNotifier'\nimport { RoomSnapshot } from './TLSyncRoom'\nimport {\n\tTLSyncForwardDiff,\n\tTLSyncStorage,\n\tTLSyncStorageGetChangesSinceResult,\n\tTLSyncStorageOnChangeCallbackProps,\n\tTLSyncStorageTransaction,\n\tTLSyncStorageTransactionCallback,\n\tTLSyncStorageTransactionOptions,\n\tTLSyncStorageTransactionResult,\n} from './TLSyncStorage'",
+      "exports": [
+        { "name": "TOMBSTONE_PRUNE_BUFFER_SIZE", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "MAX_TOMBSTONES", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "TombstonePruneResult", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "computeTombstonePruning", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "DEFAULT_INITIAL_SNAPSHOT", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "InMemorySyncStorage", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "atom", "module": "@tldraw/state", "alias": null, "kind": "external" },
+        { "symbol": "Atom", "module": "@tldraw/state", "alias": null, "kind": "external" },
+        { "symbol": "transaction", "module": "@tldraw/state", "alias": null, "kind": "external" },
+        { "symbol": "AtomMap", "module": "@tldraw/store", "alias": null, "kind": "external" },
+        { "symbol": "devFreeze", "module": "@tldraw/store", "alias": null, "kind": "external" },
+        { "symbol": "SerializedSchema", "module": "@tldraw/store", "alias": null, "kind": "external" },
+        { "symbol": "UnknownRecord", "module": "@tldraw/store", "alias": null, "kind": "external" },
+        { "symbol": "createTLSchema", "module": "@tldraw/tlschema", "alias": null, "kind": "external" },
+        { "symbol": "DocumentRecordType", "module": "@tldraw/tlschema", "alias": null, "kind": "external" },
+        { "symbol": "PageRecordType", "module": "@tldraw/tlschema", "alias": null, "kind": "external" },
+        { "symbol": "TLDOCUMENT_ID", "module": "@tldraw/tlschema", "alias": null, "kind": "external" },
+        { "symbol": "TLPageId", "module": "@tldraw/tlschema", "alias": null, "kind": "external" },
+        { "symbol": "assert", "module": "@tldraw/utils", "alias": null, "kind": "external" },
+        { "symbol": "IndexKey", "module": "@tldraw/utils", "alias": null, "kind": "external" },
+        { "symbol": "objectMapEntries", "module": "@tldraw/utils", "alias": null, "kind": "external" },
+        { "symbol": "throttle", "module": "@tldraw/utils", "alias": null, "kind": "external" },
+        { "symbol": "MicrotaskNotifier", "module": "./MicrotaskNotifier", "alias": null, "kind": "internal" },
+        { "symbol": "RoomSnapshot", "module": "./TLSyncRoom", "alias": null, "kind": "internal" },
+        { "symbol": "TLSyncForwardDiff", "module": "./TLSyncStorage", "alias": null, "kind": "internal" },
+        { "symbol": "TLSyncStorage", "module": "./TLSyncStorage", "alias": null, "kind": "internal" },
+        {
+          "symbol": "TLSyncStorageGetChangesSinceResult",
+          "module": "./TLSyncStorage",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "TLSyncStorageOnChangeCallbackProps",
+          "module": "./TLSyncStorage",
+          "alias": null,
+          "kind": "internal"
+        },
+        { "symbol": "TLSyncStorageTransaction", "module": "./TLSyncStorage", "alias": null, "kind": "internal" },
+        {
+          "symbol": "TLSyncStorageTransactionCallback",
+          "module": "./TLSyncStorage",
+          "alias": null,
+          "kind": "internal"
+        },
+        { "symbol": "TLSyncStorageTransactionOptions", "module": "./TLSyncStorage", "alias": null, "kind": "internal" },
+        { "symbol": "TLSyncStorageTransactionResult", "module": "./TLSyncStorage", "alias": null, "kind": "internal" }
+      ],
+      "fileConstants": [
+        { "name": "TOMBSTONE_PRUNE_BUFFER_SIZE", "value": "1000", "kind": "number" },
+        { "name": "MAX_TOMBSTONES", "value": "5000", "kind": "number" },
+        {
+          "name": "DEFAULT_INITIAL_SNAPSHOT",
+          "value": "{\n\tdocumentClock: 0,\n\ttombstoneHistoryStartsAtClock: 0,\n\tschema: createTLSchema().serialize(),\n\tdocuments: [\n\t\t{\n\t\t\tstate: DocumentRecordType.create({ id: TLDOCUMENT_ID }),\n\t\t\tlastChangedClock: 0,\n\t\t},\n\t\t{\n\t\t\tstate: PageRecordType.create({\n\t\t\t\tid: 'page:page' as TLPageId,\n\t\t\t\tname: 'Page 1',\n\t\t\t\tindex: 'a1' as IndexKey,\n\t\t\t}),\n\t\t\tlastChangedClock: 0,\n\t\t},\n\t],\n}",
+          "kind": "object"
+        }
+      ],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__computeTombstonePruning#function:computeTombstonePruning",
+        "unitKind": "function",
+        "name": "computeTombstonePruning",
+        "qualifiedName": "computeTombstonePruning",
+        "parentUnitId": null,
+        "startLine": 49,
+        "endLine": 81,
+        "isBehavioral": true,
+        "source": " *\n * @internal\n */\nexport function computeTombstonePruning({\n\ttombstones,\n\tdocumentClock,\n\tmaxTombstones = MAX_TOMBSTONES,\n\tpruneBufferSize = TOMBSTONE_PRUNE_BUFFER_SIZE,\n}: {\n\ttombstones: Array<{ id: string; clock: number }>\n\tdocumentClock: number\n\tmaxTombstones?: number\n\tpruneBufferSize?: number\n}): TombstonePruneResult | null {\n\tif (tombstones.length <= maxTombstones) {\n\t\treturn null\n\t}\n\n\t// Determine how many to delete, avoiding partial history for a clock value\n\tlet cutoff = pruneBufferSize + tombstones.length - maxTombstones\n\twhile (\n\t\tcutoff < tombstones.length &&\n\t\ttombstones[cutoff - 1]?.clock === tombstones[cutoff]?.clock\n\t) {\n\t\tcutoff++\n\t}\n\n\t// Set history start to the oldest remaining tombstone's clock\n\t// (or documentClock if we're deleting everything)\n\tconst oldestRemaining = tombstones[cutoff]\n\tconst newTombstoneHistoryStartsAtClock = oldestRemaining?.clock ?? documentClock\n\n\t// Collect the oldest tombstones to delete (first cutoff entries)",
+        "detail": {
+          "unitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__computeTombstonePruning#function:computeTombstonePruning",
+          "fileId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__computeTombstonePruning",
+          "unitKind": "function",
+          "name": "computeTombstonePruning",
+          "qualifiedName": "computeTombstonePruning",
+          "parentUnitId": null,
+          "startLine": 49,
+          "endLine": 81,
+          "signature": "export function computeTombstonePruning({\n\ttombstones,\n\tdocumentClock,\n\tmaxTombstones = MAX_TOMBSTONES,\n\tpruneBufferSize = TOMBSTONE_PRUNE_BUFFER_SIZE,\n}: {\n\ttombstones: Array<{ id: string; clock: number }>\n\tdocumentClock: number\n\tmaxTombstones?: number\n\tpruneBufferSize?: number\n}): TombstonePruneResult | null",
+          "parameters": [
+            {
+              "name": "tombstones",
+              "type": "Array<{ id: string; clock: number }>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "documentClock",
+              "type": "number",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "maxTombstones",
+              "type": "number",
+              "default": "MAX_TOMBSTONES",
+              "optional": true,
+              "variadic": false,
+              "order": 2
+            },
+            {
+              "name": "pruneBufferSize",
+              "type": "number",
+              "default": "TOMBSTONE_PRUNE_BUFFER_SIZE",
+              "optional": true,
+              "variadic": false,
+              "order": 3
+            }
+          ],
+          "returnType": "TombstonePruneResult | null",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "tombstones contains tombstone records with string ids and numeric clocks.",
+            "tombstones are ordered from oldest to newest for the returned pruning plan to represent the oldest entries.",
+            "documentClock is the current document clock used when no tombstones remain after pruning."
+          ],
+          "postconditions": [
+            "Returns null when tombstones.length is less than or equal to maxTombstones.",
+            "When pruning is required, the returned plan identifies the first cutoff entries as tombstones to delete.",
+            "When pruning is required, the returned history-start clock is the clock of the oldest remaining tombstone, or documentClock when all tombstones are deleted.",
+            "The cutoff is advanced as needed so tombstones sharing the boundary clock are not partially deleted."
+          ],
+          "invariants": [
+            "Tombstones at the same clock value as the deletion boundary are retained together rather than split.",
+            "Only a prefix of the tombstones array is selected for deletion."
+          ],
+          "edgeCases": [
+            "When tombstones is empty or its length equals maxTombstones, returns null.",
+            "When tombstones.length exceeds maxTombstones, computes a pruning cutoff including the configured prune buffer.",
+            "When the cutoff reaches the end of the array, uses documentClock as the new tombstone history start.",
+            "When multiple tombstones share the clock at the initial cutoff boundary, advances the cutoff until that clock group is no longer split."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["TombstonePruneResult", "MAX_TOMBSTONES", "TOMBSTONE_PRUNE_BUFFER_SIZE"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Determines whether tombstones exceed the configured limit and, when they do, returns a pruning plan that removes the oldest eligible tombstones without splitting a clock group. Returns null when pruning is unnecessary.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "computeTombstonePruning is called.",
+              "then": "The result is null and no pruning plan is produced.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "computeTombstonePruning is called.",
+              "then": "The deletion cutoff advances past the complete shared-clock group, so that group is not partially deleted.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "computeTombstonePruning is called.",
+              "then": "The returned new tombstone history start clock is documentClock.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "234061003aaa83a08ea743c7bf051e4468b43588b89f372ee7f04687d447179e"
+        }
+      },
+      {
+        "unitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorage#class:InMemorySyncStorage",
+        "unitKind": "class",
+        "name": "InMemorySyncStorage",
+        "qualifiedName": "InMemorySyncStorage",
+        "parentUnitId": null,
+        "startLine": 108,
+        "endLine": 282,
+        "isBehavioral": true,
+        "source": "\t],\n}\n\n/**\n * In-memory implementation of TLSyncStorage using AtomMap for documents and tombstones,\n * and atoms for clock values. This is the default storage implementation used by TLSyncRoom.\n *\n * @public\n */\nexport class InMemorySyncStorage<R extends UnknownRecord> implements TLSyncStorage<R> {\n\t/** @internal */\n\tdocuments: AtomMap<string, { state: R; lastChangedClock: number }>\n\t/**\n\t * Object-store lane records, partitioned out of `documents` so they never appear in the\n\t * document snapshot. They share the same clock, tombstones, and transactions as documents.\n\t * @internal\n\t */\n\tobjects: AtomMap<string, { state: R; lastChangedClock: number }>\n\t/** @internal */\n\treadonly objectTypes: ReadonlySet<string>\n\t/** @internal */\n\ttombstones: AtomMap<string, number>\n\t/** @internal */\n\tschema: Atom<SerializedSchema>\n\t/** @internal */\n\tdocumentClock: Atom<number>\n\t/** @internal */\n\ttombstoneHistoryStartsAtClock: Atom<number>\n\n\tprivate notifier = new MicrotaskNotifier<[TLSyncStorageOnChangeCallbackProps]>()\n\tonChange(callback: (arg: TLSyncStorageOnChangeCallbackProps) => unknown): () => void {\n\t\treturn this.notifier.register(callback)\n\t}\n\n\tconstructor({\n\t\tsnapshot = DEFAULT_INITIAL_SNAPSHOT,\n\t\tobjectTypes,\n\t\tonChange,\n\t}: {\n\t\tsnapshot?: RoomSnapshot\n\t\t/**\n\t\t * Record type names stored in the object-store lane. Records of these types are routed to\n\t\t * a separate partition: excluded from `getSnapshot()`, returned by `getObjectsSnapshot()`.\n\t\t */\n\t\tobjectTypes?: readonly string[]\n\t\tonChange?(arg: TLSyncStorageOnChangeCallbackProps): unknown\n\t} = {}) {\n\t\tthis.objectTypes = new Set(objectTypes ?? [])\n\t\tconst maxClockValue = Math.max(\n\t\t\t0,\n\t\t\t...Object.values(snapshot.tombstones ?? {}),\n\t\t\t...Object.values(snapshot.documents.map((d) => d.lastChangedClock))\n\t\t)\n\t\t// route snapshot entries into their partitions (a seed snapshot may carry object-lane\n\t\t// records merged in, e.g. loaded from a separate persistence lane)\n\t\tconst toEntry = (\n\t\t\td: RoomSnapshot['documents'][number]\n\t\t): [string, { state: R; lastChangedClock: number }] => [\n\t\t\td.state.id,\n\t\t\t{ state: devFreeze(d.state) as R, lastChangedClock: d.lastChangedClock },\n\t\t]\n\t\tthis.documents = new AtomMap(\n\t\t\t'room documents',\n\t\t\tsnapshot.documents.filter((d) => !this.objectTypes.has(d.state.typeName)).map(toEntry)\n\t\t)\n\t\tthis.objects = new AtomMap(\n\t\t\t'room objects',\n\t\t\tsnapshot.documents.filter((d) => this.objectTypes.has(d.state.typeName)).map(toEntry)\n\t\t)\n\t\tconst documentClock = Math.max(maxClockValue, snapshot.documentClock ?? snapshot.clock ?? 0)\n\n\t\tthis.documentClock = atom('document clock', documentClock)\n\t\t// math.min to make sure the tombstone history starts at or before the document clock\n\t\tconst tombstoneHistoryStartsAtClock = Math.min(\n\t\t\tsnapshot.tombstoneHistoryStartsAtClock ?? documentClock,\n\t\t\tdocumentClock\n\t\t)\n\t\tthis.tombstoneHistoryStartsAtClock = atom(\n\t\t\t'tombstone history starts at clock',\n\t\t\ttombstoneHistoryStartsAtClock\n\t\t)\n\t\t// eslint-disable-next-line @typescript-eslint/no-deprecated\n\t\tthis.schema = atom('schema', snapshot.schema ?? createTLSchema().serializeEarliestVersion())\n\t\tthis.tombstones = new AtomMap(\n\t\t\t'room tombstones',\n\t\t\t// If the tombstone history starts now (or we didn't have the\n\t\t\t// tombstoneHistoryStartsAtClock) then there are no tombstones\n\t\t\ttombstoneHistoryStartsAtClock === documentClock\n\t\t\t\t? []\n\t\t\t\t: objectMapEntries(snapshot.tombstones ?? {})\n\t\t)\n\t\tif (onChange) {\n\t\t\tthis.onChange(onChange)\n\t\t}\n\t}\n\n\ttransaction<T>(\n\t\tcallback: TLSyncStorageTransactionCallback<R, T>,\n\t\topts?: TLSyncStorageTransactionOptions\n\t): TLSyncStorageTransactionResult<T, R> {\n\t\tconst clockBefore = this.documentClock.get()\n\t\tconst trackChanges = opts?.emitChanges === 'always'\n\t\tconst txn = new InMemorySyncStorageTransaction<R>(this)\n\t\tlet result: T\n\t\tlet changes: TLSyncForwardDiff<R> | undefined\n\t\ttry {\n\t\t\tresult = transaction(() => {\n\t\t\t\treturn callback(txn as any)\n\t\t\t}) as T\n\t\t\tif (trackChanges) {\n\t\t\t\tchanges = txn.getChangesSince(clockBefore)?.diff\n\t\t\t}\n\t\t} catch (error) {\n\t\t\tconsole.error('Error in transaction', error)\n\t\t\tthrow error\n\t\t} finally {\n\t\t\ttxn.close()\n\t\t}\n\t\tif (\n\t\t\ttypeof result === 'object' &&\n\t\t\tresult &&\n\t\t\t'then' in result &&\n\t\t\ttypeof result.then === 'function'\n\t\t) {\n\t\t\tconst err = new Error('Transaction must return a value, not a promise')\n\t\t\tconsole.error(err)\n\t\t\tthrow err\n\t\t}\n\n\t\tconst clockAfter = this.documentClock.get()\n\t\tconst didChange = clockAfter > clockBefore\n\t\tif (didChange) {\n\t\t\tthis.notifier.notify({ id: opts?.id, documentClock: clockAfter })\n\t\t}\n\t\t// InMemorySyncStorage applies changes verbatim, so we only emit changes\n\t\t// when 'always' is specified (not for 'when-different')\n\t\treturn { documentClock: clockAfter, didChange: clockAfter > clockBefore, result, changes }\n\t}\n\n\tgetClock(): number {\n\t\treturn this.documentClock.get()\n\t}\n\n\t/** @internal */\n\tpruneTombstones = throttle(\n\t\t() => {\n\t\t\tif (this.tombstones.size > MAX_TOMBSTONES) {\n\t\t\t\t// Convert to array and sort by clock ascending (oldest first)\n\t\t\t\tconst tombstones = Array.from(this.tombstones.entries())\n\t\t\t\t\t.map(([id, clock]) => ({ id, clock }))\n\t\t\t\t\t.sort((a, b) => a.clock - b.clock)\n\n\t\t\t\tconst result = computeTombstonePruning({\n\t\t\t\t\ttombstones,\n\t\t\t\t\tdocumentClock: this.documentClock.get(),\n\t\t\t\t})\n\t\t\t\tif (result) {\n\t\t\t\t\tthis.tombstoneHistoryStartsAtClock.set(result.newTombstoneHistoryStartsAtClock)\n\t\t\t\t\tthis.tombstones.deleteMany(result.idsToDelete)\n\t\t\t\t}\n\t\t\t}\n\t\t},\n\t\t1000,\n\t\t// prevent this from running synchronously to avoid blocking requests\n\t\t{ leading: false }\n\t)\n\n\tgetSnapshot(): RoomSnapshot {\n\t\t// object-lane records live in their own partition, so the document snapshot is\n\t\t// pure-document by construction\n\t\treturn {\n\t\t\ttombstoneHistoryStartsAtClock: this.tombstoneHistoryStartsAtClock.get(),\n\t\t\tdocumentClock: this.documentClock.get(),\n\t\t\tdocuments: Array.from(this.documents.values()),\n\t\t\ttombstones: Object.fromEntries(this.tombstones.entries()),",
+        "detail": {
+          "unitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorage#class:InMemorySyncStorage",
+          "fileId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorage",
+          "unitKind": "class",
+          "name": "InMemorySyncStorage",
+          "qualifiedName": "InMemorySyncStorage",
+          "parentUnitId": null,
+          "startLine": 108,
+          "endLine": 282,
+          "signature": "export class InMemorySyncStorage<R extends UnknownRecord> implements TLSyncStorage<R>",
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": ["R extends UnknownRecord"],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": ["TLSyncStorage<R>"],
+          "members": [
+            {
+              "name": "documents",
+              "kind": "property",
+              "type": "AtomMap<string, { state: R; lastChangedClock: number }>",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "objects",
+              "kind": "property",
+              "type": "AtomMap<string, { state: R; lastChangedClock: number }>",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "objectTypes",
+              "kind": "property",
+              "type": "ReadonlySet<string>",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "tombstones",
+              "kind": "property",
+              "type": "AtomMap<string, number>",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "schema",
+              "kind": "property",
+              "type": "Atom<SerializedSchema>",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "documentClock",
+              "kind": "property",
+              "type": "Atom<number>",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "tombstoneHistoryStartsAtClock",
+              "kind": "property",
+              "type": "Atom<number>",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "notifier",
+              "kind": "property",
+              "type": "MicrotaskNotifier<[TLSyncStorageOnChangeCallbackProps]>",
+              "default": "new MicrotaskNotifier<[TLSyncStorageOnChangeCallbackProps]>()",
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "onChange",
+              "kind": "method",
+              "type": "(callback: (arg: TLSyncStorageOnChangeCallbackProps) => unknown) => ()",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "constructor",
+              "kind": "constructor",
+              "type": null,
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "transaction",
+              "kind": "method",
+              "type": "<T>(callback: TLSyncStorageTransactionCallback<R, T>, opts?: TLSyncStorageTransactionOptions) => TLSyncStorageTransactionResult<T, R>",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "getClock",
+              "kind": "method",
+              "type": "() => number",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "pruneTombstones",
+              "kind": "property",
+              "type": null,
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "getSnapshot",
+              "kind": "method",
+              "type": "() => RoomSnapshot",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "getObjectsByIds",
+              "kind": "method",
+              "type": null,
+              "default": null,
+              "visibility": "public",
+              "static": false
+            }
+          ],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "In-memory implementation of TLSyncStorage for room documents and object-lane records. It exposes storage state, transactions, snapshots, change notifications, and tombstone management through the TLSyncStorage contract.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "07d558fef0b78b67123fb8a939aa8abb183a43b4d63ad8ab8ae98552b0be1932"
+        }
+      },
+      {
+        "unitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorage.transaction#method:InMemorySyncStorage.transaction",
+        "unitKind": "method",
+        "name": "transaction",
+        "qualifiedName": "InMemorySyncStorage.transaction",
+        "parentUnitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorage#class:InMemorySyncStorage",
+        "startLine": 192,
+        "endLine": 230,
+        "isBehavioral": true,
+        "source": "\t\t\t'room tombstones',\n\t\t\t// If the tombstone history starts now (or we didn't have the\n\t\t\t// tombstoneHistoryStartsAtClock) then there are no tombstones\n\t\t\ttombstoneHistoryStartsAtClock === documentClock\n\t\t\t\t? []\n\t\t\t\t: objectMapEntries(snapshot.tombstones ?? {})\n\t\t)\n\t\tif (onChange) {\n\t\t\tthis.onChange(onChange)\n\t\t}\n\t}\n\n\ttransaction<T>(\n\t\tcallback: TLSyncStorageTransactionCallback<R, T>,\n\t\topts?: TLSyncStorageTransactionOptions\n\t): TLSyncStorageTransactionResult<T, R> {\n\t\tconst clockBefore = this.documentClock.get()\n\t\tconst trackChanges = opts?.emitChanges === 'always'\n\t\tconst txn = new InMemorySyncStorageTransaction<R>(this)\n\t\tlet result: T\n\t\tlet changes: TLSyncForwardDiff<R> | undefined\n\t\ttry {\n\t\t\tresult = transaction(() => {\n\t\t\t\treturn callback(txn as any)\n\t\t\t}) as T\n\t\t\tif (trackChanges) {\n\t\t\t\tchanges = txn.getChangesSince(clockBefore)?.diff\n\t\t\t}\n\t\t} catch (error) {\n\t\t\tconsole.error('Error in transaction', error)\n\t\t\tthrow error\n\t\t} finally {\n\t\t\ttxn.close()\n\t\t}\n\t\tif (\n\t\t\ttypeof result === 'object' &&\n\t\t\tresult &&\n\t\t\t'then' in result &&\n\t\t\ttypeof result.then === 'function'",
+        "detail": {
+          "unitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorage.transaction#method:InMemorySyncStorage.transaction",
+          "fileId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorage.transaction",
+          "unitKind": "method",
+          "name": "transaction",
+          "qualifiedName": "InMemorySyncStorage.transaction",
+          "parentUnitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorage#class:InMemorySyncStorage",
+          "startLine": 192,
+          "endLine": 230,
+          "signature": "transaction<T>(callback: TLSyncStorageTransactionCallback<R, T>, opts?: TLSyncStorageTransactionOptions): TLSyncStorageTransactionResult<T, R>",
+          "parameters": [
+            {
+              "name": "callback",
+              "type": "TLSyncStorageTransactionCallback<R, T>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "opts",
+              "type": "TLSyncStorageTransactionOptions",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "TLSyncStorageTransactionResult<T, R>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": ["T"],
+          "logicOutline": [],
+          "preconditions": [
+            "The callback must be callable.",
+            "The transaction callback is expected to complete synchronously."
+          ],
+          "postconditions": [
+            "The transaction is closed after callback execution, whether the callback succeeds or throws.",
+            "On normal completion, the callback result is returned through TLSyncStorageTransactionResult.",
+            "When opts.emitChanges is exactly 'always', changes are collected from the transaction relative to the document clock captured before callback execution."
+          ],
+          "invariants": [
+            "The document clock used as the change-tracking baseline is captured before the callback runs.",
+            "The transaction is closed exactly through the finally path after callback execution.",
+            "Callback-thrown errors are not converted into successful results."
+          ],
+          "edgeCases": [
+            "When opts is omitted or emitChanges is not 'always', change tracking is not requested.",
+            "When emitChanges is 'always' but the transaction has no changes since the starting clock, the changes value is absent.",
+            "When the callback throws, the error is logged and rethrown, and the transaction is still closed.",
+            "If the callback returns a promise-like value, the method remains synchronous and does not await it."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["The original error thrown by the transaction callback is rethrown unchanged."],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": null
+          },
+          "stateMutations": [
+            "Storage state may be mutated by operations performed through the transaction callback.",
+            "The transaction object's closed state is updated during cleanup."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "this.documentClock.get", "source": "InMemorySyncStorage", "kind": "internal" },
+            { "name": "transaction", "source": "imported transaction utility", "kind": "external" },
+            { "name": "callback", "source": "caller", "kind": "external" },
+            { "name": "txn.getChangesSince", "source": "InMemorySyncStorageTransaction", "kind": "internal" },
+            { "name": "txn.close", "source": "InMemorySyncStorageTransaction", "kind": "internal" },
+            { "name": "console.error", "source": "runtime", "kind": "external" }
+          ],
+          "symbolReferences": [
+            "R",
+            "T",
+            "TLSyncStorageTransactionCallback",
+            "TLSyncStorageTransactionOptions",
+            "TLSyncStorageTransactionResult",
+            "TLSyncForwardDiff"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Executes a storage callback within a transaction and returns its result, optionally including the changes produced since the transaction began. Callback failures are logged, propagated, and still cause the transaction to be closed.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "transaction is called.",
+              "then": "The returned transaction result contains the callback's value and the forward diff generated since the document clock captured before the callback.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "transaction is called.",
+              "then": "The same error is rethrown after being logged, and transaction cleanup still closes the transaction.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "d65544f694aef55e65ceff78681871f4d906ca36b6da8ba29b985e9361644a37"
+        }
+      },
+      {
+        "unitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorage.pruneTombstones#method:InMemorySyncStorage.pruneTombstones",
+        "unitKind": "method",
+        "name": "pruneTombstones",
+        "qualifiedName": "InMemorySyncStorage.pruneTombstones",
+        "parentUnitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorage#class:InMemorySyncStorage",
+        "startLine": 235,
+        "endLine": 255,
+        "isBehavioral": true,
+        "source": "\t\t}\n\n\t\tconst clockAfter = this.documentClock.get()\n\t\tconst didChange = clockAfter > clockBefore\n\t\tif (didChange) {\n\t\t\tthis.notifier.notify({ id: opts?.id, documentClock: clockAfter })\n\t\t}\n\t\t// InMemorySyncStorage applies changes verbatim, so we only emit changes\n\t\t// when 'always' is specified (not for 'when-different')\n\t\treturn { documentClock: clockAfter, didChange: clockAfter > clockBefore, result, changes }\n\t}\n\n\tgetClock(): number {\n\t\treturn this.documentClock.get()\n\t}\n\n\t/** @internal */\n\tpruneTombstones = throttle(\n\t\t() => {\n\t\t\tif (this.tombstones.size > MAX_TOMBSTONES) {\n\t\t\t\t// Convert to array and sort by clock ascending (oldest first)",
+        "detail": {
+          "unitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorage.pruneTombstones#method:InMemorySyncStorage.pruneTombstones",
+          "fileId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorage.pruneTombstones",
+          "unitKind": "method",
+          "name": "pruneTombstones",
+          "qualifiedName": "InMemorySyncStorage.pruneTombstones",
+          "parentUnitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorage#class:InMemorySyncStorage",
+          "startLine": 235,
+          "endLine": 255,
+          "signature": "pruneTombstones = throttle(() => { ... })",
+          "parameters": [],
+          "returnType": "void",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [
+            "If the tombstone collection exceeds MAX_TOMBSTONES, the oldest tombstones are removed so the collection is bounded by the configured maximum.",
+            "If the tombstone collection does not exceed MAX_TOMBSTONES, tombstone contents are unchanged."
+          ],
+          "invariants": [
+            "Tombstones are selected for removal in ascending clock order, oldest first.",
+            "The operation does not add tombstones."
+          ],
+          "edgeCases": [
+            "When the tombstone collection size is at or below MAX_TOMBSTONES, no pruning occurs.",
+            "When the tombstone collection exceeds MAX_TOMBSTONES, entries with the lowest clocks are pruned first.",
+            "Repeated calls are throttled according to the throttle wrapper rather than necessarily executing immediately on every invocation."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": ["The in-memory tombstones collection is mutated by removing selected oldest entries."],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["MAX_TOMBSTONES"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Throttled maintenance operation that bounds the in-memory tombstone collection by removing the oldest tombstones when the configured maximum is exceeded.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "17f5fb21aedd7c5b154afe7a58993fe8cc8ecd1ba949c700ab62e6b6287d9265"
+        }
+      },
+      {
+        "unitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorage.getSnapshot#method:InMemorySyncStorage.getSnapshot",
+        "unitKind": "method",
+        "name": "getSnapshot",
+        "qualifiedName": "InMemorySyncStorage.getSnapshot",
+        "parentUnitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorage#class:InMemorySyncStorage",
+        "startLine": 257,
+        "endLine": 265,
+        "isBehavioral": true,
+        "source": "\t\t\t\t\t.map(([id, clock]) => ({ id, clock }))\n\t\t\t\t\t.sort((a, b) => a.clock - b.clock)\n\n\t\t\t\tconst result = computeTombstonePruning({\n\t\t\t\t\ttombstones,\n\t\t\t\t\tdocumentClock: this.documentClock.get(),\n\t\t\t\t})\n\t\t\t\tif (result) {\n\t\t\t\t\tthis.tombstoneHistoryStartsAtClock.set(result.newTombstoneHistoryStartsAtClock)",
+        "detail": {
+          "unitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorage.getSnapshot#method:InMemorySyncStorage.getSnapshot",
+          "fileId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorage.getSnapshot",
+          "unitKind": "method",
+          "name": "getSnapshot",
+          "qualifiedName": "InMemorySyncStorage.getSnapshot",
+          "parentUnitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorage#class:InMemorySyncStorage",
+          "startLine": 257,
+          "endLine": 265,
+          "signature": "getSnapshot()",
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [
+            "Returns a representation of the storage state at the time of the call.",
+            "Does not modify stored objects, clocks, or tombstone state."
+          ],
+          "invariants": ["The operation is observational and leaves storage state unchanged."],
+          "edgeCases": [
+            "An empty storage returns an empty snapshot representation.",
+            "The snapshot reflects the state at invocation time."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Returns a snapshot of the current in-memory synchronization storage state without modifying the storage.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "2118f2444aff824bdf568e0a4fe2b182a84c9215f5e6c5fd41440f05456d5955"
+        }
+      },
+      {
+        "unitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorage.getObjectsByIds#method:InMemorySyncStorage.getObjectsByIds",
+        "unitKind": "method",
+        "name": "getObjectsByIds",
+        "qualifiedName": "InMemorySyncStorage.getObjectsByIds",
+        "parentUnitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorage#class:InMemorySyncStorage",
+        "startLine": 271,
+        "endLine": 281,
+        "isBehavioral": true,
+        "source": "\t\t// prevent this from running synchronously to avoid blocking requests\n\t\t{ leading: false }\n\t)\n\n\tgetSnapshot(): RoomSnapshot {\n\t\t// object-lane records live in their own partition, so the document snapshot is\n\t\t// pure-document by construction\n\t\treturn {\n\t\t\ttombstoneHistoryStartsAtClock: this.tombstoneHistoryStartsAtClock.get(),\n\t\t\tdocumentClock: this.documentClock.get(),\n\t\t\tdocuments: Array.from(this.documents.values()),",
+        "detail": {
+          "unitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorage.getObjectsByIds#method:InMemorySyncStorage.getObjectsByIds",
+          "fileId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorage.getObjectsByIds",
+          "unitKind": "method",
+          "name": "getObjectsByIds",
+          "qualifiedName": "InMemorySyncStorage.getObjectsByIds",
+          "parentUnitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorage#class:InMemorySyncStorage",
+          "startLine": 271,
+          "endLine": 281,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Retrieves the stored objects corresponding to requested identifiers from the in-memory sync storage.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "0844b99061f527b67218f0ac8eeb1f9354ba49ccb3f6f7f86c3d26a55d31590b"
+        }
+      },
+      {
+        "unitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorageTransaction#class:InMemorySyncStorageTransaction",
+        "unitKind": "class",
+        "name": "InMemorySyncStorageTransaction",
+        "qualifiedName": "InMemorySyncStorageTransaction",
+        "parentUnitId": null,
+        "startLine": 288,
+        "endLine": 425,
+        "isBehavioral": true,
+        "source": "\t\treturn Array.from(this.objects.values())\n\t}\n\n\tgetObjectsByIds(ids: Iterable<string>): RoomSnapshot['documents'] {\n\t\tconst result: RoomSnapshot['documents'] = []\n\t\tconst seen = new Set<string>()\n\t\tfor (const id of ids) {\n\t\t\tif (seen.has(id)) continue\n\t\t\tseen.add(id)\n\t\t\tconst doc = this.objects.get(id)\n\t\t\tif (doc) result.push(doc)\n\t\t}\n\t\treturn result\n\t}\n}\n\n/**\n * Transaction implementation for InMemorySyncStorage.\n * Provides access to documents, tombstones, and metadata within a transaction.\n *\n * @internal\n */\nclass InMemorySyncStorageTransaction<\n\tR extends UnknownRecord,\n> implements TLSyncStorageTransaction<R> {\n\tprivate _clock\n\tprivate _closed = false\n\n\tconstructor(private storage: InMemorySyncStorage<R>) {\n\t\tthis._clock = this.storage.documentClock.get()\n\t}\n\n\t/** @internal */\n\tclose() {\n\t\tthis._closed = true\n\t}\n\n\tprivate assertNotClosed() {\n\t\tassert(!this._closed, 'Transaction has ended, iterator cannot be consumed')\n\t}\n\n\tgetClock(): number {\n\t\treturn this._clock\n\t}\n\n\tprivate didIncrementClock: boolean = false\n\tprivate getNextClock(): number {\n\t\tif (!this.didIncrementClock) {\n\t\t\tthis.didIncrementClock = true\n\t\t\tthis._clock = this.storage.documentClock.set(this.storage.documentClock.get() + 1)\n\t\t}\n\t\treturn this._clock\n\t}\n\n\t/** The partition a record with this id currently lives in, if any. */\n\tprivate mapContaining(id: string) {\n\t\tif (this.storage.documents.has(id)) return this.storage.documents\n\t\tif (this.storage.objects.has(id)) return this.storage.objects\n\t\treturn undefined\n\t}\n\n\tget(id: string): R | undefined {\n\t\tthis.assertNotClosed()\n\t\treturn (this.storage.documents.get(id) ?? this.storage.objects.get(id))?.state\n\t}\n\n\tset(id: string, record: R): void {\n\t\tthis.assertNotClosed()\n\t\tassert(id === record.id, `Record id mismatch: key does not match record.id`)\n\t\tconst clock = this.getNextClock()\n\t\t// Automatically clear tombstone if it exists\n\t\tif (this.storage.tombstones.has(id)) {\n\t\t\tthis.storage.tombstones.delete(id)\n\t\t}\n\t\t// route by type: object-lane records live in their own partition\n\t\tconst map = this.storage.objectTypes.has(record.typeName)\n\t\t\t? this.storage.objects\n\t\t\t: this.storage.documents\n\t\tmap.set(id, {\n\t\t\tstate: devFreeze(record) as R,\n\t\t\tlastChangedClock: clock,\n\t\t})\n\t}\n\n\tdelete(id: string): void {\n\t\tthis.assertNotClosed()\n\t\t// Only create a tombstone if the record actually exists\n\t\tconst map = this.mapContaining(id)\n\t\tif (!map) return\n\t\tconst clock = this.getNextClock()\n\t\tmap.delete(id)\n\t\tthis.storage.tombstones.set(id, clock)\n\t\tthis.storage.pruneTombstones()\n\t}\n\n\t// iteration spans both partitions so schema migrations cover object-lane records too\n\n\t*entries(): IterableIterator<[string, R]> {\n\t\tthis.assertNotClosed()\n\t\tfor (const map of [this.storage.documents, this.storage.objects]) {\n\t\t\tfor (const [id, record] of map.entries()) {\n\t\t\t\tthis.assertNotClosed()\n\t\t\t\tyield [id, record.state]\n\t\t\t}\n\t\t}\n\t}\n\n\t*keys(): IterableIterator<string> {\n\t\tthis.assertNotClosed()\n\t\tfor (const map of [this.storage.documents, this.storage.objects]) {\n\t\t\tfor (const key of map.keys()) {\n\t\t\t\tthis.assertNotClosed()\n\t\t\t\tyield key\n\t\t\t}\n\t\t}\n\t}\n\n\t*values(): IterableIterator<R> {\n\t\tthis.assertNotClosed()\n\t\tfor (const map of [this.storage.documents, this.storage.objects]) {\n\t\t\tfor (const record of map.values()) {\n\t\t\t\tthis.assertNotClosed()\n\t\t\t\tyield record.state\n\t\t\t}\n\t\t}\n\t}\n\n\tgetSchema(): SerializedSchema {\n\t\tthis.assertNotClosed()\n\t\treturn this.storage.schema.get()\n\t}\n\n\tsetSchema(schema: SerializedSchema): void {\n\t\tthis.assertNotClosed()\n\t\tthis.storage.schema.set(schema)\n\t}\n\n\tgetChangesSince(sinceClock: number): TLSyncStorageGetChangesSinceResult<R> | undefined {",
+        "detail": {
+          "unitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorageTransaction#class:InMemorySyncStorageTransaction",
+          "fileId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorageTransaction",
+          "unitKind": "class",
+          "name": "InMemorySyncStorageTransaction",
+          "qualifiedName": "InMemorySyncStorageTransaction",
+          "parentUnitId": null,
+          "startLine": 288,
+          "endLine": 425,
+          "signature": "class InMemorySyncStorageTransaction<R extends UnknownRecord> implements TLSyncStorageTransaction<R>",
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": ["R extends UnknownRecord"],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": ["TLSyncStorageTransaction<R>"],
+          "members": [
+            {
+              "name": "_clock",
+              "kind": "property",
+              "type": "number",
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "_closed",
+              "kind": "property",
+              "type": "boolean",
+              "default": "false",
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "storage",
+              "kind": "property",
+              "type": "InMemorySyncStorage<R>",
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "didIncrementClock",
+              "kind": "property",
+              "type": "boolean",
+              "default": "false",
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "constructor",
+              "kind": "constructor",
+              "type": "constructor(private storage: InMemorySyncStorage<R>)",
+              "default": null,
+              "visibility": null,
+              "static": false
+            },
+            {
+              "name": "close",
+              "kind": "method",
+              "type": "() => void",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "assertNotClosed",
+              "kind": "method",
+              "type": "() => void",
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "getClock",
+              "kind": "method",
+              "type": "() => number",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "getNextClock",
+              "kind": "method",
+              "type": "() => number",
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "mapContaining",
+              "kind": "method",
+              "type": "(id: string) => Map<string, unknown> | undefined",
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "get",
+              "kind": "method",
+              "type": "(id: string) => R | undefined",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "set",
+              "kind": "method",
+              "type": "(id: string, record: R) => void",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "delete",
+              "kind": "method",
+              "type": "(id: string) => void",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "entries",
+              "kind": "method",
+              "type": "() => IterableIterator<[string, R]>",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "keys",
+              "kind": "method",
+              "type": "() => IterableIterator<string>",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "values",
+              "kind": "method",
+              "type": "() => IterableIterator<R>",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "getSchema",
+              "kind": "method",
+              "type": "() => SerializedSchema",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "setSchema",
+              "kind": "method",
+              "type": "(schema: SerializedSchema) => void",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "getChangesSince",
+              "kind": "method",
+              "type": "(sinceClock: number) => TLSyncStorageGetChangesSinceResult<R> | undefined",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            }
+          ],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Provides the transaction-scoped storage interface for reading and modifying synchronized records, schemas, clocks, and change information.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "c278e0f72a40eb2e8dcbe6c89edc8a8e3113b9eda0074c605f36b851130dcef8"
+        }
+      },
+      {
+        "unitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorageTransaction.getNextClock#method:InMemorySyncStorageTransaction.getNextClock",
+        "unitKind": "method",
+        "name": "getNextClock",
+        "qualifiedName": "InMemorySyncStorageTransaction.getNextClock",
+        "parentUnitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorageTransaction#class:InMemorySyncStorageTransaction",
+        "startLine": 308,
+        "endLine": 314,
+        "isBehavioral": true,
+        "source": " * @internal\n */\nclass InMemorySyncStorageTransaction<\n\tR extends UnknownRecord,\n> implements TLSyncStorageTransaction<R> {\n\tprivate _clock\n\tprivate _closed = false",
+        "detail": {
+          "unitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorageTransaction.getNextClock#method:InMemorySyncStorageTransaction.getNextClock",
+          "fileId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorageTransaction.getNextClock",
+          "unitKind": "method",
+          "name": "getNextClock",
+          "qualifiedName": "InMemorySyncStorageTransaction.getNextClock",
+          "parentUnitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorageTransaction#class:InMemorySyncStorageTransaction",
+          "startLine": 308,
+          "endLine": 314,
+          "signature": "getNextClock(): number",
+          "parameters": [],
+          "returnType": "number",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [
+            "Returns a numeric clock value allocated from the transaction's clock sequence.",
+            "Advances the transaction clock for subsequent allocations."
+          ],
+          "invariants": ["Successive allocated clock values preserve the transaction's ordering."],
+          "edgeCases": ["Repeated calls return successive values from the same transaction-local clock sequence."],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": ["The transaction's internal _clock value is advanced."],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Allocates and returns the next clock value for the active in-memory storage transaction. Advancing the clock provides monotonically sequenced values for transaction changes.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "39a4caa43fdc7b36d3c0dc35ec2c7ae3054aa37bc1debfafb1974535e49bc040"
+        }
+      },
+      {
+        "unitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorageTransaction.set#method:InMemorySyncStorageTransaction.set",
+        "unitKind": "method",
+        "name": "set",
+        "qualifiedName": "InMemorySyncStorageTransaction.set",
+        "parentUnitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorageTransaction#class:InMemorySyncStorageTransaction",
+        "startLine": 328,
+        "endLine": 344,
+        "isBehavioral": true,
+        "source": "\n\tgetClock(): number {\n\t\treturn this._clock\n\t}\n\n\tprivate didIncrementClock: boolean = false\n\tprivate getNextClock(): number {\n\t\tif (!this.didIncrementClock) {\n\t\t\tthis.didIncrementClock = true\n\t\t\tthis._clock = this.storage.documentClock.set(this.storage.documentClock.get() + 1)\n\t\t}\n\t\treturn this._clock\n\t}\n\n\t/** The partition a record with this id currently lives in, if any. */\n\tprivate mapContaining(id: string) {\n\t\tif (this.storage.documents.has(id)) return this.storage.documents",
+        "detail": {
+          "unitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorageTransaction.set#method:InMemorySyncStorageTransaction.set",
+          "fileId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorageTransaction.set",
+          "unitKind": "method",
+          "name": "set",
+          "qualifiedName": "InMemorySyncStorageTransaction.set",
+          "parentUnitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorageTransaction#class:InMemorySyncStorageTransaction",
+          "startLine": 328,
+          "endLine": 344,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Provides the transaction operation for setting a record in in-memory sync storage.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "17d7530d711a22222c801d7020fa175901e865d9bb86ef51f45136f76c0624e5"
+        }
+      },
+      {
+        "unitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorageTransaction.delete#method:InMemorySyncStorageTransaction.delete",
+        "unitKind": "method",
+        "name": "delete",
+        "qualifiedName": "InMemorySyncStorageTransaction.delete",
+        "parentUnitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorageTransaction#class:InMemorySyncStorageTransaction",
+        "startLine": 346,
+        "endLine": 356,
+        "isBehavioral": true,
+        "source": "\t\treturn undefined\n\t}\n\n\tget(id: string): R | undefined {\n\t\tthis.assertNotClosed()\n\t\treturn (this.storage.documents.get(id) ?? this.storage.objects.get(id))?.state\n\t}\n\n\tset(id: string, record: R): void {\n\t\tthis.assertNotClosed()\n\t\tassert(id === record.id, `Record id mismatch: key does not match record.id`)",
+        "detail": {
+          "unitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorageTransaction.delete#method:InMemorySyncStorageTransaction.delete",
+          "fileId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorageTransaction.delete",
+          "unitKind": "method",
+          "name": "delete",
+          "qualifiedName": "InMemorySyncStorageTransaction.delete",
+          "parentUnitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorageTransaction#class:InMemorySyncStorageTransaction",
+          "startLine": 346,
+          "endLine": 356,
+          "signature": "delete(id: string): void",
+          "parameters": [
+            { "name": "id", "type": "string", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "void",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["The transaction must not be closed.", "id must be a string."],
+          "postconditions": [
+            "The record identified by id is no longer returned as an active record by the transaction."
+          ],
+          "invariants": ["The transaction's closed-state invariant is checked before mutation."],
+          "edgeCases": [
+            "Deleting an id that is not present has no observable record to remove.",
+            "Deleting an existing id makes that record unavailable through subsequent transaction reads.",
+            "Calling delete after the transaction is closed fails instead of mutating storage."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["An assertion failure when the transaction is closed."],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": null
+          },
+          "stateMutations": ["The transaction's backing in-memory storage for the supplied record id."],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "assertNotClosed", "source": "InMemorySyncStorageTransaction", "kind": "internal" }],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Deletes the record identified by the supplied id within the transaction. The operation is only valid while the transaction remains open.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "delete(\"record-1\") is called and the record is subsequently read in the same transaction",
+              "then": "The read does not return the deleted record.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "delete(\"record-1\") is called",
+              "then": "The operation raises an assertion failure and does not perform the deletion.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "8343e52657f136e9d0c773bbf14a53923bda938d2267d3b481c3ac43d85b593c"
+        }
+      },
+      {
+        "unitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorageTransaction.entries#method:InMemorySyncStorageTransaction.entries",
+        "unitKind": "method",
+        "name": "entries",
+        "qualifiedName": "InMemorySyncStorageTransaction.entries",
+        "parentUnitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorageTransaction#class:InMemorySyncStorageTransaction",
+        "startLine": 360,
+        "endLine": 367,
+        "isBehavioral": true,
+        "source": "\t\t\tthis.storage.tombstones.delete(id)\n\t\t}\n\t\t// route by type: object-lane records live in their own partition\n\t\tconst map = this.storage.objectTypes.has(record.typeName)\n\t\t\t? this.storage.objects\n\t\t\t: this.storage.documents\n\t\tmap.set(id, {\n\t\t\tstate: devFreeze(record) as R,",
+        "detail": {
+          "unitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorageTransaction.entries#method:InMemorySyncStorageTransaction.entries",
+          "fileId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorageTransaction.entries",
+          "unitKind": "method",
+          "name": "entries",
+          "qualifiedName": "InMemorySyncStorageTransaction.entries",
+          "parentUnitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorageTransaction#class:InMemorySyncStorageTransaction",
+          "startLine": 360,
+          "endLine": 367,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": ["The returned entries represent the transaction's current visible key-value state."],
+          "invariants": ["Each returned entry associates a storage identifier with its corresponding value."],
+          "edgeCases": [
+            "An empty transaction returns no entries.",
+            "Entries reflect transaction-local changes according to the transaction's visibility rules."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Returns the key-value entries currently visible within the in-memory storage transaction.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "c1b934446205f658e58bb7b947d6d3b774199f1428d3fafba9eb00faa73b3276"
+        }
+      },
+      {
+        "unitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorageTransaction.keys#method:InMemorySyncStorageTransaction.keys",
+        "unitKind": "method",
+        "name": "keys",
+        "qualifiedName": "InMemorySyncStorageTransaction.keys",
+        "parentUnitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorageTransaction#class:InMemorySyncStorageTransaction",
+        "startLine": 369,
+        "endLine": 376,
+        "isBehavioral": true,
+        "source": "\t\t})\n\t}\n\n\tdelete(id: string): void {\n\t\tthis.assertNotClosed()\n\t\t// Only create a tombstone if the record actually exists\n\t\tconst map = this.mapContaining(id)\n\t\tif (!map) return",
+        "detail": {
+          "unitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorageTransaction.keys#method:InMemorySyncStorageTransaction.keys",
+          "fileId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorageTransaction.keys",
+          "unitKind": "method",
+          "name": "keys",
+          "qualifiedName": "InMemorySyncStorageTransaction.keys",
+          "parentUnitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorageTransaction#class:InMemorySyncStorageTransaction",
+          "startLine": 369,
+          "endLine": 376,
+          "signature": "keys(): string[]",
+          "parameters": [],
+          "returnType": "string[]",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["The transaction has not been closed."],
+          "postconditions": ["Returns an array of string identifiers for the transaction's current records."],
+          "invariants": [
+            "Calling the method does not mutate transaction state.",
+            "The returned identifiers correspond to the transaction state at the time of the call."
+          ],
+          "edgeCases": [
+            "When the transaction contains no records, returns an empty array.",
+            "When called after the transaction is closed, the operation fails instead of returning keys."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["Error from the transaction closed-state assertion"],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "assertNotClosed", "source": "InMemorySyncStorageTransaction", "kind": "internal" }],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Returns the identifiers currently represented by the in-memory transaction. The transaction must be open when this method is called.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "728b86fbd55340c156ce09fbe75816cbda40bc6341a794027d0bab2bb9b9507c"
+        }
+      },
+      {
+        "unitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorageTransaction.values#method:InMemorySyncStorageTransaction.values",
+        "unitKind": "method",
+        "name": "values",
+        "qualifiedName": "InMemorySyncStorageTransaction.values",
+        "parentUnitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorageTransaction#class:InMemorySyncStorageTransaction",
+        "startLine": 378,
+        "endLine": 385,
+        "isBehavioral": true,
+        "source": "\t\tmap.delete(id)\n\t\tthis.storage.tombstones.set(id, clock)\n\t\tthis.storage.pruneTombstones()\n\t}\n\n\t// iteration spans both partitions so schema migrations cover object-lane records too\n\n\t*entries(): IterableIterator<[string, R]> {",
+        "detail": {
+          "unitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorageTransaction.values#method:InMemorySyncStorageTransaction.values",
+          "fileId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorageTransaction.values",
+          "unitKind": "method",
+          "name": "values",
+          "qualifiedName": "InMemorySyncStorageTransaction.values",
+          "parentUnitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorageTransaction#class:InMemorySyncStorageTransaction",
+          "startLine": 378,
+          "endLine": 385,
+          "signature": "*values(): IterableIterator<R>",
+          "parameters": [],
+          "returnType": "IterableIterator<R>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": ["The returned iterator yields the transaction's stored values from both partitions."],
+          "invariants": [
+            "Iteration does not mutate transaction or storage state.",
+            "The iterator yields values rather than storage keys."
+          ],
+          "edgeCases": [
+            "When both partitions are empty, the iterator yields no values.",
+            "When values exist in either partition, those values are included in the iteration."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Returns an iterator over the values held by the transaction. Iteration includes values from both storage partitions so schema migrations can cover all records.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The values iterator is consumed",
+              "then": "It yields the values from both partitions and does not yield their keys.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "7e56d99c80cd93f3783d1e8b1d19c0688283044697b18fd69537af4549ae29fe"
+        }
+      },
+      {
+        "unitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorageTransaction.getChangesSince#method:InMemorySyncStorageTransaction.getChangesSince",
+        "unitKind": "method",
+        "name": "getChangesSince",
+        "qualifiedName": "InMemorySyncStorageTransaction.getChangesSince",
+        "parentUnitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorageTransaction#class:InMemorySyncStorageTransaction",
+        "startLine": 397,
+        "endLine": 424,
+        "isBehavioral": true,
+        "source": "\t\tfor (const map of [this.storage.documents, this.storage.objects]) {\n\t\t\tfor (const key of map.keys()) {\n\t\t\t\tthis.assertNotClosed()\n\t\t\t\tyield key\n\t\t\t}\n\t\t}\n\t}\n\n\t*values(): IterableIterator<R> {\n\t\tthis.assertNotClosed()\n\t\tfor (const map of [this.storage.documents, this.storage.objects]) {\n\t\t\tfor (const record of map.values()) {\n\t\t\t\tthis.assertNotClosed()\n\t\t\t\tyield record.state\n\t\t\t}\n\t\t}\n\t}\n\n\tgetSchema(): SerializedSchema {\n\t\tthis.assertNotClosed()\n\t\treturn this.storage.schema.get()\n\t}\n\n\tsetSchema(schema: SerializedSchema): void {\n\t\tthis.assertNotClosed()\n\t\tthis.storage.schema.set(schema)\n\t}\n",
+        "detail": {
+          "unitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorageTransaction.getChangesSince#method:InMemorySyncStorageTransaction.getChangesSince",
+          "fileId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorageTransaction.getChangesSince",
+          "unitKind": "method",
+          "name": "getChangesSince",
+          "qualifiedName": "InMemorySyncStorageTransaction.getChangesSince",
+          "parentUnitId": "packages/sync-core/src/lib/InMemorySyncStorage.ts__InMemorySyncStorageTransaction#class:InMemorySyncStorageTransaction",
+          "startLine": 397,
+          "endLine": 424,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Provides access to changes that have occurred since a caller-supplied synchronization point within an in-memory storage transaction.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "c1c8916a33aa0c9b3e15a04a2088dc648f516e7084bec034c8820894b6bbc4c5"
+        }
+      }
+    ]
+  },
+  "out": [
+    "packages/sync-core/src/lib/TLSyncStorage.ts",
+    "packages/sync-core/src/lib/MicrotaskNotifier.ts",
+    "packages/sync-core/src/lib/TLSyncRoom.ts"
+  ],
+  "in": [
+    "packages/sync-core/src/test/TestServer.ts",
+    "packages/sync-core/src/test/TLSocketRoom.test.ts",
+    "packages/sync-core/src/test/objectStore.test.ts",
+    "packages/sync-core/src/test/storageContractSuite.ts",
+    "packages/sync-core/src/lib/TLSocketRoom.ts",
+    "packages/sync-core/src/lib/TLSyncStorage.test.ts",
+    "packages/sync-core/src/lib/SQLiteSyncStorage.ts",
+    "packages/sync-core/src/lib/InMemorySyncStorage.test.ts",
+    "packages/sync-core/src/index.ts"
+  ],
+  "externals": ["@tldraw/state", "@tldraw/store", "@tldraw/tlschema", "@tldraw/utils"],
+  "impact": {
+    "seeds": 14,
+    "callers": 3,
+    "impactedFiles": [
+      "packages/sync-core/src/test/objectStore.test.ts",
+      "packages/sync-core/src/lib/TLSyncStorage.test.ts"
+    ]
+  }
+}

@@ -1,0 +1,128 @@
+[
+  {
+    "repo": "db",
+    "files": [
+      "packages/db/src/query/live/collection-config-builder.ts",
+      "packages/db/src/query/compiler/index.ts",
+      "packages/db/src/query/builder/index.ts",
+      "packages/db/src/query/ir.ts",
+      "packages/db/src/query/compiler/group-by.ts"
+    ],
+    "pinpoints": [
+      {
+        "path": "packages/db/src/query/live/collection-config-builder.ts",
+        "symbol": "computeRoutingKey",
+        "lines": "1799-1805",
+        "change": "Key is correlationKey alone when parentContext is null \u2014 fold the parent's own identity (parent collection key / parent match id) into the composite so two parents with the same correlation value cannot share a childRegistry entry."
+      },
+      {
+        "path": "packages/db/src/query/compiler/index.ts",
+        "symbol": "getRouting (non-parentProjection branch)",
+        "lines": "664-678",
+        "change": "Returns parentContext: null unconditionally, emitting a value-only routing key; stamp the parent identity into INCLUDES_ROUTING here too."
+      },
+      {
+        "path": "packages/db/src/query/compiler/index.ts",
+        "symbol": "includes-mode topK partition key",
+        "lines": "846-855",
+        "change": "Partition key falls back to bare correlationKey when __parentContext is absent \u2014 same completeness fix so per-parent limit/offset windows do not merge."
+      },
+      {
+        "path": "packages/db/src/query/builder/index.ts",
+        "symbol": "parentProjection collection",
+        "lines": "1252-1270",
+        "change": "parentProjection is built only from refs that a parent-referencing WHERE clause happens to mention; it must capture every parent dimension that distinguishes two correlated instances, not just filter-referenced ones."
+      },
+      {
+        "path": "packages/db/src/query/ir.ts",
+        "symbol": "IncludesSubquery",
+        "lines": "176-190",
+        "change": "Declares parentFilters/parentProjection as the whole parent-side contract; widen it to carry the parent identity the routing key needs."
+      },
+      {
+        "path": "packages/db/src/query/compiler/group-by.ts",
+        "symbol": "keyExtractor / finalKey",
+        "lines": "308-333",
+        "change": "Reference implementation \u2014 already appends __correlationKey so groups from different parents cannot collide; the includes routing key must match this discipline."
+      }
+    ]
+  },
+  {
+    "repo": "query",
+    "files": ["packages/query-core/src/utils.ts", "packages/query-core/src/queryCache.ts"],
+    "pinpoints": [
+      {
+        "path": "packages/query-core/src/utils.ts",
+        "symbol": "hashKey",
+        "lines": "232-242",
+        "change": "Owns the key-completeness contract: the whole key object is normalized (plain-object keys sorted) into the hash, never a partial projection that matchQuery/matchMutation happens to filter on."
+      },
+      {
+        "path": "packages/query-core/src/queryCache.ts",
+        "symbol": "QueryCache.build",
+        "lines": "113-127",
+        "change": "Lookup and dedup are done purely on the complete hash from hashQueryKeyByOptions \u2014 the shape the DB routing key must adopt."
+      }
+    ]
+  },
+  {
+    "repo": "redux-toolkit",
+    "files": ["packages/toolkit/src/query/defaultSerializeQueryArgs.ts"],
+    "pinpoints": [
+      {
+        "path": "packages/toolkit/src/query/defaultSerializeQueryArgs.ts",
+        "symbol": "defaultSerializeQueryArgs",
+        "lines": "9-40",
+        "change": "Owns the contract: the cache key is `${endpointName}(${stableStringify(queryArgs)})` \u2014 the producing endpoint is folded in alongside the computed value, exactly the dimension DB's routing key drops."
+      }
+    ]
+  },
+  {
+    "repo": "table",
+    "files": ["packages/table-core/src/utils/getGroupedRowModel.ts", "packages/table-core/src/core/table.ts"],
+    "pinpoints": [
+      {
+        "path": "packages/table-core/src/utils/getGroupedRowModel.ts",
+        "symbol": "groupUpRecursively",
+        "lines": "62-68",
+        "change": "Owns the contract: a grouped row's id is `${columnId}:${groupingValue}` prefixed with `${parentId}>` so equal grouping values under different parents never collide."
+      },
+      {
+        "path": "packages/table-core/src/core/table.ts",
+        "symbol": "_getRowId",
+        "lines": "375-377",
+        "change": "Owns the contract: the default row key joins parent.id with index rather than using index alone, keeping sibling subrows distinguishable."
+      }
+    ]
+  },
+  {
+    "repo": "xyflow",
+    "files": ["packages/system/src/utils/store.ts"],
+    "pinpoints": [
+      {
+        "path": "packages/system/src/utils/store.ts",
+        "symbol": "addConnectionToLookup",
+        "lines": "559-585",
+        "change": "Owns the contract: lookup keys are registered at nodeId, nodeId-type and nodeId-type-handleId so a connection is never found by a partial key that ignores a distinguishing dimension."
+      },
+      {
+        "path": "packages/system/src/utils/store.ts",
+        "symbol": "updateConnectionLookup",
+        "lines": "587-603",
+        "change": "Connection key is `${sourceNode}-${sourceHandle}--${targetNode}-${targetHandle}` \u2014 every dimension of both endpoints, not just the node ids."
+      }
+    ]
+  },
+  {
+    "repo": "jotai",
+    "files": ["src/vanilla/utils/atomFamily.ts"],
+    "pinpoints": [
+      {
+        "path": "src/vanilla/utils/atomFamily.ts",
+        "symbol": "createAtom",
+        "lines": "78-104",
+        "change": "Counterexample that makes the omission legible: the family's param-to-atom lookup is decided entirely by areEqual, so a comparator narrower than the param's distinguishing dimensions silently returns another param's atom."
+      }
+    ]
+  }
+]

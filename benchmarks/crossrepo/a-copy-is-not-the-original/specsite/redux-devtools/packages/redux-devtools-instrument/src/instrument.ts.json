@@ -1,0 +1,2314 @@
+{
+  "schema": 1,
+  "kind": "file",
+  "repoName": "redux-devtools",
+  "commitHash": "f4b4668c30ae08920c59a76cc4629c35c16ef0fa",
+  "generatedAt": "2026-08-06T07:47:09.303Z",
+  "file": {
+    "relativePath": "packages/redux-devtools-instrument/src/instrument.ts",
+    "language": "typescript",
+    "sizeBytes": 32936,
+    "tokenCount": 7487,
+    "model": "openai/gpt-5.6-luna",
+    "analysedAt": "2026-08-03T15:04:08.883Z",
+    "module": {
+      "purpose": "Implements the Redux DevTools instrumentation enhancer, maintaining a lifted action history while exposing a normal Redux store interface to application code.",
+      "summary": "This module builds the lifted Redux state machine used by DevTools. It defines action types and creators, tracks staged, skipped, committed, and computed states, supports history navigation and mutation operations, optionally captures reducer errors and call stacks, and wraps the lifted store with an application-facing dispatch, subscription, state, and observable API.",
+      "businessContext": "Supports time-travel debugging and production instrumentation for Redux applications. Failure can prevent store creation, corrupt action-history navigation, or hide application state updates.",
+      "classes": [
+        "PerformAction (~L45-50): Represents an application action lifted into the DevTools history",
+        "LiftedState (~L354-365): Represents complete historical state managed by instrumentation",
+        "Options (~L655-678): Configures history retention, tracing, errors, pausing, and locking"
+      ],
+      "functions": [
+        "performAction (~L73-126): Validates actions and creates traced lifted action records",
+        "computeWithTryCatch (~L194-219): Applies a reducer while converting failures into state errors",
+        "computeNextEntry (~L225-237): Applies a reducer with optional exception handling",
+        "recomputeStates (~L243-287): Rebuilds computed history entries after invalidation",
+        "liftAction (~L294-305): Converts an application action into a lifted action",
+        "isArray (~L307-311): Narrows imported state values to action arrays",
+        "liftReducerWith (~L370-650): Creates the reducer implementing DevTools history operations",
+        "commitExcessActions (~L411-432): Removes old history entries when maximum age is exceeded",
+        "computePausedAction (~L434-490): Computes state while recording is paused",
+        "unliftState (~L514-521): Extracts the currently selected application state",
+        "unliftStore (~L532-653): Wraps a lifted store with the application-facing Redux API",
+        "getState (~L548-555): Returns the selected state while retaining the last defined value",
+        "dispatch (~L557-560): Lifts and dispatches an application action",
+        "instrument (~L683-733): Creates the Redux store enhancer and validates reducer integration"
+      ],
+      "keywords": [
+        "Redux DevTools",
+        "lifted state",
+        "time travel",
+        "action history",
+        "reducer recomputation",
+        "hot reload",
+        "call stack tracing",
+        "observable store",
+        "action replay",
+        "history compaction"
+      ],
+      "ontologyConcepts": [
+        "state machine",
+        "event sourcing",
+        "command replay",
+        "temporal navigation",
+        "decorator",
+        "error isolation",
+        "projection",
+        "incremental recomputation"
+      ],
+      "businessEntities": [
+        "Redux action",
+        "application state",
+        "lifted state",
+        "monitor state",
+        "reducer",
+        "action history",
+        "store",
+        "subscriber"
+      ],
+      "systemCapabilities": [
+        "Record Redux actions",
+        "Replay and recompute state history",
+        "Navigate historical state",
+        "Toggle, reorder, and sweep actions",
+        "Capture reducer errors and traces",
+        "Expose an enhanced Redux store"
+      ],
+      "configDependencies": [
+        "maxAge",
+        "shouldCatchErrors",
+        "shouldRecordChanges",
+        "pauseActionType",
+        "shouldStartLocked",
+        "shouldHotReload",
+        "trace",
+        "traceLimit",
+        "shouldIncludeCallstack"
+      ],
+      "importsInternal": [
+        {
+          "spec": "./getSymbolObservable.js",
+          "symbols": ["getSymbolObservable"],
+          "anchor": { "startLine": 10, "endLine": 10 },
+          "resolvedRelativePath": "packages/redux-devtools-instrument/src/getSymbolObservable.ts",
+          "resolvedFileId": "packages/redux-devtools-instrument/src/getSymbolObservable.ts",
+          "resolvedHint": "packages/redux-devtools-instrument/src/getSymbolObservable.ts"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "redux",
+          "symbols": [
+            "Action",
+            "isPlainObject",
+            "Observer",
+            "Reducer",
+            "Store",
+            "StoreEnhancer",
+            "StoreEnhancerStoreCreator"
+          ],
+          "package": "redux",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 9 }
+        }
+      ],
+      "sideEffects": {
+        "io": ["Logs reducer errors to console.error when errors are caught outside Chrome."],
+        "network": [],
+        "env": [
+          "Reads window, window.chrome, window.process, and process.release to detect Chrome, renderer, or Node environments."
+        ],
+        "fs": [],
+        "process": ["Schedules asynchronous reducer-error rethrows with setTimeout in Chrome."],
+        "mutationOfArg": ["Mutates actionsById by adding newly lifted actions on the hot dispatch path."]
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "ActionTypes",
+          "shape": "export const ActionTypes = {...} as const;",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "ActionCreators",
+          "shape": "export const ActionCreators = {...};",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "LiftedAction",
+          "shape": "export type LiftedAction<S, A extends Action<string>, MonitorState> = PerformAction<A> | ResetAction | RollbackAction | CommitAction | SweepAction | ToggleAction | SetActionsActiveAction | ReorderAction | JumpToStateAction | JumpToActionAction | ImportStateAction<S, A, MonitorState> | LockChangesAction | PauseRecordingAction;",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "LiftedState",
+          "shape": "export interface LiftedState<S, A extends Action<string>, MonitorState> { monitorState: MonitorState; nextActionId: number; actionsById: { [actionId: number]: PerformAction<A> }; stagedActionIds: number[]; skippedActionIds: number[]; committedState: S; currentStateIndex: number; computedStates: { state: S; error?: string }[]; isLocked: boolean; isPaused: boolean; }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "LiftedReducer",
+          "shape": "export type LiftedReducer<S, A extends Action<string>, MonitorState> = Reducer<LiftedState<S, A, MonitorState>, LiftedAction<S, A, MonitorState>>;",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "LiftedStore",
+          "shape": "export type LiftedStore<S, A extends Action<string>, MonitorState> = Store<LiftedState<S, A, MonitorState>, LiftedAction<S, A, MonitorState>>;",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "InstrumentExt",
+          "shape": "export type InstrumentExt<S, A extends Action<string>, MonitorState> = { liftedStore: LiftedStore<S, A, MonitorState>; };",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "EnhancedStore",
+          "shape": "export type EnhancedStore<S, A extends Action<string>, MonitorState> = Store<S, A> & InstrumentExt<S, A, MonitorState>;",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "instrument",
+          "shape": "export function instrument<OptionsS, OptionsA extends Action<string>, MonitorState = null, MonitorAction extends Action<string> = never>(monitorReducer: Reducer<MonitorState, MonitorAction> = (() => null) as unknown as Reducer<MonitorState, MonitorAction>, options: Options<OptionsS, OptionsA, MonitorState, MonitorAction> = {}): StoreEnhancer<InstrumentExt<any, any, MonitorState>>;",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        { "name": "Action", "shape": "Action<string>", "resolvedRelativePath": null, "resolvedFileId": null },
+        {
+          "name": "Reducer",
+          "shape": "Reducer<S, A, PreloadedState>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        { "name": "Store", "shape": "Store<S, A>", "resolvedRelativePath": null, "resolvedFileId": null },
+        {
+          "name": "StoreEnhancer",
+          "shape": "StoreEnhancer<InstrumentExt<any, any, MonitorState>>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "StoreEnhancerStoreCreator",
+          "shape": "StoreEnhancerStoreCreator<NextExt, NextStateExt>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        { "name": "Observer", "shape": "Observer<S>", "resolvedRelativePath": null, "resolvedFileId": null },
+        {
+          "name": "isPlainObject",
+          "shape": "isPlainObject(action)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "getSymbolObservable",
+          "shape": "getSymbolObservable()",
+          "resolvedRelativePath": "packages/redux-devtools-instrument/src/getSymbolObservable.ts",
+          "resolvedFileId": "packages/redux-devtools-instrument/src/getSymbolObservable.ts"
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "action creation and validation",
+          "intent": "Validates application actions and constructs timestamped lifted records.",
+          "structureKind": "branch",
+          "predicate": "if (!isPlainObject(action))",
+          "branchOutcomes": ["throw for non-plain action", "continue"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 73, "endLine": 126 }
+        },
+        {
+          "name": "reducer error isolation",
+          "intent": "Runs reducers and preserves prior state when reducer execution fails.",
+          "structureKind": "try",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 194, "endLine": 219 }
+        },
+        {
+          "name": "history recomputation",
+          "intent": "Replays invalidated staged actions into computed state entries.",
+          "structureKind": "loop",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": "i < stagedActionIds.length",
+          "terminationCondition": null,
+          "anchor": { "startLine": 243, "endLine": 287 }
+        },
+        {
+          "name": "lifted action state machine",
+          "intent": "Processes history commands and updates lifted state bookkeeping.",
+          "structureKind": "branch",
+          "predicate": "switch (liftedAction.type)",
+          "branchOutcomes": [
+            "PERFORM_ACTION",
+            "RESET",
+            "COMMIT",
+            "ROLLBACK",
+            "TOGGLE_ACTION",
+            "SET_ACTIONS_ACTIVE",
+            "JUMP_TO_STATE",
+            "JUMP_TO_ACTION",
+            "SWEEP",
+            "REORDER_ACTION",
+            "IMPORT_STATE",
+            "LOCK_CHANGES",
+            "PAUSE_RECORDING",
+            "default monitor action"
+          ],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 504, "endLine": 638 }
+        },
+        {
+          "name": "action import replay",
+          "intent": "Rebuilds history from an imported action array or complete lifted snapshot.",
+          "structureKind": "loop",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 608, "endLine": 633 }
+        },
+        {
+          "name": "application store adapter",
+          "intent": "Exposes dispatch, state, subscription, replacement, and observable behavior.",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 532, "endLine": 653 }
+        },
+        {
+          "name": "enhancer construction",
+          "intent": "Validates options and installs the lifted reducer into a Redux store.",
+          "structureKind": "branch",
+          "predicate": "if (typeof options.maxAge === 'number' && options.maxAge < 2)",
+          "branchOutcomes": ["throw invalid maxAge", "return enhancer"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 683, "endLine": 733 }
+        }
+      ],
+      "representationFamily": "state-machine",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "const",
+          "name": "ActionTypes",
+          "signature": "export const ActionTypes = {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 12, "endLine": 24 }
+        },
+        {
+          "kind": "interface",
+          "name": "PerformAction",
+          "signature": "export interface PerformAction<A extends Action<string>> {",
+          "generics": "<A extends Action<string>>",
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 45, "endLine": 50 }
+        },
+        {
+          "kind": "type",
+          "name": "LiftedAction",
+          "signature": "export type LiftedAction<S, A extends Action<string>, MonitorState> =",
+          "generics": "<S, A extends Action<string>, MonitorState>",
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 126, "endLine": 140 }
+        },
+        {
+          "kind": "const",
+          "name": "ActionCreators",
+          "signature": "export const ActionCreators = {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 146, "endLine": 193 }
+        },
+        {
+          "kind": "const",
+          "name": "INIT_ACTION",
+          "signature": "export const INIT_ACTION = { type: '@@INIT' };",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 196, "endLine": 196 }
+        },
+        {
+          "kind": "interface",
+          "name": "LiftedState",
+          "signature": "export interface LiftedState<S, A extends Action<string>, MonitorState> {",
+          "generics": "<S, A extends Action<string>, MonitorState>",
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 354, "endLine": 365 }
+        },
+        {
+          "kind": "type",
+          "name": "LiftedReducer",
+          "signature": "export type LiftedReducer<S, A extends Action<string>, MonitorState> = Reducer<",
+          "generics": "<S, A extends Action<string>, MonitorState>",
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 523, "endLine": 526 }
+        },
+        {
+          "kind": "type",
+          "name": "LiftedStore",
+          "signature": "export type LiftedStore<S, A extends Action<string>, MonitorState> = Store<",
+          "generics": "<S, A extends Action<string>, MonitorState>",
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 528, "endLine": 531 }
+        },
+        {
+          "kind": "type",
+          "name": "InstrumentExt",
+          "signature": "export type InstrumentExt<S, A extends Action<string>, MonitorState> = {",
+          "generics": "<S, A extends Action<string>, MonitorState>",
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 533, "endLine": 535 }
+        },
+        {
+          "kind": "type",
+          "name": "EnhancedStore",
+          "signature": "export type EnhancedStore<S, A extends Action<string>, MonitorState> = Store<",
+          "generics": "<S, A extends Action<string>, MonitorState>",
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 537, "endLine": 542 }
+        },
+        {
+          "kind": "interface",
+          "name": "Options",
+          "signature": "export interface Options<",
+          "generics": "<\n  S,\n  A extends Action<string>,\n  MonitorState,\n  MonitorAction extends Action<string>,\n>",
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 655, "endLine": 678 }
+        },
+        {
+          "kind": "function",
+          "name": "instrument",
+          "signature": "export function instrument<",
+          "generics": "<\n  OptionsS,\n  OptionsA extends Action<string>,\n  MonitorState = null,\n  MonitorAction extends Action<string> = never,\n>",
+          "decorators": [],
+          "returnType": "StoreEnhancer<InstrumentExt<any, any, MonitorState>>",
+          "exported": true,
+          "anchor": { "startLine": 683, "endLine": 733 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "interface",
+          "name": "PerformAction",
+          "shape": "{\n  type: typeof ActionTypes.PERFORM_ACTION;\n  action: A;\n  timestamp: number;\n  stack: string | undefined;\n}",
+          "discriminant": "type",
+          "anchor": { "startLine": 45, "endLine": 50 }
+        },
+        {
+          "kind": "interface",
+          "name": "LiftedState",
+          "shape": "{\n  monitorState: MonitorState;\n  nextActionId: number;\n  actionsById: { [actionId: number]: PerformAction<A> };\n  stagedActionIds: number[];\n  skippedActionIds: number[];\n  committedState: S;\n  currentStateIndex: number;\n  computedStates: { state: S; error?: string }[];\n  isLocked: boolean;\n  isPaused: boolean;\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 354, "endLine": 365 }
+        },
+        {
+          "kind": "interface",
+          "name": "Options",
+          "shape": "{\n  maxAge?:\n    | number\n    | ((\n        currentLiftedAction: LiftedAction<S, A, MonitorState>,\n        previousLiftedState: LiftedState<S, A, MonitorState> | undefined,\n      ) => number);\n  shouldCatchErrors?: boolean;\n  shouldRecordChanges?: boolean;\n  pauseActionType?: unknown;\n  shouldStartLocked?: boolean;\n  shouldHotReload?: boolean;\n  trace?: boolean | ((action: A) => string | undefined);\n  traceLimit?: number;\n  shouldIncludeCallstack?: boolean;\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 655, "endLine": 678 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "non-plain or undefined-type action",
+          "handled": true,
+          "behavior": "Throws an explanatory Error before creating a lifted action.",
+          "anchor": { "startLine": 82, "endLine": 93 }
+        },
+        {
+          "inputShape": "reducer throws during computation",
+          "handled": true,
+          "behavior": "Keeps the previous state, records a string error, and logs or asynchronously rethrows it.",
+          "anchor": { "startLine": 201, "endLine": 216 }
+        },
+        {
+          "inputShape": "locked history receiving an application action",
+          "handled": true,
+          "behavior": "Returns the existing lifted state without recording the action.",
+          "anchor": { "startLine": 508, "endLine": 509 }
+        },
+        {
+          "inputShape": "paused recording receiving an action",
+          "handled": true,
+          "behavior": "Computes the state without normal recording and optionally records a pause marker.",
+          "anchor": { "startLine": 509, "endLine": 510 }
+        },
+        {
+          "inputShape": "unknown lifted action",
+          "handled": true,
+          "behavior": "Treats it as a monitor action and skips history recomputation.",
+          "anchor": { "startLine": 636, "endLine": 638 }
+        },
+        {
+          "inputShape": "observer that is not an object",
+          "handled": true,
+          "behavior": "Throws a TypeError from the observable subscription API.",
+          "anchor": { "startLine": 626, "endLine": 628 }
+        },
+        {
+          "inputShape": "invalid reducer or reducer module object",
+          "handled": true,
+          "behavior": "Throws an explanatory Error, distinguishing default-export module objects.",
+          "anchor": { "startLine": 696, "endLine": 705 }
+        },
+        {
+          "inputShape": "instrumentation applied twice",
+          "handled": true,
+          "behavior": "Throws an Error after detecting an existing liftedStore property.",
+          "anchor": { "startLine": 716, "endLine": 722 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": "==",
+          "left": "typeof window",
+          "right": "'object'",
+          "inclusive": true,
+          "intent": "Detects browser-like window availability.",
+          "anchor": { "startLine": 27, "endLine": 28 }
+        },
+        {
+          "operator": "==",
+          "left": "typeof (window as typeof window & { chrome: unknown }).chrome",
+          "right": "'undefined'",
+          "inclusive": false,
+          "intent": "Detects Chrome browser integration.",
+          "anchor": { "startLine": 29, "endLine": 30 }
+        },
+        {
+          "operator": "==",
+          "left": "(window.process as typeof window.process & { type: unknown }).type",
+          "right": "'renderer'",
+          "inclusive": true,
+          "intent": "Detects a renderer process.",
+          "anchor": { "startLine": 32, "endLine": 35 }
+        },
+        {
+          "operator": "==",
+          "left": "typeof process",
+          "right": "'undefined'",
+          "inclusive": false,
+          "intent": "Checks whether the Node process global exists.",
+          "anchor": { "startLine": 39, "endLine": 40 }
+        },
+        {
+          "operator": "==",
+          "left": "process.release.name",
+          "right": "'node'",
+          "inclusive": true,
+          "intent": "Confirms the runtime is Node.",
+          "anchor": { "startLine": 41, "endLine": 43 }
+        },
+        {
+          "operator": "==",
+          "left": "typeof action.type",
+          "right": "'undefined'",
+          "inclusive": true,
+          "intent": "Rejects actions without a type.",
+          "anchor": { "startLine": 89, "endLine": 89 }
+        },
+        {
+          "operator": "<",
+          "left": "Error.stackTraceLimit",
+          "right": "traceLimit",
+          "inclusive": false,
+          "intent": "Raises stack trace depth when configured depth exceeds the current limit.",
+          "anchor": { "startLine": 104, "endLine": 104 }
+        },
+        {
+          "operator": "==",
+          "left": "typeof Error.stackTraceLimit",
+          "right": "'number'",
+          "inclusive": false,
+          "intent": "Determines whether stack trace trimming needs fallback handling.",
+          "anchor": { "startLine": 112, "endLine": 112 }
+        },
+        {
+          "operator": ">",
+          "left": "frames.length",
+          "right": "traceLimit",
+          "inclusive": false,
+          "intent": "Limits captured stack frames to the configured trace depth.",
+          "anchor": { "startLine": 115, "endLine": 115 }
+        },
+        {
+          "operator": "==",
+          "left": "minInvalidatedStateIndex",
+          "right": "-1",
+          "inclusive": true,
+          "intent": "Avoids recomputation when no history entry was invalidated.",
+          "anchor": { "startLine": 249, "endLine": 249 }
+        },
+        {
+          "operator": ">=",
+          "left": "minInvalidatedStateIndex",
+          "right": "computedStates.length",
+          "inclusive": true,
+          "intent": "Avoids recomputation when invalidation is beyond existing states.",
+          "anchor": { "startLine": 250, "endLine": 250 }
+        },
+        {
+          "operator": "<",
+          "left": "i",
+          "right": "stagedActionIds.length",
+          "inclusive": false,
+          "intent": "Replays each staged action from the invalidation point.",
+          "anchor": { "startLine": 257, "endLine": 257 }
+        },
+        {
+          "operator": "==",
+          "left": "options.shouldStartLocked",
+          "right": "true",
+          "inclusive": true,
+          "intent": "Initializes history in locked mode when configured.",
+          "anchor": { "startLine": 383, "endLine": 383 }
+        },
+        {
+          "operator": "==",
+          "left": "options.shouldRecordChanges",
+          "right": "false",
+          "inclusive": true,
+          "intent": "Initializes history in paused mode when recording is disabled.",
+          "anchor": { "startLine": 384, "endLine": 384 }
+        },
+        {
+          "operator": "==",
+          "left": "maxAge",
+          "right": "function",
+          "inclusive": true,
+          "intent": "Supports dynamically calculated history retention.",
+          "anchor": { "startLine": 500, "endLine": 501 }
+        },
+        {
+          "operator": "<",
+          "left": "i",
+          "right": "end",
+          "inclusive": false,
+          "intent": "Builds the requested active-action range.",
+          "anchor": { "startLine": 572, "endLine": 572 }
+        },
+        {
+          "operator": "==",
+          "left": "index",
+          "right": "-1",
+          "inclusive": false,
+          "intent": "Toggles an action only when it is already present or absent as appropriate.",
+          "anchor": { "startLine": 547, "endLine": 547 }
+        },
+        {
+          "operator": "<",
+          "left": "idx",
+          "right": "1",
+          "inclusive": false,
+          "intent": "Prevents moving the synthetic first history action.",
+          "anchor": { "startLine": 595, "endLine": 595 }
+        },
+        {
+          "operator": ">",
+          "left": "beforeActionId",
+          "right": "stagedActionIds[count - 1]",
+          "inclusive": false,
+          "intent": "Places an action at the end when its target exceeds history.",
+          "anchor": { "startLine": 601, "endLine": 601 }
+        },
+        {
+          "operator": ">",
+          "left": "diff",
+          "right": "0",
+          "inclusive": false,
+          "intent": "Selects the leftward reorder branch.",
+          "anchor": { "startLine": 605, "endLine": 605 }
+        },
+        {
+          "operator": "<",
+          "left": "diff",
+          "right": "0",
+          "inclusive": false,
+          "intent": "Selects the rightward reorder branch.",
+          "anchor": { "startLine": 613, "endLine": 613 }
+        },
+        {
+          "operator": "<",
+          "left": "options.maxAge",
+          "right": "2",
+          "inclusive": false,
+          "intent": "Rejects history limits that cannot retain the initial entry and action.",
+          "anchor": { "startLine": 684, "endLine": 684 }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": "Error('Actions must be plain objects...')",
+          "caught": null,
+          "action": "Rejects asynchronous or non-plain actions.",
+          "fallback": null,
+          "anchor": { "startLine": 82, "endLine": 86 }
+        },
+        {
+          "thrown": "Error('Actions may not have an undefined \"type\" property...')",
+          "caught": null,
+          "action": "Rejects malformed Redux actions.",
+          "fallback": null,
+          "anchor": { "startLine": 89, "endLine": 93 }
+        },
+        {
+          "thrown": null,
+          "caught": "err",
+          "action": "Stores the error string and either schedules a rethrow in Chrome or logs it.",
+          "fallback": "Returns the previous state with an error field.",
+          "anchor": { "startLine": 201, "endLine": 216 }
+        },
+        {
+          "thrown": "TypeError('Expected the observer to be an object.')",
+          "caught": null,
+          "action": "Rejects invalid observable observers.",
+          "fallback": null,
+          "anchor": { "startLine": 626, "endLine": 628 }
+        },
+        {
+          "thrown": "Error('DevTools.instrument({ maxAge }) option...')",
+          "caught": null,
+          "action": "Rejects maxAge values below two.",
+          "fallback": null,
+          "anchor": { "startLine": 684, "endLine": 688 }
+        },
+        {
+          "thrown": "Error('Expected the reducer to be a function...')",
+          "caught": null,
+          "action": "Rejects reducer values that are not callable.",
+          "fallback": null,
+          "anchor": { "startLine": 696, "endLine": 705 }
+        },
+        {
+          "thrown": "Error('DevTools instrumentation should not be applied more than once...')",
+          "caught": null,
+          "action": "Rejects enhancer duplication.",
+          "fallback": null,
+          "anchor": { "startLine": 716, "endLine": 722 }
+        }
+      ],
+      "invariants": [
+        {
+          "kind": "invariant",
+          "description": "The synthetic history entry with identifier zero remains the initial action anchor.",
+          "anchor": { "startLine": 378, "endLine": 386 }
+        },
+        {
+          "kind": "ordering",
+          "description": "stagedActionIds preserves the computation order used to rebuild states.",
+          "anchor": { "startLine": 243, "endLine": 287 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "Returned lifted state is recomputed before monitor state is reduced.",
+          "anchor": { "startLine": 639, "endLine": 650 }
+        },
+        {
+          "kind": "non-null",
+          "description": "The application-facing getState returns the last defined state when current state is undefined.",
+          "anchor": { "startLine": 548, "endLine": 555 }
+        },
+        {
+          "kind": "invariant",
+          "description": "At most one DevTools instrumentation enhancer may be applied to a store.",
+          "anchor": { "startLine": 716, "endLine": 722 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "Callers provide Redux-compatible plain actions with a defined type property.",
+          "anchor": { "startLine": 82, "endLine": 93 }
+        },
+        {
+          "kind": "caller",
+          "description": "The supplied reducer and monitor reducer follow Redux reducer initialization and action semantics.",
+          "anchor": { "startLine": 370, "endLine": 386 }
+        },
+        {
+          "kind": "schema",
+          "description": "Imported lifted snapshots match the LiftedState structure expected by this module.",
+          "anchor": { "startLine": 614, "endLine": 633 }
+        },
+        {
+          "kind": "platform",
+          "description": "The runtime may provide Redux-compatible Symbol.observable behavior or a compatible polyfill.",
+          "anchor": { "startLine": 562, "endLine": 567 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "What external monitor actions and monitor-state schema are expected by consumers?",
+          "affects": "LiftedAction and monitorState behavior",
+          "anchor": { "startLine": 354, "endLine": 365 },
+          "resolution": null
+        },
+        {
+          "question": "Which callers rely on reducer errors being asynchronously rethrown in Chrome?",
+          "affects": "error_handling and process side effects",
+          "anchor": { "startLine": 207, "endLine": 216 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "sync",
+        "reentrant": true,
+        "ordering": "deterministic",
+        "notes": "Reducer and history updates are synchronous; Chrome reducer failures may be rethrown asynchronously through setTimeout."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "rejects-non-plain-actions",
+          "scenario": "A lifted action creator receives an asynchronous or otherwise non-plain action.",
+          "given": ["!isPlainObject(action)"],
+          "when": "ActionCreators.performAction(action)",
+          "then": "throws new Error('Actions must be plain objects. Use custom middleware for async actions.')",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Guards the Redux action shape required by instrumentation."
+        },
+        {
+          "testId": "rejects-undefined-action-type",
+          "scenario": "An action object does not define its type property.",
+          "given": ["isPlainObject(action)", "typeof action.type === 'undefined'"],
+          "when": "ActionCreators.performAction(action)",
+          "then": "throws new Error('Actions may not have an undefined \"type\" property. Have you misspelled a constant?')",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Preserves Redux's requirement that every dispatched action has a type."
+        },
+        {
+          "testId": "perform-action-preserves-action-and-timestamps",
+          "scenario": "A valid action is lifted for recording.",
+          "given": ["isPlainObject(action)", "typeof action.type !== 'undefined'"],
+          "when": "ActionCreators.performAction(action)",
+          "then": "returns { type: ActionTypes.PERFORM_ACTION, action, timestamp: Date.now(), stack }",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins the lifted envelope and its recording metadata."
+        },
+        {
+          "testId": "rejects-max-age-below-two",
+          "scenario": "Instrumentation is configured with an invalid history size.",
+          "given": ["typeof options.maxAge === 'number'", "options.maxAge < 2"],
+          "when": "instrument(monitorReducer, options)",
+          "then": "throws an Error whose message starts with 'DevTools.instrument({ maxAge }) option, if specified, may not be less than 2.'",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Protects the minimum history required by the lifted store."
+        },
+        {
+          "testId": "locked-store-ignores-perform-action",
+          "scenario": "A recorded action reaches a history reducer while changes are locked.",
+          "given": ["isLocked", "liftedAction.type === ActionTypes.PERFORM_ACTION"],
+          "when": "liftedReducer(liftedState, liftedAction)",
+          "then": "returns liftedState || initialLiftedState without adding the action",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Ensures the lock prevents history mutation."
+        },
+        {
+          "testId": "toggle-action-skips-recomputation",
+          "scenario": "A staged action is toggled inactive.",
+          "given": ["liftedAction.type === ActionTypes.TOGGLE_ACTION", "skippedActionIds.indexOf(actionId) === -1"],
+          "when": "liftedReducer(liftedState, liftedAction)",
+          "then": "the action ID is added to skippedActionIds and its computed state is recomputed as a no-op",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins time-travel action deactivation semantics."
+        },
+        {
+          "testId": "reset-restores-initial-history",
+          "scenario": "The history receives a reset command after actions have been recorded.",
+          "given": ["liftedAction.type === ActionTypes.RESET"],
+          "when": "liftedReducer(liftedState, liftedAction)",
+          "then": "returns state with actionsById containing only action 0, stagedActionIds [0], skippedActionIds [], nextActionId 1, and committedState equal to initialCommittedState",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Ensures reset returns the lifted store to its creation state."
+        },
+        {
+          "testId": "pause-recording-keeps-history-paused",
+          "scenario": "Recording is paused and another application action is dispatched.",
+          "given": ["liftedAction.type === ActionTypes.PAUSE_RECORDING", "liftedAction.status === true"],
+          "when": "liftedReducer(liftedState, liftedAction)",
+          "then": "returns a state with isPaused true and computes the action without recording it as a normal history action",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Distinguishes paused computation from normal action recording."
+        },
+        {
+          "testId": "rejects-non-function-reducer",
+          "scenario": "The enhancer is applied to a non-function reducer value.",
+          "given": ["typeof r !== 'function'"],
+          "when": "liftReducer(r)",
+          "then": "throws new Error('Expected the reducer to be a function.') unless r.default is a function, in which case it throws the module-specific error",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Protects the reducer contract at store construction."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "Redux imports",
+        "observable-symbol import",
+        "ActionTypes constant",
+        "runtime detection constants",
+        "lifted action interfaces and union",
+        "ActionCreators object",
+        "INIT_ACTION constant",
+        "reducer computation helpers",
+        "history state interface",
+        "lifted reducer factory",
+        "state and store unwrapping helpers",
+        "store-related type aliases",
+        "Options interface",
+        "instrument enhancer"
+      ],
+      "moduleLevelCode": "import { ... } from 'redux';\nimport getSymbolObservable from './getSymbolObservable.js';",
+      "exports": [
+        { "name": "ActionTypes", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "PerformAction", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "LiftedAction", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "ActionCreators", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "INIT_ACTION", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "LiftedState", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "LiftedReducer", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "LiftedStore", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "InstrumentExt", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "EnhancedStore", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "Options", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "instrument", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "Action", "module": "redux", "alias": null, "kind": "external" },
+        { "symbol": "isPlainObject", "module": "redux", "alias": null, "kind": "external" },
+        { "symbol": "Observer", "module": "redux", "alias": null, "kind": "external" },
+        { "symbol": "Reducer", "module": "redux", "alias": null, "kind": "external" },
+        { "symbol": "Store", "module": "redux", "alias": null, "kind": "external" },
+        { "symbol": "StoreEnhancer", "module": "redux", "alias": null, "kind": "external" },
+        { "symbol": "StoreEnhancerStoreCreator", "module": "redux", "alias": null, "kind": "external" },
+        { "symbol": "getSymbolObservable", "module": "./getSymbolObservable.js", "alias": null, "kind": "internal" }
+      ],
+      "fileConstants": [
+        {
+          "name": "ActionTypes",
+          "value": "{\n  PERFORM_ACTION: 'PERFORM_ACTION',\n  RESET: 'RESET',\n  ROLLBACK: 'ROLLBACK',\n  COMMIT: 'COMMIT',\n  SWEEP: 'SWEEP',\n  TOGGLE_ACTION: 'TOGGLE_ACTION',\n  SET_ACTIONS_ACTIVE: 'SET_ACTIONS_ACTIVE',\n  JUMP_TO_STATE: 'JUMP_TO_STATE',\n  JUMP_TO_ACTION: 'JUMP_TO_ACTION',\n  REORDER_ACTION: 'REORDER_ACTION',\n  IMPORT_STATE: 'IMPORT_STATE',\n  LOCK_CHANGES: 'LOCK_CHANGES',\n  PAUSE_RECORDING: 'PAUSE_RECORDING',\n} as const",
+          "kind": "object constant"
+        },
+        { "name": "INIT_ACTION", "value": "{ type: '@@INIT' }", "kind": "action constant" }
+      ],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/redux-devtools-instrument/src/instrument.ts__ActionCreators.performAction#method:ActionCreators.performAction",
+        "unitKind": "method",
+        "name": "performAction",
+        "qualifiedName": "ActionCreators.performAction",
+        "parentUnitId": null,
+        "startLine": 147,
+        "endLine": 193,
+        "isBehavioral": true,
+        "source": "    if (typeof action.type === 'undefined') {\n      throw new Error(\n        'Actions may not have an undefined \"type\" property. ' +\n          'Have you misspelled a constant?',\n      );\n    }\n\n    let stack;\n    if (trace) {\n      let extraFrames = 0;\n      if (typeof trace === 'function') {\n        stack = trace(action);\n      } else {\n        const error = Error();\n        let prevStackTraceLimit;\n        if (Error.captureStackTrace && isChromeOrNode) {\n          // avoid error-polyfill\n          if (traceLimit && Error.stackTraceLimit < traceLimit) {\n            prevStackTraceLimit = Error.stackTraceLimit;\n            Error.stackTraceLimit = traceLimit;\n          }\n          Error.captureStackTrace(error, toExcludeFromTrace);\n        } else {\n          extraFrames = 3;\n        }\n        stack = error.stack;\n        if (prevStackTraceLimit) Error.stackTraceLimit = prevStackTraceLimit;\n        if (\n          extraFrames ||\n          typeof Error.stackTraceLimit !== 'number' ||\n          (traceLimit && Error.stackTraceLimit > traceLimit)\n        ) {\n          if (stack != null) {\n            const frames = stack.split('\\n');\n            if (traceLimit && frames.length > traceLimit) {\n              stack = frames\n                .slice(\n                  0,\n                  traceLimit +\n                    extraFrames +\n                    (frames[0].startsWith('Error') ? 1 : 0),\n                )\n                .join('\\n');\n            }\n          }\n        }\n      }",
+        "detail": {
+          "unitId": "packages/redux-devtools-instrument/src/instrument.ts__ActionCreators.performAction#method:ActionCreators.performAction",
+          "fileId": "packages/redux-devtools-instrument/src/instrument.ts__ActionCreators.performAction",
+          "unitKind": "method",
+          "name": "performAction",
+          "qualifiedName": "ActionCreators.performAction",
+          "parentUnitId": null,
+          "startLine": 147,
+          "endLine": 193,
+          "signature": "performAction(action, trace)",
+          "parameters": [
+            { "name": "action", "type": null, "default": null, "optional": false, "variadic": false, "order": 0 },
+            { "name": "trace", "type": null, "default": null, "optional": false, "variadic": false, "order": 1 }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The action argument is expected to provide a type property.",
+            "When trace is a function, it is callable with the action argument."
+          ],
+          "postconditions": [
+            "An action with an undefined type does not complete normally.",
+            "When tracing is enabled with a function, that function is called with the action.",
+            "When tracing is enabled without a trace function, a stack string is obtained when the runtime provides one and may be limited according to traceLimit."
+          ],
+          "invariants": [
+            "The temporary Error.stackTraceLimit adjustment, when made, is restored after stack capture.",
+            "The action's type value is not modified."
+          ],
+          "edgeCases": [
+            "If action.type is undefined, an Error is thrown with the documented message.",
+            "If trace is falsy, no trace is captured.",
+            "If trace is a function, its return value is used as the stack value.",
+            "If trace is truthy but not a function, a runtime Error stack is captured; on Chrome or Node, the capture excludes the configured frame and may temporarily apply traceLimit.",
+            "If stack capture yields null or undefined, stack trimming is skipped.",
+            "If a captured stack exceeds traceLimit, it is truncated to the configured number of frames while preserving the error header adjustment used by the implementation."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["Error"],
+            "reverts": [],
+            "onInvalidInput": "Throws when action.type is undefined.",
+            "returnsOnError": null
+          },
+          "stateMutations": [
+            "Temporarily changes Error.stackTraceLimit during stack capture when traceLimit requires it, then restores the previous value."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "trace", "source": "caller-supplied callback", "kind": "external" }],
+          "symbolReferences": [
+            "Error",
+            "Error.captureStackTrace",
+            "Error.stackTraceLimit",
+            "isChromeOrNode",
+            "traceLimit",
+            "toExcludeFromTrace"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Validates that the action has a defined type and, when tracing is enabled, obtains a stack trace either through the supplied trace function or runtime stack capture.",
+          "specLiterals": [
+            {
+              "kind": "error-message",
+              "value": "Actions may not have an undefined \"type\" property. Have you misspelled a constant?",
+              "role": "Error message raised when the action type is undefined."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "performAction(action, false) is called.",
+              "then": "An Error is thrown with message `Actions may not have an undefined \"type\" property. Have you misspelled a constant?`.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "performAction(action, traceCallback) is called.",
+              "then": "The trace callback receives the action and its returned value is used as the captured stack.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "6b2d22cb0d9c725bc5f56481fa45127a4559221e4c6b045a5604d2d9bb1a81f2"
+        }
+      },
+      {
+        "unitId": "packages/redux-devtools-instrument/src/instrument.ts__computeWithTryCatch#function:computeWithTryCatch",
+        "unitKind": "function",
+        "name": "computeWithTryCatch",
+        "qualifiedName": "computeWithTryCatch",
+        "parentUnitId": null,
+        "startLine": 200,
+        "endLine": 219,
+        "isBehavioral": true,
+        "source": "      stack,\n    };\n  },\n\n  reset(this: void): ResetAction {\n    return { type: ActionTypes.RESET, timestamp: Date.now() };\n  },\n\n  rollback(this: void): RollbackAction {\n    return { type: ActionTypes.ROLLBACK, timestamp: Date.now() };\n  },\n\n  commit(this: void): CommitAction {\n    return { type: ActionTypes.COMMIT, timestamp: Date.now() };\n  },\n\n  sweep(this: void): SweepAction {\n    return { type: ActionTypes.SWEEP };\n  },\n",
+        "detail": {
+          "unitId": "packages/redux-devtools-instrument/src/instrument.ts__computeWithTryCatch#function:computeWithTryCatch",
+          "fileId": "packages/redux-devtools-instrument/src/instrument.ts__computeWithTryCatch",
+          "unitKind": "function",
+          "name": "computeWithTryCatch",
+          "qualifiedName": "computeWithTryCatch",
+          "parentUnitId": null,
+          "startLine": 200,
+          "endLine": 219,
+          "signature": "function computeWithTryCatch<S>(fn: () => S, errorHandler: (error: Error) => S): S",
+          "parameters": [
+            { "name": "fn", "type": "() => S", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "errorHandler",
+              "type": "(error: Error) => S",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "S",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": ["S"],
+          "logicOutline": [],
+          "preconditions": ["fn is callable.", "errorHandler is callable."],
+          "postconditions": [
+            "If fn completes normally, its returned value is returned unchanged.",
+            "If fn throws, errorHandler is invoked with the thrown value treated as an Error and its returned value is returned."
+          ],
+          "invariants": [
+            "The computation is attempted at most once per invocation.",
+            "The error handler is invoked only when the computation throws.",
+            "The function does not throw an error from the caught computation after the handler returns normally."
+          ],
+          "edgeCases": [
+            "A normal computation returns its value without invoking the error handler.",
+            "A computation that throws invokes the error handler and returns the handler result.",
+            "If the error handler itself throws, that exception propagates to the caller."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["An exception thrown by errorHandler propagates to the caller."],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": "Returns the value produced by errorHandler for an exception thrown by fn."
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "fn", "source": null, "kind": "external" },
+            { "name": "errorHandler", "source": null, "kind": "external" }
+          ],
+          "symbolReferences": ["Error"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Executes a computation and returns its result when successful. If the computation throws, it delegates the error to the supplied handler and returns the handler's result.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "computeWithTryCatch(fn, errorHandler) is called",
+              "then": "The result is 42 and errorHandler is not called.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "computeWithTryCatch(fn, errorHandler) is called",
+              "then": "The thrown error is passed to errorHandler and the fallback value is returned.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "computeWithTryCatch(fn, errorHandler) is called",
+              "then": "The second error from errorHandler propagates to the caller.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "d7980e4a24bbe5a6d7fb0c86b8e7345cff27a553ca5aade5861ca2c1ef8bbed1"
+        }
+      },
+      {
+        "unitId": "packages/redux-devtools-instrument/src/instrument.ts__computeNextEntry#function:computeNextEntry",
+        "unitKind": "function",
+        "name": "computeNextEntry",
+        "qualifiedName": "computeNextEntry",
+        "parentUnitId": null,
+        "startLine": 225,
+        "endLine": 237,
+        "isBehavioral": true,
+        "source": "    this: void,\n    start: number,\n    end: number,\n    active = true,\n  ): SetActionsActiveAction {\n    return { type: ActionTypes.SET_ACTIONS_ACTIVE, start, end, active };\n  },\n\n  reorderAction(\n    this: void,\n    actionId: number,\n    beforeActionId: number,\n  ): ReorderAction {",
+        "detail": {
+          "unitId": "packages/redux-devtools-instrument/src/instrument.ts__computeNextEntry#function:computeNextEntry",
+          "fileId": "packages/redux-devtools-instrument/src/instrument.ts__computeNextEntry",
+          "unitKind": "function",
+          "name": "computeNextEntry",
+          "qualifiedName": "computeNextEntry",
+          "parentUnitId": null,
+          "startLine": 225,
+          "endLine": 237,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Computes the next entry used by the Redux DevTools instrumentation state-transition logic.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "7c6a60813e3d8bcbb0c190f1fa1135d990165f5f21c7883c3b3f3c7208c8754f"
+        }
+      },
+      {
+        "unitId": "packages/redux-devtools-instrument/src/instrument.ts__recomputeStates#function:recomputeStates",
+        "unitKind": "function",
+        "name": "recomputeStates",
+        "qualifiedName": "recomputeStates",
+        "parentUnitId": null,
+        "startLine": 243,
+        "endLine": 287,
+        "isBehavioral": true,
+        "source": "  },\n\n  jumpToAction(this: void, actionId: number): JumpToActionAction {\n    return { type: ActionTypes.JUMP_TO_ACTION, actionId };\n  },\n\n  importState<S, A extends Action<string>, MonitorState = null>(\n    this: void,\n    nextLiftedState: LiftedState<S, A, MonitorState> | readonly A[],\n    noRecompute?: boolean,\n  ): ImportStateAction<S, A, MonitorState> {\n    return { type: ActionTypes.IMPORT_STATE, nextLiftedState, noRecompute };\n  },\n\n  lockChanges(this: void, status: boolean): LockChangesAction {\n    return { type: ActionTypes.LOCK_CHANGES, status };\n  },\n\n  pauseRecording(this: void, status: boolean): PauseRecordingAction {\n    return { type: ActionTypes.PAUSE_RECORDING, status };\n  },\n};\n\nexport const INIT_ACTION = { type: '@@INIT' };\n\n/**\n * Computes the next entry with exceptions catching.\n */\nfunction computeWithTryCatch<S, A extends Action<string>, PreloadedState>(\n  reducer: Reducer<S, A, PreloadedState>,\n  action: A,\n  state: S,\n) {\n  let nextState = state;\n  let nextError;\n  try {\n    nextState = reducer(state, action);\n  } catch (err) {\n    nextError = (err as object).toString();\n    if (isChrome) {\n      // In Chrome, rethrowing provides better source map support\n      setTimeout(() => {\n        throw err;\n      });\n    } else {",
+        "detail": {
+          "unitId": "packages/redux-devtools-instrument/src/instrument.ts__recomputeStates#function:recomputeStates",
+          "fileId": "packages/redux-devtools-instrument/src/instrument.ts__recomputeStates",
+          "unitKind": "function",
+          "name": "recomputeStates",
+          "qualifiedName": "recomputeStates",
+          "parentUnitId": null,
+          "startLine": 243,
+          "endLine": 287,
+          "signature": "function recomputeStates<S, A extends Action<string>, PreloadedState>(liftedState: LiftedState<S, A>, reducer: Reducer<S, A, PreloadedState>, committedState: S)",
+          "parameters": [
+            {
+              "name": "liftedState",
+              "type": "LiftedState<S, A>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "reducer",
+              "type": "Reducer<S, A, PreloadedState>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            { "name": "committedState", "type": "S", "default": null, "optional": false, "variadic": false, "order": 2 }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": ["S", "A extends Action<string>", "PreloadedState"],
+          "logicOutline": [],
+          "preconditions": [
+            "liftedState contains a computed-state entry at index 0 and action records for its staged action IDs.",
+            "reducer can be invoked with state values of type S and actions of type A.",
+            "committedState is a valid state value for reducer."
+          ],
+          "postconditions": [
+            "Returns a lifted state with computed states rebuilt by replaying staged actions in stagedActionIds order.",
+            "Actions whose IDs occur in skippedActionIds do not produce computed-state entries.",
+            "The returned committed state is committedState.",
+            "The input liftedState is not mutated."
+          ],
+          "invariants": [
+            "The initial computed-state entry is retained as the starting point for replay.",
+            "Replay order follows stagedActionIds order.",
+            "Each non-skipped action is computed from the state produced by the preceding retained entry.",
+            "Reducer exceptions are represented according to the computeNextEntry error-handling contract rather than being silently converted into a successful state."
+          ],
+          "edgeCases": [
+            "When no staged actions remain after the initial entry, the returned computed-state list contains only the initial entry.",
+            "When all replayable staged actions are skipped, no additional computed-state entries are added.",
+            "When some staged actions are skipped, only non-skipped actions contribute entries and subsequent actions replay from the latest retained state.",
+            "When the reducer throws for a replayed action, the corresponding computed entry records the computation error according to computeNextEntry behavior."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": "Reducer failures are captured in the computed entry by the delegated computation path; the function does not intentionally throw them as its normal error policy."
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "computeNextEntry", "source": "recomputeStates sibling function", "kind": "internal" }],
+          "symbolReferences": ["LiftedState", "Action", "Reducer"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Recomputes lifted computed states by replaying the staged, non-skipped actions from the committed state. It preserves the lifted-state structure while replacing the computed-state history and committed state with the recomputed results.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "recomputeStates is called with a reducer that applies action1 and then action2.",
+              "then": "The returned computed states contain the initial entry followed by the results of action1 and action2 in that order, with each action receiving the preceding computed state.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "recomputeStates is called.",
+              "then": "The returned computed states contain the initial entry and the result of action2 computed from the initial state; no entry is produced for action1.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "recomputeStates is called.",
+              "then": "The returned computed history includes the delegated error representation for that action rather than treating the failed reduction as an ordinary successful state transition.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "6ad1dd3094802747eb2494385469586769c6e72a1c3d646b4ff594d813a9f269"
+        }
+      },
+      {
+        "unitId": "packages/redux-devtools-instrument/src/instrument.ts__liftAction#function:liftAction",
+        "unitKind": "function",
+        "name": "liftAction",
+        "qualifiedName": "liftAction",
+        "parentUnitId": null,
+        "startLine": 294,
+        "endLine": 305,
+        "isBehavioral": true,
+        "source": "    error: nextError,\n  };\n}\n\n/**\n * Computes the next entry in the log by applying an action.\n */\nfunction computeNextEntry<S, A extends Action<string>, PreloadedState>(\n  reducer: Reducer<S, A, PreloadedState>,\n  action: A,\n  state: S,\n  shouldCatchErrors: boolean | undefined,",
+        "detail": {
+          "unitId": "packages/redux-devtools-instrument/src/instrument.ts__liftAction#function:liftAction",
+          "fileId": "packages/redux-devtools-instrument/src/instrument.ts__liftAction",
+          "unitKind": "function",
+          "name": "liftAction",
+          "qualifiedName": "liftAction",
+          "parentUnitId": null,
+          "startLine": 294,
+          "endLine": 305,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Defines the action-lifting boundary used by the Redux DevTools instrumentation module. The supplied unit excerpt does not expose its parameter, return, or behavioral details.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "5045dd06ead1c57738f3adb175e5879fcc3299b92e4e0307d51a2a7fcc31582a"
+        }
+      },
+      {
+        "unitId": "packages/redux-devtools-instrument/src/instrument.ts__isArray#function:isArray",
+        "unitKind": "function",
+        "name": "isArray",
+        "qualifiedName": "isArray",
+        "parentUnitId": null,
+        "startLine": 307,
+        "endLine": 311,
+        "isBehavioral": false,
+        "source": "  if (!shouldCatchErrors) {\n    return { state: reducer(state, action) };\n  }\n  return computeWithTryCatch(reducer, action, state);\n}",
+        "detail": {
+          "unitId": "packages/redux-devtools-instrument/src/instrument.ts__isArray#function:isArray",
+          "fileId": "packages/redux-devtools-instrument/src/instrument.ts__isArray",
+          "unitKind": "function",
+          "name": "isArray",
+          "qualifiedName": "isArray",
+          "parentUnitId": null,
+          "startLine": 307,
+          "endLine": 311,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "`shouldCatchErrors`, `reducer`, `state`, and `action` are available in the enclosing scope.",
+            "When the direct path is selected, `reducer` accepts `state` and `action`."
+          ],
+          "postconditions": [
+            "When `shouldCatchErrors` is false, returns an object whose `state` property is the result of `reducer(state, action)`.",
+            "When `shouldCatchErrors` is true, returns the result of `computeWithTryCatch(reducer, action, state)`."
+          ],
+          "invariants": [
+            "The function returns the reducer computation wrapped in an object on the direct path.",
+            "The try-catch path delegates all result construction to `computeWithTryCatch`."
+          ],
+          "edgeCases": [
+            "If `shouldCatchErrors` is false, reducer errors are not intercepted by this function body.",
+            "If `shouldCatchErrors` is true, behavior is determined by `computeWithTryCatch`, including its error handling."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["Errors thrown by `reducer` on the direct path propagate to the caller."],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "reducer", "source": null, "kind": "internal" },
+            {
+              "name": "computeWithTryCatch",
+              "source": "packages/redux-devtools-instrument/src/instrument.ts",
+              "kind": "internal"
+            }
+          ],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Returns an object of the form `{ state: reducer(state, action) }` when error catching is disabled; otherwise returns the value produced by `computeWithTryCatch(reducer, action, state)`.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "The supplied function body conditionally computes a reducer result directly or delegates computation to the try-catch helper, returning the resulting state object.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The function is invoked.",
+              "then": "It returns exactly `{ state: nextState }`.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The function is invoked with `reducer`, `action`, and `state`.",
+              "then": "It returns exactly the value returned by `computeWithTryCatch(reducer, action, state)`.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "c9747af259260deb9160c97e55f821c5bcc2cfb6ba1bb2b3d2b221c5ae61fc9b"
+        }
+      },
+      {
+        "unitId": "packages/redux-devtools-instrument/src/instrument.ts__liftReducerWith#function:liftReducerWith",
+        "unitKind": "function",
+        "name": "liftReducerWith",
+        "qualifiedName": "liftReducerWith",
+        "parentUnitId": null,
+        "startLine": 370,
+        "endLine": 650,
+        "isBehavioral": true,
+        "source": "/**\n * Lifts an app's action into an action on the lifted store.\n */\nfunction liftAction<A extends Action<string>>(\n  action: A,\n  trace?: ((action: A) => string | undefined) | boolean,\n  traceLimit?: number,\n  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type\n  toExcludeFromTrace?: Function,\n) {\n  return ActionCreators.performAction(\n    action,\n    trace,\n    traceLimit,\n    toExcludeFromTrace,\n  );\n}\n\nfunction isArray<S, A extends Action<string>, MonitorState>(\n  nextLiftedState: LiftedState<S, A, MonitorState> | readonly A[],\n): nextLiftedState is readonly A[] {\n  return Array.isArray(nextLiftedState);\n}\n\nexport interface LiftedState<S, A extends Action<string>, MonitorState> {\n  monitorState: MonitorState;\n  nextActionId: number;\n  actionsById: { [actionId: number]: PerformAction<A> };\n  stagedActionIds: number[];\n  skippedActionIds: number[];\n  committedState: S;\n  currentStateIndex: number;\n  computedStates: { state: S; error?: string }[];\n  isLocked: boolean;\n  isPaused: boolean;\n}\n\n/**\n * Creates a history state reducer from an app's reducer.\n */\nfunction liftReducerWith<\n  S,\n  A extends Action<string>,\n  PreloadedState,\n  MonitorState,\n  MonitorAction extends Action<string>,\n>(\n  reducer: Reducer<S, A, PreloadedState>,\n  initialCommittedState: S | PreloadedState | undefined,\n  monitorReducer: Reducer<MonitorState, MonitorAction>,\n  options: Options<S, A, MonitorState, MonitorAction>,\n): Reducer<LiftedState<S, A, MonitorState>, LiftedAction<S, A, MonitorState>> {\n  const initialLiftedState: LiftedState<S, A, MonitorState> = {\n    monitorState: monitorReducer(undefined, {} as MonitorAction),\n    nextActionId: 1,\n    actionsById: { 0: liftAction(INIT_ACTION as A) },\n    stagedActionIds: [0],\n    skippedActionIds: [],\n    committedState: initialCommittedState as S,\n    currentStateIndex: 0,\n    computedStates: [],\n    isLocked: options.shouldStartLocked === true,\n    isPaused: options.shouldRecordChanges === false,\n  };\n\n  /**\n   * Manages how the history actions modify the history state.\n   */\n  return (\n    liftedState: LiftedState<S, A, MonitorState> | undefined,\n    liftedAction: LiftedAction<S, A, MonitorState>,\n  ): LiftedState<S, A, MonitorState> => {\n    let {\n      monitorState,\n      actionsById,\n      nextActionId,\n      stagedActionIds,\n      skippedActionIds,\n      committedState,\n      currentStateIndex,\n      computedStates,\n      isLocked,\n      isPaused,\n    } = liftedState || initialLiftedState;\n\n    if (!liftedState) {\n      // Prevent mutating initialLiftedState\n      actionsById = { ...actionsById };\n    }\n\n    function commitExcessActions(n: number) {\n      // Auto-commits n-number of excess actions.\n      let excess = n;\n      let idsToDelete = stagedActionIds.slice(1, excess + 1);\n\n      for (let i = 0; i < idsToDelete.length; i++) {\n        if (computedStates[i + 1].error) {\n          // Stop if error is found. Commit actions up to error.\n          excess = i;\n          idsToDelete = stagedActionIds.slice(1, excess + 1);\n          break;\n        } else {\n          delete actionsById[idsToDelete[i]];\n        }\n      }\n\n      skippedActionIds = skippedActionIds.filter(\n        (id) => !idsToDelete.includes(id),\n      );\n      stagedActionIds = [0, ...stagedActionIds.slice(excess + 1)];\n      committedState = computedStates[excess].state;\n      computedStates = computedStates.slice(excess);\n      currentStateIndex =\n        currentStateIndex > excess ? currentStateIndex - excess : 0;\n    }\n\n    function computePausedAction(\n      shouldInit?: boolean,\n    ): LiftedState<S, A, MonitorState> {\n      let computedState;\n      if (shouldInit) {\n        computedState = computedStates[currentStateIndex];\n        monitorState = monitorReducer(\n          monitorState,\n          liftedAction as MonitorAction,\n        );\n      } else {\n        computedState = computeNextEntry(\n          reducer,\n          (liftedAction as PerformAction<A>).action,\n          computedStates[currentStateIndex].state,\n          false,\n        );\n      }\n      if (!options.pauseActionType || nextActionId === 1) {\n        return {\n          monitorState,\n          actionsById: { 0: liftAction(INIT_ACTION as A) },\n          nextActionId: 1,\n          stagedActionIds: [0],\n          skippedActionIds: [],\n          committedState: computedState.state,\n          currentStateIndex: 0,\n          computedStates: [computedState],\n          isLocked,\n          isPaused: true,\n        };\n      }\n      if (shouldInit) {\n        if (currentStateIndex === stagedActionIds.length - 1) {\n          currentStateIndex++;\n        }\n        stagedActionIds = [...stagedActionIds, nextActionId];\n        nextActionId++;\n      }\n      return {\n        monitorState,\n        actionsById: {\n          ...actionsById,\n          [nextActionId - 1]: liftAction({\n            type: options.pauseActionType,\n          } as A),\n        },\n        nextActionId,\n        stagedActionIds,\n        skippedActionIds,\n        committedState,\n        currentStateIndex,\n        computedStates: [\n          ...computedStates.slice(0, stagedActionIds.length - 1),\n          computedState,\n        ],\n        isLocked,\n        isPaused: true,\n      };\n    }\n\n    // By default, aggressively recompute every state whatever happens.\n    // This has O(n) performance, so we'll override this to a sensible\n    // value whenever we feel like we don't have to recompute the states.\n    let minInvalidatedStateIndex = 0;\n\n    // maxAge number can be changed dynamically\n    let maxAge = options.maxAge;\n    if (typeof maxAge === 'function')\n      maxAge = maxAge(liftedAction, liftedState);\n\n    if (/^@@redux\\/(INIT|REPLACE)/.test(liftedAction.type)) {\n      if (options.shouldHotReload === false) {\n        actionsById = { 0: liftAction(INIT_ACTION as A) };\n        nextActionId = 1;\n        stagedActionIds = [0];\n        skippedActionIds = [];\n        committedState =\n          computedStates.length === 0\n            ? (initialCommittedState as S)\n            : computedStates[currentStateIndex].state;\n        currentStateIndex = 0;\n        computedStates = [];\n      }\n\n      // Recompute states on hot reload and init.\n      minInvalidatedStateIndex = 0;\n\n      if (maxAge && stagedActionIds.length > maxAge) {\n        // States must be recomputed before committing excess.\n        computedStates = recomputeStates<S, A, PreloadedState>(\n          computedStates,\n          minInvalidatedStateIndex,\n          reducer,\n          committedState,\n          actionsById,\n          stagedActionIds,\n          skippedActionIds,\n          options.shouldCatchErrors,\n        );\n\n        commitExcessActions(stagedActionIds.length - maxAge);\n\n        // Avoid double computation.\n        minInvalidatedStateIndex = Infinity;\n      }\n    } else {\n      switch (liftedAction.type) {\n        case ActionTypes.PERFORM_ACTION: {\n          if (isLocked) return liftedState || initialLiftedState;\n          if (isPaused) return computePausedAction();\n\n          // Auto-commit as new actions come in.\n          if (maxAge && stagedActionIds.length >= maxAge) {\n            commitExcessActions(stagedActionIds.length - maxAge + 1);\n          }\n\n          if (currentStateIndex === stagedActionIds.length - 1) {\n            currentStateIndex++;\n          }\n          const actionId = nextActionId++;\n          // Mutation! This is the hottest path, and we optimize on purpose.\n          // It is safe because we set a new key in a cache dictionary.\n          actionsById[actionId] = liftedAction;\n          stagedActionIds = [...stagedActionIds, actionId];\n          // Optimization: we know that only the new action needs computing.\n          minInvalidatedStateIndex = stagedActionIds.length - 1;\n          break;\n        }\n        case ActionTypes.RESET: {\n          // Get back to the state the store was created with.\n          actionsById = { 0: liftAction(INIT_ACTION as A) };\n          nextActionId = 1;\n          stagedActionIds = [0];\n          skippedActionIds = [];\n          committedState = initialCommittedState as S;\n          currentStateIndex = 0;\n          computedStates = [];\n          break;\n        }\n        case ActionTypes.COMMIT: {\n          // Consider the last committed state the new starting point.\n          // Squash any staged actions into a single committed state.\n          actionsById = { 0: liftAction(INIT_ACTION as A) };\n          nextActionId = 1;\n          stagedActionIds = [0];\n          skippedActionIds = [];\n          committedState = computedStates[currentStateIndex].state;\n          currentStateIndex = 0;\n          computedStates = [];\n          break;\n        }\n        case ActionTypes.ROLLBACK: {\n          // Forget about any staged actions.\n          // Start again from the last committed state.\n          actionsById = { 0: liftAction(INIT_ACTION as A) };\n          nextActionId = 1;\n          stagedActionIds = [0];\n          skippedActionIds = [];\n          currentStateIndex = 0;\n          computedStates = [];\n          break;\n        }\n        case ActionTypes.TOGGLE_ACTION: {\n          // Toggle whether an action with given ID is skipped.",
+        "detail": {
+          "unitId": "packages/redux-devtools-instrument/src/instrument.ts__liftReducerWith#function:liftReducerWith",
+          "fileId": "packages/redux-devtools-instrument/src/instrument.ts__liftReducerWith",
+          "unitKind": "function",
+          "name": "liftReducerWith",
+          "qualifiedName": "liftReducerWith",
+          "parentUnitId": null,
+          "startLine": 370,
+          "endLine": 650,
+          "signature": "function liftReducerWith<S, A extends Action<string>, PreloadedState, MonitorState, MonitorAction extends Action<string>>(reducer: Reducer<S, A, PreloadedState>, initialCommittedState: S | PreloadedState | undefined, monitorReducer: Reducer<MonitorState, MonitorAction>, options: Options<S, A, MonitorState, MonitorAction>): Reducer<LiftedState<S, A, MonitorState>, LiftedAction<S, A, MonitorState>>",
+          "parameters": [
+            {
+              "name": "reducer",
+              "type": "Reducer<S, A, PreloadedState>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "initialCommittedState",
+              "type": "S | PreloadedState | undefined",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "monitorReducer",
+              "type": "Reducer<MonitorState, MonitorAction>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            },
+            {
+              "name": "options",
+              "type": "Options<S, A, MonitorState, MonitorAction>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 3
+            }
+          ],
+          "returnType": "Reducer<LiftedState<S, A, MonitorState>, LiftedAction<S, A, MonitorState>>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [
+            "S",
+            "A extends Action<string>",
+            "PreloadedState",
+            "MonitorState",
+            "MonitorAction extends Action<string>"
+          ],
+          "logicOutline": [],
+          "preconditions": [
+            "reducer, monitorReducer, and options are supplied according to their declared types.",
+            "The lifted action input conforms to LiftedAction<S, A, MonitorState>."
+          ],
+          "postconditions": [
+            "Returns a LiftedState containing monitor state, action history, staged and skipped action IDs, committed state, current state index, computed states, and lock/pause flags.",
+            "On an undefined lifted state, initializes the lifted history with action ID 0, nextActionId 1, stagedActionIds [0], no skipped actions, and the configured lock and pause flags.",
+            "Application states are recomputed when invalidated and history controls update the corresponding lifted-state fields."
+          ],
+          "invariants": [
+            "The initial lifted action history contains action ID 0 and stagedActionIds begins with 0.",
+            "nextActionId advances for newly recorded lifted actions and is reset to 1 by reset, commit, rollback, and applicable hot-reload handling.",
+            "The returned state preserves the LiftedState shape.",
+            "When the lifted state is locked, perform-action inputs leave the existing lifted state unchanged.",
+            "When recording is paused, perform actions are handled through paused-action state computation rather than normal staging."
+          ],
+          "edgeCases": [
+            "An undefined lifted state initializes from the internally created initialLiftedState without mutating that initial object.",
+            "An action whose type matches /^@@redux\\/(INIT|REPLACE)/ triggers hot-reload/init handling; with shouldHotReload false, the history is reset while the committed state is preserved from the current computed state when available.",
+            "A perform-action received while locked returns the existing lifted state unchanged.",
+            "A perform-action received while paused produces paused-state handling rather than normal action staging.",
+            "When maxAge is configured and the staged history exceeds its limit, excess actions are recomputed and automatically committed before continuing.",
+            "Reset clears staged and computed history and restores the configured initial committed state; commit promotes the current computed state to the committed state; rollback discards staged computations while retaining the committed state."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": "Reducer computation errors may be captured in computed state entries when options.shouldCatchErrors enables error catching; otherwise behavior follows the underlying reducer/computation policy."
+          },
+          "stateMutations": [
+            "Mutates the local action cache by assigning actionsById[actionId] for a newly recorded action.",
+            "Updates lifted reducer state fields for action IDs, staged/skipped IDs, committed state, computed states, current index, monitor state, and lock/pause status."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "monitorReducer", "source": "parameter", "kind": "external" },
+            { "name": "reducer", "source": "parameter", "kind": "external" },
+            { "name": "liftAction", "source": "internal sibling function", "kind": "internal" },
+            { "name": "computeNextEntry", "source": "internal sibling function", "kind": "internal" },
+            { "name": "recomputeStates", "source": "internal sibling function", "kind": "internal" }
+          ],
+          "symbolReferences": [
+            "Action<string>",
+            "Reducer",
+            "Options",
+            "LiftedState",
+            "LiftedAction",
+            "PerformAction",
+            "ActionTypes",
+            "INIT_ACTION"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Creates a reducer that maintains lifted action history, computed application states, monitor state, and history controls such as reset, commit, rollback, locking, pausing, skipping, and action-age limiting.",
+          "specLiterals": [
+            {
+              "kind": "regex",
+              "value": "/^@@redux\\/(INIT|REPLACE)/",
+              "role": "Identifies Redux initialization and replacement actions for hot-reload and initialization handling."
+            },
+            { "kind": "magic-number", "value": "0", "role": "Reserved initial action ID and staged-history anchor." },
+            {
+              "kind": "magic-number",
+              "value": "1",
+              "role": "Initial next action ID and first-action pause handling boundary."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The returned lifted reducer is called with undefined lifted state and any valid lifted action.",
+              "then": "The resulting state starts with actionsById containing action ID 0, stagedActionIds equal to [0], skippedActionIds equal to [], nextActionId equal to 1, and isLocked/isPaused reflecting the configured flags.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The returned reducer receives a PERFORM_ACTION lifted action.",
+              "then": "It returns the existing lifted state without recording the action or advancing nextActionId.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The returned reducer receives a COMMIT lifted action.",
+              "then": "It resets the staged action history to the initial action, sets committedState to the current computed state's state, resets nextActionId to 1 and currentStateIndex to 0, and clears computedStates.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "9e1986bc8d155abebf37e01f3b8d194220af3d0a1848b43249ea1626bbee9af7"
+        }
+      },
+      {
+        "unitId": "packages/redux-devtools-instrument/src/instrument.ts__liftReducerWith.commitExcessActions#function:liftReducerWith.commitExcessActions",
+        "unitKind": "function",
+        "name": "commitExcessActions",
+        "qualifiedName": "liftReducerWith.commitExcessActions",
+        "parentUnitId": "packages/redux-devtools-instrument/src/instrument.ts__liftReducerWith#function:liftReducerWith",
+        "startLine": 411,
+        "endLine": 432,
+        "isBehavioral": true,
+        "source": "  S,\n  A extends Action<string>,\n  PreloadedState,\n  MonitorState,\n  MonitorAction extends Action<string>,\n>(\n  reducer: Reducer<S, A, PreloadedState>,\n  initialCommittedState: S | PreloadedState | undefined,\n  monitorReducer: Reducer<MonitorState, MonitorAction>,\n  options: Options<S, A, MonitorState, MonitorAction>,\n): Reducer<LiftedState<S, A, MonitorState>, LiftedAction<S, A, MonitorState>> {\n  const initialLiftedState: LiftedState<S, A, MonitorState> = {\n    monitorState: monitorReducer(undefined, {} as MonitorAction),\n    nextActionId: 1,\n    actionsById: { 0: liftAction(INIT_ACTION as A) },\n    stagedActionIds: [0],\n    skippedActionIds: [],\n    committedState: initialCommittedState as S,\n    currentStateIndex: 0,\n    computedStates: [],\n    isLocked: options.shouldStartLocked === true,\n    isPaused: options.shouldRecordChanges === false,",
+        "detail": {
+          "unitId": "packages/redux-devtools-instrument/src/instrument.ts__liftReducerWith.commitExcessActions#function:liftReducerWith.commitExcessActions",
+          "fileId": "packages/redux-devtools-instrument/src/instrument.ts__liftReducerWith.commitExcessActions",
+          "unitKind": "function",
+          "name": "commitExcessActions",
+          "qualifiedName": "liftReducerWith.commitExcessActions",
+          "parentUnitId": "packages/redux-devtools-instrument/src/instrument.ts__liftReducerWith#function:liftReducerWith",
+          "startLine": 411,
+          "endLine": 432,
+          "signature": "(liftedState: LiftedState<S, A, MonitorState>, n: number): LiftedState<S, A, MonitorState>",
+          "parameters": [
+            {
+              "name": "liftedState",
+              "type": "LiftedState<S, A, MonitorState>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            { "name": "n", "type": "number", "default": null, "optional": false, "variadic": false, "order": 1 }
+          ],
+          "returnType": "LiftedState<S, A, MonitorState>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [
+            "S",
+            "A extends Action<string>",
+            "PreloadedState",
+            "MonitorState",
+            "MonitorAction extends Action<string>"
+          ],
+          "logicOutline": [],
+          "preconditions": [
+            "liftedState is a valid LiftedState<S, A, MonitorState>.",
+            "n is a numeric action-count limit."
+          ],
+          "postconditions": [
+            "The returned value is a LiftedState<S, A, MonitorState>.",
+            "If the number of staged actions exceeds n, the excess historical actions are committed and the related lifted-state collections and current index are adjusted consistently.",
+            "If the number of staged actions does not exceed n, the lifted state is unchanged."
+          ],
+          "invariants": [
+            "The staged action history, actionsById, computedStates, skippedActionIds, committedState, and currentStateIndex remain mutually consistent.",
+            "The number of retained staged actions does not exceed the requested limit after excess actions are committed."
+          ],
+          "edgeCases": [
+            "When the staged action count is less than or equal to n, no excess actions are committed and the existing lifted state is returned unchanged.",
+            "When n requires removing historical actions, those actions are incorporated into committedState and removed from the retained lifted history.",
+            "When skipped actions refer to removed history, they are not retained in the resulting skippedActionIds."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["LiftedState", "Action"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Returns a lifted state with excess staged actions committed into the committed state. When the staged action count does not exceed the requested limit, the lifted state remains unchanged.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "1eb5d1d64257f996cd37eba9a8672c02349576efbc212b7a9da581dd221df177"
+        }
+      },
+      {
+        "unitId": "packages/redux-devtools-instrument/src/instrument.ts__liftReducerWith.computePausedAction#function:liftReducerWith.computePausedAction",
+        "unitKind": "function",
+        "name": "computePausedAction",
+        "qualifiedName": "liftReducerWith.computePausedAction",
+        "parentUnitId": "packages/redux-devtools-instrument/src/instrument.ts__liftReducerWith#function:liftReducerWith",
+        "startLine": 434,
+        "endLine": 490,
+        "isBehavioral": true,
+        "source": "\n  /**\n   * Manages how the history actions modify the history state.\n   */\n  return (\n    liftedState: LiftedState<S, A, MonitorState> | undefined,\n    liftedAction: LiftedAction<S, A, MonitorState>,\n  ): LiftedState<S, A, MonitorState> => {\n    let {\n      monitorState,\n      actionsById,\n      nextActionId,\n      stagedActionIds,\n      skippedActionIds,\n      committedState,\n      currentStateIndex,\n      computedStates,\n      isLocked,\n      isPaused,\n    } = liftedState || initialLiftedState;\n\n    if (!liftedState) {\n      // Prevent mutating initialLiftedState\n      actionsById = { ...actionsById };\n    }\n\n    function commitExcessActions(n: number) {\n      // Auto-commits n-number of excess actions.\n      let excess = n;\n      let idsToDelete = stagedActionIds.slice(1, excess + 1);\n\n      for (let i = 0; i < idsToDelete.length; i++) {\n        if (computedStates[i + 1].error) {\n          // Stop if error is found. Commit actions up to error.\n          excess = i;\n          idsToDelete = stagedActionIds.slice(1, excess + 1);\n          break;\n        } else {\n          delete actionsById[idsToDelete[i]];\n        }\n      }\n\n      skippedActionIds = skippedActionIds.filter(\n        (id) => !idsToDelete.includes(id),\n      );\n      stagedActionIds = [0, ...stagedActionIds.slice(excess + 1)];\n      committedState = computedStates[excess].state;\n      computedStates = computedStates.slice(excess);\n      currentStateIndex =\n        currentStateIndex > excess ? currentStateIndex - excess : 0;\n    }\n\n    function computePausedAction(\n      shouldInit?: boolean,\n    ): LiftedState<S, A, MonitorState> {\n      let computedState;\n      if (shouldInit) {",
+        "detail": {
+          "unitId": "packages/redux-devtools-instrument/src/instrument.ts__liftReducerWith.computePausedAction#function:liftReducerWith.computePausedAction",
+          "fileId": "packages/redux-devtools-instrument/src/instrument.ts__liftReducerWith.computePausedAction",
+          "unitKind": "function",
+          "name": "computePausedAction",
+          "qualifiedName": "liftReducerWith.computePausedAction",
+          "parentUnitId": "packages/redux-devtools-instrument/src/instrument.ts__liftReducerWith#function:liftReducerWith",
+          "startLine": 434,
+          "endLine": 490,
+          "signature": "function computePausedAction(shouldInit?: boolean): LiftedState<S, A, MonitorState>",
+          "parameters": [
+            {
+              "name": "shouldInit",
+              "type": "boolean",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "LiftedState<S, A, MonitorState>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The enclosing liftReducerWith state variables are initialized or have been obtained from initialLiftedState.",
+            "computedStates contains the currently selected computed state when shouldInit is false or omitted."
+          ],
+          "postconditions": [
+            "Returns a LiftedState containing the enclosing monitor, action, staging, commit, lock, and pause state.",
+            "The returned computedStates equals the existing computedStates with one computed state appended.",
+            "When shouldInit is true, the appended state is computed by invoking the reducer with an undefined previous state and the current lifted action.",
+            "When shouldInit is false or omitted, the appended state is the currently selected computed state."
+          ],
+          "invariants": [
+            "The existing history arrays and action mappings are preserved in the returned state.",
+            "The paused-state flag and lock-state flag are preserved.",
+            "Reducer errors during initialization are represented through the computed-state error result supplied by computeWithTryCatch rather than escaping directly."
+          ],
+          "edgeCases": [
+            "With shouldInit omitted or false, no reducer initialization is performed and the currently selected computed state is appended.",
+            "With shouldInit true, reducer initialization is performed using an undefined prior state and the current lifted action.",
+            "If reducer initialization throws, the returned computed state carries the caught error according to computeWithTryCatch."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": "Reducer initialization errors are captured in the computed-state result rather than thrown by this function."
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "computeWithTryCatch", "source": "computeWithTryCatch", "kind": "internal" },
+            { "name": "reducer", "source": "enclosing liftReducerWith reducer dependency", "kind": "external" }
+          ],
+          "symbolReferences": ["LiftedState", "LiftedAction", "MonitorState", "S", "A"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Produces the lifted history state for an action while the reducer is paused. It either computes the initialization state or preserves the currently selected computed state, then appends that result to the computed-state history.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "computePausedAction() is called",
+              "then": "The returned state preserves the existing lifted-state fields and appends the currently selected computed state without invoking reducer initialization.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "computePausedAction(true) is called",
+              "then": "The returned computedStates contains the reducer's initialization result appended after the existing computed states.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "computePausedAction(true) is called",
+              "then": "The call returns a lifted state whose appended computed state records the reducer error instead of propagating the exception.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "36c02096701fbbc16714739f9fb8af0128992cabb9db78bd6688b0ea1c52c282"
+        }
+      },
+      {
+        "unitId": "packages/redux-devtools-instrument/src/instrument.ts__unliftState#function:unliftState",
+        "unitKind": "function",
+        "name": "unliftState",
+        "qualifiedName": "unliftState",
+        "parentUnitId": null,
+        "startLine": 514,
+        "endLine": 521,
+        "isBehavioral": true,
+        "source": "          isLocked,\n          isPaused: true,\n        };\n      }\n      if (shouldInit) {\n        if (currentStateIndex === stagedActionIds.length - 1) {\n          currentStateIndex++;\n        }",
+        "detail": {
+          "unitId": "packages/redux-devtools-instrument/src/instrument.ts__unliftState#function:unliftState",
+          "fileId": "packages/redux-devtools-instrument/src/instrument.ts__unliftState",
+          "unitKind": "function",
+          "name": "unliftState",
+          "qualifiedName": "unliftState",
+          "parentUnitId": null,
+          "startLine": 514,
+          "endLine": 521,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Converts lifted Redux DevTools state into the corresponding application state.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "5f5bb179b29ffbfbf7ab987b3796cbcf4d0fa789bd069fb1e3063f528c0cc3f6"
+        }
+      },
+      {
+        "unitId": "packages/redux-devtools-instrument/src/instrument.ts__unliftStore#function:unliftStore",
+        "unitKind": "function",
+        "name": "unliftStore",
+        "qualifiedName": "unliftStore",
+        "parentUnitId": null,
+        "startLine": 532,
+        "endLine": 653,
+        "isBehavioral": true,
+        "source": "        },\n        nextActionId,\n        stagedActionIds,\n        skippedActionIds,\n        committedState,\n        currentStateIndex,\n        computedStates: [\n          ...computedStates.slice(0, stagedActionIds.length - 1),\n          computedState,\n        ],\n        isLocked,\n        isPaused: true,\n      };\n    }\n\n    // By default, aggressively recompute every state whatever happens.\n    // This has O(n) performance, so we'll override this to a sensible\n    // value whenever we feel like we don't have to recompute the states.\n    let minInvalidatedStateIndex = 0;\n\n    // maxAge number can be changed dynamically\n    let maxAge = options.maxAge;\n    if (typeof maxAge === 'function')\n      maxAge = maxAge(liftedAction, liftedState);\n\n    if (/^@@redux\\/(INIT|REPLACE)/.test(liftedAction.type)) {\n      if (options.shouldHotReload === false) {\n        actionsById = { 0: liftAction(INIT_ACTION as A) };\n        nextActionId = 1;\n        stagedActionIds = [0];\n        skippedActionIds = [];\n        committedState =\n          computedStates.length === 0\n            ? (initialCommittedState as S)\n            : computedStates[currentStateIndex].state;\n        currentStateIndex = 0;\n        computedStates = [];\n      }\n\n      // Recompute states on hot reload and init.\n      minInvalidatedStateIndex = 0;\n\n      if (maxAge && stagedActionIds.length > maxAge) {\n        // States must be recomputed before committing excess.\n        computedStates = recomputeStates<S, A, PreloadedState>(\n          computedStates,\n          minInvalidatedStateIndex,\n          reducer,\n          committedState,\n          actionsById,\n          stagedActionIds,\n          skippedActionIds,\n          options.shouldCatchErrors,\n        );\n\n        commitExcessActions(stagedActionIds.length - maxAge);\n\n        // Avoid double computation.\n        minInvalidatedStateIndex = Infinity;\n      }\n    } else {\n      switch (liftedAction.type) {\n        case ActionTypes.PERFORM_ACTION: {\n          if (isLocked) return liftedState || initialLiftedState;\n          if (isPaused) return computePausedAction();\n\n          // Auto-commit as new actions come in.\n          if (maxAge && stagedActionIds.length >= maxAge) {\n            commitExcessActions(stagedActionIds.length - maxAge + 1);\n          }\n\n          if (currentStateIndex === stagedActionIds.length - 1) {\n            currentStateIndex++;\n          }\n          const actionId = nextActionId++;\n          // Mutation! This is the hottest path, and we optimize on purpose.\n          // It is safe because we set a new key in a cache dictionary.\n          actionsById[actionId] = liftedAction;\n          stagedActionIds = [...stagedActionIds, actionId];\n          // Optimization: we know that only the new action needs computing.\n          minInvalidatedStateIndex = stagedActionIds.length - 1;\n          break;\n        }\n        case ActionTypes.RESET: {\n          // Get back to the state the store was created with.\n          actionsById = { 0: liftAction(INIT_ACTION as A) };\n          nextActionId = 1;\n          stagedActionIds = [0];\n          skippedActionIds = [];\n          committedState = initialCommittedState as S;\n          currentStateIndex = 0;\n          computedStates = [];\n          break;\n        }\n        case ActionTypes.COMMIT: {\n          // Consider the last committed state the new starting point.\n          // Squash any staged actions into a single committed state.\n          actionsById = { 0: liftAction(INIT_ACTION as A) };\n          nextActionId = 1;\n          stagedActionIds = [0];\n          skippedActionIds = [];\n          committedState = computedStates[currentStateIndex].state;\n          currentStateIndex = 0;\n          computedStates = [];\n          break;\n        }\n        case ActionTypes.ROLLBACK: {\n          // Forget about any staged actions.\n          // Start again from the last committed state.\n          actionsById = { 0: liftAction(INIT_ACTION as A) };\n          nextActionId = 1;\n          stagedActionIds = [0];\n          skippedActionIds = [];\n          currentStateIndex = 0;\n          computedStates = [];\n          break;\n        }\n        case ActionTypes.TOGGLE_ACTION: {\n          // Toggle whether an action with given ID is skipped.\n          // Being skipped means it is a no-op during the computation.\n          const { id: actionId } = liftedAction;\n          const index = skippedActionIds.indexOf(actionId);",
+        "detail": {
+          "unitId": "packages/redux-devtools-instrument/src/instrument.ts__unliftStore#function:unliftStore",
+          "fileId": "packages/redux-devtools-instrument/src/instrument.ts__unliftStore",
+          "unitKind": "function",
+          "name": "unliftStore",
+          "qualifiedName": "unliftStore",
+          "parentUnitId": null,
+          "startLine": 532,
+          "endLine": 653,
+          "signature": "function unliftStore<S, A extends Action, PreloadedState>(liftedStore: Store<LiftedState<S, A, PreloadedState>, LiftedAction<A>>): Store<S, A>",
+          "parameters": [
+            {
+              "name": "liftedStore",
+              "type": "Store<LiftedState<S, A, PreloadedState>, LiftedAction<A>>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "Store<S, A>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": ["S", "A extends Action", "PreloadedState"],
+          "logicOutline": [],
+          "preconditions": [
+            "liftedStore provides Redux store operations for LiftedState<S, A, PreloadedState> and LiftedAction<A>."
+          ],
+          "postconditions": [
+            "The returned store's getState() returns the application state selected from the lifted store's current state index.",
+            "Dispatching an application action forwards a lifted PerformAction representation of that action to liftedStore.dispatch.",
+            "Store operations not overridden by the adapter remain available from the lifted store."
+          ],
+          "invariants": [
+            "The adapter does not maintain an independent application-state copy.",
+            "The returned state is derived from the current lifted store state each time getState() is called.",
+            "Dispatching through the adapter preserves the original action as the payload of the lifted action."
+          ],
+          "edgeCases": [
+            "If the lifted store changes between getState() calls, each call reflects the lifted store's then-current computed state.",
+            "If the underlying lifted store dispatch throws or rejects an action, the adapter does not convert or suppress that failure."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": ["Underlying liftedStore state may be mutated by dispatching the lifted action."],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "liftAction", "source": "internal", "kind": "internal" },
+            { "name": "unliftState", "source": "internal", "kind": "internal" },
+            { "name": "liftedStore.dispatch", "source": "liftedStore", "kind": "external" },
+            { "name": "liftedStore.getState", "source": "liftedStore", "kind": "external" }
+          ],
+          "symbolReferences": ["Action", "Store", "LiftedState", "LiftedAction"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Adapts a lifted Redux store to the ordinary store interface by projecting lifted state to the current application state and lifting dispatched actions.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "getState() is called",
+              "then": "It returns S1 rather than the complete lifted state object.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "dispatch(A1) is called on the unlifted store",
+              "then": "The underlying lifted store receives liftAction(A1), and the adapter does not dispatch A1 directly.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "df46c68291c058f0e1ce42f3e92cb206f9b9708368b891a9f19c08eb5fd2e777"
+        }
+      },
+      {
+        "unitId": "packages/redux-devtools-instrument/src/instrument.ts__unliftStore.getState#function:unliftStore.getState",
+        "unitKind": "function",
+        "name": "getState",
+        "qualifiedName": "unliftStore.getState",
+        "parentUnitId": "packages/redux-devtools-instrument/src/instrument.ts__unliftStore#function:unliftStore",
+        "startLine": 548,
+        "endLine": 555,
+        "isBehavioral": true,
+        "source": "    // This has O(n) performance, so we'll override this to a sensible\n    // value whenever we feel like we don't have to recompute the states.\n    let minInvalidatedStateIndex = 0;\n\n    // maxAge number can be changed dynamically\n    let maxAge = options.maxAge;\n    if (typeof maxAge === 'function')\n      maxAge = maxAge(liftedAction, liftedState);",
+        "detail": {
+          "unitId": "packages/redux-devtools-instrument/src/instrument.ts__unliftStore.getState#function:unliftStore.getState",
+          "fileId": "packages/redux-devtools-instrument/src/instrument.ts__unliftStore.getState",
+          "unitKind": "function",
+          "name": "getState",
+          "qualifiedName": "unliftStore.getState",
+          "parentUnitId": "packages/redux-devtools-instrument/src/instrument.ts__unliftStore#function:unliftStore",
+          "startLine": 548,
+          "endLine": 555,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Provides the current state exposed by the unlifted store through its getState boundary.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "5673ecad35610975de6474b3865432a69638a5ac6ef79dc59d0167f6c1749c48"
+        }
+      },
+      {
+        "unitId": "packages/redux-devtools-instrument/src/instrument.ts__unliftStore.dispatch#function:unliftStore.dispatch",
+        "unitKind": "function",
+        "name": "dispatch",
+        "qualifiedName": "unliftStore.dispatch",
+        "parentUnitId": "packages/redux-devtools-instrument/src/instrument.ts__unliftStore#function:unliftStore",
+        "startLine": 557,
+        "endLine": 560,
+        "isBehavioral": true,
+        "source": "    if (/^@@redux\\/(INIT|REPLACE)/.test(liftedAction.type)) {\n      if (options.shouldHotReload === false) {\n        actionsById = { 0: liftAction(INIT_ACTION as A) };\n        nextActionId = 1;",
+        "detail": {
+          "unitId": "packages/redux-devtools-instrument/src/instrument.ts__unliftStore.dispatch#function:unliftStore.dispatch",
+          "fileId": "packages/redux-devtools-instrument/src/instrument.ts__unliftStore.dispatch",
+          "unitKind": "function",
+          "name": "dispatch",
+          "qualifiedName": "unliftStore.dispatch",
+          "parentUnitId": "packages/redux-devtools-instrument/src/instrument.ts__unliftStore#function:unliftStore",
+          "startLine": 557,
+          "endLine": 560,
+          "signature": "dispatch(liftedAction)",
+          "parameters": [
+            { "name": "liftedAction", "type": null, "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["liftedAction has a readable type property."],
+          "postconditions": [
+            "Actions whose type matches the Redux INIT or REPLACE protocol are recognized as initialization or replacement actions.",
+            "When options.shouldHotReload is false and the action is an INIT or REPLACE action, actionsById is reset to contain only action id 0 and nextActionId is reset to 1."
+          ],
+          "invariants": [
+            "Only action types beginning with @@redux/INIT or @@redux/REPLACE enter the initialization/replacement branch."
+          ],
+          "edgeCases": [
+            "A type beginning with @@redux/INIT matches the initialization/replacement branch.",
+            "A type beginning with @@redux/REPLACE matches the initialization/replacement branch.",
+            "An action type that does not match the protocol pattern does not enter this branch.",
+            "When options.shouldHotReload is not false, matching initialization/replacement actions do not perform the shown action-tracking reset."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [
+            "actionsById is replaced with an object containing action id 0 when hot reloading is disabled for an INIT or REPLACE action.",
+            "nextActionId is set to 1 when hot reloading is disabled for an INIT or REPLACE action."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "liftAction", "source": "local function", "kind": "internal" }],
+          "symbolReferences": ["options.shouldHotReload", "INIT_ACTION"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Dispatches lifted Redux actions and recognizes Redux initialization or replacement actions. When hot reloading is disabled, initialization or replacement resets the tracked action state before continuing.",
+          "specLiterals": [
+            {
+              "kind": "regex",
+              "value": "^@@redux\\/(INIT|REPLACE)",
+              "role": "Identifies Redux initialization and reducer-replacement action types."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "dispatch(liftedAction) is invoked",
+              "then": "actionsById is reset to contain only id 0 mapped to liftAction(INIT_ACTION), and nextActionId becomes 1.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "dispatch(liftedAction) is invoked",
+              "then": "the same action-tracking reset is performed.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "abf9e279a82d20b669c5eed2e1f8ff0ca04866a79b78e035e4ce7b015dcf4990"
+        }
+      },
+      {
+        "unitId": "packages/redux-devtools-instrument/src/instrument.ts__instrument#function:instrument",
+        "unitKind": "function",
+        "name": "instrument",
+        "qualifiedName": "instrument",
+        "parentUnitId": null,
+        "startLine": 683,
+        "endLine": 733,
+        "isBehavioral": true,
+        "source": "\n          // Optimization: we know history before this action hasn't changed\n          minInvalidatedStateIndex = stagedActionIds.indexOf(start);\n          break;\n        }\n        case ActionTypes.JUMP_TO_STATE: {\n          // Without recomputing anything, move the pointer that tell us\n          // which state is considered the current one. Useful for sliders.\n          currentStateIndex = liftedAction.index;\n          // Optimization: we know the history has not changed.\n          minInvalidatedStateIndex = Infinity;\n          break;\n        }\n        case ActionTypes.JUMP_TO_ACTION: {\n          // Jumps to a corresponding state to a specific action.\n          // Useful when filtering actions.\n          const index = stagedActionIds.indexOf(liftedAction.actionId);\n          if (index !== -1) currentStateIndex = index;\n          minInvalidatedStateIndex = Infinity;\n          break;\n        }\n        case ActionTypes.SWEEP: {\n          // Forget any actions that are currently being skipped.\n          const skippedActionIdsSet = new Set(skippedActionIds);\n          stagedActionIds = stagedActionIds.filter(\n            (actionId) => !skippedActionIdsSet.has(actionId),\n          );\n          skippedActionIds = [];\n          currentStateIndex = Math.min(\n            currentStateIndex,\n            stagedActionIds.length - 1,\n          );\n          break;\n        }\n        case ActionTypes.REORDER_ACTION: {\n          // Recompute actions in a new order.\n          const actionId = liftedAction.actionId;\n          const idx = stagedActionIds.indexOf(actionId);\n          // do nothing in case the action is already removed or trying to move the first action\n          if (idx < 1) break;\n          const beforeActionId = liftedAction.beforeActionId;\n          let newIdx = stagedActionIds.indexOf(beforeActionId);\n          if (newIdx < 1) {\n            // move to the beginning or to the end\n            const count = stagedActionIds.length;\n            newIdx = beforeActionId > stagedActionIds[count - 1] ? count : 1;\n          }\n          const diff = idx - newIdx;\n\n          if (diff > 0) {\n            // move left",
+        "detail": {
+          "unitId": "packages/redux-devtools-instrument/src/instrument.ts__instrument#function:instrument",
+          "fileId": "packages/redux-devtools-instrument/src/instrument.ts__instrument",
+          "unitKind": "function",
+          "name": "instrument",
+          "qualifiedName": "instrument",
+          "parentUnitId": null,
+          "startLine": 683,
+          "endLine": 733,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Creates the Redux DevTools instrumentation enhancer that integrates action and state history with a Redux store.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "4e587e4ce82ae7f1b9e807fa34ed2245081101531bb521ad8ad35364e10db52b"
+        }
+      }
+    ]
+  },
+  "out": ["packages/redux-devtools-instrument/src/getSymbolObservable.ts"],
+  "in": ["packages/redux-devtools-instrument/test/instrument.spec.ts"],
+  "externals": ["redux"]
+}

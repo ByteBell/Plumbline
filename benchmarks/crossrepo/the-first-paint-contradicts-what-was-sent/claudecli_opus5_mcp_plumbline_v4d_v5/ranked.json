@@ -1,0 +1,192 @@
+[
+  {
+    "repo": "react",
+    "files": [
+      "packages/react-reconciler/src/ReactFiberHooks.js",
+      "packages/use-sync-external-store/src/useSyncExternalStoreShimServer.js",
+      "packages/use-sync-external-store/src/useSyncExternalStoreShimClient.js",
+      "packages/use-sync-external-store/src/useSyncExternalStoreShim.js",
+      "packages/use-sync-external-store/src/useSyncExternalStoreWithSelector.js",
+      "packages/react-server/src/ReactFizzHooks.js",
+      "packages/react/src/ReactHooks.js",
+      "packages/use-sync-external-store/src/isServerEnvironment.js",
+      "packages/use-sync-external-store/src/useSyncExternalStore.js",
+      "packages/use-sync-external-store/src/forks/useSyncExternalStore.forward-to-shim.js",
+      "packages/use-sync-external-store/src/forks/useSyncExternalStore.forward-to-built-in.js",
+      "packages/use-sync-external-store/shim/index.js",
+      "packages/use-sync-external-store/index.js",
+      "packages/use-subscription/src/useSubscription.js"
+    ],
+    "pinpoints": [
+      {
+        "path": "packages/react-reconciler/src/ReactFiberHooks.js",
+        "symbol": "mountSyncExternalStore",
+        "lines": "1648-1674",
+        "change": "the hydrating branch throws 'Missing getServerSnapshot, which is required for server-rendered content. Will revert to client rendering.' and otherwise uses getServerSnapshot() for the first render \u2014 this is where the server/client agreement requirement is enforced"
+      },
+      {
+        "path": "packages/react-reconciler/src/ReactFiberHooks.js",
+        "symbol": "updateSyncExternalStore",
+        "lines": "1739-1762",
+        "change": "same hydrating branch on re-render (strict-mode double render); must keep returning the server snapshot until hydration completes rather than falling through to getSnapshot()"
+      },
+      {
+        "path": "packages/react-server/src/ReactFizzHooks.js",
+        "symbol": "useSyncExternalStore",
+        "lines": "597-600",
+        "change": "the Fizz-side dispatcher entry that decides what is returned when there is no live store to subscribe to during server rendering"
+      },
+      {
+        "path": "packages/react/src/ReactHooks.js",
+        "symbol": "useSyncExternalStore",
+        "lines": "187-198",
+        "change": "public hook signature carrying the optional getServerSnapshot; the contract that it must be present and cached for server-rendered content belongs here"
+      },
+      {
+        "path": "packages/use-sync-external-store/src/useSyncExternalStoreShimServer.js",
+        "symbol": "useSyncExternalStore",
+        "lines": "10-20",
+        "change": "the shim ignores getServerSnapshot and returns getSnapshot() instead, so the server render and the first client render are not guaranteed to agree"
+      },
+      {
+        "path": "packages/use-sync-external-store/src/useSyncExternalStoreShim.js",
+        "symbol": "useSyncExternalStore",
+        "lines": "17-20",
+        "change": "selects the server vs client shim off isServerEnvironment; the selection decides which of the two snapshot getters wins"
+      },
+      {
+        "path": "packages/use-sync-external-store/src/isServerEnvironment.js",
+        "symbol": "isServerEnvironment",
+        "lines": "1-1",
+        "change": "the 'no live source to read from' predicate the shim branches on"
+      }
+    ]
+  },
+  {
+    "repo": "primitives",
+    "files": [
+      "packages/react/use-is-hydrated/src/use-is-hydrated.tsx",
+      "packages/react/use-is-hydrated/src/use-is-hydrated-legacy.ts",
+      "packages/react/use-is-hydrated/src/index.ts",
+      "packages/react/use-layout-effect/src/use-layout-effect.tsx"
+    ],
+    "pinpoints": [
+      {
+        "path": "packages/react/use-is-hydrated/src/use-is-hydrated.tsx",
+        "symbol": "useIsHydratedModern",
+        "lines": "15-21",
+        "change": "returns () => false as the server snapshot and () => true as the client snapshot, so the first interactive render deliberately contradicts the server render \u2014 the exact one-frame swap described"
+      },
+      {
+        "path": "packages/react/use-is-hydrated/src/use-is-hydrated-legacy.ts",
+        "symbol": "useIsHydrated",
+        "lines": "5-14",
+        "change": "the fallback path starts at the module-level _isHydrated flag and flips to true in an effect, so a later-mounted subtree starts at a different value than a freshly hydrated one"
+      }
+    ]
+  },
+  {
+    "repo": "zustand",
+    "files": ["src/react.ts", "src/traditional.ts", "src/middleware/ssrSafe.ts", "src/vanilla.ts"],
+    "pinpoints": [
+      {
+        "path": "src/react.ts",
+        "symbol": "useStore",
+        "lines": "30-33",
+        "change": "the third argument is selector(api.getInitialState()), not the state the server actually rendered \u2014 a store mutated before hydration makes the first client render disagree with the markup"
+      },
+      {
+        "path": "src/traditional.ts",
+        "symbol": "useStoreWithEqualityFn",
+        "lines": "36-39",
+        "change": "same substitution of api.getInitialState for the server snapshot, through useSyncExternalStoreWithSelector"
+      }
+    ]
+  },
+  {
+    "repo": "react-redux",
+    "files": [
+      "src/hooks/useSelector.ts",
+      "src/components/Provider.tsx",
+      "src/utils/useSyncExternalStore.ts",
+      "src/utils/useIsomorphicLayoutEffect.ts"
+    ],
+    "pinpoints": [
+      {
+        "path": "src/hooks/useSelector.ts",
+        "symbol": "useSelector",
+        "lines": "243-249",
+        "change": "passes `getServerState || store.getState` as the server snapshot \u2014 when no serverState was provided it silently falls back to the live store, which is not guaranteed to equal what was rendered"
+      },
+      {
+        "path": "src/components/Provider.tsx",
+        "symbol": "Provider",
+        "lines": "65-69",
+        "change": "getServerState is only defined when a serverState prop was supplied; this is where the server-rendered value enters the contract"
+      }
+    ]
+  },
+  {
+    "repo": "db",
+    "files": ["packages/react-db/src/useLiveQuery.ts"],
+    "pinpoints": [
+      {
+        "path": "packages/react-db/src/useLiveQuery.ts",
+        "symbol": "useSyncExternalStore",
+        "lines": "489-493",
+        "change": "called with only subscribe and getSnapshot \u2014 no server snapshot at all, so a hydrating subtree hits React's hard error and reverts to client rendering"
+      }
+    ]
+  },
+  {
+    "repo": "router",
+    "files": [
+      "packages/react-router/src/ClientOnly.tsx",
+      "packages/react-start-client/src/hydrateStart.ts",
+      "packages/react-start-client/src/StartClient.tsx",
+      "packages/start-plugin-core/src/start-compiler/handleClientOnlyJSX.ts"
+    ],
+    "pinpoints": [
+      {
+        "path": "packages/react-router/src/ClientOnly.tsx",
+        "symbol": "useHydrated",
+        "lines": "56-62",
+        "change": "returns () => false on the server and () => true on the client, and ClientOnly (lines 33-35) swaps children for fallback on that value \u2014 the deliberate one-frame content swap"
+      }
+    ]
+  },
+  {
+    "repo": "tldraw",
+    "files": [
+      "packages/state-react/src/lib/useValue.ts",
+      "packages/state-react/src/lib/useStateTracking.ts",
+      "packages/state-react/src/lib/useComputed.ts"
+    ],
+    "pinpoints": [
+      {
+        "path": "packages/state-react/src/lib/useValue.ts",
+        "symbol": "useValue",
+        "lines": "106-107",
+        "change": "passes getSnapshot as the server snapshot (the signal's lastChangedEpoch) and then returns __unsafe__getWithoutCapture(), so the value actually rendered is read outside the snapshot the agreement is checked against"
+      }
+    ]
+  },
+  {
+    "repo": "query",
+    "files": [
+      "packages/react-query/src/useBaseQuery.ts",
+      "packages/react-query/src/HydrationBoundary.tsx",
+      "packages/query-core/src/hydration.ts",
+      "packages/query-core/src/queryObserver.ts",
+      "packages/preact-query/src/utils.ts"
+    ]
+  },
+  {
+    "repo": "xyflow",
+    "files": ["packages/react/src/hooks/useStore.ts", "packages/react/src/hooks/useIsomorphicLayoutEffect.ts"]
+  },
+  {
+    "repo": "jotai",
+    "files": ["src/react/utils/useHydrateAtoms.ts", "src/react/Provider.ts", "src/react/useAtomValue.ts"]
+  }
+]

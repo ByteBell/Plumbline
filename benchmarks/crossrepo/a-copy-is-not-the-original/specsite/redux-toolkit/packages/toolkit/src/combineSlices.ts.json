@@ -1,0 +1,1526 @@
+{
+  "schema": 1,
+  "kind": "file",
+  "repoName": "redux-toolkit",
+  "commitHash": "b1c5130154c454ca8387f55da6122fcb507c560c",
+  "generatedAt": "2026-08-01T22:01:37.770Z",
+  "file": {
+    "relativePath": "packages/toolkit/src/combineSlices.ts",
+    "language": "typescript",
+    "sizeBytes": 16261,
+    "tokenCount": 3733,
+    "model": "tencent/hy3",
+    "analysedAt": "2026-08-01T15:06:30.104Z",
+    "module": {
+      "purpose": "Provides combineSlices, a Redux reducer factory that supports lazy injection of slice reducers after initialisation, with type-safe selector proxies for injected state.",
+      "summary": "This module exports a combineSlices function that builds a Redux reducer capable of having slice reducers injected dynamically. It returns an object with inject, withLazyLoadedSlices, and selector methods. The selector uses a Proxy to supply initial state for not-yet-dispatched injected slices, ensuring type safety. Internal helpers detect slice-like objects, build a reducer map, and cache initial states. It integrates with Redux Toolkit's type system for code-splitting scenarios.",
+      "businessContext": "Enables code-splitting and lazy loading of Redux slices in RTK apps. Failure breaks dynamic feature loading or throws on undefined slice state.",
+      "classes": [
+        "CombinedSliceReducer (~L62-319): Interface describing injectable reducer with lazy injection and selector proxy",
+        "SliceLike (~L18-21): Minimal shape of a redux slice with reducerPath and reducer",
+        "InjectConfig (~L52-57): Configuration for slice injection override behaviour"
+      ],
+      "functions": [
+        "combineSlices (~L405-487): Main factory creating injectable combined reducer",
+        "isSliceLike (~L339-343): Type guard distinguishing slice-like from reducer map",
+        "getReducers (~L345-350): Flattens slices into reducer entries",
+        "createStateProxy (~L356-393): Builds Proxy returning initial state for undefined keys",
+        "original (~L395-400): Returns unproxied state, throws if not proxy",
+        "isStateProxy (~L354): Checks if value is a state proxy"
+      ],
+      "keywords": [
+        "redux",
+        "combineReducers",
+        "lazy injection",
+        "code splitting",
+        "slice",
+        "Proxy",
+        "selector",
+        "rtk",
+        "WeakMap",
+        "initial state"
+      ],
+      "ontologyConcepts": [
+        "reducer composition",
+        "lazy loading",
+        "type-safe injection",
+        "state proxy",
+        "module augmentation"
+      ],
+      "businessEntities": ["Slice", "Reducer", "Store", "State", "Selector"],
+      "systemCapabilities": [
+        "dynamically inject reducers",
+        "create proxy-backed selectors",
+        "support lazy loaded slices via interface merging",
+        "warn on duplicate reducer injection"
+      ],
+      "configDependencies": ["process.env.NODE_ENV"],
+      "importsInternal": [
+        {
+          "spec": "./nanoid",
+          "symbols": ["nanoid"],
+          "anchor": { "startLine": 8, "endLine": 8 },
+          "resolvedRelativePath": "packages/toolkit/src/nanoid.ts",
+          "resolvedFileId": "packages/toolkit/src/nanoid.ts",
+          "resolvedHint": "packages/toolkit/src/nanoid.ts"
+        },
+        {
+          "spec": "./tsHelpers",
+          "symbols": ["Id", "NonUndefined", "Tail", "UnionToIntersection", "WithOptionalProp"],
+          "anchor": { "startLine": 9, "endLine": 15 },
+          "resolvedRelativePath": "packages/toolkit/src/tsHelpers.ts",
+          "resolvedFileId": "packages/toolkit/src/tsHelpers.ts",
+          "resolvedHint": "packages/toolkit/src/tsHelpers.ts"
+        },
+        {
+          "spec": "./utils",
+          "symbols": ["getOrInsertComputed"],
+          "anchor": { "startLine": 16, "endLine": 16 },
+          "resolvedRelativePath": "packages/toolkit/src/utils.ts",
+          "resolvedFileId": "packages/toolkit/src/utils.ts",
+          "resolvedHint": "packages/toolkit/src/utils.ts"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "redux",
+          "symbols": [
+            "PreloadedStateShapeFromReducersMapObject",
+            "Reducer",
+            "StateFromReducersMapObject",
+            "UnknownAction"
+          ],
+          "package": "redux",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 6 }
+        },
+        {
+          "spec": "redux",
+          "symbols": ["combineReducers"],
+          "package": "redux",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 7, "endLine": 7 }
+        }
+      ],
+      "sideEffects": {
+        "io": ["console.error when injecting duplicate reducer without override in development"],
+        "network": [],
+        "env": ["reads process.env.NODE_ENV to guard dev warning"],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": [
+          "mutates internal reducerMap and initialStateCache objects",
+          "assigns inject and selector properties onto combinedReducer"
+        ]
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "combineSlices",
+          "shape": "export function combineSlices<Slices extends Array<AnySliceLike | ReducerMap>>(...slices: Slices): CombinedSliceReducer<Id<InitialState<Slices>>, Id<InitialState<Slices>>, Partial<Id<InitialPreloadedState<Slices>>>>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "CombinedSliceReducer",
+          "shape": "export interface CombinedSliceReducer<InitialState, DeclaredState extends InitialState = InitialState, PreloadedState extends Partial<Record<keyof PreloadedState, any>> = Partial<DeclaredState>> extends Reducer<DeclaredState, UnknownAction, PreloadedState> { withLazyLoadedSlices<Lazy= {}, LazyPreloaded= Lazy>(): CombinedSliceReducer<...>; inject(slice, config?): CombinedSliceReducer<...>; selector: { <Selector>(selectorFn): (state, ...args) => ReturnType<Selector>; original(state): InitialState & Partial<DeclaredState> } }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "WithSlice",
+          "shape": "export type WithSlice<A extends AnySliceLike> = { [Path in SliceLikeReducerPath<A>]: SliceLikeState<A> }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "WithSlicePreloadedState",
+          "shape": "export type WithSlicePreloadedState<A extends AnySliceLike> = { [Path in SliceLikeReducerPath<A>]: SliceLikePreloadedState<A> }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "InjectConfig",
+          "shape": "export type InjectConfig = { overrideExisting?: boolean }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "combineReducers",
+          "shape": "combineReducers(reducers: ReducersMapObject): Reducer (from 'redux')",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "Reducer",
+          "shape": "interface Reducer<State, Action, PreloadedState> (from 'redux')",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "nanoid",
+          "shape": "function nanoid(): string (from './nanoid')",
+          "resolvedRelativePath": "packages/toolkit/src/nanoid.ts",
+          "resolvedFileId": "packages/toolkit/src/nanoid.ts"
+        },
+        {
+          "name": "getOrInsertComputed",
+          "shape": "function getOrInsertComputed(map, key, compute): value (from './utils')",
+          "resolvedRelativePath": "packages/toolkit/src/utils.ts",
+          "resolvedFileId": "packages/toolkit/src/utils.ts"
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "type-definitions",
+          "intent": "Define slice-like and helper mapped types",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 18, "endLine": 57 }
+        },
+        {
+          "name": "interface-declaration",
+          "intent": "Declare CombinedSliceReducer contract with inject and selector",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 62, "endLine": 319 }
+        },
+        {
+          "name": "helper-functions",
+          "intent": "Provide slice detection and reducer extraction helpers",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 339, "endLine": 354 }
+        },
+        {
+          "name": "state-proxy",
+          "intent": "Create proxy returning initial state for undefined slice keys",
+          "structureKind": "try",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 356, "endLine": 393 }
+        },
+        {
+          "name": "combineSlices-factory",
+          "intent": "Build combined reducer with injection and selector capabilities",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 405, "endLine": 487 }
+        }
+      ],
+      "representationFamily": "module",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "interface",
+          "name": "CombinedSliceReducer",
+          "signature": "export interface CombinedSliceReducer<InitialState, DeclaredState extends InitialState = InitialState, PreloadedState extends Partial<Record<keyof PreloadedState, any>> = Partial<DeclaredState>> extends Reducer<DeclaredState, UnknownAction, PreloadedState>",
+          "generics": "<InitialState, DeclaredState extends InitialState = InitialState, PreloadedState extends Partial<Record<keyof PreloadedState, any>> = Partial<DeclaredState>>",
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 62, "endLine": 67 }
+        },
+        {
+          "kind": "type",
+          "name": "WithSlice",
+          "signature": "export type WithSlice<A extends AnySliceLike> = { [Path in SliceLikeReducerPath<A>]: SliceLikeState<A> }",
+          "generics": "<A extends AnySliceLike>",
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 34, "endLine": 36 }
+        },
+        {
+          "kind": "type",
+          "name": "WithSlicePreloadedState",
+          "signature": "export type WithSlicePreloadedState<A extends AnySliceLike> = { [Path in SliceLikeReducerPath<A>]: SliceLikePreloadedState<A> }",
+          "generics": "<A extends AnySliceLike>",
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 38, "endLine": 40 }
+        },
+        {
+          "kind": "type",
+          "name": "InjectConfig",
+          "signature": "export type InjectConfig = { overrideExisting?: boolean }",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 52, "endLine": 57 }
+        },
+        {
+          "kind": "function",
+          "name": "combineSlices",
+          "signature": "export function combineSlices<Slices extends Array<AnySliceLike | ReducerMap>>(\n  ...slices: Slices\n): CombinedSliceReducer<\n  Id<InitialState<Slices>>,\n  Id<InitialState<Slices>>,\n  Partial<Id<InitialPreloadedState<Slices>>>\n>",
+          "generics": "<Slices extends Array<AnySliceLike | ReducerMap>>",
+          "decorators": [],
+          "returnType": "CombinedSliceReducer<Id<InitialState<Slices>>, Id<InitialState<Slices>>, Partial<Id<InitialPreloadedState<Slices>>>>",
+          "exported": true,
+          "anchor": { "startLine": 405, "endLine": 411 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "interface",
+          "name": "CombinedSliceReducer",
+          "shape": "export interface CombinedSliceReducer<InitialState, DeclaredState extends InitialState = InitialState, PreloadedState extends Partial<Record<keyof PreloadedState, any>> = Partial<DeclaredState>> extends Reducer<DeclaredState, UnknownAction, PreloadedState> {\n  withLazyLoadedSlices<Lazy = {}, LazyPreloaded = Lazy>(): CombinedSliceReducer<InitialState, Id<DeclaredState & Partial<Lazy>>, Id<PreloadedState & Partial<LazyPreloaded>>>\n  inject<Sl extends Id<ExistingSliceLike<DeclaredState, PreloadedState>>>(slice: Sl, config?: InjectConfig): CombinedSliceReducer<InitialState, Id<DeclaredState & WithSlice<Sl>>, Id<PreloadedState & Partial<WithSlicePreloadedState<Sl>>>>\n  inject<ReducerPath extends string, State, PreloadedState = State>(slice: SliceLike<ReducerPath, State & (ReducerPath extends keyof DeclaredState ? never : State), PreloadedState & (ReducerPath extends keyof PreloadedState ? never : PreloadedState)>, config?: InjectConfig): CombinedSliceReducer<InitialState, Id<DeclaredState & WithSlice<SliceLike<ReducerPath, State>>>, Id<PreloadedState & WithSlicePreloadedState<SliceLike<ReducerPath, State, PreloadedState>>>>\n  selector: {\n    <Selector extends (state: DeclaredState, ...args: any[]) => unknown>(selectorFn: Selector): (state: WithOptionalProp<Parameters<Selector>[0], Exclude<keyof DeclaredState, keyof InitialState>>, ...args: Tail<Parameters<Selector>>) => ReturnType<Selector>\n    <Selector extends (state: DeclaredState, ...args: any[]) => unknown, RootState>(selectorFn: Selector, selectState: (rootState: RootState, ...args: Tail<Parameters<Selector>>) => WithOptionalProp<Parameters<Selector>[0], Exclude<keyof DeclaredState, keyof InitialState>>): (state: RootState, ...args: Tail<Parameters<Selector>>) => ReturnType<Selector>\n    original: (state: DeclaredState) => InitialState & Partial<DeclaredState>\n  }\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 62, "endLine": 319 }
+        },
+        {
+          "kind": "type",
+          "name": "InjectConfig",
+          "shape": "export type InjectConfig = {\n  /**\n   * Allow replacing reducer with a different reference. Normally, an error will be thrown if a different reducer instance to the one already injected is used.\n   */\n  overrideExisting?: boolean\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 52, "endLine": 57 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "slice reducer returns undefined for undefined state",
+          "handled": true,
+          "behavior": "throws Error with descriptive message in createStateProxy",
+          "anchor": { "startLine": 377, "endLine": 385 }
+        },
+        {
+          "inputShape": "inject called with different reducer and overrideExisting false",
+          "handled": true,
+          "behavior": "logs console.error in development and skips injection, returns combinedReducer",
+          "anchor": { "startLine": 438, "endLine": 453 }
+        },
+        {
+          "inputShape": "original called on non-proxy state",
+          "handled": true,
+          "behavior": "throws Error 'original must be used on state Proxy'",
+          "anchor": { "startLine": 395, "endLine": 400 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": "==",
+          "left": "typeof result",
+          "right": "'undefined'",
+          "inclusive": true,
+          "intent": "check if property is missing on proxied state",
+          "anchor": { "startLine": 370, "endLine": 370 }
+        },
+        {
+          "operator": "==",
+          "left": "typeof cached",
+          "right": "'undefined'",
+          "inclusive": true,
+          "intent": "use cached initial state if available",
+          "anchor": { "startLine": 372, "endLine": 372 }
+        },
+        {
+          "operator": "==",
+          "left": "typeof reducerResult",
+          "right": "'undefined'",
+          "inclusive": true,
+          "intent": "ensure slice reducer returns defined initial state",
+          "anchor": { "startLine": 377, "endLine": 377 }
+        },
+        {
+          "operator": "==",
+          "left": "currentReducer",
+          "right": "reducerToInject",
+          "inclusive": true,
+          "intent": "detect attempt to override existing reducer instance",
+          "anchor": { "startLine": 441, "endLine": 441 }
+        },
+        {
+          "operator": "==",
+          "left": "typeof process",
+          "right": "'undefined'",
+          "inclusive": true,
+          "intent": "guard against missing process object",
+          "anchor": { "startLine": 444, "endLine": 444 }
+        },
+        {
+          "operator": "==",
+          "left": "process.env.NODE_ENV",
+          "right": "'development'",
+          "inclusive": true,
+          "intent": "only warn in development environment",
+          "anchor": { "startLine": 445, "endLine": 445 }
+        },
+        {
+          "operator": "==",
+          "left": "currentReducer",
+          "right": "reducerToInject",
+          "inclusive": true,
+          "intent": "clear cache when overriding with different reducer",
+          "anchor": { "startLine": 455, "endLine": 455 }
+        },
+        {
+          "operator": "==",
+          "left": "typeof maybeSliceLike.reducerPath",
+          "right": "'string'",
+          "inclusive": true,
+          "intent": "identify slice-like objects by string reducerPath",
+          "anchor": { "startLine": 342, "endLine": 342 }
+        },
+        {
+          "operator": "==",
+          "left": "prop",
+          "right": "ORIGINAL_STATE",
+          "inclusive": true,
+          "intent": "expose original state via proxy trap",
+          "anchor": { "startLine": 368, "endLine": 368 }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": "Error",
+          "caught": null,
+          "action": "throw when slice reducer returns undefined for selector proxy",
+          "fallback": null,
+          "anchor": { "startLine": 378, "endLine": 385 }
+        },
+        {
+          "thrown": "Error",
+          "caught": null,
+          "action": "throw when original() called on non-proxy state",
+          "fallback": null,
+          "anchor": { "startLine": 397, "endLine": 397 }
+        }
+      ],
+      "invariants": [
+        {
+          "kind": "non-null",
+          "description": "Slice reducer must not return undefined when called with undefined action in selector proxy",
+          "anchor": { "startLine": 377, "endLine": 385 }
+        },
+        {
+          "kind": "precondition",
+          "description": "original() must be called on a state Proxy created by selector",
+          "anchor": { "startLine": 395, "endLine": 400 }
+        },
+        {
+          "kind": "invariant",
+          "description": "reducerMap keys correspond to injected reducerPaths",
+          "anchor": { "startLine": 413, "endLine": 459 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "env",
+          "description": "process may be undefined in non-Node environments; code guards with typeof check",
+          "anchor": { "startLine": 444, "endLine": 444 }
+        },
+        {
+          "kind": "caller",
+          "description": "Caller uses interface merging for LazyLoadedSlices to get full typing",
+          "anchor": { "startLine": 68, "endLine": 101 }
+        }
+      ],
+      "ambiguities": [],
+      "concurrencyModel": {
+        "kind": "sync",
+        "reentrant": false,
+        "ordering": "deterministic",
+        "notes": "Mutates shared reducerMap and cache; not safe for concurrent injection without external synchronization"
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "combine-slices-returns-combined-reducer",
+          "scenario": "Calling combineSlices with slice-like objects yields a reducer combining their states.",
+          "given": [
+            "const sliceA = { reducerPath: 'a', reducer: (s={x:1}) => s }",
+            "const root = combineSlices(sliceA)"
+          ],
+          "when": "root(undefined, { type: '@@INIT' })",
+          "then": "returns an object with property 'a' defined",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Ensures initial combination of injected slices works."
+        },
+        {
+          "testId": "inject-adds-slice-reducer",
+          "scenario": "Injecting a new slice after creation adds its reducer to the combined state.",
+          "given": ["const root = combineSlices()", "const sliceB = { reducerPath: 'b', reducer: (s={y:2}) => s }"],
+          "when": "root.inject(sliceB)",
+          "then": "root(undefined, { type: '@@INIT' }).b is defined",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Lazy injection must extend state shape."
+        },
+        {
+          "testId": "inject-override-existing-false-keeps-original",
+          "scenario": "Injecting a different reducer for same path without overrideExisting does not replace it.",
+          "given": [
+            "const r1 = (s={v:1}) => s",
+            "const r2 = (s={v:2}) => s",
+            "const root = combineSlices({ reducerPath: 'x', reducer: r1 })"
+          ],
+          "when": "root.inject({ reducerPath: 'x', reducer: r2 })",
+          "then": "root(undefined, { type: '@@INIT' }).x equals { v: 1 } and dev error logged",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Prevents accidental reducer replacement."
+        },
+        {
+          "testId": "selector-proxy-returns-initial-state",
+          "scenario": "Selector proxy yields slice initial state when not yet dispatched.",
+          "given": [
+            "const root = combineSlices({ reducerPath: 's', reducer: (s={val:0}) => s })",
+            "const sel = root.selector((state) => state.s)"
+          ],
+          "when": "sel({})",
+          "then": "returns { val: 0 }",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Guarantees defined slice state for selectors."
+        },
+        {
+          "testId": "selector-original-returns-unproxied",
+          "scenario": "selector.original retrieves the raw state from a proxy.",
+          "given": [
+            "const root = combineSlices()",
+            "const sel = root.selector((state) => state)",
+            "const proxied = sel({})"
+          ],
+          "when": "root.selector.original(proxied)",
+          "then": "returns the original empty object, not a proxy",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Debugging utility must strip proxy."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "imports from redux, ./nanoid, ./tsHelpers, ./utils",
+        "type SliceLike",
+        "type AnySliceLike",
+        "type SliceLikeReducerPath",
+        "type SliceLikeState",
+        "type SliceLikePreloadedState",
+        "export type WithSlice",
+        "export type WithSlicePreloadedState",
+        "type ReducerMap",
+        "type ExistingSliceLike",
+        "export type InjectConfig",
+        "export interface CombinedSliceReducer",
+        "type InitialState",
+        "type InitialPreloadedState",
+        "const isSliceLike",
+        "const getReducers",
+        "const ORIGINAL_STATE",
+        "const isStateProxy",
+        "const createStateProxy",
+        "const original",
+        "const emptyObject",
+        "const noopReducer",
+        "export function combineSlices"
+      ],
+      "moduleLevelCode": "import statements and top-level const declarations (no executable side-effects at import except Symbol.for)",
+      "exports": [
+        { "name": "WithSlice", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "WithSlicePreloadedState", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "InjectConfig", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "CombinedSliceReducer", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "combineSlices", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "PreloadedStateShapeFromReducersMapObject", "module": "redux", "alias": null, "kind": "external" },
+        { "symbol": "Reducer", "module": "redux", "alias": null, "kind": "external" },
+        { "symbol": "StateFromReducersMapObject", "module": "redux", "alias": null, "kind": "external" },
+        { "symbol": "UnknownAction", "module": "redux", "alias": null, "kind": "external" },
+        { "symbol": "combineReducers", "module": "redux", "alias": null, "kind": "external" },
+        { "symbol": "nanoid", "module": "./nanoid", "alias": null, "kind": "internal" },
+        { "symbol": "Id", "module": "./tsHelpers", "alias": null, "kind": "internal" },
+        { "symbol": "NonUndefined", "module": "./tsHelpers", "alias": null, "kind": "internal" },
+        { "symbol": "Tail", "module": "./tsHelpers", "alias": null, "kind": "internal" },
+        { "symbol": "UnionToIntersection", "module": "./tsHelpers", "alias": null, "kind": "internal" },
+        { "symbol": "WithOptionalProp", "module": "./tsHelpers", "alias": null, "kind": "internal" },
+        { "symbol": "getOrInsertComputed", "module": "./utils", "alias": null, "kind": "internal" }
+      ],
+      "fileConstants": [
+        { "name": "ORIGINAL_STATE", "value": "Symbol.for('rtk-state-proxy-original')", "kind": "symbol" },
+        { "name": "emptyObject", "value": "{}", "kind": "object" }
+      ],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/toolkit/src/combineSlices.ts__combineSlices#function:combineSlices",
+        "unitKind": "function",
+        "name": "combineSlices",
+        "qualifiedName": "combineSlices",
+        "parentUnitId": null,
+        "startLine": 405,
+        "endLine": 487,
+        "isBehavioral": true,
+        "source": "export function combineSlices<Slices extends Array<AnySliceLike | ReducerMap>>(\n  ...slices: Slices\n): CombinedSliceReducer<\n  Id<InitialState<Slices>>,\n  Id<InitialState<Slices>>,\n  Partial<Id<InitialPreloadedState<Slices>>>\n> {\n  const stateProxyMap = new WeakMap<object, object>()\n  const reducerMap = Object.fromEntries(getReducers(slices))\n\n  const getReducer = () =>\n    Object.keys(reducerMap).length ? combineReducers(reducerMap) : noopReducer\n\n  let reducer = getReducer()\n\n  function combinedReducer(\n    state: Record<string, unknown>,\n    action: UnknownAction,\n  ) {\n    return reducer(state, action)\n  }\n\n  combinedReducer.withLazyLoadedSlices = () => combinedReducer\n\n  const initialStateCache: Record<PropertyKey, unknown> = {}\n\n  const inject = (\n    slice: AnySliceLike,\n    config: InjectConfig = {},\n  ): typeof combinedReducer => {\n    const { reducerPath, reducer: reducerToInject } = slice\n\n    const currentReducer = reducerMap[reducerPath]\n    if (\n      !config.overrideExisting &&\n      currentReducer &&\n      currentReducer !== reducerToInject\n    ) {\n      if (\n        typeof process !== 'undefined' &&\n        process.env.NODE_ENV === 'development'\n      ) {\n        console.error(\n          `called \\`inject\\` to override already-existing reducer ${reducerPath} without specifying \\`overrideExisting: true\\``,\n        )\n      }\n\n      return combinedReducer\n    }\n\n    if (config.overrideExisting && currentReducer !== reducerToInject) {\n      delete initialStateCache[reducerPath]\n    }\n\n    reducerMap[reducerPath] = reducerToInject\n\n    reducer = getReducer()\n\n    return combinedReducer\n  }\n\n  const selector = Object.assign(\n    function makeSelector<State extends object, RootState, Args extends any[]>(\n      selectorFn: (state: State, ...args: Args) => any,\n      selectState?: (rootState: RootState, ...args: Args) => State,\n    ) {\n      return function selector(state: State, ...args: Args) {\n        return selectorFn(\n          createStateProxy(\n            stateProxyMap,\n            selectState ? selectState(state as any, ...args) : state,\n            reducerMap,\n            initialStateCache,\n          ),\n          ...args,\n        )\n      }\n    },\n    { original },\n  )\n\n  return Object.assign(combinedReducer, { inject, selector }) as any\n}",
+        "detail": {
+          "unitId": "packages/toolkit/src/combineSlices.ts__combineSlices#function:combineSlices",
+          "fileId": "packages/toolkit/src/combineSlices.ts__combineSlices",
+          "unitKind": "function",
+          "name": "combineSlices",
+          "qualifiedName": "combineSlices",
+          "parentUnitId": null,
+          "startLine": 405,
+          "endLine": 487,
+          "signature": "export function combineSlices<Slices extends Array<AnySliceLike | ReducerMap>>(...slices: Slices): CombinedSliceReducer<Id<InitialState<Slices>>, Id<InitialState<Slices>>, Partial<Id<InitialPreloadedState<Slices>>>>",
+          "parameters": [
+            { "name": "slices", "type": "Slices", "default": null, "optional": false, "variadic": true, "order": 0 }
+          ],
+          "returnType": "CombinedSliceReducer<Id<InitialState<Slices>>, Id<InitialState<Slices>>, Partial<Id<InitialPreloadedState<Slices>>>>",
+          "decorators": [],
+          "modifiersApplied": ["export"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": ["Slices extends Array<AnySliceLike | ReducerMap>"],
+          "logicOutline": [],
+          "preconditions": [
+            "Arguments must satisfy AnySliceLike | ReducerMap constraint",
+            "Each slice-like must expose reducerPath and reducer properties consumed by getReducers"
+          ],
+          "postconditions": [
+            "Returns a combinedReducer function with inject and selector properties attached",
+            "Returned reducer delegates to combineReducers over internal reducerMap or noopReducer when empty",
+            "Closure state (reducerMap, initialStateCache, stateProxyMap) initialized"
+          ],
+          "invariants": [
+            "combinedReducer reference remains identical across inject calls",
+            "reducerMap keys equal reducerPath of injected slices"
+          ],
+          "edgeCases": [
+            "No slices passed: reducerMap empty, getReducer yields noopReducer",
+            "Inject slice with existing reducerPath and overrideExisting falsy: logs dev error and skips replacement",
+            "Inject with overrideExisting true: replaces reducer and deletes cached initial state for that path"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "No explicit validation; assumes conforming inputs",
+            "returnsOnError": null
+          },
+          "stateMutations": [
+            "Closure-scoped reducerMap object mutated by inject",
+            "Closure-scoped initialStateCache mutated on override",
+            "Closure-scoped reducer variable reassigned on inject",
+            "stateProxyMap WeakMap created for selector proxies"
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "getReducers", "source": null, "kind": "internal" },
+            { "name": "combineReducers", "source": null, "kind": "external" },
+            { "name": "noopReducer", "source": null, "kind": "external" },
+            { "name": "createStateProxy", "source": null, "kind": "internal" },
+            { "name": "original", "source": null, "kind": "internal" }
+          ],
+          "symbolReferences": [
+            "AnySliceLike",
+            "ReducerMap",
+            "CombinedSliceReducer",
+            "Id",
+            "InitialState",
+            "InitialPreloadedState",
+            "UnknownAction",
+            "InjectConfig",
+            "WeakMap",
+            "Object",
+            "process",
+            "console"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Combines slice-like reducers or reducer maps into a single combined reducer function with attached lazy inject and state-proxy selector capabilities.",
+          "specLiterals": [
+            {
+              "kind": "format-string",
+              "value": "called `inject` to override already-existing reducer ${reducerPath} without specifying `overrideExisting: true`",
+              "role": "Development-mode console error when inject attempts override without flag"
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "e33cc774eb17359617be0da2126c85405d68452cc5a0bb2d7c6f5fe6c66b2888"
+        }
+      },
+      {
+        "unitId": "packages/toolkit/src/combineSlices.ts__combineSlices.combinedReducer#function:combineSlices.combinedReducer",
+        "unitKind": "function",
+        "name": "combinedReducer",
+        "qualifiedName": "combineSlices.combinedReducer",
+        "parentUnitId": "packages/toolkit/src/combineSlices.ts__combineSlices#function:combineSlices",
+        "startLine": 420,
+        "endLine": 425,
+        "isBehavioral": true,
+        "source": "  function combinedReducer(\n    state: Record<string, unknown>,\n    action: UnknownAction,\n  ) {\n    return reducer(state, action)\n  }",
+        "detail": {
+          "unitId": "packages/toolkit/src/combineSlices.ts__combineSlices.combinedReducer#function:combineSlices.combinedReducer",
+          "fileId": "packages/toolkit/src/combineSlices.ts__combineSlices.combinedReducer",
+          "unitKind": "function",
+          "name": "combinedReducer",
+          "qualifiedName": "combineSlices.combinedReducer",
+          "parentUnitId": "packages/toolkit/src/combineSlices.ts__combineSlices#function:combineSlices",
+          "startLine": 420,
+          "endLine": 425,
+          "signature": "function combinedReducer(state: Record<string, unknown>, action: UnknownAction)",
+          "parameters": [
+            {
+              "name": "state",
+              "type": "Record<string, unknown>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "action",
+              "type": "UnknownAction",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "`state` is a Record<string, unknown> mapping slice keys to slice state",
+            "`action` conforms to the UnknownAction interface",
+            "The closure `reducer` has been initialized by the outer combineSlices call"
+          ],
+          "postconditions": ["Returns the state record produced by calling `reducer(state, action)`"],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "reducer", "source": null, "kind": "internal" }],
+          "symbolReferences": ["UnknownAction", "Record"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Invokes the enclosed combined reducer with the provided state and action to produce the next state record for the combined slices.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "cf870f6bdbd2a20729873570132ea6bae621769532dcf29eab44348cf4e1f5c9"
+        }
+      },
+      {
+        "unitId": "packages/toolkit/src/combineSlices.ts__combineSlices.inject#function:combineSlices.inject",
+        "unitKind": "function",
+        "name": "inject",
+        "qualifiedName": "combineSlices.inject",
+        "parentUnitId": "packages/toolkit/src/combineSlices.ts__combineSlices#function:combineSlices",
+        "startLine": 431,
+        "endLine": 464,
+        "isBehavioral": true,
+        "source": "  const inject = (\n    slice: AnySliceLike,\n    config: InjectConfig = {},\n  ): typeof combinedReducer => {\n    const { reducerPath, reducer: reducerToInject } = slice\n\n    const currentReducer = reducerMap[reducerPath]\n    if (\n      !config.overrideExisting &&\n      currentReducer &&\n      currentReducer !== reducerToInject\n    ) {\n      if (\n        typeof process !== 'undefined' &&\n        process.env.NODE_ENV === 'development'\n      ) {\n        console.error(\n          `called \\`inject\\` to override already-existing reducer ${reducerPath} without specifying \\`overrideExisting: true\\``,\n        )\n      }\n\n      return combinedReducer\n    }\n\n    if (config.overrideExisting && currentReducer !== reducerToInject) {\n      delete initialStateCache[reducerPath]\n    }\n\n    reducerMap[reducerPath] = reducerToInject\n\n    reducer = getReducer()\n\n    return combinedReducer\n  }",
+        "detail": {
+          "unitId": "packages/toolkit/src/combineSlices.ts__combineSlices.inject#function:combineSlices.inject",
+          "fileId": "packages/toolkit/src/combineSlices.ts__combineSlices.inject",
+          "unitKind": "function",
+          "name": "inject",
+          "qualifiedName": "combineSlices.inject",
+          "parentUnitId": "packages/toolkit/src/combineSlices.ts__combineSlices#function:combineSlices",
+          "startLine": 431,
+          "endLine": 464,
+          "signature": "(slice: AnySliceLike, config: InjectConfig = {}): typeof combinedReducer",
+          "parameters": [
+            {
+              "name": "slice",
+              "type": "AnySliceLike",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "config",
+              "type": "InjectConfig",
+              "default": "{}",
+              "optional": true,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "typeof combinedReducer",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "slice provides reducerPath and reducer",
+            "reducerMap and initialStateCache are initialized in closure scope"
+          ],
+          "postconditions": [
+            "reducerMap[slice.reducerPath] equals slice.reducer",
+            "reducer variable is updated via getReducer()",
+            "returns the combinedReducer function"
+          ],
+          "invariants": [
+            "combinedReducer identity is preserved across injections",
+            "reducerPath uniquely identifies a reducer in reducerMap"
+          ],
+          "edgeCases": [
+            "Existing different reducer without overrideExisting: logs dev error and returns combinedReducer without mutating map",
+            "overrideExisting true with different existing reducer: deletes initialStateCache entry then updates map",
+            "Same reducer already present: map assignment is idempotent, no cache deletion"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": "combinedReducer (early return on conflict without override)"
+          },
+          "stateMutations": [
+            "reducerMap[reducerPath] = reducerToInject",
+            "delete initialStateCache[reducerPath] when overrideExisting and different",
+            "reducer = getReducer()"
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "getReducer", "source": null, "kind": "internal" },
+            { "name": "console.error", "source": "console", "kind": "external" }
+          ],
+          "symbolReferences": [
+            "AnySliceLike",
+            "InjectConfig",
+            "combinedReducer",
+            "reducerMap",
+            "initialStateCache",
+            "process",
+            "getReducer"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Registers a slice reducer into the shared reducer map, optionally overriding an existing entry, and returns the stable combined reducer reference.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "inject(slice, {}) is called",
+              "then": "returns combinedReducer, leaves reducerMap unchanged, and logs an error in development environment",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "inject(slice, {overrideExisting: true}) is called",
+              "then": "deletes initialStateCache[reducerPath], assigns new reducer to reducerMap, recomputes combined reducer, returns combinedReducer",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "87c11e40548dadc8f9e923f8fcd5f3f92c67881e2d6208fd1ba1da76596c9e89"
+        }
+      },
+      {
+        "unitId": "packages/toolkit/src/combineSlices.ts__combineSlices.selector#function:combineSlices.selector",
+        "unitKind": "function",
+        "name": "selector",
+        "qualifiedName": "combineSlices.selector",
+        "parentUnitId": "packages/toolkit/src/combineSlices.ts__combineSlices#function:combineSlices",
+        "startLine": 466,
+        "endLine": 484,
+        "isBehavioral": true,
+        "source": "  const selector = Object.assign(\n    function makeSelector<State extends object, RootState, Args extends any[]>(\n      selectorFn: (state: State, ...args: Args) => any,\n      selectState?: (rootState: RootState, ...args: Args) => State,\n    ) {\n      return function selector(state: State, ...args: Args) {\n        return selectorFn(\n          createStateProxy(\n            stateProxyMap,\n            selectState ? selectState(state as any, ...args) : state,\n            reducerMap,\n            initialStateCache,\n          ),\n          ...args,\n        )\n      }\n    },\n    { original },\n  )",
+        "detail": {
+          "unitId": "packages/toolkit/src/combineSlices.ts__combineSlices.selector#function:combineSlices.selector",
+          "fileId": "packages/toolkit/src/combineSlices.ts__combineSlices.selector",
+          "unitKind": "function",
+          "name": "selector",
+          "qualifiedName": "combineSlices.selector",
+          "parentUnitId": "packages/toolkit/src/combineSlices.ts__combineSlices#function:combineSlices",
+          "startLine": 466,
+          "endLine": 484,
+          "signature": "function makeSelector<State extends object, RootState, Args extends any[]>(selectorFn: (state: State, ...args: Args) => any, selectState?: (rootState: RootState, ...args: Args) => State)",
+          "parameters": [
+            {
+              "name": "selectorFn",
+              "type": "(state: State, ...args: Args) => any",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "selectState",
+              "type": "(rootState: RootState, ...args: Args) => State",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "(state: State, ...args: Args) => any",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": ["State extends object", "RootState", "Args extends any[]"],
+          "logicOutline": [],
+          "preconditions": ["selectorFn is a function", "selectState if provided is a function"],
+          "postconditions": [
+            "Returns a new function that applies selectorFn to a proxied state",
+            "The returned function object has an `original` property assigned from the imported `original` constant"
+          ],
+          "invariants": [],
+          "edgeCases": [
+            "When selectState is omitted, the input state is used directly as the slice state for the proxy",
+            "When selectState is provided, it is called with (state, ...args) to obtain the slice state"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "createStateProxy", "source": null, "kind": "internal" }],
+          "symbolReferences": ["createStateProxy", "original", "stateProxyMap", "reducerMap", "initialStateCache"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Given a selector function and optional state selector, returns a wrapped selector that proxies slice state to enable lazy reducer injection, and attaches an `original` property to the returned function.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "makeSelector(selectorFn) returns wrapped and is called with state",
+              "then": "selectorFn is invoked with a proxy of state and returns proxy.foo",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "975c67644ba983f441f03c75ef02ba74d3d7c64fa9c96e0fd0352eb43e8495f7"
+        }
+      },
+      {
+        "unitId": "packages/toolkit/src/combineSlices.ts__isSliceLike#function:isSliceLike",
+        "unitKind": "function",
+        "name": "isSliceLike",
+        "qualifiedName": "isSliceLike",
+        "parentUnitId": null,
+        "startLine": 339,
+        "endLine": 343,
+        "isBehavioral": true,
+        "source": "const isSliceLike = (\n  maybeSliceLike: AnySliceLike | ReducerMap,\n): maybeSliceLike is AnySliceLike =>\n  'reducerPath' in maybeSliceLike &&\n  typeof maybeSliceLike.reducerPath === 'string'",
+        "detail": {
+          "unitId": "packages/toolkit/src/combineSlices.ts__isSliceLike#function:isSliceLike",
+          "fileId": "packages/toolkit/src/combineSlices.ts__isSliceLike",
+          "unitKind": "function",
+          "name": "isSliceLike",
+          "qualifiedName": "isSliceLike",
+          "parentUnitId": null,
+          "startLine": 339,
+          "endLine": 343,
+          "signature": "const isSliceLike = (maybeSliceLike: AnySliceLike | ReducerMap): maybeSliceLike is AnySliceLike =>",
+          "parameters": [
+            {
+              "name": "maybeSliceLike",
+              "type": "AnySliceLike | ReducerMap",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "maybeSliceLike is AnySliceLike",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "pure",
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "maybeSliceLike must be coercible to an object for the `in` operator; calling with null/undefined throws a TypeError before any narrowing occurs."
+          ],
+          "postconditions": [
+            "When the function returns true, maybeSliceLike is narrowed to AnySliceLike because a string-typed `reducerPath` property was found.",
+            "When the function returns false, the input is treated as a plain ReducerMap (no string `reducerPath`)."
+          ],
+          "invariants": [
+            "The function is referentially transparent: identical inputs always yield identical boolean results.",
+            "A returned true value strictly implies `typeof maybeSliceLike.reducerPath === 'string'`."
+          ],
+          "edgeCases": [
+            "null or undefined input: the `in` operator throws a TypeError at runtime, before the typeof check is evaluated.",
+            "object without a `reducerPath` property (e.g. a ReducerMap): returns false.",
+            "object whose `reducerPath` exists but is non-string (number, undefined, object): returns false.",
+            "object whose `reducerPath` is a string (own or inherited): returns true."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["TypeError (JavaScript runtime error) when the `in` operator is applied to null or undefined"],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["AnySliceLike", "ReducerMap"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Type guard that determines whether an object is slice-like by verifying it has a string-valued `reducerPath` property, narrowing the input to `AnySliceLike`.",
+          "specLiterals": [
+            {
+              "kind": "enum-value",
+              "value": "reducerPath",
+              "role": "Property name whose presence and string type define the slice-like contract"
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "isSliceLike is called with that object",
+              "then": "returns true and TypeScript narrows the value to AnySliceLike",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "isSliceLike is called with that object",
+              "then": "returns false",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "e2d739316a77384567c5b3cd67bd30a346701f30deff99bc3cd55eb3dbb0d7ac"
+        }
+      },
+      {
+        "unitId": "packages/toolkit/src/combineSlices.ts__getReducers#function:getReducers",
+        "unitKind": "function",
+        "name": "getReducers",
+        "qualifiedName": "getReducers",
+        "parentUnitId": null,
+        "startLine": 345,
+        "endLine": 350,
+        "isBehavioral": true,
+        "source": "const getReducers = (slices: Array<AnySliceLike | ReducerMap>) =>\n  slices.flatMap<[string, Reducer]>((sliceOrMap) =>\n    isSliceLike(sliceOrMap)\n      ? [[sliceOrMap.reducerPath, sliceOrMap.reducer]]\n      : Object.entries(sliceOrMap),\n  )",
+        "detail": {
+          "unitId": "packages/toolkit/src/combineSlices.ts__getReducers#function:getReducers",
+          "fileId": "packages/toolkit/src/combineSlices.ts__getReducers",
+          "unitKind": "function",
+          "name": "getReducers",
+          "qualifiedName": "getReducers",
+          "parentUnitId": null,
+          "startLine": 345,
+          "endLine": 350,
+          "signature": "const getReducers = (slices: Array<AnySliceLike | ReducerMap>) =>\n  slices.flatMap<[string, Reducer]>((sliceOrMap) =>\n    isSliceLike(sliceOrMap)\n      ? [[sliceOrMap.reducerPath, sliceOrMap.reducer]]\n      : Object.entries(sliceOrMap),\n  )",
+          "parameters": [
+            {
+              "name": "slices",
+              "type": "Array<AnySliceLike | ReducerMap>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "Array<[string, Reducer]>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "view",
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "slices must be an array (Array.isArray)",
+            "each element must conform to AnySliceLike or ReducerMap shape",
+            "AnySliceLike elements must expose reducerPath: string and reducer: Reducer fields",
+            "ReducerMap elements must be plain objects compatible with Object.entries"
+          ],
+          "postconditions": [
+            "returns a new flat array of [string, Reducer] tuples",
+            "order of entries preserves iteration order from the input array",
+            "no mutation of the input slices array or its elements",
+            "each AnySliceLike input produces exactly one tuple keyed by its reducerPath",
+            "each ReducerMap input contributes one tuple per own enumerable property"
+          ],
+          "invariants": [
+            "input array is never mutated",
+            "output tuples always pair a string path with a Reducer value",
+            "no duplicate path deduplication — all input entries are emitted"
+          ],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["TypeError"],
+            "reverts": [],
+            "onInvalidInput": "throws TypeError if a non-object element reaches Object.entries",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "isSliceLike", "source": "packages/toolkit/src/combineSlices.ts", "kind": "internal" },
+            { "name": "Object.entries", "source": "ECMAScript standard library", "kind": "external" },
+            { "name": "slices.flatMap", "source": "ECMAScript standard library", "kind": "external" }
+          ],
+          "symbolReferences": ["AnySliceLike", "ReducerMap", "Reducer", "isSliceLike", "Object.entries"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Normalizes a heterogeneous array of SliceLike objects and ReducerMaps into a flat list of [path, reducer] tuples, used to assemble combined reducer maps.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "0b2c2d189cde3fc3f8f7367444e3b40a9e93109b328646f757ffc0892c1b7691"
+        }
+      },
+      {
+        "unitId": "packages/toolkit/src/combineSlices.ts__createStateProxy#function:createStateProxy",
+        "unitKind": "function",
+        "name": "createStateProxy",
+        "qualifiedName": "createStateProxy",
+        "parentUnitId": null,
+        "startLine": 356,
+        "endLine": 393,
+        "isBehavioral": true,
+        "source": "const createStateProxy = <State extends object>(\n  stateProxyMap: WeakMap<object, object>,\n  state: State,\n  reducerMap: Partial<Record<PropertyKey, Reducer>>,\n  initialStateCache: Record<PropertyKey, unknown>,\n) =>\n  getOrInsertComputed(\n    stateProxyMap,\n    state,\n    () =>\n      new Proxy(state, {\n        get: (target, prop, receiver) => {\n          if (prop === ORIGINAL_STATE) return target\n          const result = Reflect.get(target, prop, receiver)\n          if (typeof result === 'undefined') {\n            const cached = initialStateCache[prop]\n            if (typeof cached !== 'undefined') return cached\n            const reducer = reducerMap[prop]\n            if (reducer) {\n              // ensure action type is random, to prevent reducer treating it differently\n              const reducerResult = reducer(undefined, { type: nanoid() })\n              if (typeof reducerResult === 'undefined') {\n                throw new Error(\n                  `The slice reducer for key \"${prop.toString()}\" returned undefined when called for selector(). ` +\n                    `If the state passed to the reducer is undefined, you must ` +\n                    `explicitly return the initial state. The initial state may ` +\n                    `not be undefined. If you don't want to set a value for this reducer, ` +\n                    `you can use null instead of undefined.`,\n                )\n              }\n              initialStateCache[prop] = reducerResult\n              return reducerResult\n            }\n          }\n          return result\n        },\n      }),\n  ) as State",
+        "detail": {
+          "unitId": "packages/toolkit/src/combineSlices.ts__createStateProxy#function:createStateProxy",
+          "fileId": "packages/toolkit/src/combineSlices.ts__createStateProxy",
+          "unitKind": "function",
+          "name": "createStateProxy",
+          "qualifiedName": "createStateProxy",
+          "parentUnitId": null,
+          "startLine": 356,
+          "endLine": 393,
+          "signature": "const createStateProxy = <State extends object>(\n  stateProxyMap: WeakMap<object, object>,\n  state: State,\n  reducerMap: Partial<Record<PropertyKey, Reducer>>,\n  initialStateCache: Record<PropertyKey, unknown>,\n) =>\n  getOrInsertComputed(\n    stateProxyMap,\n    state,\n    () =>\n      new Proxy(state, {\n        get: (target, prop, receiver) => {\n          if (prop === ORIGINAL_STATE) return target\n          const result = Reflect.get(target, prop, receiver)\n          if (typeof result === 'undefined') {\n            const cached = initialStateCache[prop]\n            if (typeof cached !== 'undefined') return cached\n            const reducer = reducerMap[prop]\n            if (reducer) {\n              const reducerResult = reducer(undefined, { type: nanoid() })\n              if (typeof reducerResult === 'undefined') {\n                throw new Error(\n                  `The slice reducer for key \"${prop.toString()}\" returned undefined when called for selector(). ` +\n                    `If the state passed to the reducer is undefined, you must ` +\n                    `explicitly return the initial state. The initial state may ` +\n                    `not be undefined. If you don't want to set a value for this reducer, ` +\n                    `you can use null instead of undefined.`,\n                )\n              }\n              initialStateCache[prop] = reducerResult\n              return reducerResult\n            }\n          }\n          return result\n        },\n      }),\n  ) as State",
+          "parameters": [
+            {
+              "name": "stateProxyMap",
+              "type": "WeakMap<object, object>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            { "name": "state", "type": "State", "default": null, "optional": false, "variadic": false, "order": 1 },
+            {
+              "name": "reducerMap",
+              "type": "Partial<Record<PropertyKey, Reducer>>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            },
+            {
+              "name": "initialStateCache",
+              "type": "Record<PropertyKey, unknown>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 3
+            }
+          ],
+          "returnType": "State",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "view",
+          "visibility": "export",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": ["State extends object"],
+          "logicOutline": [],
+          "preconditions": [
+            "stateProxyMap must be a valid WeakMap",
+            "state must be a non-null object",
+            "reducerMap values, where present, must be valid Redux-style reducers",
+            "initialStateCache must be a mutable record for caching"
+          ],
+          "postconditions": [
+            "Returns a Proxy around state whose get trap computes initial slice values on demand",
+            "Accessing any undefined property with a registered reducer caches and returns its initial reducer value in initialStateCache",
+            "Once a slice's initial value is computed, it is reused from cache on subsequent accesses"
+          ],
+          "invariants": [
+            "The returned Proxy is registered in stateProxyMap under state via getOrInsertComputed",
+            "A slice reducer invoked for initialization is called with a random action type to avoid special-case behavior",
+            "initialStateCache is mutated in place as values are computed — it serves as the single source of cached initial values"
+          ],
+          "edgeCases": [
+            "If state already contains a defined value for prop, the reducer is never invoked and the value is returned directly",
+            "If initialStateCache already contains a defined value for prop, that cached value is returned without invoking the reducer",
+            "If the reducer for an undefined prop returns undefined, an Error is thrown describing how to fix the reducer",
+            "Accessing the special ORIGINAL_STATE symbol returns the raw un-proxied state object"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["Error"],
+            "reverts": [],
+            "onInvalidInput": "Returns undefined behavior for invalid WeakMap or null state, may throw internally",
+            "returnsOnError": null
+          },
+          "stateMutations": [
+            "stateProxyMap via getOrInsertComputed (registers the created proxy)",
+            "initialStateCache (mutated to store computed initial values)"
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "getOrInsertComputed", "source": null, "kind": "internal" },
+            { "name": "Reflect.get", "source": "ES2015", "kind": "external" },
+            { "name": "nanoid", "source": null, "kind": "internal" },
+            { "name": "Proxy", "source": "ES2015", "kind": "external" }
+          ],
+          "symbolReferences": [
+            "ORIGINAL_STATE",
+            "Reducer",
+            "State",
+            "PropertyKey",
+            "WeakMap",
+            "Reflect",
+            "Proxy",
+            "Record",
+            "nanoid",
+            "getOrInsertComputed"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Wraps a state object in a Proxy that lazily computes and caches initial values for undefined slice properties via their reducers, used internally by combineSlices to generate a typed state proxy for selector usage.",
+          "specLiterals": [
+            {
+              "kind": "symbol",
+              "value": "ORIGINAL_STATE",
+              "role": "Sentinel symbol used as a property key to retrieve the original un-proxied state object"
+            },
+            {
+              "kind": "error-message",
+              "value": "The slice reducer for key \"${prop.toString()}\" returned undefined when called for selector(). If the state passed to the reducer is undefined, you must explicitly return the initial state. The initial state may not be undefined. If you don't want to set a value for this reducer, you can use null instead of undefined.",
+              "role": "Contractual error message surfaced when a slice reducer returns undefined during lazy initialization"
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "3b38a19e0f60d742085c615891b841fa5b4e2053840cde14e2c4cb8c33638eac"
+        }
+      },
+      {
+        "unitId": "packages/toolkit/src/combineSlices.ts__original#function:original",
+        "unitKind": "function",
+        "name": "original",
+        "qualifiedName": "original",
+        "parentUnitId": null,
+        "startLine": 395,
+        "endLine": 400,
+        "isBehavioral": true,
+        "source": "const original = (state: any) => {\n  if (!isStateProxy(state)) {\n    throw new Error('original must be used on state Proxy')\n  }\n  return state[ORIGINAL_STATE]\n}",
+        "detail": {
+          "unitId": "packages/toolkit/src/combineSlices.ts__original#function:original",
+          "fileId": "packages/toolkit/src/combineSlices.ts__original",
+          "unitKind": "function",
+          "name": "original",
+          "qualifiedName": "original",
+          "parentUnitId": null,
+          "startLine": 395,
+          "endLine": 400,
+          "signature": "original(state: any): any",
+          "parameters": [
+            { "name": "state", "type": "any", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "any",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "const",
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["state must be a state Proxy (isStateProxy(state) === true)"],
+          "postconditions": ["returns the value referenced by ORIGINAL_STATE on the proxy"],
+          "invariants": [],
+          "edgeCases": ["If state is not a state proxy, throws Error('original must be used on state Proxy')"],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["Error"],
+            "reverts": [],
+            "onInvalidInput": "throws Error('original must be used on state Proxy')",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "isStateProxy", "source": null, "kind": "internal" }],
+          "symbolReferences": ["isStateProxy", "ORIGINAL_STATE"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Returns the original underlying state stored on a state Proxy; throws if the argument is not a state Proxy.",
+          "specLiterals": [
+            {
+              "kind": "error-message",
+              "value": "original must be used on state Proxy",
+              "role": "error thrown when argument is not a state proxy"
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "original(proxy) is invoked",
+              "then": "returns S (the value stored at ORIGINAL_STATE)",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "original(value) is invoked",
+              "then": "throws an Error with message 'original must be used on state Proxy'",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "8648bd3b9131c0b8053063db363b88fb00069cd827a088c81acd4191a496feca"
+        }
+      },
+      {
+        "unitId": "packages/toolkit/src/combineSlices.ts__isStateProxy#function:isStateProxy",
+        "unitKind": "function",
+        "name": "isStateProxy",
+        "qualifiedName": "isStateProxy",
+        "parentUnitId": null,
+        "startLine": 354,
+        "endLine": 354,
+        "isBehavioral": true,
+        "source": "const isStateProxy = (value: any) => !!value && !!value[ORIGINAL_STATE]",
+        "detail": {
+          "unitId": "packages/toolkit/src/combineSlices.ts__isStateProxy#function:isStateProxy",
+          "fileId": "packages/toolkit/src/combineSlices.ts__isStateProxy",
+          "unitKind": "function",
+          "name": "isStateProxy",
+          "qualifiedName": "isStateProxy",
+          "parentUnitId": null,
+          "startLine": 354,
+          "endLine": 354,
+          "signature": "const isStateProxy = (value: any) => !!value && !!value[ORIGINAL_STATE]",
+          "parameters": [
+            { "name": "value", "type": "any", "default": "null", "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "boolean",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "pure",
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["value must be an object (or truthy value with property access)."],
+          "postconditions": [
+            "Returns a boolean indicating whether value has the ORIGINAL_STATE symbol property.",
+            "Does not mutate value or any related state."
+          ],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Returns false for falsy or non-object inputs.",
+            "returnsOnError": "false"
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["ORIGINAL_STATE"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Returns true if the given value is a state proxy created by createStateProxy, identified by the presence of the ORIGINAL_STATE symbol property.",
+          "specLiterals": [
+            {
+              "kind": "abi-fragment",
+              "value": "ORIGINAL_STATE",
+              "role": "Sentinel symbol used to identify state proxy objects."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "isStateProxy(null) is called",
+              "then": "returns false",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "isStateProxy(value) is called",
+              "then": "returns true",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "isStateProxy(value) is called",
+              "then": "returns false",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "b95b2ff91d0880492d0617e6e22260bc92ef114b0251ba504649b7b4e20573f8"
+        }
+      }
+    ]
+  },
+  "out": ["packages/toolkit/src/utils.ts", "packages/toolkit/src/tsHelpers.ts", "packages/toolkit/src/nanoid.ts"],
+  "in": ["packages/toolkit/src/createSlice.ts", "packages/toolkit/src/index.ts"],
+  "externals": ["redux"],
+  "impact": { "seeds": 9, "callers": 4, "impactedFiles": [] }
+}

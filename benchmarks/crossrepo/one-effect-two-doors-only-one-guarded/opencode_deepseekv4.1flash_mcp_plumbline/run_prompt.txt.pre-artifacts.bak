@@ -1,0 +1,78 @@
+CASE: xrepo-h07
+
+You are looking for every file that a single change would touch, across 15
+separate React-ecosystem repositories. They do not import one another, so the
+answer spans more than one repository.
+
+  repo             commit
+  redux            3aa561f9fc13f3287e6d83764f85fe0e82437c5f
+  redux-toolkit    b1c5130154c454ca8387f55da6122fcb507c560c
+  react-redux      ad5d1e0816d0cb1464b25cf2853f2a7d73433f5b
+  reselect         8d87c27b75f55883629be75d1eae1c27832d907a
+  redux-thunk      184205d49f707c6f203269e0d39ad85824801816
+  react            3a717e42438afac81020cdec297dadb5613a4304
+  jotai            5c4ca26b0db5571114be58393e17854a771f7790
+  zustand          beca84e600e4e250f6b244d22878e72948f331c7
+  db               7f0fa36ff6d48b0494ed5f6a1223fd18c317e41f
+  xyflow           360f5b13e2bc6899ea06b4be1a49b068d86926cf
+  query            46d7f02f1c7b9fcd3255082cc7103e8bfa3dab76
+  table            d08af367e11c539bb7e18c2472aa761149ef6db6
+  tldraw           5590d14d8edd4faab7dc1177b6e1adb28876fd23
+  redux-devtools   f4b4668c30ae08920c59a76cc4629c35c16ef0fa
+  router           3dee5b2e9453d01a3172c73426959007b290b3fc
+
+Assume these commits are already indexed and ready. Do not verify checkouts, do
+not check revisions, do not run any gates. Just start searching.
+
+PROBLEM
+Two different entry points reach the same privileged write. One of them checks that the caller is allowed to perform it; the other was built later, for a different transport, and never grew the same check - it validates only that the target exists and that the payload is well formed, then performs the write. So the permission that the first door enforces is not a property of the operation at all, only a property of one route to it, and any caller who knows the second door bypasses it entirely. The check the second door is missing has no shared name yet: at this revision the condition is written out inline at the door that does enforce it, so there is no single helper to look for. The same hazard is answered deliberately elsewhere in the folder, where libraries deliberately funnel every mutating entry point - however many public method names it wears - through one internal chokepoint that validates and applies the change, so that a new public method cannot accidentally acquire fewer guarantees than the old ones. Which files perform the privileged write without the check, which one holds the check that was not shared, and which own the single-chokepoint contract they have to be brought in line with?
+
+PHASE 1 - FIND THE FILES
+- Use ONLY the plumbline MCP tools. They are your whole retrieval surface: do not
+  read, list or grep a single file to answer the question.
+- Do NOT open golden.json, and do not go looking for it. PHASE 1 is answered
+  blind; reading it before your array is out invalidates the run.
+- Work outward from the symptom to the contract, across repositories. Source files
+  only - no tests, docs, examples, fixtures or build output.
+- Return repo-relative paths (no leading slash, no repo name prefix), most likely
+  first, at most 75 paths total.
+
+End PHASE 1 with ONLY this JSON array, no prose and no markdown fence:
+[{"repo": "<repo>", "files": ["<path>", "..."]}, ...]
+
+PHASE 2 - SCORE (only after PHASE 1's array is out)
+File access opens now, and not before. You were launched inside this arm's own
+folder: everything you write goes HERE, and the answer key sits one level up at
+../golden.json.
+
+1. Read ../golden.json. Print every file its `expected` block lists, then which of
+   them PHASE 1 found and which it missed.
+2. Write these five files, in this directory:
+
+   ranked.json      PHASE 1's array, verbatim.
+
+   result.json      {"arm", "case_id", "model", "retrieved", "gold_size",
+                    "hits", "missed_gold",
+                    "metrics": {"recall@10", "recall@25", "recall@50",
+                    "recall@75", "precision@5", "precision@10", "MRR",
+                    "first_hit_rank", "repo_recall"},
+                    "ranked_detail": [{"rank", "repo", "path", "gold"}]}
+                    recall@k counts gold files inside the first k paths of your
+                    ranked list, over the total gold count; MRR is 1/rank of your
+                    first gold hit, 0 if none; repo_recall is the share of gold
+                    repos your answer named at all.
+
+   commands.log     one line per PHASE 1 tool call, in call order:
+                    "  N. <tool_name> <json arguments>"
+
+   output.log       the run in prose: what you searched for and why, what you
+                    concluded, the final array, and the PHASE 2 comparison.
+
+   raw_result.json  {"case", "arm", "model", "phase1": <the array>,
+                    "phase2": {"gold": [...], "hits": [...], "missed": [...]}}
+
+3. Write nothing outside this directory. golden.json is read-only, the sibling arm
+   folders are not yours, and the pinned checkouts are not to be touched at all.
+
+raw_response.json and stderr.log are written by the shell that launched you - the
+event stream and stderr - so do not try to create them yourself.

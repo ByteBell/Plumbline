@@ -1,0 +1,1057 @@
+{
+  "schema": 2,
+  "kind": "file",
+  "repoName": "tldraw",
+  "file": {
+    "relativePath": "packages/editor/src/lib/exports/parseCss.ts",
+    "language": "typescript",
+    "sizeBytes": 3958,
+    "tokenCount": 990,
+    "model": "us.openai.gpt-5.6-luna",
+    "analysedAt": "2026-08-24T12:19:48.423Z",
+    "module": {
+      "purpose": "Provides CSS parsing utilities for extracting imports, font-face declarations, font families, and external URLs used by the editor export pipeline.",
+      "summary": "This module uses regular expressions to identify CSS imports, @font-face blocks, font-family values, and url() references. It resolves font URLs against a base URL, excludes fragment-only references, normalizes font-family names to lowercase, and filters CSS properties that should not be included in exported styling. Parsing is synchronous and returns arrays or sets without mutating caller inputs.",
+      "businessContext": "Supports exporting editor content with usable CSS resources and font metadata. Failures can omit imports, fonts, or relevant styling from exported documents.",
+      "classes": [
+        "ParsedFontFace (~L3-7): Represents parsed font-face CSS, resolved URLs, and normalized family names"
+      ],
+      "functions": [
+        "parseCssImports (~L36-38): Extracts imported stylesheet URLs and trailing import options",
+        "parseCssFontFaces (~L40-53): Parses font-face blocks and resolves embedded resource URLs",
+        "parseCssFontFamilyValue (~L55-82): Splits and normalizes comma-separated font-family values",
+        "shouldIncludeCssProperty (~L84-94): Determines whether a CSS property belongs in exported styles",
+        "parseCss (~L96-100): Combines stylesheet import and font-face parsing results",
+        "parseCssValueUrls (~L102-107): Extracts non-fragment URLs from a CSS value"
+      ],
+      "keywords": [
+        "CSS export",
+        "@font-face",
+        "@import",
+        "font-family",
+        "url()",
+        "safeParseUrl",
+        "stylesheet parsing",
+        "CSS property filtering"
+      ],
+      "ontologyConcepts": ["parsing", "resource resolution", "normalization", "filtering", "export transformation"],
+      "businessEntities": ["stylesheet", "font face", "font family", "resource URL", "CSS property"],
+      "systemCapabilities": [
+        "Extract stylesheet imports",
+        "Resolve font resources",
+        "Normalize font-family names",
+        "Filter exportable CSS properties",
+        "Extract CSS value URLs"
+      ],
+      "configDependencies": [],
+      "importsInternal": [],
+      "importsExternal": [
+        {
+          "spec": "@tldraw/utils",
+          "symbols": ["safeParseUrl"],
+          "package": "@tldraw/utils",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 1 }
+        }
+      ],
+      "sideEffects": { "io": [], "network": [], "env": [], "fs": [], "process": [], "mutationOfArg": [] },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "ParsedFontFace",
+          "shape": "export interface ParsedFontFace { fontFace: string; urls: { original: string; resolved: string | null; embedded?: Promise<string | null> }[]; fontFamilies: Set<string> }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "parseCssImports",
+          "shape": "export function parseCssImports(css: string)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "parseCssFontFaces",
+          "shape": "export function parseCssFontFaces(css: string, baseUrl: string)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "parseCssFontFamilyValue",
+          "shape": "export function parseCssFontFamilyValue(value: string)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "shouldIncludeCssProperty",
+          "shape": "export function shouldIncludeCssProperty(property: string)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "parseCss",
+          "shape": "export function parseCss(css: string, baseUrl: string)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "parseCssValueUrls",
+          "shape": "export function parseCssValueUrls(value: string)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "safeParseUrl",
+          "shape": "safeParseUrl(original, baseUrl)?.href ?? null",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "regex declarations",
+          "intent": "Defines reusable expressions for locating CSS imports, fonts, families, and URLs",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 19, "endLine": 34 }
+        },
+        {
+          "name": "import extraction",
+          "intent": "Matches all CSS import declarations and maps captured URLs and trailing options",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 36, "endLine": 38 }
+        },
+        {
+          "name": "font-face extraction",
+          "intent": "Parses font-face blocks, resolves URLs, and collects normalized families",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 40, "endLine": 53 }
+        },
+        {
+          "name": "font-family scanning",
+          "intent": "Iterates through family values and advances across comma separators",
+          "structureKind": "loop",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": "!valueMatch",
+          "anchor": { "startLine": 63, "endLine": 79 }
+        },
+        {
+          "name": "property exclusion",
+          "intent": "Rejects vendor, animation, interaction, and transition-related properties",
+          "structureKind": "branch",
+          "predicate": "property.startsWith('-')",
+          "branchOutcomes": ["excluded", "continue checking"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 84, "endLine": 94 }
+        },
+        {
+          "name": "combined stylesheet parsing",
+          "intent": "Returns imports and font-face results from one CSS source",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 96, "endLine": 100 }
+        },
+        {
+          "name": "CSS URL extraction",
+          "intent": "Maps URL references and removes fragment-only references",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 102, "endLine": 107 }
+        }
+      ],
+      "representationFamily": "function-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "interface",
+          "name": "ParsedFontFace",
+          "signature": "export interface ParsedFontFace",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 3, "endLine": 3 }
+        },
+        {
+          "kind": "function",
+          "name": "parseCssImports",
+          "signature": "export function parseCssImports(css: string)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 36, "endLine": 36 }
+        },
+        {
+          "kind": "function",
+          "name": "parseCssFontFaces",
+          "signature": "export function parseCssFontFaces(css: string, baseUrl: string)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 40, "endLine": 40 }
+        },
+        {
+          "kind": "function",
+          "name": "parseCssFontFamilyValue",
+          "signature": "export function parseCssFontFamilyValue(value: string)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 55, "endLine": 55 }
+        },
+        {
+          "kind": "function",
+          "name": "shouldIncludeCssProperty",
+          "signature": "export function shouldIncludeCssProperty(property: string)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 84, "endLine": 84 }
+        },
+        {
+          "kind": "function",
+          "name": "parseCss",
+          "signature": "export function parseCss(css: string, baseUrl: string)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 96, "endLine": 96 }
+        },
+        {
+          "kind": "function",
+          "name": "parseCssValueUrls",
+          "signature": "export function parseCssValueUrls(value: string)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 102, "endLine": 102 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "interface",
+          "name": "ParsedFontFace",
+          "shape": "{\n\tfontFace: string\n\turls: { original: string; resolved: string | null; embedded?: Promise<string | null> }[]\n\tfontFamilies: Set<string>\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 3, "endLine": 7 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "CSS with no import declarations",
+          "handled": true,
+          "behavior": "Returns an empty imports array.",
+          "anchor": { "startLine": 36, "endLine": 38 }
+        },
+        {
+          "inputShape": "Font-face URL that cannot be resolved against baseUrl",
+          "handled": true,
+          "behavior": "Keeps the original URL and sets resolved to null.",
+          "anchor": { "startLine": 43, "endLine": 46 }
+        },
+        {
+          "inputShape": "Font-family value containing quoted or unquoted families",
+          "handled": true,
+          "behavior": "Adds each matched family in lowercase to a Set.",
+          "anchor": { "startLine": 63, "endLine": 70 }
+        },
+        {
+          "inputShape": "Font-family value with malformed or unmatched trailing text",
+          "handled": true,
+          "behavior": "Stops scanning when the next value or separator cannot be matched.",
+          "anchor": { "startLine": 64, "endLine": 76 }
+        },
+        {
+          "inputShape": "CSS value containing fragment-only URLs",
+          "handled": true,
+          "behavior": "Filters out matches whose extracted URL starts with #.",
+          "anchor": { "startLine": 102, "endLine": 107 }
+        },
+        {
+          "inputShape": "CSS property beginning with an excluded prefix or exact excluded name",
+          "handled": true,
+          "behavior": "Returns false for vendor, animation, transition, cursor, pointer-events, user-select, and touch-action properties.",
+          "anchor": { "startLine": 85, "endLine": 92 }
+        }
+      ],
+      "boundaryConditions": [],
+      "errorHandling": [],
+      "invariants": [
+        {
+          "kind": "postcondition",
+          "description": "Parsed font-family names are stored in lowercase sets.",
+          "anchor": { "startLine": 48, "endLine": 50 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "Unresolvable font URLs produce null resolved values.",
+          "anchor": { "startLine": 43, "endLine": 46 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Fragment-only CSS URLs are excluded from returned URL records.",
+          "anchor": { "startLine": 102, "endLine": 107 }
+        },
+        {
+          "kind": "ordering",
+          "description": "Regex match results preserve their source order.",
+          "anchor": { "startLine": 37, "endLine": 38 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "Callers provide CSS text and a base URL suitable for resource resolution.",
+          "anchor": { "startLine": 40, "endLine": 40 }
+        },
+        {
+          "kind": "schema",
+          "description": "CSS syntax is sufficiently close to the supported regular-expression patterns for extraction.",
+          "anchor": { "startLine": 9, "endLine": 12 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "Should malformed CSS declarations be rejected, logged, or silently ignored by callers?",
+          "affects": "edge_cases and error_handling",
+          "anchor": { "startLine": 9, "endLine": 12 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "sync",
+        "reentrant": true,
+        "ordering": "deterministic",
+        "notes": "All parsing is synchronous and uses local match state; the imported URL parser returns a nullable result rather than throwing here."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "extracts-import-url-and-extras",
+          "scenario": "An import declaration contains a quoted URL and trailing media or feature text.",
+          "given": ["const css = '@import \"theme.css\" screen and (min-width: 1px);'"],
+          "when": "parseCssImports(css)",
+          "then": "returns [{ url: 'theme.css', extras: ' screen and (min-width: 1px)' }]",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins extraction of both the imported resource and text following the URL."
+        },
+        {
+          "testId": "parses-font-face-urls-and-families",
+          "scenario": "A font-face declaration contains a relative font URL and a quoted family name.",
+          "given": [
+            "const css = '@font-face { font-family: \"Open Sans\"; src: url(\"fonts/open.woff2\"); }'",
+            "const baseUrl = 'https://example.com/css/main.css'"
+          ],
+          "when": "parseCssFontFaces(css, baseUrl)",
+          "then": "returns one face with fontFamilies equal to new Set(['open sans']), urls[0].original equal to 'fonts/open.woff2', and urls[0].resolved equal to 'https://example.com/css/fonts/open.woff2'",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Guards URL resolution and case normalization in the parsed font-face contract."
+        },
+        {
+          "testId": "parses-comma-separated-font-families",
+          "scenario": "A font-family value mixes quoted and unquoted family names separated by commas.",
+          "given": ["const value = 'Arial, \"Open Sans\", serif'"],
+          "when": "parseCssFontFamilyValue(value)",
+          "then": "returns new Set(['arial', 'open sans', 'serif'])",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins supported quoting, separator handling, and lowercase normalization."
+        },
+        {
+          "testId": "excludes-nonportable-css-properties",
+          "scenario": "A property is vendor-prefixed, animation-related, or explicitly excluded.",
+          "given": [
+            "const excluded = ['-webkit-user-select', 'animation-name', 'transition', 'cursor', 'pointer-events', 'user-select', 'touch-action']"
+          ],
+          "when": "excluded.every((property) => !shouldIncludeCssProperty(property))",
+          "then": "returns true",
+          "targets": [],
+          "oracleKind": "property",
+          "rationale": "Preserves the complete exclusion policy for properties that should not be included."
+        },
+        {
+          "testId": "includes-ordinary-css-property",
+          "scenario": "A normal CSS property does not match any exclusion rule.",
+          "given": ["const property = 'font-family'"],
+          "when": "shouldIncludeCssProperty(property)",
+          "then": "returns true",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Ensures filtering is allow-by-default outside the explicit exclusions."
+        },
+        {
+          "testId": "filters-fragment-urls",
+          "scenario": "A CSS value contains an external URL and a fragment-only URL.",
+          "given": ["const value = 'url(\"font.woff2\") url(#local-font)'"],
+          "when": "parseCssValueUrls(value)",
+          "then": "returns [{ original: 'url(\"font.woff2\")', url: 'font.woff2' }]",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins exclusion of in-document fragment references while retaining external resources."
+        },
+        {
+          "testId": "combines-imports-and-font-faces",
+          "scenario": "CSS contains both an import declaration and a font-face declaration.",
+          "given": [
+            "const css = '@import url(\"base.css\"); @font-face { font-family: serif; src: url(font.woff2); }'",
+            "const baseUrl = 'https://example.com/styles.css'"
+          ],
+          "when": "parseCss(css, baseUrl)",
+          "then": "returns an object whose imports has one parsed import and whose fontFaces has one parsed font face",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Guards the aggregate parser contract and delegation to both CSS parsers."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "safeParseUrl import",
+        "ParsedFontFace interface",
+        "CSS parsing commentary",
+        "importsRegex constant",
+        "fontFaceRegex constant",
+        "urlsRegex constant",
+        "fontFamilyRegex constant",
+        "parseCssImports function",
+        "parseCssFontFaces function",
+        "parseCssFontFamilyValue function",
+        "shouldIncludeCssProperty function",
+        "parseCss function",
+        "parseCssValueUrls function"
+      ],
+      "moduleLevelCode": "import { safeParseUrl } from '@tldraw/utils'\n\nCSS parsing comments and regular-expression declarations",
+      "exports": [
+        { "name": "ParsedFontFace", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "parseCssImports", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "parseCssFontFaces", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "parseCssFontFamilyValue", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "shouldIncludeCssProperty", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "parseCss", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "parseCssValueUrls", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [{ "symbol": "safeParseUrl", "module": "@tldraw/utils", "alias": null, "kind": "external" }],
+      "fileConstants": [
+        {
+          "name": "importsRegex",
+          "value": "/@import\\s+(?:\"([^\"]+)\"|'([^']+)'|url\\s*\\(\\s*(?:\"([^\"]+)\"|'([^']+)'|([^'\")]+))\\s*\\))([^;]+);/gi",
+          "kind": "RegExp"
+        },
+        { "name": "fontFaceRegex", "value": "/@font-face\\s*{([^}]+)}/gi", "kind": "RegExp" },
+        {
+          "name": "urlsRegex",
+          "value": "/url\\s*\\(\\s*(?:\"([^\"]+)\"|'([^']+)'|([^'\")]+))\\s*\\)/gi",
+          "kind": "RegExp"
+        },
+        {
+          "name": "fontFamilyRegex",
+          "value": "/(?:^|;)\\s*font-family\\s*:\\s*(?:([^'\"][^;\\n]+)|\"([^\"]+)\"|'([^']+)')\\s*(?:;|$)/gi",
+          "kind": "RegExp"
+        }
+      ],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/editor/src/lib/exports/parseCss.ts__parseCssImports#function:parseCssImports",
+        "unitKind": "function",
+        "name": "parseCssImports",
+        "qualifiedName": "parseCssImports",
+        "parentUnitId": null,
+        "startLine": 36,
+        "endLine": 38,
+        "isBehavioral": true,
+        "source": "\treturn Array.from(css.matchAll(importsRegex), (m) => ({\n\t\turl: m[1] || m[2] || m[3] || m[4] || m[5],\n\t\textras: m[6],",
+        "detail": {
+          "unitId": "packages/editor/src/lib/exports/parseCss.ts__parseCssImports#function:parseCssImports",
+          "fileId": "packages/editor/src/lib/exports/parseCss.ts__parseCssImports",
+          "unitKind": "function",
+          "name": "parseCssImports",
+          "qualifiedName": "parseCssImports",
+          "parentUnitId": null,
+          "startLine": 36,
+          "endLine": 38,
+          "signature": null,
+          "parameters": [],
+          "returnType": "Array<{ url: string | undefined; extras: string | undefined }>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The CSS input supports String.prototype.matchAll.",
+            "The import-matching regular expression is available to the function."
+          ],
+          "postconditions": [
+            "Returns one record for each match produced by the import-matching regular expression, in match order.",
+            "Each record has a url property selected from captures 1 through 5 using first-truthy fallback semantics.",
+            "Each record has an extras property equal to capture 6."
+          ],
+          "invariants": [
+            "The result preserves the order of matches.",
+            "The result length equals the number of matches produced by the regular expression.",
+            "No input or matched capture is mutated."
+          ],
+          "edgeCases": [
+            "When an earlier URL capture is an empty or otherwise falsy string, the next capture is selected.",
+            "When all URL captures 1 through 5 are falsy or absent, url is undefined.",
+            "When capture 6 is absent, extras is undefined.",
+            "When there are no matches, an empty array is returned."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["Any error raised by css.matchAll or Array.from propagates to the caller."],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "String.prototype.matchAll", "source": null, "kind": "external" },
+            { "name": "Array.from", "source": null, "kind": "external" }
+          ],
+          "symbolReferences": ["importsRegex"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Returns an array of objects with exactly the fields { url, extras }, where url is m[1] || m[2] || m[3] || m[4] || m[5] and extras is m[6].",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Parses CSS import matches into an ordered array of import records, selecting the first truthy captured URL and preserving the sixth capture as extras.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "59ec57deb3d49397bb534c935a6d75479deb54886cafdc9522f6583195d2d3c7"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/exports/parseCss.ts__parseCssFontFaces#function:parseCssFontFaces",
+        "unitKind": "function",
+        "name": "parseCssFontFaces",
+        "qualifiedName": "parseCssFontFaces",
+        "parentUnitId": null,
+        "startLine": 40,
+        "endLine": 53,
+        "isBehavioral": true,
+        "source": "}\n\nexport function parseCssFontFaces(css: string, baseUrl: string) {\n\treturn Array.from(css.matchAll(fontFaceRegex), (m): ParsedFontFace => {\n\t\tconst fontFace = m[1]\n\t\tconst urls = Array.from(fontFace.matchAll(urlsRegex), (m) => {\n\t\t\tconst original = m[1] || m[2] || m[3]\n\t\t\treturn {\n\t\t\t\toriginal,\n\t\t\t\tresolved: safeParseUrl(original, baseUrl)?.href ?? null,\n\t\t\t}\n\t\t})\n\t\tconst fontFamilies = new Set(\n\t\t\tArray.from(fontFace.matchAll(fontFamilyRegex), (m) => (m[1] || m[2] || m[3]).toLowerCase())",
+        "detail": {
+          "unitId": "packages/editor/src/lib/exports/parseCss.ts__parseCssFontFaces#function:parseCssFontFaces",
+          "fileId": "packages/editor/src/lib/exports/parseCss.ts__parseCssFontFaces",
+          "unitKind": "function",
+          "name": "parseCssFontFaces",
+          "qualifiedName": "parseCssFontFaces",
+          "parentUnitId": null,
+          "startLine": 40,
+          "endLine": 53,
+          "signature": "export function parseCssFontFaces(css: string, baseUrl: string)",
+          "parameters": [
+            { "name": "css", "type": "string", "default": null, "optional": false, "variadic": false, "order": 0 },
+            { "name": "baseUrl", "type": "string", "default": null, "optional": false, "variadic": false, "order": 1 }
+          ],
+          "returnType": "ParsedFontFace[]",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "css is a string containing zero or more CSS font-face declarations.",
+            "baseUrl is a string usable as the base for URL resolution."
+          ],
+          "postconditions": [
+            "Returns one ParsedFontFace result for each font-face declaration matched in css.",
+            "Each discovered font URL preserves its original URL text.",
+            "Each discovered font URL has a resolved href or null when safe URL resolution fails.",
+            "Discovered font family names are normalized to lowercase and deduplicated within each font-face result."
+          ],
+          "invariants": [
+            "Font-face results preserve the order of matches in css.",
+            "URL results preserve the order of URL matches within each font-face declaration.",
+            "Font family values are represented uniquely per font-face declaration."
+          ],
+          "edgeCases": [
+            "CSS containing no matching font-face declarations returns an empty array.",
+            "A font-face declaration with no matching URLs produces an empty URL collection.",
+            "A font-face declaration with no matching font-family values produces an empty font-family collection.",
+            "An URL that cannot be safely resolved against baseUrl produces a null resolved value while retaining its original value.",
+            "Font-family values differing only by letter case are normalized to the same lowercase value and deduplicated."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "No explicit validation or exception conversion is specified; URL resolution failures are converted to a null resolved URL.",
+            "returnsOnError": "Returns an empty result for CSS with no matching font-face declarations; individual unresolvable URLs retain their original value with resolved set to null."
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "String.matchAll", "source": "css", "kind": "internal" },
+            { "name": "String.matchAll", "source": "fontFace", "kind": "internal" },
+            { "name": "safeParseUrl", "source": null, "kind": "internal" }
+          ],
+          "symbolReferences": ["fontFaceRegex", "urlsRegex", "fontFamilyRegex", "ParsedFontFace", "safeParseUrl"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Returns an array of ParsedFontFace objects. Each font-face object contains URL entries with original and resolved fields, and a deduplicated lowercase collection of font-family values.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Parses CSS font-face declarations and returns their discovered font families and source URLs. Each URL includes its original text and a safely resolved absolute URL when resolution succeeds.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "parseCssFontFaces(css, baseUrl) is called.",
+              "then": "The returned array has one result per declaration in source order; URL matches retain their order, and font-family values are lowercase and deduplicated.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "parseCssFontFaces(css, baseUrl) is called.",
+              "then": "The corresponding URL entry retains its original value and has resolved equal to null.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "39f93c0cd3f2ce1216a363f5dc9d84911f7764f04e7fcfa56b3190aa399f21bc"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/exports/parseCss.ts__parseCssFontFamilyValue#function:parseCssFontFamilyValue",
+        "unitKind": "function",
+        "name": "parseCssFontFamilyValue",
+        "qualifiedName": "parseCssFontFamilyValue",
+        "parentUnitId": null,
+        "startLine": 55,
+        "endLine": 82,
+        "isBehavioral": true,
+        "source": "\n\t\treturn { fontFace, urls, fontFamilies }\n\t})\n}\n\nexport function parseCssFontFamilyValue(value: string) {\n\t// https://developer.mozilla.org/en-US/docs/Web/CSS/font-family#formal_syntax\n\t// we use two regexes here to parse each value in a comma separated list of font families\n\tconst valueRegex = /\\s*(?:([^'\"][^;\\n\\s,]+)|\"([^\"]+)\"|'([^']+)')\\s*/gi\n\tconst separatorRegex = /\\s*,\\s*/gi\n\n\tconst fontFamilies = new Set<string>()\n\n\twhile (true) {\n\t\tconst valueMatch = valueRegex.exec(value)\n\t\tif (!valueMatch) {\n\t\t\tbreak\n\t\t}\n\n\t\tconst fontFamily = valueMatch[1] || valueMatch[2] || valueMatch[3]\n\t\tfontFamilies.add(fontFamily.toLowerCase())\n\n\t\tseparatorRegex.lastIndex = valueRegex.lastIndex\n\t\tconst separatorMatch = separatorRegex.exec(value)\n\t\tif (!separatorMatch) {\n\t\t\tbreak\n\t\t}\n",
+        "detail": {
+          "unitId": "packages/editor/src/lib/exports/parseCss.ts__parseCssFontFamilyValue#function:parseCssFontFamilyValue",
+          "fileId": "packages/editor/src/lib/exports/parseCss.ts__parseCssFontFamilyValue",
+          "unitKind": "function",
+          "name": "parseCssFontFamilyValue",
+          "qualifiedName": "parseCssFontFamilyValue",
+          "parentUnitId": null,
+          "startLine": 55,
+          "endLine": 82,
+          "signature": "export function parseCssFontFamilyValue(value: string)",
+          "parameters": [
+            { "name": "value", "type": "string", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "Set<string>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["value is a string containing a CSS font-family value or text to parse"],
+          "postconditions": [
+            "Returns a Set<string> containing each successfully parsed font family name in lowercase",
+            "Duplicate font family names collapse to one set entry"
+          ],
+          "invariants": ["All returned font family names are lowercase", "The result contains no duplicate values"],
+          "edgeCases": [
+            "An empty string produces an empty set",
+            "A comma-separated list is parsed into separate font family entries",
+            "Single-quoted and double-quoted family names are accepted without their surrounding quotes",
+            "Unquoted family names are accepted when they contain no semicolon, newline, whitespace, comma, or quote",
+            "Names differing only by letter case produce one lowercase set entry"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "No explicit validation error is raised; values that do not match the parsing expressions are omitted or result in an empty set.",
+            "returnsOnError": "A Set containing only successfully matched and normalized font family names."
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["Set<string>"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Parses a CSS font-family value into a set of normalized family names. Quoted and unquoted family values are recognized from a comma-separated list and normalized to lowercase.",
+          "specLiterals": [
+            {
+              "kind": "regex",
+              "value": "\\s*(?:([^'\"][^;\\n\\s,]+)|\"([^\"]+)\"|'([^']+)')\\s*",
+              "role": "Recognizes unquoted, double-quoted, and single-quoted CSS font family values."
+            },
+            {
+              "kind": "regex",
+              "value": "\\s*,\\s*",
+              "role": "Recognizes comma separators between CSS font family values."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "parseCssFontFamilyValue is called with that input.",
+              "then": "The result is a set containing exactly \"arial\", \"helvetica neue\", and \"sans-serif\".",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "parseCssFontFamilyValue is called.",
+              "then": "The result is an empty Set.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "parseCssFontFamilyValue is called.",
+              "then": "The result contains exactly one value: \"roboto\".",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "78f2f07840115b89e97ba8512558e8e87024933de9778acfa911cfa5b22d6c2d"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/exports/parseCss.ts__shouldIncludeCssProperty#function:shouldIncludeCssProperty",
+        "unitKind": "function",
+        "name": "shouldIncludeCssProperty",
+        "qualifiedName": "shouldIncludeCssProperty",
+        "parentUnitId": null,
+        "startLine": 84,
+        "endLine": 94,
+        "isBehavioral": true,
+        "source": "\t}\n\n\treturn fontFamilies\n}\n\nexport function shouldIncludeCssProperty(property: string) {\n\tif (property.startsWith('-')) return false\n\tif (property.startsWith('animation')) return false\n\tif (property.startsWith('transition')) return false\n\tif (property === 'cursor') return false\n\tif (property === 'pointer-events') return false",
+        "detail": {
+          "unitId": "packages/editor/src/lib/exports/parseCss.ts__shouldIncludeCssProperty#function:shouldIncludeCssProperty",
+          "fileId": "packages/editor/src/lib/exports/parseCss.ts__shouldIncludeCssProperty",
+          "unitKind": "function",
+          "name": "shouldIncludeCssProperty",
+          "qualifiedName": "shouldIncludeCssProperty",
+          "parentUnitId": null,
+          "startLine": 84,
+          "endLine": 94,
+          "signature": "export function shouldIncludeCssProperty(property: string)",
+          "parameters": [
+            { "name": "property", "type": "string", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": ["export"],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["property is a string"],
+          "postconditions": [
+            "Returns false for vendor-prefixed properties, properties beginning with animation, properties beginning with transition, cursor, and pointer-events.",
+            "Returns true for other CSS property names."
+          ],
+          "invariants": ["The input property string is not modified."],
+          "edgeCases": [
+            "An empty property string is not excluded by any filter and returns true.",
+            "A property beginning with '-' returns false.",
+            "A property beginning with 'animation' returns false.",
+            "A property beginning with 'transition' returns false.",
+            "The exact properties 'cursor' and 'pointer-events' return false.",
+            "Other property names return true."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "String.prototype.startsWith", "source": null, "kind": "internal" }],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Determines whether a CSS property should be included in exported CSS processing. Properties used for editor interaction, animation, transitions, or vendor-prefixed behavior are excluded.",
+          "specLiterals": [
+            {
+              "kind": "enum-value",
+              "value": "-",
+              "role": "Prefix identifying CSS properties excluded as vendor-prefixed properties."
+            },
+            {
+              "kind": "enum-value",
+              "value": "animation",
+              "role": "Prefix identifying animation properties excluded from exported CSS."
+            },
+            {
+              "kind": "enum-value",
+              "value": "transition",
+              "role": "Prefix identifying transition properties excluded from exported CSS."
+            },
+            { "kind": "enum-value", "value": "cursor", "role": "Exact CSS property excluded from exported CSS." },
+            {
+              "kind": "enum-value",
+              "value": "pointer-events",
+              "role": "Exact CSS property excluded from exported CSS."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "shouldIncludeCssProperty(property) is called",
+              "then": "The result is true.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "shouldIncludeCssProperty(property) is called",
+              "then": "The result is false.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "shouldIncludeCssProperty(property) is called",
+              "then": "The result is false.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "e49d980199ca4db6323b0d3ad4790d98c4c97efb8fbc304223cbefe5ea3c19f9"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/exports/parseCss.ts__parseCss#function:parseCss",
+        "unitKind": "function",
+        "name": "parseCss",
+        "qualifiedName": "parseCss",
+        "parentUnitId": null,
+        "startLine": 96,
+        "endLine": 100,
+        "isBehavioral": true,
+        "source": "\tif (property === 'touch-action') return false\n\treturn true\n}\n\nexport function parseCss(css: string, baseUrl: string) {",
+        "detail": {
+          "unitId": "packages/editor/src/lib/exports/parseCss.ts__parseCss#function:parseCss",
+          "fileId": "packages/editor/src/lib/exports/parseCss.ts__parseCss",
+          "unitKind": "function",
+          "name": "parseCss",
+          "qualifiedName": "parseCss",
+          "parentUnitId": null,
+          "startLine": 96,
+          "endLine": 100,
+          "signature": "export function parseCss(css: string, baseUrl: string)",
+          "parameters": [
+            { "name": "css", "type": "string", "default": null, "optional": false, "variadic": false, "order": 0 },
+            { "name": "baseUrl", "type": "string", "default": null, "optional": false, "variadic": false, "order": 1 }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Parses CSS text in the context of a base URL and produces the unit's CSS export result.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "71d816d08e96a9a8e1277ba39f248eca9d2f3e799322f121f17fe5dc1827fc45"
+        }
+      },
+      {
+        "unitId": "packages/editor/src/lib/exports/parseCss.ts__parseCssValueUrls#function:parseCssValueUrls",
+        "unitKind": "function",
+        "name": "parseCssValueUrls",
+        "qualifiedName": "parseCssValueUrls",
+        "parentUnitId": null,
+        "startLine": 102,
+        "endLine": 107,
+        "isBehavioral": true,
+        "source": "\t\timports: parseCssImports(css),\n\t\tfontFaces: parseCssFontFaces(css, baseUrl),\n\t}\n}\n\nexport function parseCssValueUrls(value: string) {",
+        "detail": {
+          "unitId": "packages/editor/src/lib/exports/parseCss.ts__parseCssValueUrls#function:parseCssValueUrls",
+          "fileId": "packages/editor/src/lib/exports/parseCss.ts__parseCssValueUrls",
+          "unitKind": "function",
+          "name": "parseCssValueUrls",
+          "qualifiedName": "parseCssValueUrls",
+          "parentUnitId": null,
+          "startLine": 102,
+          "endLine": 107,
+          "signature": "export function parseCssValueUrls(value: string)",
+          "parameters": [
+            { "name": "value", "type": "string", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Parses a CSS value to identify or extract URLs embedded within it.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "a0e601157c77c80fb83ddad8e9c7fbfaf336daf8029fb99d6fa14b488ecd3233"
+        }
+      }
+    ]
+  },
+  "out": [],
+  "in": [
+    "packages/editor/src/lib/exports/StyleEmbedder.ts",
+    "packages/editor/src/lib/exports/parseCss.test.ts",
+    "packages/editor/src/lib/exports/FontEmbedder.ts"
+  ],
+  "externals": ["@tldraw/utils"],
+  "impact": {
+    "seeds": 6,
+    "callers": 5,
+    "impactedFiles": [
+      "packages/editor/src/lib/exports/FontEmbedder.ts",
+      "packages/editor/src/lib/exports/StyleEmbedder.ts"
+    ]
+  }
+}

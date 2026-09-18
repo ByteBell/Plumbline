@@ -1,0 +1,1391 @@
+{
+  "schema": 2,
+  "kind": "file",
+  "repoName": "tldraw",
+  "file": {
+    "relativePath": "apps/dotcom/sync-worker/src/TLFileEffectProcessor.ts",
+    "language": "typescript",
+    "sizeBytes": 9447,
+    "tokenCount": 2361,
+    "model": "us.openai.gpt-5.6-luna",
+    "analysedAt": "2026-08-24T12:28:17.986Z",
+    "module": {
+      "purpose": "Durable Object that drains the PostgreSQL effect outbox for file changes, dispatches file effects to room and snapshot services, retries failures, and maintains periodic liveness sweeps.",
+      "summary": "This worker coordinates durable, ordered processing of file effects emitted into PostgreSQL. It coalesces concurrent wakeups, polls eligible outbox rows, dispatches file notifications and snapshot publication operations, records analytics, retries failures with capped exponential backoff, defers later effects for the same entity, and parks repeatedly failing rows. Cloudflare alarms provide both poke-driven execution and periodic recovery for missed triggers or restarts.",
+      "businessContext": "Supports collaborative file synchronization by ensuring persisted file changes reach room clients and snapshot systems. Failures can delay user-visible updates, publishing, or eventually lose effects when rows are parked.",
+      "classes": [
+        "TLFileEffectProcessor (~L22-217): Durable Object coordinating file effect outbox draining and retry scheduling"
+      ],
+      "functions": [
+        "captureException (~L43-52): Reports processing failures to Sentry or console fallback",
+        "writeEvent (~L55-57): Emits processor analytics data points",
+        "poke (~L59-63): Arms an immediate alarm to trigger outbox processing",
+        "alarm (~L65-79): Drains effects and re-arms the periodic sweep alarm",
+        "drain (~L81-92): Coalesces overlapping drain requests into one promise",
+        "_drain (~L94-216): Loads, dispatches, retries, and measures outbox effects"
+      ],
+      "keywords": [
+        "Cloudflare Durable Object",
+        "effect outbox",
+        "PostgreSQL",
+        "exponential backoff",
+        "file synchronization",
+        "snapshot publication",
+        "per-entity ordering",
+        "Sentry",
+        "alarm sweep",
+        "parked rows"
+      ],
+      "ontologyConcepts": [
+        "durable processing",
+        "retry scheduling",
+        "failure reporting",
+        "concurrency coalescing",
+        "event dispatch",
+        "liveness monitoring",
+        "ordered effects"
+      ],
+      "businessEntities": ["file", "effect outbox row", "room", "snapshot", "workspace", "entity"],
+      "systemCapabilities": [
+        "Drain persisted file effects",
+        "Notify room durable objects",
+        "Publish and unpublish snapshots",
+        "Retry failed effects with backoff",
+        "Preserve per-entity effect ordering",
+        "Emit operational analytics"
+      ],
+      "configDependencies": ["MEASURE", "EFFECT_TIMEOUT_MS", "MAX_ATTEMPTS", "SWEEP_INTERVAL_MS"],
+      "importsInternal": [
+        {
+          "spec": "./fileEffects",
+          "symbols": ["FileEffectDeps", "processFileEffect"],
+          "anchor": { "startLine": 5, "endLine": 5 },
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/fileEffects.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/fileEffects.ts",
+          "resolvedHint": "apps/dotcom/sync-worker/src/fileEffects.ts"
+        },
+        {
+          "spec": "./outboxDrain",
+          "symbols": [
+            "EFFECT_TIMEOUT_MS",
+            "MAX_ATTEMPTS",
+            "computeNextAlarm",
+            "drainOutbox",
+            "shouldReportEffectFailure"
+          ],
+          "anchor": { "startLine": 6, "endLine": 12 },
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/outboxDrain.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/outboxDrain.ts",
+          "resolvedHint": "apps/dotcom/sync-worker/src/outboxDrain.ts"
+        },
+        {
+          "spec": "./postgres",
+          "symbols": ["createPostgresConnectionPool"],
+          "anchor": { "startLine": 13, "endLine": 13 },
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/postgres.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/postgres.ts",
+          "resolvedHint": "apps/dotcom/sync-worker/src/postgres.ts"
+        },
+        {
+          "spec": "./types",
+          "symbols": ["Analytics", "Environment"],
+          "anchor": { "startLine": 14, "endLine": 14 },
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/types.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/types.ts",
+          "resolvedHint": "apps/dotcom/sync-worker/src/types.ts"
+        },
+        {
+          "spec": "./utils/analytics",
+          "symbols": ["EventData", "writeDataPoint"],
+          "anchor": { "startLine": 15, "endLine": 15 },
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/utils/analytics.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/utils/analytics.ts",
+          "resolvedHint": "apps/dotcom/sync-worker/src/utils/analytics.ts"
+        },
+        {
+          "spec": "./utils/durableObjects",
+          "symbols": ["getRoomDurableObject"],
+          "anchor": { "startLine": 16, "endLine": 16 },
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/utils/durableObjects.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/utils/durableObjects.ts",
+          "resolvedHint": "apps/dotcom/sync-worker/src/utils/durableObjects.ts"
+        },
+        {
+          "spec": "./utils/publishSnapshots",
+          "symbols": ["publishSnapshot", "unpublishSnapshot"],
+          "anchor": { "startLine": 17, "endLine": 17 },
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/utils/publishSnapshots.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/utils/publishSnapshots.ts",
+          "resolvedHint": "apps/dotcom/sync-worker/src/utils/publishSnapshots.ts"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "@tldraw/dotcom-shared",
+          "symbols": ["TlaEffectOutbox"],
+          "package": "@tldraw/dotcom-shared",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 1 }
+        },
+        {
+          "spec": "@tldraw/worker-shared",
+          "symbols": ["createSentry"],
+          "package": "@tldraw/worker-shared",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 2, "endLine": 2 }
+        },
+        {
+          "spec": "cloudflare:workers",
+          "symbols": ["DurableObject"],
+          "package": "cloudflare",
+          "subpath": "workers",
+          "isBuiltin": false,
+          "anchor": { "startLine": 3, "endLine": 3 }
+        },
+        {
+          "spec": "kysely",
+          "symbols": ["sql"],
+          "package": "kysely",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 4, "endLine": 4 }
+        }
+      ],
+      "sideEffects": {
+        "io": ["Writes processor analytics data points.", "Logs uncaptured exceptions to console.error."],
+        "network": [
+          "Invokes room Durable Object notifications for file creation, update, and deletion.",
+          "Publishes and unpublishes file snapshots through external snapshot services.",
+          "Reports failures to Sentry when configured."
+        ],
+        "env": ["Reads the MEASURE analytics binding and other Environment services."],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": []
+      },
+      "integrationSurface": [
+        {
+          "kind": "table",
+          "role": "consumes",
+          "address": "effect_outbox",
+          "payloadRef": "TlaEffectOutbox",
+          "rawKind": null
+        },
+        { "kind": "ipc", "role": "consumes", "address": "appFileRecordCreated", "payloadRef": null, "rawKind": null },
+        { "kind": "ipc", "role": "consumes", "address": "appFileRecordDidUpdate", "payloadRef": null, "rawKind": null },
+        { "kind": "ipc", "role": "consumes", "address": "appFileRecordDidDelete", "payloadRef": null, "rawKind": null }
+      ],
+      "contractsProvided": [
+        {
+          "name": "TLFileEffectProcessor",
+          "shape": "export class TLFileEffectProcessor extends DurableObject<Environment>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "TLFileEffectProcessor.poke",
+          "shape": "async poke()",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "TLFileEffectProcessor.alarm",
+          "shape": "override async alarm()",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "FileEffectDeps",
+          "shape": "FileEffectDeps",
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/fileEffects.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/fileEffects.ts"
+        },
+        { "name": "TlaEffectOutbox", "shape": "TlaEffectOutbox", "resolvedRelativePath": null, "resolvedFileId": null },
+        {
+          "name": "Environment",
+          "shape": "Environment",
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/types.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/types.ts"
+        },
+        {
+          "name": "Analytics",
+          "shape": "Analytics",
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/types.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/types.ts"
+        },
+        {
+          "name": "EventData",
+          "shape": "EventData",
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/utils/analytics.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/utils/analytics.ts"
+        },
+        {
+          "name": "processFileEffect",
+          "shape": "processFileEffect(fileDeps, row)",
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/fileEffects.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/fileEffects.ts"
+        },
+        {
+          "name": "drainOutbox",
+          "shape": "drainOutbox({...})",
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/outboxDrain.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/outboxDrain.ts"
+        },
+        {
+          "name": "getRoomDurableObject",
+          "shape": "getRoomDurableObject(this.env, file.id)",
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/utils/durableObjects.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/utils/durableObjects.ts"
+        },
+        {
+          "name": "publishSnapshot",
+          "shape": "publishSnapshot(this.env, file, callback)",
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/utils/publishSnapshots.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/utils/publishSnapshots.ts"
+        },
+        {
+          "name": "unpublishSnapshot",
+          "shape": "unpublishSnapshot(this.env, file)",
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/utils/publishSnapshots.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/utils/publishSnapshots.ts"
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "constructor alarm recovery",
+          "intent": "Restores a missing or overdue periodic sweep alarm during initialization.",
+          "structureKind": "async",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 27, "endLine": 40 }
+        },
+        {
+          "name": "alarm drain lifecycle",
+          "intent": "Runs a drain and reliably schedules the next sweep after success or failure.",
+          "structureKind": "try",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 65, "endLine": 79 }
+        },
+        {
+          "name": "drain coalescing",
+          "intent": "Shares one in-flight drain promise across overlapping callers.",
+          "structureKind": "branch",
+          "predicate": "!this.drainPromise",
+          "branchOutcomes": ["no drain is active", "an existing drain is returned"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 81, "endLine": 92 }
+        },
+        {
+          "name": "eligible outbox batch query",
+          "intent": "Selects ready, non-exhausted rows in ascending identifier order.",
+          "structureKind": "io",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": "50",
+          "terminationCondition": null,
+          "anchor": { "startLine": 118, "endLine": 129 }
+        },
+        {
+          "name": "failed row retry scheduling",
+          "intent": "Updates failed rows and defers later same-entity siblings.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 134, "endLine": 166 }
+        },
+        {
+          "name": "handler dispatch",
+          "intent": "Routes each outbox row to its source-table effect handler.",
+          "structureKind": "branch",
+          "predicate": "!handler",
+          "branchOutcomes": ["unhandled table is reported and dropped", "known table handler processes the row"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 174, "endLine": 188 }
+        },
+        {
+          "name": "drain cleanup and metrics",
+          "intent": "Destroys the database pool and emits per-drain throughput metrics.",
+          "structureKind": "try",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 209, "endLine": 216 }
+        }
+      ],
+      "representationFamily": "state-machine",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "class",
+          "name": "TLFileEffectProcessor",
+          "signature": "export class TLFileEffectProcessor extends DurableObject<Environment> {",
+          "generics": "Environment",
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 22, "endLine": 22 }
+        },
+        {
+          "kind": "method",
+          "name": "poke",
+          "signature": "\tasync poke() {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 59, "endLine": 59 }
+        },
+        {
+          "kind": "method",
+          "name": "alarm",
+          "signature": "\toverride async alarm() {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 65, "endLine": 65 }
+        },
+        {
+          "kind": "method",
+          "name": "captureException",
+          "signature": "\tprivate captureException = (exception: unknown, extras?: Record<string, unknown>) => {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 43, "endLine": 43 }
+        },
+        {
+          "kind": "method",
+          "name": "writeEvent",
+          "signature": "\tprivate writeEvent = (name: string, eventData: EventData) => {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 55, "endLine": 55 }
+        },
+        {
+          "kind": "method",
+          "name": "drain",
+          "signature": "\tprivate drain() {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 81, "endLine": 81 }
+        },
+        {
+          "kind": "method",
+          "name": "_drain",
+          "signature": "\tprivate async _drain() {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 94, "endLine": 94 }
+        }
+      ],
+      "typeShapes": [],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "missing or overdue persisted alarm",
+          "handled": true,
+          "behavior": "Initialization schedules a sweep for the configured interval.",
+          "anchor": { "startLine": 35, "endLine": 39 }
+        },
+        {
+          "inputShape": "unknown outbox table name",
+          "handled": true,
+          "behavior": "Reports the row as unhandled and drops it without invoking a handler.",
+          "anchor": { "startLine": 175, "endLine": 180 }
+        },
+        {
+          "inputShape": "row reaching maximum attempts",
+          "handled": true,
+          "behavior": "Reports a parking event while the drain utility handles the exhausted row state.",
+          "anchor": { "startLine": 194, "endLine": 205 }
+        },
+        {
+          "inputShape": "database or drain-level failure",
+          "handled": true,
+          "behavior": "The alarm catches and reports the error, then still re-arms the sweep.",
+          "anchor": { "startLine": 66, "endLine": 79 }
+        },
+        {
+          "inputShape": "poke during an active drain",
+          "handled": true,
+          "behavior": "The immediate alarm remains available for a follow-up drain after the current one.",
+          "anchor": { "startLine": 71, "endLine": 78 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": "<=",
+          "left": "scheduled",
+          "right": "Date.now()",
+          "inclusive": true,
+          "intent": "Re-arm when no alarm exists or the stored alarm is due.",
+          "anchor": { "startLine": 37, "endLine": 37 }
+        },
+        {
+          "operator": "<",
+          "left": "attempts",
+          "right": "MAX_ATTEMPTS",
+          "inclusive": false,
+          "intent": "Select only rows that have not exhausted retry attempts.",
+          "anchor": { "startLine": 122, "endLine": 122 }
+        },
+        {
+          "operator": "<=",
+          "left": "nextRetryAt",
+          "right": "sql<Date>`now()`",
+          "inclusive": true,
+          "intent": "Select rows whose retry time has arrived.",
+          "anchor": { "startLine": 124, "endLine": 124 }
+        },
+        {
+          "operator": ">",
+          "left": "id",
+          "right": "row.id",
+          "inclusive": false,
+          "intent": "Identify later same-entity sibling effects for deferral.",
+          "anchor": { "startLine": 164, "endLine": 164 }
+        },
+        {
+          "operator": ">=",
+          "left": "attempts",
+          "right": "MAX_ATTEMPTS",
+          "inclusive": true,
+          "intent": "Delete rows that have reached the parked threshold.",
+          "anchor": { "startLine": 170, "endLine": 170 }
+        },
+        {
+          "operator": "<",
+          "left": "createdAt",
+          "right": "sql<Date>`now() - (${days} || ' days')::interval`",
+          "inclusive": false,
+          "intent": "Delete parked rows older than the retention period.",
+          "anchor": { "startLine": 171, "endLine": 171 }
+        },
+        {
+          "operator": ">=",
+          "left": "row.attempts + 1",
+          "right": "MAX_ATTEMPTS",
+          "inclusive": true,
+          "intent": "Identify the attempt that will park a row.",
+          "anchor": { "startLine": 194, "endLine": 194 }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": null,
+          "caught": "drain-level error",
+          "action": "Captures the error and proceeds to alarm re-arming.",
+          "fallback": null,
+          "anchor": { "startLine": 68, "endLine": 70 }
+        },
+        {
+          "thrown": null,
+          "caught": null,
+          "action": "Reports configured effect failures according to retry-reporting policy and emits a parking event at the final attempt.",
+          "fallback": null,
+          "anchor": { "startLine": 189, "endLine": 205 }
+        },
+        {
+          "thrown": null,
+          "caught": null,
+          "action": "Reports an unhandled table row and returns without processing it.",
+          "fallback": "undefined",
+          "anchor": { "startLine": 176, "endLine": 180 }
+        },
+        {
+          "thrown": null,
+          "caught": null,
+          "action": "Destroys the database pool and emits drain metrics in the finally block.",
+          "fallback": null,
+          "anchor": { "startLine": 209, "endLine": 216 }
+        }
+      ],
+      "invariants": [
+        {
+          "kind": "invariant",
+          "description": "At most one drain promise is active for the processor at a time.",
+          "anchor": { "startLine": 81, "endLine": 92 }
+        },
+        {
+          "kind": "ordering",
+          "description": "Outbox rows are selected in ascending identifier order.",
+          "anchor": { "startLine": 127, "endLine": 128 }
+        },
+        {
+          "kind": "ordering",
+          "description": "Later effects for the same table and entity are deferred after a failure.",
+          "anchor": { "startLine": 154, "endLine": 165 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "The database connection pool is destroyed after every drain attempt.",
+          "anchor": { "startLine": 209, "endLine": 210 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Retry delays are capped at five minutes.",
+          "anchor": { "startLine": 143, "endLine": 144 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "Callers may invoke poke without awaiting completion of the eventual drain.",
+          "anchor": { "startLine": 59, "endLine": 63 }
+        },
+        {
+          "kind": "env",
+          "description": "The Durable Object environment provides PostgreSQL, room Durable Objects, snapshot services, and optional analytics.",
+          "anchor": { "startLine": 98, "endLine": 109 }
+        },
+        {
+          "kind": "schema",
+          "description": "The effect_outbox schema contains tableName, entityId, command, attempts, nextRetryAt, createdAt, and id fields.",
+          "anchor": { "startLine": 118, "endLine": 129 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "What behavior does drainOutbox apply when an unhandled row handler returns without throwing?",
+          "affects": "error_handling and outbox data-loss semantics",
+          "anchor": { "startLine": 174, "endLine": 181 },
+          "resolution": null
+        },
+        {
+          "question": "What exact retry-reporting thresholds does shouldReportEffectFailure enforce?",
+          "affects": "failure reporting behavior",
+          "anchor": { "startLine": 194, "endLine": 196 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "async",
+        "reentrant": true,
+        "ordering": "deterministic",
+        "notes": "Concurrent callers share the same in-flight drain promise; a poke during draining is represented by a follow-up alarm."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "poke-rearms-alarm-immediately",
+          "scenario": "When the processor is poked, it schedules an alarm for immediate execution.",
+          "given": ["processor.ctx.storage.setAlarm = mock()"],
+          "when": "await processor.poke()",
+          "then": "processor.ctx.storage.setAlarm was called with a timestamp no later than Date.now()",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pokes must start or promptly resume outbox draining."
+        },
+        {
+          "testId": "alarm-rearms-sweep",
+          "scenario": "After an alarm drain completes, the processor schedules the next sweep.",
+          "given": ["drainOutbox resolves", "ctx.storage.getAlarm resolves to null"],
+          "when": "await processor.alarm()",
+          "then": "ctx.storage.setAlarm is called with a future timestamp",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "The periodic sweep must survive completed drains and runtime restarts."
+        },
+        {
+          "testId": "coalesces-concurrent-drains",
+          "scenario": "When multiple drain requests overlap, only one drain operation is executed.",
+          "given": ["drainOutbox returns a pending promise"],
+          "when": "processor.drain(); processor.drain()",
+          "then": "drainOutbox is called exactly once and both calls share the same promise",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Coalescing prevents concurrent processing of the same outbox workload."
+        },
+        {
+          "testId": "failed-row-defers-siblings",
+          "scenario": "When an effect fails, the row is backed off and later effects for the same entity are deferred.",
+          "given": ["row.attempts = 0", "row.tableName = 'file'", "row.entityId = 'file-1'"],
+          "when": "bumpAttempts(row)",
+          "then": "the failed row's attempts increase, nextRetryAt is set, and later same-entity rows receive a nextRetryAt no earlier than that backoff",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Per-entity ordering must hold across retries."
+        },
+        {
+          "testId": "successful-effect-deletes-row",
+          "scenario": "When a supported file effect completes successfully, its outbox row is deleted.",
+          "given": ["row.tableName = 'file'", "processFileEffect resolves"],
+          "when": "process(row)",
+          "then": "effect_outbox row row.id is deleted and processed is incremented",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Successful effects must not be replayed indefinitely."
+        },
+        {
+          "testId": "unsupported-table-is-dropped",
+          "scenario": "When an outbox row references an unregistered source table, it is reported and not processed by a handler.",
+          "given": ["row.tableName = 'unknown'"],
+          "when": "process(row)",
+          "then": "an exception for an unhandled table is captured and no effect handler is invoked",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Unknown trigger sources must fail visibly rather than silently execute the wrong effect."
+        },
+        {
+          "testId": "parks-max-attempt-row",
+          "scenario": "When a failure reaches the maximum attempt threshold, the failure is reported as parked.",
+          "given": ["row.attempts + 1 >= MAX_ATTEMPTS"],
+          "when": "onError(error, row)",
+          "then": "outbox_parked is written with the row table name and command",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Parking is the observable data-loss boundary after retries are exhausted."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": ["imports", "SWEEP_INTERVAL_MS constant", "TLFileEffectProcessor class"],
+      "moduleLevelCode": "import { TlaEffectOutbox } from '@tldraw/dotcom-shared'\nimport { createSentry } from '@tldraw/worker-shared'\nimport { DurableObject } from 'cloudflare:workers'\nimport { sql } from 'kysely'\nimport { FileEffectDeps, processFileEffect } from './fileEffects'\nimport {\n\tEFFECT_TIMEOUT_MS,\n\tMAX_ATTEMPTS,\n\tcomputeNextAlarm,\n\tdrainOutbox,\n\tshouldReportEffectFailure,\n} from './outboxDrain'\nimport { createPostgresConnectionPool } from './postgres'\nimport { Analytics, Environment } from './types'\nimport { EventData, writeDataPoint } from './utils/analytics'\nimport { getRoomDurableObject } from './utils/durableObjects'\nimport { publishSnapshot, unpublishSnapshot } from './utils/publishSnapshots'",
+      "exports": [{ "name": "TLFileEffectProcessor", "kind": "own", "fromSpec": null, "exportedAs": null }],
+      "importSymbolMap": [
+        { "symbol": "TlaEffectOutbox", "module": "@tldraw/dotcom-shared", "alias": null, "kind": "external" },
+        { "symbol": "createSentry", "module": "@tldraw/worker-shared", "alias": null, "kind": "external" },
+        { "symbol": "DurableObject", "module": "cloudflare:workers", "alias": null, "kind": "external" },
+        { "symbol": "sql", "module": "kysely", "alias": null, "kind": "external" },
+        { "symbol": "FileEffectDeps", "module": "./fileEffects", "alias": null, "kind": "internal" },
+        { "symbol": "processFileEffect", "module": "./fileEffects", "alias": null, "kind": "internal" },
+        { "symbol": "EFFECT_TIMEOUT_MS", "module": "./outboxDrain", "alias": null, "kind": "internal" },
+        { "symbol": "MAX_ATTEMPTS", "module": "./outboxDrain", "alias": null, "kind": "internal" },
+        { "symbol": "computeNextAlarm", "module": "./outboxDrain", "alias": null, "kind": "internal" },
+        { "symbol": "drainOutbox", "module": "./outboxDrain", "alias": null, "kind": "internal" },
+        { "symbol": "shouldReportEffectFailure", "module": "./outboxDrain", "alias": null, "kind": "internal" },
+        { "symbol": "createPostgresConnectionPool", "module": "./postgres", "alias": null, "kind": "internal" },
+        { "symbol": "Analytics", "module": "./types", "alias": null, "kind": "internal" },
+        { "symbol": "Environment", "module": "./types", "alias": null, "kind": "internal" },
+        { "symbol": "EventData", "module": "./utils/analytics", "alias": null, "kind": "internal" },
+        { "symbol": "writeDataPoint", "module": "./utils/analytics", "alias": null, "kind": "internal" },
+        { "symbol": "getRoomDurableObject", "module": "./utils/durableObjects", "alias": null, "kind": "internal" },
+        { "symbol": "publishSnapshot", "module": "./utils/publishSnapshots", "alias": null, "kind": "internal" },
+        { "symbol": "unpublishSnapshot", "module": "./utils/publishSnapshots", "alias": null, "kind": "internal" }
+      ],
+      "fileConstants": [{ "name": "SWEEP_INTERVAL_MS", "value": "30_000", "kind": "number" }],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "apps/dotcom/sync-worker/src/TLFileEffectProcessor.ts__TLFileEffectProcessor#class:TLFileEffectProcessor",
+        "unitKind": "class",
+        "name": "TLFileEffectProcessor",
+        "qualifiedName": "TLFileEffectProcessor",
+        "parentUnitId": null,
+        "startLine": 22,
+        "endLine": 217,
+        "isBehavioral": true,
+        "source": "// admin routes after file writes; the alarm sweep catches PG-trigger writes\n// (workspace-delete cascade) and lost pokes.\nexport class TLFileEffectProcessor extends DurableObject<Environment> {\n\tprivate drainPromise: Promise<void> | null = null\n\tprivate sentry\n\tprivate measure: Analytics | undefined\n\n\tconstructor(ctx: DurableObjectState, env: Environment) {\n\t\tsuper(ctx, env)\n\t\tthis.sentry = createSentry(ctx, env)\n\t\tthis.measure = env.MEASURE\n\t\t// Keep the sweep chain alive across restarts/evictions: if the persisted alarm is\n\t\t// missing or past-due (a past-due alarm can't be trusted to fire), re-arm it. Note this\n\t\t// runs only once something instantiates the DO — the first poke() ever is what starts\n\t\t// the chain; until then, outbox rows wait.\n\t\tctx.blockConcurrencyWhile(async () => {\n\t\t\tconst scheduled = await ctx.storage.getAlarm()\n\t\t\tif (scheduled === null || scheduled <= Date.now()) {\n\t\t\t\tawait ctx.storage.setAlarm(Date.now() + SWEEP_INTERVAL_MS)\n\t\t\t}\n\t\t})\n\t}\n\n\t// eslint-disable-next-line tldraw/prefer-class-methods\n\tprivate captureException = (exception: unknown, extras?: Record<string, unknown>) => {\n\t\t// eslint-disable-next-line @typescript-eslint/no-deprecated\n\t\tthis.sentry?.withScope((scope) => {\n\t\t\tif (extras) scope.setExtras(extras)\n\t\t\t// eslint-disable-next-line @typescript-eslint/no-deprecated\n\t\t\tthis.sentry?.captureException(exception) as any\n\t\t})\n\t\tif (!this.sentry) {\n\t\t\tconsole.error(`[TLFileEffectProcessor]: `, exception)\n\t\t}\n\t}\n\n\t// eslint-disable-next-line tldraw/prefer-class-methods\n\tprivate writeEvent = (name: string, eventData: EventData) => {\n\t\twriteDataPoint(this.sentry, this.measure, this.env, name, eventData)\n\t}\n\n\tasync poke() {\n\t\t// Always (re)arm: a past-due persisted alarm can't be trusted to fire (the runtime can\n\t\t// drop one, e.g. across restarts), and re-setting an imminent alarm is a harmless\n\t\t// storage write.\n\t\tawait this.ctx.storage.setAlarm(Date.now())\n\t}\n\n\toverride async alarm() {\n\t\ttry {\n\t\t\tawait this.drain()\n\t\t} catch (e) {\n\t\t\t// row-level failures are handled inside the drain; this catches drain-level\n\t\t\t// crashes like an unreachable database\n\t\t\tthis.captureException(e)\n\t\t} finally {\n\t\t\t// Re-arm the sweep without swallowing a mid-drain poke: a poke that arrived during\n\t\t\t// the drain set alarm(now), which is past-due by now; computeNextAlarm re-arms it at\n\t\t\t// ~1s (a past-due alarm can't be trusted to fire on its own). null => leave as-is.\n\t\t\tconst scheduled = await this.ctx.storage.getAlarm()\n\t\t\tconst next = computeNextAlarm(scheduled, Date.now(), SWEEP_INTERVAL_MS)\n\t\t\tif (next !== null) await this.ctx.storage.setAlarm(next)\n\t\t}\n\t}\n\n\tprivate drain() {\n\t\t// Coalesce: one drain in flight; a poke during a drain lands on the ~1s follow-up alarm\n\t\t// computeNextAlarm arms after this drain finishes.\n\t\tif (!this.drainPromise) {\n\t\t\tconst promise = this._drain().finally(() => {\n\t\t\t\t// Identity guard: only clear the latch if it's still ours.\n\t\t\t\tif (this.drainPromise === promise) this.drainPromise = null\n\t\t\t})\n\t\t\tthis.drainPromise = promise\n\t\t}\n\t\treturn this.drainPromise\n\t}\n\n\tprivate async _drain() {\n\t\tconst drainStart = Date.now()\n\t\tlet processed = 0\n\t\tlet failed = 0\n\t\tconst db = createPostgresConnectionPool(this.env, 'TLFileEffectProcessor')\n\t\tconst fileDeps: FileEffectDeps = {\n\t\t\tgetCurrentFile: (fileId) =>\n\t\t\t\tdb.selectFrom('file').selectAll().where('id', '=', fileId).executeTakeFirst(),\n\t\t\tnotifyInsert: (file) => getRoomDurableObject(this.env, file.id).appFileRecordCreated(file),\n\t\t\tnotifyUpdate: (file) => getRoomDurableObject(this.env, file.id).appFileRecordDidUpdate(file),\n\t\t\tnotifyDelete: (fileRow) =>\n\t\t\t\tgetRoomDurableObject(this.env, fileRow.id).appFileRecordDidDelete(fileRow),\n\t\t\tpublish: (file) =>\n\t\t\t\tpublishSnapshot(this.env, file, (error) =>\n\t\t\t\t\tthis.captureException(error, { publishThumbnailEnqueue: true })\n\t\t\t\t),\n\t\t\tunpublish: (file) => unpublishSnapshot(this.env, file),\n\t\t}\n\t\t// One handler per source table. Future effect sources (e.g. notifications)\n\t\t// register here alongside their trigger.\n\t\tconst handlers: Record<string, (row: TlaEffectOutbox) => Promise<void>> = {\n\t\t\tfile: (row) => processFileEffect(fileDeps, row),\n\t\t}\n\t\ttry {\n\t\t\tawait drainOutbox({\n\t\t\t\tgetBatch: () =>\n\t\t\t\t\tdb\n\t\t\t\t\t\t.selectFrom('effect_outbox')\n\t\t\t\t\t\t.selectAll()\n\t\t\t\t\t\t.where('attempts', '<', MAX_ATTEMPTS)\n\t\t\t\t\t\t.where((eb) =>\n\t\t\t\t\t\t\teb.or([eb('nextRetryAt', 'is', null), eb('nextRetryAt', '<=', sql<Date>`now()`)])\n\t\t\t\t\t\t)\n\t\t\t\t\t\t.orderBy('id')\n\t\t\t\t\t\t.limit(50)\n\t\t\t\t\t\t.execute(),\n\t\t\t\tdeleteRow: async (id) => {\n\t\t\t\t\tawait db.deleteFrom('effect_outbox').where('id', '=', id).execute()\n\t\t\t\t\tprocessed++\n\t\t\t\t},\n\t\t\t\tbumpAttempts: async (row) => {\n\t\t\t\t\tfailed++\n\t\t\t\t\t// Exponential backoff from the row's current attempt count, capped at 5 minutes.\n\t\t\t\t\t// The base IS the effect timeout, so the first retry can't land before a\n\t\t\t\t\t// timed-out RPC's window closes (the RPC keeps running — it can't be cancelled),\n\t\t\t\t\t// avoiding an overlapping retry. This relies on the RPC actually finishing within\n\t\t\t\t\t// the window: a publish effect's awaitPersist used to retry for up to ~200s\n\t\t\t\t\t// (PERSIST_RETRIES_MAX * 2s), well past this 30s timeout, so a zombie publish\n\t\t\t\t\t// could still be running when a retried attempt started. awaitPersist now caps\n\t\t\t\t\t// its throwing retries at ~20s (PERSIST_RETRIES_MAX_THROWING), so it can't.\n\t\t\t\t\tconst backoffSeconds = Math.min(2 ** row.attempts * (EFFECT_TIMEOUT_MS / 1000), 300)\n\t\t\t\t\tconst backoff = sql<Date>`now() + (${backoffSeconds} || ' seconds')::interval`\n\t\t\t\t\t// (a) Back off the failed row itself and bump its attempt count.\n\t\t\t\t\tawait db\n\t\t\t\t\t\t.updateTable('effect_outbox')\n\t\t\t\t\t\t.set((eb) => ({\n\t\t\t\t\t\t\tattempts: eb('attempts', '+', 1),\n\t\t\t\t\t\t\tnextRetryAt: backoff,\n\t\t\t\t\t\t}))\n\t\t\t\t\t\t.where('id', '=', row.id)\n\t\t\t\t\t\t.execute()\n\t\t\t\t\t// (b) Defer the failed row's later same-entity siblings so per-entity ordering\n\t\t\t\t\t// holds across drains: they must not run while this row is backing off. Do NOT\n\t\t\t\t\t// touch their attempts (they haven't been tried), and never shrink an existing\n\t\t\t\t\t// later nextRetryAt (GREATEST keeps the furthest-out schedule).\n\t\t\t\t\tawait db\n\t\t\t\t\t\t.updateTable('effect_outbox')\n\t\t\t\t\t\t.set({\n\t\t\t\t\t\t\tnextRetryAt: sql<Date>`GREATEST(\"nextRetryAt\", ${backoff})`,\n\t\t\t\t\t\t})\n\t\t\t\t\t\t.where('tableName', '=', row.tableName)\n\t\t\t\t\t\t.where('entityId', '=', row.entityId)\n\t\t\t\t\t\t.where('id', '>', row.id)\n\t\t\t\t\t\t.execute()\n\t\t\t\t},\n\t\t\t\tdeleteParkedRowsOlderThan: async (days) => {\n\t\t\t\t\tawait db\n\t\t\t\t\t\t.deleteFrom('effect_outbox')\n\t\t\t\t\t\t.where('attempts', '>=', MAX_ATTEMPTS)\n\t\t\t\t\t\t.where('createdAt', '<', sql<Date>`now() - (${days} || ' days')::interval`)\n\t\t\t\t\t\t.execute()\n\t\t\t\t},\n\t\t\t\tprocess: async (row) => {\n\t\t\t\t\tconst handler = handlers[row.tableName]\n\t\t\t\t\tif (!handler) {\n\t\t\t\t\t\t// trigger + handler ship together; this only catches mistakes\n\t\t\t\t\t\tthis.captureException(new Error('effect_outbox row for unhandled table, dropping'), {\n\t\t\t\t\t\t\ttableName: row.tableName,\n\t\t\t\t\t\t\toutboxId: row.id,\n\t\t\t\t\t\t})\n\t\t\t\t\t\treturn\n\t\t\t\t\t}\n\t\t\t\t\tawait handler(row)\n\t\t\t\t\t// End-to-end effect latency: time from the row landing in the outbox (its\n\t\t\t\t\t// transaction commit) to the effect completing. This is the user-facing number —\n\t\t\t\t\t// how long after a file change the room notification / publish actually lands.\n\t\t\t\t\tthis.writeEvent('outbox_effect', {\n\t\t\t\t\t\tblobs: [row.tableName, row.command],\n\t\t\t\t\t\tdoubles: [Date.now() - new Date(row.createdAt).getTime()],\n\t\t\t\t\t})\n\t\t\t\t},\n\t\t\t\tonError: (error, row) => {\n\t\t\t\t\t// Report the first failure (immediate visibility) and the parking failure (data\n\t\t\t\t\t// loss), but not every retry in between - under an outage, one row can burn through\n\t\t\t\t\t// MAX_ATTEMPTS attempts, and reporting each would eat Sentry's rate limit and drop\n\t\t\t\t\t// the parking events that matter most. See shouldReportEffectFailure's doc comment.\n\t\t\t\t\tconst isParking = row.attempts + 1 >= MAX_ATTEMPTS\n\t\t\t\t\tif (shouldReportEffectFailure(row.attempts)) {\n\t\t\t\t\t\tthis.captureException(error, {\n\t\t\t\t\t\t\ttableName: row.tableName,\n\t\t\t\t\t\t\tentityId: row.entityId,\n\t\t\t\t\t\t\tcommand: row.command,\n\t\t\t\t\t\t\toutboxId: row.id,\n\t\t\t\t\t\t\tattempts: row.attempts + 1,\n\t\t\t\t\t\t})\n\t\t\t\t\t}\n\t\t\t\t\tif (isParking) {\n\t\t\t\t\t\tthis.writeEvent('outbox_parked', { blobs: [row.tableName, row.command] })",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/TLFileEffectProcessor.ts__TLFileEffectProcessor#class:TLFileEffectProcessor",
+          "fileId": "apps/dotcom/sync-worker/src/TLFileEffectProcessor.ts__TLFileEffectProcessor",
+          "unitKind": "class",
+          "name": "TLFileEffectProcessor",
+          "qualifiedName": "TLFileEffectProcessor",
+          "parentUnitId": null,
+          "startLine": 22,
+          "endLine": 217,
+          "signature": "export class TLFileEffectProcessor extends DurableObject<Environment>",
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": ["DurableObject<Environment>"],
+          "implementsTypes": [],
+          "members": [
+            {
+              "name": "drainPromise",
+              "kind": "property",
+              "type": "Promise<void> | null",
+              "default": "null",
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "sentry",
+              "kind": "property",
+              "type": null,
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "measure",
+              "kind": "property",
+              "type": "Analytics | undefined",
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "constructor",
+              "kind": "constructor",
+              "type": null,
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "captureException",
+              "kind": "method",
+              "type": null,
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "writeEvent",
+              "kind": "method",
+              "type": null,
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "poke",
+              "kind": "method",
+              "type": "Promise<void>",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "alarm",
+              "kind": "method",
+              "type": "Promise<void>",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "drain",
+              "kind": "method",
+              "type": null,
+              "default": null,
+              "visibility": "private",
+              "static": false
+            },
+            {
+              "name": "_drain",
+              "kind": "method",
+              "type": "Promise<void>",
+              "default": null,
+              "visibility": "private",
+              "static": false
+            }
+          ],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Durable Object responsible for processing queued file effects and maintaining scheduled sweeps. It exposes the alarm and poke lifecycle surface used to trigger effect draining.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "2e40f974b8c21b3712f2f5a81fbfe9af358ff84f176a8f02a168b3b358523bbc"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/TLFileEffectProcessor.ts__TLFileEffectProcessor.captureException#method:TLFileEffectProcessor.captureException",
+        "unitKind": "method",
+        "name": "captureException",
+        "qualifiedName": "TLFileEffectProcessor.captureException",
+        "parentUnitId": "apps/dotcom/sync-worker/src/TLFileEffectProcessor.ts__TLFileEffectProcessor#class:TLFileEffectProcessor",
+        "startLine": 43,
+        "endLine": 52,
+        "isBehavioral": true,
+        "source": "\t}\n\n\t// eslint-disable-next-line tldraw/prefer-class-methods\n\tprivate captureException = (exception: unknown, extras?: Record<string, unknown>) => {\n\t\t// eslint-disable-next-line @typescript-eslint/no-deprecated\n\t\tthis.sentry?.withScope((scope) => {\n\t\t\tif (extras) scope.setExtras(extras)\n\t\t\t// eslint-disable-next-line @typescript-eslint/no-deprecated\n\t\t\tthis.sentry?.captureException(exception) as any\n\t\t})",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/TLFileEffectProcessor.ts__TLFileEffectProcessor.captureException#method:TLFileEffectProcessor.captureException",
+          "fileId": "apps/dotcom/sync-worker/src/TLFileEffectProcessor.ts__TLFileEffectProcessor.captureException",
+          "unitKind": "method",
+          "name": "captureException",
+          "qualifiedName": "TLFileEffectProcessor.captureException",
+          "parentUnitId": "apps/dotcom/sync-worker/src/TLFileEffectProcessor.ts__TLFileEffectProcessor#class:TLFileEffectProcessor",
+          "startLine": 43,
+          "endLine": 52,
+          "signature": "private captureException = (exception: unknown, extras?: Record<string, unknown>) =>",
+          "parameters": [
+            {
+              "name": "exception",
+              "type": "unknown",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "extras",
+              "type": "Record<string, unknown>",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "void",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "private",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [
+            "If a Sentry client is configured, its withScope callback is invoked and the exception is passed to captureException.",
+            "If extras is provided, those key-value pairs are attached to the temporary Sentry scope before captureException is invoked.",
+            "If no Sentry client is configured, no Sentry operation is performed."
+          ],
+          "invariants": [
+            "The input exception is forwarded unchanged to Sentry captureException.",
+            "Scope extras are set before the exception is captured."
+          ],
+          "edgeCases": [
+            "When the optional extras argument is omitted or undefined, no extras are added to the scope.",
+            "When extras is an empty object, it is still supplied to setExtras because objects are truthy.",
+            "When the Sentry client is absent, the call completes without capturing the exception.",
+            "Exceptions thrown by the configured Sentry client are not caught by this method."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [
+              "Any exception thrown by the configured Sentry withScope or captureException operation propagates to the caller."
+            ],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "sentry.withScope", "source": "this.sentry", "kind": "external" },
+            { "name": "scope.setExtras", "source": "Sentry scope callback", "kind": "external" },
+            { "name": "sentry.captureException", "source": "this.sentry", "kind": "external" }
+          ],
+          "symbolReferences": ["Record<string, unknown>"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Reports an exception to the configured Sentry client within a temporary scope. When extras are supplied, they are attached to that scope before the exception is captured; when no client is configured, the method does nothing.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "captureException(exception, extras) is called.",
+              "then": "Sentry withScope receives a callback that sets the supplied extras on the scope and then captures the same exception.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "captureException(exception) is called.",
+              "then": "The method completes without invoking Sentry operations or throwing due to the missing client.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "8bbcc9d0bb94f37635b312142b890bf744d8f985357cee24a18444f5acc95f03"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/TLFileEffectProcessor.ts__TLFileEffectProcessor.poke#method:TLFileEffectProcessor.poke",
+        "unitKind": "method",
+        "name": "poke",
+        "qualifiedName": "TLFileEffectProcessor.poke",
+        "parentUnitId": "apps/dotcom/sync-worker/src/TLFileEffectProcessor.ts__TLFileEffectProcessor#class:TLFileEffectProcessor",
+        "startLine": 59,
+        "endLine": 63,
+        "isBehavioral": true,
+        "source": "\tprivate writeEvent = (name: string, eventData: EventData) => {\n\t\twriteDataPoint(this.sentry, this.measure, this.env, name, eventData)\n\t}\n\n\tasync poke() {",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/TLFileEffectProcessor.ts__TLFileEffectProcessor.poke#method:TLFileEffectProcessor.poke",
+          "fileId": "apps/dotcom/sync-worker/src/TLFileEffectProcessor.ts__TLFileEffectProcessor.poke",
+          "unitKind": "method",
+          "name": "poke",
+          "qualifiedName": "TLFileEffectProcessor.poke",
+          "parentUnitId": "apps/dotcom/sync-worker/src/TLFileEffectProcessor.ts__TLFileEffectProcessor#class:TLFileEffectProcessor",
+          "startLine": 59,
+          "endLine": 63,
+          "signature": "async poke()",
+          "parameters": [],
+          "returnType": "Promise<void>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": ["The returned promise resolves successfully."],
+          "invariants": ["No state, events, or external resources are modified by the operation."],
+          "edgeCases": ["Called with no arguments: the operation resolves without a result."],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Provides an asynchronous poke operation that completes without performing any observable work.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "2c194b21a20e36494109281223f1161f07951d09a4955d895779da4728277c19"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/TLFileEffectProcessor.ts__TLFileEffectProcessor.alarm#method:TLFileEffectProcessor.alarm",
+        "unitKind": "method",
+        "name": "alarm",
+        "qualifiedName": "TLFileEffectProcessor.alarm",
+        "parentUnitId": "apps/dotcom/sync-worker/src/TLFileEffectProcessor.ts__TLFileEffectProcessor#class:TLFileEffectProcessor",
+        "startLine": 65,
+        "endLine": 79,
+        "isBehavioral": true,
+        "source": "\t\t// drop one, e.g. across restarts), and re-setting an imminent alarm is a harmless\n\t\t// storage write.\n\t\tawait this.ctx.storage.setAlarm(Date.now())\n\t}\n\n\toverride async alarm() {\n\t\ttry {\n\t\t\tawait this.drain()\n\t\t} catch (e) {\n\t\t\t// row-level failures are handled inside the drain; this catches drain-level\n\t\t\t// crashes like an unreachable database\n\t\t\tthis.captureException(e)\n\t\t} finally {\n\t\t\t// Re-arm the sweep without swallowing a mid-drain poke: a poke that arrived during\n\t\t\t// the drain set alarm(now), which is past-due by now; computeNextAlarm re-arms it at",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/TLFileEffectProcessor.ts__TLFileEffectProcessor.alarm#method:TLFileEffectProcessor.alarm",
+          "fileId": "apps/dotcom/sync-worker/src/TLFileEffectProcessor.ts__TLFileEffectProcessor.alarm",
+          "unitKind": "method",
+          "name": "alarm",
+          "qualifiedName": "TLFileEffectProcessor.alarm",
+          "parentUnitId": "apps/dotcom/sync-worker/src/TLFileEffectProcessor.ts__TLFileEffectProcessor#class:TLFileEffectProcessor",
+          "startLine": 65,
+          "endLine": 79,
+          "signature": "override async alarm()",
+          "parameters": [],
+          "returnType": "Promise<void>",
+          "decorators": [],
+          "modifiersApplied": ["override"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["The processor context and its storage alarm facility are available."],
+          "postconditions": [
+            "The drain operation has been attempted.",
+            "A subsequent alarm is scheduled, including when draining or error reporting fails."
+          ],
+          "invariants": [
+            "A failure from drain does not escape the alarm handler after being passed to captureException.",
+            "Alarm re-arming is attempted in the finally path."
+          ],
+          "edgeCases": [
+            "If drain resolves normally, the next alarm is still scheduled.",
+            "If drain rejects, captureException is invoked and the next alarm is still scheduled.",
+            "If drain fails during processing, the alarm handler does not propagate that drain-level failure."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": "No value; drain-level failures are captured and alarm re-arming is still attempted."
+          },
+          "stateMutations": ["Durable Object storage alarm scheduling is updated to re-arm the next sweep."],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "drain", "source": "TLFileEffectProcessor", "kind": "internal" },
+            { "name": "captureException", "source": "TLFileEffectProcessor", "kind": "internal" },
+            { "name": "ctx.storage.setAlarm", "source": "Durable Object storage", "kind": "external" }
+          ],
+          "symbolReferences": ["Date", "ctx.storage"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Runs the scheduled effect-processing drain and ensures the next alarm is re-armed. Drain-level failures are captured without preventing alarm re-arming.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "alarm() is invoked.",
+              "then": "drain completes and a subsequent storage alarm is scheduled.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "alarm() is invoked.",
+              "then": "captureException receives the error, the rejection is not propagated, and a subsequent storage alarm is still scheduled.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "437a7ce2f1abc28179aa24321250d1fb2870ad260ad07cb95b86458f5b803c12"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/TLFileEffectProcessor.ts__TLFileEffectProcessor.drain#method:TLFileEffectProcessor.drain",
+        "unitKind": "method",
+        "name": "drain",
+        "qualifiedName": "TLFileEffectProcessor.drain",
+        "parentUnitId": "apps/dotcom/sync-worker/src/TLFileEffectProcessor.ts__TLFileEffectProcessor#class:TLFileEffectProcessor",
+        "startLine": 81,
+        "endLine": 92,
+        "isBehavioral": true,
+        "source": "\t\t\tconst scheduled = await this.ctx.storage.getAlarm()\n\t\t\tconst next = computeNextAlarm(scheduled, Date.now(), SWEEP_INTERVAL_MS)\n\t\t\tif (next !== null) await this.ctx.storage.setAlarm(next)\n\t\t}\n\t}\n\n\tprivate drain() {\n\t\t// Coalesce: one drain in flight; a poke during a drain lands on the ~1s follow-up alarm\n\t\t// computeNextAlarm arms after this drain finishes.\n\t\tif (!this.drainPromise) {\n\t\t\tconst promise = this._drain().finally(() => {\n\t\t\t\t// Identity guard: only clear the latch if it's still ours.",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/TLFileEffectProcessor.ts__TLFileEffectProcessor.drain#method:TLFileEffectProcessor.drain",
+          "fileId": "apps/dotcom/sync-worker/src/TLFileEffectProcessor.ts__TLFileEffectProcessor.drain",
+          "unitKind": "method",
+          "name": "drain",
+          "qualifiedName": "TLFileEffectProcessor.drain",
+          "parentUnitId": "apps/dotcom/sync-worker/src/TLFileEffectProcessor.ts__TLFileEffectProcessor#class:TLFileEffectProcessor",
+          "startLine": 81,
+          "endLine": 92,
+          "signature": "private drain()",
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "private",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [
+            "If no drain is in flight, an asynchronous _drain operation is started and tracked.",
+            "If a drain is already in flight, no additional _drain operation is started.",
+            "The tracked drain latch is cleared when the tracked drain operation settles, subject to the promise identity guard."
+          ],
+          "invariants": [
+            "At most one drain operation is active through this method at a time.",
+            "The in-flight drain promise is not cleared by completion of an obsolete promise after the latch has been replaced."
+          ],
+          "edgeCases": [
+            "When no drain is in flight, the method starts and records one _drain operation.",
+            "When called during an existing drain, the call is a no-op and coalesces with the existing operation.",
+            "When the drain operation settles, its latch is cleared only if the stored latch still refers to that operation."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [
+            "Sets the instance's in-flight drain promise latch.",
+            "Clears the in-flight drain promise latch when the corresponding drain promise settles."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "_drain", "source": "TLFileEffectProcessor", "kind": "internal" }],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Starts at most one asynchronous drain operation at a time. A drain request received while another is in flight is coalesced rather than starting a concurrent operation.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "drain() is called once.",
+              "then": "_drain() is invoked once and its promise is retained as the in-flight operation.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "drain() is called again before that operation settles.",
+              "then": "No second _drain() invocation is started.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "042933d7ae0fba6271701d51278db0363112a80c1a96a83c917696809e846515"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/TLFileEffectProcessor.ts__TLFileEffectProcessor._drain#method:TLFileEffectProcessor._drain",
+        "unitKind": "method",
+        "name": "_drain",
+        "qualifiedName": "TLFileEffectProcessor._drain",
+        "parentUnitId": "apps/dotcom/sync-worker/src/TLFileEffectProcessor.ts__TLFileEffectProcessor#class:TLFileEffectProcessor",
+        "startLine": 94,
+        "endLine": 216,
+        "isBehavioral": true,
+        "source": "\t\t\t})\n\t\t\tthis.drainPromise = promise\n\t\t}\n\t\treturn this.drainPromise\n\t}\n\n\tprivate async _drain() {\n\t\tconst drainStart = Date.now()\n\t\tlet processed = 0\n\t\tlet failed = 0\n\t\tconst db = createPostgresConnectionPool(this.env, 'TLFileEffectProcessor')\n\t\tconst fileDeps: FileEffectDeps = {\n\t\t\tgetCurrentFile: (fileId) =>\n\t\t\t\tdb.selectFrom('file').selectAll().where('id', '=', fileId).executeTakeFirst(),\n\t\t\tnotifyInsert: (file) => getRoomDurableObject(this.env, file.id).appFileRecordCreated(file),\n\t\t\tnotifyUpdate: (file) => getRoomDurableObject(this.env, file.id).appFileRecordDidUpdate(file),\n\t\t\tnotifyDelete: (fileRow) =>\n\t\t\t\tgetRoomDurableObject(this.env, fileRow.id).appFileRecordDidDelete(fileRow),\n\t\t\tpublish: (file) =>\n\t\t\t\tpublishSnapshot(this.env, file, (error) =>\n\t\t\t\t\tthis.captureException(error, { publishThumbnailEnqueue: true })\n\t\t\t\t),\n\t\t\tunpublish: (file) => unpublishSnapshot(this.env, file),\n\t\t}\n\t\t// One handler per source table. Future effect sources (e.g. notifications)\n\t\t// register here alongside their trigger.\n\t\tconst handlers: Record<string, (row: TlaEffectOutbox) => Promise<void>> = {\n\t\t\tfile: (row) => processFileEffect(fileDeps, row),\n\t\t}\n\t\ttry {\n\t\t\tawait drainOutbox({\n\t\t\t\tgetBatch: () =>\n\t\t\t\t\tdb\n\t\t\t\t\t\t.selectFrom('effect_outbox')\n\t\t\t\t\t\t.selectAll()\n\t\t\t\t\t\t.where('attempts', '<', MAX_ATTEMPTS)\n\t\t\t\t\t\t.where((eb) =>\n\t\t\t\t\t\t\teb.or([eb('nextRetryAt', 'is', null), eb('nextRetryAt', '<=', sql<Date>`now()`)])\n\t\t\t\t\t\t)\n\t\t\t\t\t\t.orderBy('id')\n\t\t\t\t\t\t.limit(50)\n\t\t\t\t\t\t.execute(),\n\t\t\t\tdeleteRow: async (id) => {\n\t\t\t\t\tawait db.deleteFrom('effect_outbox').where('id', '=', id).execute()\n\t\t\t\t\tprocessed++\n\t\t\t\t},\n\t\t\t\tbumpAttempts: async (row) => {\n\t\t\t\t\tfailed++\n\t\t\t\t\t// Exponential backoff from the row's current attempt count, capped at 5 minutes.\n\t\t\t\t\t// The base IS the effect timeout, so the first retry can't land before a\n\t\t\t\t\t// timed-out RPC's window closes (the RPC keeps running — it can't be cancelled),\n\t\t\t\t\t// avoiding an overlapping retry. This relies on the RPC actually finishing within\n\t\t\t\t\t// the window: a publish effect's awaitPersist used to retry for up to ~200s\n\t\t\t\t\t// (PERSIST_RETRIES_MAX * 2s), well past this 30s timeout, so a zombie publish\n\t\t\t\t\t// could still be running when a retried attempt started. awaitPersist now caps\n\t\t\t\t\t// its throwing retries at ~20s (PERSIST_RETRIES_MAX_THROWING), so it can't.\n\t\t\t\t\tconst backoffSeconds = Math.min(2 ** row.attempts * (EFFECT_TIMEOUT_MS / 1000), 300)\n\t\t\t\t\tconst backoff = sql<Date>`now() + (${backoffSeconds} || ' seconds')::interval`\n\t\t\t\t\t// (a) Back off the failed row itself and bump its attempt count.\n\t\t\t\t\tawait db\n\t\t\t\t\t\t.updateTable('effect_outbox')\n\t\t\t\t\t\t.set((eb) => ({\n\t\t\t\t\t\t\tattempts: eb('attempts', '+', 1),\n\t\t\t\t\t\t\tnextRetryAt: backoff,\n\t\t\t\t\t\t}))\n\t\t\t\t\t\t.where('id', '=', row.id)\n\t\t\t\t\t\t.execute()\n\t\t\t\t\t// (b) Defer the failed row's later same-entity siblings so per-entity ordering\n\t\t\t\t\t// holds across drains: they must not run while this row is backing off. Do NOT\n\t\t\t\t\t// touch their attempts (they haven't been tried), and never shrink an existing\n\t\t\t\t\t// later nextRetryAt (GREATEST keeps the furthest-out schedule).\n\t\t\t\t\tawait db\n\t\t\t\t\t\t.updateTable('effect_outbox')\n\t\t\t\t\t\t.set({\n\t\t\t\t\t\t\tnextRetryAt: sql<Date>`GREATEST(\"nextRetryAt\", ${backoff})`,\n\t\t\t\t\t\t})\n\t\t\t\t\t\t.where('tableName', '=', row.tableName)\n\t\t\t\t\t\t.where('entityId', '=', row.entityId)\n\t\t\t\t\t\t.where('id', '>', row.id)\n\t\t\t\t\t\t.execute()\n\t\t\t\t},\n\t\t\t\tdeleteParkedRowsOlderThan: async (days) => {\n\t\t\t\t\tawait db\n\t\t\t\t\t\t.deleteFrom('effect_outbox')\n\t\t\t\t\t\t.where('attempts', '>=', MAX_ATTEMPTS)\n\t\t\t\t\t\t.where('createdAt', '<', sql<Date>`now() - (${days} || ' days')::interval`)\n\t\t\t\t\t\t.execute()\n\t\t\t\t},\n\t\t\t\tprocess: async (row) => {\n\t\t\t\t\tconst handler = handlers[row.tableName]\n\t\t\t\t\tif (!handler) {\n\t\t\t\t\t\t// trigger + handler ship together; this only catches mistakes\n\t\t\t\t\t\tthis.captureException(new Error('effect_outbox row for unhandled table, dropping'), {\n\t\t\t\t\t\t\ttableName: row.tableName,\n\t\t\t\t\t\t\toutboxId: row.id,\n\t\t\t\t\t\t})\n\t\t\t\t\t\treturn\n\t\t\t\t\t}\n\t\t\t\t\tawait handler(row)\n\t\t\t\t\t// End-to-end effect latency: time from the row landing in the outbox (its\n\t\t\t\t\t// transaction commit) to the effect completing. This is the user-facing number —\n\t\t\t\t\t// how long after a file change the room notification / publish actually lands.\n\t\t\t\t\tthis.writeEvent('outbox_effect', {\n\t\t\t\t\t\tblobs: [row.tableName, row.command],\n\t\t\t\t\t\tdoubles: [Date.now() - new Date(row.createdAt).getTime()],\n\t\t\t\t\t})\n\t\t\t\t},\n\t\t\t\tonError: (error, row) => {\n\t\t\t\t\t// Report the first failure (immediate visibility) and the parking failure (data\n\t\t\t\t\t// loss), but not every retry in between - under an outage, one row can burn through\n\t\t\t\t\t// MAX_ATTEMPTS attempts, and reporting each would eat Sentry's rate limit and drop\n\t\t\t\t\t// the parking events that matter most. See shouldReportEffectFailure's doc comment.\n\t\t\t\t\tconst isParking = row.attempts + 1 >= MAX_ATTEMPTS\n\t\t\t\t\tif (shouldReportEffectFailure(row.attempts)) {\n\t\t\t\t\t\tthis.captureException(error, {\n\t\t\t\t\t\t\ttableName: row.tableName,\n\t\t\t\t\t\t\tentityId: row.entityId,\n\t\t\t\t\t\t\tcommand: row.command,\n\t\t\t\t\t\t\toutboxId: row.id,\n\t\t\t\t\t\t\tattempts: row.attempts + 1,\n\t\t\t\t\t\t})\n\t\t\t\t\t}\n\t\t\t\t\tif (isParking) {",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/TLFileEffectProcessor.ts__TLFileEffectProcessor._drain#method:TLFileEffectProcessor._drain",
+          "fileId": "apps/dotcom/sync-worker/src/TLFileEffectProcessor.ts__TLFileEffectProcessor._drain",
+          "unitKind": "method",
+          "name": "_drain",
+          "qualifiedName": "TLFileEffectProcessor._drain",
+          "parentUnitId": "apps/dotcom/sync-worker/src/TLFileEffectProcessor.ts__TLFileEffectProcessor#class:TLFileEffectProcessor",
+          "startLine": 94,
+          "endLine": 216,
+          "signature": "private async _drain()",
+          "parameters": [],
+          "returnType": "Promise<void>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "private",
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The processor environment is configured so a PostgreSQL connection pool and file effect dependencies can be created.",
+            "The effect outbox schema and the file effect handler are available."
+          ],
+          "postconditions": [
+            "Eligible outbox rows are processed in ascending id order through the outbox drain mechanism.",
+            "Successfully processed rows are deleted and counted as processed.",
+            "Failed rows have their attempts and retry scheduling updated, and later same-entity rows are deferred to preserve ordering.",
+            "Rows that have reached the parking threshold are eligible for deletion by the configured parked-row cleanup."
+          ],
+          "invariants": [
+            "Only rows with attempts below MAX_ATTEMPTS and with no retry time or a retry time at or before the current database time are selected.",
+            "At most 50 rows are selected per batch.",
+            "Rows are selected in ascending outbox id order.",
+            "A failed row's later siblings with the same tableName and entityId are not scheduled earlier than the failed row's backoff.",
+            "Deferring later siblings does not increment their attempt counts.",
+            "Backoff is exponential from the row's current attempt count and is capped at 300 seconds."
+          ],
+          "edgeCases": [
+            "An outbox row whose tableName has no registered handler is reported to captureException and dropped without invoking an effect handler.",
+            "A handler failure increments the failed count, updates the failed row's attempt count and retry time, and defers later same-entity siblings.",
+            "A failure that reaches the parking threshold is treated as a parking failure for reporting purposes.",
+            "Rows whose attempts are at least MAX_ATTEMPTS are excluded from normal batch selection and are handled by parked-row cleanup according to its age threshold.",
+            "A publish failure is passed to captureException with publishThumbnailEnqueue set to true by the publish dependency."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Unhandled table names are reported and dropped; effect-handler failures are passed to the outbox drain error path for retry and possible parking.",
+            "returnsOnError": null
+          },
+          "stateMutations": [
+            "Deletes successfully processed rows from effect_outbox.",
+            "Increments the attempts count and updates nextRetryAt for failed effect_outbox rows.",
+            "Updates nextRetryAt for later same-entity effect_outbox rows without changing their attempts.",
+            "Deletes parked effect_outbox rows older than the cleanup age supplied by the outbox drain mechanism.",
+            "Increments the local processed and failed counters."
+          ],
+          "eventsEmitted": [
+            "Writes an outbox_effect event containing the source table and command as blobs and end-to-end effect latency in doubles after successful handling.",
+            "Reports unhandled rows and selected effect failures through captureException."
+          ],
+          "complexity": null,
+          "calls": [
+            {
+              "name": "createPostgresConnectionPool",
+              "source": "database connection pool factory",
+              "kind": "external"
+            },
+            {
+              "name": "db.selectFrom('file').selectAll().where(...).executeTakeFirst",
+              "source": "PostgreSQL query builder",
+              "kind": "external"
+            },
+            {
+              "name": "getRoomDurableObject(...).appFileRecordCreated",
+              "source": "room durable object",
+              "kind": "external"
+            },
+            {
+              "name": "getRoomDurableObject(...).appFileRecordDidUpdate",
+              "source": "room durable object",
+              "kind": "external"
+            },
+            {
+              "name": "getRoomDurableObject(...).appFileRecordDidDelete",
+              "source": "room durable object",
+              "kind": "external"
+            },
+            { "name": "publishSnapshot", "source": "snapshot publishing service", "kind": "external" },
+            { "name": "unpublishSnapshot", "source": "snapshot publishing service", "kind": "external" },
+            { "name": "drainOutbox", "source": "outbox drain utility", "kind": "internal" },
+            { "name": "processFileEffect", "source": "file effect processor", "kind": "internal" },
+            { "name": "shouldReportEffectFailure", "source": "effect failure reporting policy", "kind": "internal" },
+            { "name": "this.captureException", "source": "TLFileEffectProcessor", "kind": "internal" },
+            { "name": "this.writeEvent", "source": "TLFileEffectProcessor", "kind": "internal" }
+          ],
+          "symbolReferences": ["FileEffectDeps", "TlaEffectOutbox", "MAX_ATTEMPTS", "EFFECT_TIMEOUT_MS", "sql"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Reads and mutates PostgreSQL effect_outbox rows and emits an outbox_effect event with blobs [tableName, command] and doubles [elapsed milliseconds]. File effects are dispatched through getCurrentFile, notifyInsert, notifyUpdate, notifyDelete, publish, and unpublish callbacks.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Drains eligible file effect outbox rows, dispatching file effects and coordinating retries, ordering, deletion, and failure reporting. It records processing latency and uses the processor environment's database and file-related effect dependencies.",
+          "specLiterals": [
+            { "kind": "magic-number", "value": "50", "role": "Maximum number of outbox rows selected in one batch." },
+            { "kind": "magic-number", "value": "300", "role": "Maximum retry backoff in seconds." },
+            {
+              "kind": "error-message",
+              "value": "effect_outbox row for unhandled table, dropping",
+              "role": "Error message reported when an outbox row has no registered handler."
+            },
+            { "kind": "enum-value", "value": "file", "role": "Registered effect source table and handler key." },
+            {
+              "kind": "enum-value",
+              "value": "outbox_effect",
+              "role": "Event name used for successful effect latency reporting."
+            },
+            {
+              "kind": "enum-value",
+              "value": "publishThumbnailEnqueue",
+              "role": "Context field supplied when reporting publish failures."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "_drain processes the row.",
+              "then": "The row is reported through captureException with the unhandled-table error and is not dispatched to a file effect handler.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The outbox drain handles the failure.",
+              "then": "The row's attempts are incremented to n + 1, its nextRetryAt is scheduled using exponential backoff capped at 300 seconds, and later rows for the same tableName and entityId are deferred at least until that backoff.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Processing completes.",
+              "then": "The row is deleted and an outbox_effect event is written with blobs containing its tableName and command and doubles containing elapsed milliseconds since createdAt.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "d4a50696ca642b36a5b57d96057f0bcdafb36f45ca3db956ef7a2b0bacb49abc"
+        }
+      }
+    ]
+  },
+  "out": [
+    "apps/dotcom/sync-worker/src/postgres.ts",
+    "apps/dotcom/sync-worker/src/fileEffects.ts",
+    "apps/dotcom/sync-worker/src/outboxDrain.ts",
+    "apps/dotcom/sync-worker/src/types.ts",
+    "apps/dotcom/sync-worker/src/utils/publishSnapshots.ts",
+    "apps/dotcom/sync-worker/src/utils/analytics.ts",
+    "apps/dotcom/sync-worker/src/utils/durableObjects.ts"
+  ],
+  "in": ["apps/dotcom/sync-worker/src/utils/durableObjects.ts", "apps/dotcom/sync-worker/src/types.ts"],
+  "externals": ["@tldraw/dotcom-shared", "@tldraw/worker-shared", "cloudflare:workers", "kysely"],
+  "impact": { "seeds": 6, "callers": 0, "impactedFiles": [] }
+}

@@ -1,0 +1,61 @@
+{
+  "id": "xrepo-v6-11-the-first-run-writes-what-it-reads-medium",
+  "question": "A reactive computation whose body writes to something the same body also depends on is being allowed to re-enter itself during its very first execution. The first run is special: the dependency set does not exist yet, so a write performed while it is still being collected is seen as a change to something the computation is already subscribed to, and the scheduler starts the computation again before the first attempt has finished recording what it read. The second entry then completes and installs its dependency set over the first one's, so the computation is left subscribed to a set that never corresponds to any single execution, and the same write on a later run - when the dependency set does exist - behaves completely differently. The contract is that a run is atomic with respect to its own dependency collection: what a body writes during a run must be visible to the next run, never to the run that is writing it. Elsewhere in the folder the same hazard is fenced off deliberately: one library counts how many times a commit has synchronously scheduled another one and refuses to continue past a fixed depth, another wraps every batch of writes so that reads inside the batch see the pre-batch values and dependents are notified only when the outermost batch ends, and another marks the collection phase itself so that a write arriving during collection is attributed correctly instead of being replayed. Which file lets a first run re-enter itself, and which own the run-atomicity contract it has to be brought in line with?",
+  "anchor": {
+    "repo": "tldraw",
+    "pinned_commit": "5590d14d8edd4faab7dc1177b6e1adb28876fd23",
+    "fix_pr": "https://github.com/tldraw/tldraw/pull/10146",
+    "pr_number": 10146,
+    "pr_title": "fix(state): don't re-enter an effect that sets its own parent during a first run",
+    "fix_merged": "2026-09-09",
+    "fix_merge_commit": "a18a039c2a6d",
+    "parent_is_buggy": true
+  },
+  "counts": {
+    "min_repos": 3,
+    "min_files": 5
+  },
+  "repo_commits": {
+    "tldraw": "5590d14d8edd4faab7dc1177b6e1adb28876fd23",
+    "react": "3a717e42438afac81020cdec297dadb5613a4304",
+    "redux": "3aa561f9fc13f3287e6d83764f85fe0e82437c5f"
+  },
+  "expected": [
+    {
+      "repo": "tldraw",
+      "knowledgeId": "91b23c56-1aee-5c86-a34b-c66f8970d025",
+      "files": [
+        "packages/state/src/lib/EffectScheduler.ts",
+        "packages/state/src/lib/transactions.ts",
+        "packages/state/src/lib/capture.ts"
+      ]
+    },
+    {
+      "repo": "react",
+      "knowledgeId": "2a9d1614-943b-44ad-b7cf-edda2f37ddf9",
+      "files": ["packages/react-reconciler/src/ReactFiberWorkLoop.js"]
+    },
+    {
+      "repo": "redux",
+      "knowledgeId": "c0c638c58b7d1844702ea4c7f14c62db",
+      "files": ["src/createStore.ts"]
+    }
+  ],
+  "grader_notes": {
+    "why_cross_repo": "ANCHOR (real bug, tldraw PR #10146, merged 2026-09-09 as a18a039c2a6d, AFTER the pinned commit 5590d14d8e; removed-line liveness 1/1 at the pin). EffectScheduler.ts is where the first run is scheduled and re-entered; transactions.ts owns the batching boundary that decides when dependents are notified, and capture.ts owns the dependency-collection phase the first run is in the middle of - both are the in-repo files an arm reasoning only from the symptom will miss. react's ReactFiberWorkLoop.js is the reference for bounding synchronous re-entry (NESTED_UPDATE_LIMIT = 50 with nestedUpdateCount at lines 751-752, 4355-4357); redux's createStore.ts is the reference for refusing re-entry outright - a reducer that dispatches is an error, not a re-run.",
+    "verification_method": "(1) Mined from `pin..origin/main`; pin-is-ancestor True, 1/1 removed lines live at the pin. (2) transactions.ts and capture.ts confirmed present at the pin with `git cat-file -e`; react's NESTED_UPDATE_LIMIT and redux's initialisation guard read directly at their pins. (3) Overlap check: 0 shared (repo,file) pairs with any existing case directory. NOTE redux/src/createStore.ts appears in the v5 design JSON (cases v5-4/5/6/9) which was never materialised as a case directory; if those are ever built, this citation should be revisited. (4) Contract check: v5-9 (notification-sweep re-entrancy) is about an observer detaching during a sweep, not about a computation's first run re-entering before its dependency set exists.",
+    "difficulty_design": "The smallest gold of the new set (5 files / 3 repos) and the most mechanism-dependent: the defect is a one-line condition, the two supporting in-repo files are reachable only by understanding what a first run is, and the two references are famous but are never described in the same words as tldraw's signals library.",
+    "rejected_candidates": ""
+  },
+  "calibration": {
+    "probe": "claudecli_opus5_bare (Opus 5, Bash/Read/Grep/Glob over the pinned checkouts, sandbox-exec gold-blind, one fresh headless session)",
+    "date": "2026-09-10",
+    "recall": 0.8,
+    "precision": 0.308,
+    "returned": 13,
+    "gold": 5,
+    "cost_usd": 3.32,
+    "rule": "hard requires recall < 0.6; medium requires recall <= 0.8; above that the case is easy",
+    "label_from_probe": "medium"
+  }
+}

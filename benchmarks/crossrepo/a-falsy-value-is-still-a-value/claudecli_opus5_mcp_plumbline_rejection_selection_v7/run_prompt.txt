@@ -1,0 +1,384 @@
+CROSS-REPOSITORY RETRIEVAL TASK — run the algorithm below, in order.
+
+CASE:      xrepo-v6-16-a-falsy-value-is-still-a-value-hard
+SURFACE:   the plumbline MCP server. No other MCP server, no network, no subagents,
+           no Read, Grep or Glob. Every path you name must have come back from a
+           plumbline call; reaching the answer by any other route voids the run.
+           ONE exception, and it is not a search route. When a plumbline result is
+           too large to return, it is written to a file and that path is handed to
+           you in the result. Read THAT file with Bash — cat or grep on the exact
+           path you were given — and use Bash for nothing else. It is your own
+           result, already paid for, and leaving it unread silently drops the call.
+           Bash may not touch the repositories, the case directory, or any path you
+           were not handed.
+ROSTER:    16 repositories, each pinned at exactly one commit. This is the whole
+           world for the task; do not use another revision or later history.
+
+  repo             commit                                     repo             commit
+  redux            3aa561f9fc13f3287e6d83764f85fe0e82437c5f   xyflow           360f5b13e2bc6899ea06b4be1a49b068d86926cf
+  redux-toolkit    b1c5130154c454ca8387f55da6122fcb507c560c   query            46d7f02f1c7b9fcd3255082cc7103e8bfa3dab76
+  react-redux      ad5d1e0816d0cb1464b25cf2853f2a7d73433f5b   table            d08af367e11c539bb7e18c2472aa761149ef6db6
+  reselect         950112a328f71d97d18fd543159d6fdefa432b38   tldraw           5590d14d8edd4faab7dc1177b6e1adb28876fd23
+  react            3a717e42438afac81020cdec297dadb5613a4304   redux-devtools   f4b4668c30ae08920c59a76cc4629c35c16ef0fa
+  jotai            5c4ca26b0db5571114be58393e17854a771f7790   router           3dee5b2e9453d01a3172c73426959007b290b3fc
+  zustand          beca84e600e4e250f6b244d22878e72948f331c7   primitives       58164e06ca67dff9a68dd375d858180cfdc8ec27
+  db               7f0fa36ff6d48b0494ed5f6a1223fd18c317e41f   zod              912f0f51b0ced654d0069741e7160834dca742ee
+
+PATHS:     repo-relative, exactly as they exist AT THAT REPOSITORY'S OWN PIN. No
+           leading slash, no repo-name prefix.
+
+PROBLEM (identifiers are deliberately withheld — searching these words will not
+find the answer):
+
+Several places in these libraries decide whether they HAVE something by asking whether the thing is truthy, and the things in question are values supplied by the application, which are allowed to be zero, an empty string, or nothing at all. So a combined result that legitimately computes to an empty value is treated as no result, and recomputed on every pass instead of being reused; and a failure whose value is legitimately empty is treated as no failure, so the consumer that was supposed to be told about it is never told and runs on down the success path. In both cases the presence of the thing and the value of the thing have been collapsed into one test, and the only inputs that expose it are the ones an application is entitled to produce. The contract is that presence is a separate fact from value: it has to be carried by a flag, a tag, a wrapper or a status, never inferred from the value's own truthiness. Elsewhere in the folder that separation is the whole design: one library models every outcome as a tagged pair whose tag - not its payload - says which arm it is, and another goes further and enumerates the values that have no natural ordering at all, with a comment saying they are handled explicitly rather than left to fall out of a comparison. Which files infer presence from truthiness, and which own the presence-is-not-value contract they have to be brought in line with?
+
+GOAL: name every file, in every repository above, that must change to satisfy that
+contract. The answer spans multiple repositories that do not import one another.
+
+================================ ALGORITHM ================================
+
+ASSERT = must hold, checked against CALLS MADE. Repair the state, then continue.
+DO     = make exactly this call.
+YOURS  = your judgement; the steps fix the shape, not the content.
+
+THREE INDEXES, THREE ANSWERS. Every tool here reads ONE of three stores, and a
+file present in one can be absent from the others:
+  SYMBOL tier   declarations — functions, classes, types, type members.
+                Read by manhunt, case_file, interrogation.
+  EDGE tier     resolved imports, contracts, wire surfaces.
+                Read by collateral_damage, kingpin, cross_repo_lookup, dragnet.
+  TEXT          the verbatim source bytes. Read by shakedown and the_receipts.
+An empty result is evidence about THAT TIER ONLY, never about the codebase — and
+in a roster this size, never about a repository you have not scoped into.
+Measured on a comparable case in this benchmark: the field the defect was about
+returned 12 files from the symbol tier (0 gold), 7 files from the edge tier
+(0 gold), and 8 gold files from the text tier. Whichever tier you stop at is the
+answer you get.
+
+---- STATE ----
+REG[]      { name, phrase, repos[], hits[] }   one per register, built at STEP 1
+SWEPT      set of (register, repo) pairs actually searched. A pair enters SWEPT
+           only after a stakeout carrying THAT register's phrase INTO that repo,
+           knowledgeId set. No other call and no other register puts it there.
+KEY[]      { identifier, probes_done[], roots_grepped[] }  STEP 3
+SEEN       every "<repo>/<path>" ANY call returned. Append, never prune.
+TRACED     { repo, path } — one entry per collateral_damage call you issued and
+           read. A row in another call's output is NOT a trace.
+FOLDED     files you ran collateral_damage FROM. Every CONFIRMED file ends up
+           here; 4.6 is the loop that puts it there.
+CONFIRMED  { repo, path, role VIOLATOR|OWNER|EVIDENCE, why } — files READ at STEP 4
+RULED_OUT  files READ and excluded against verbatim source. Not reading ≠ ruling.
+CANDIDATES = SEEN minus CONFIRMED minus RULED_OUT. Retrieved, undecided. These
+           ARE part of the answer (5.2); they rank below CONFIRMED, never dropped.
+
+  INVARIANT-1  Every file in CONFIRMED is emitted at STEP 5. Always. No filter,
+               no "already covered by another file", no per-register quota.
+  INVARIANT-2  VERIFICATION SETS ORDER, NEVER LENGTH. Reading a file decides
+               WHERE it ranks, never WHETHER it is named.
+  INVARIANT-3  A repository you have not scoped into is not evidence of absence.
+
+---- STEP 0 — GROUND ----
+0.1  DO roll_call. ASSERT: every repository in the ROSTER appears. knowledgeId
+     VERBATIM from that output — never guessed, never repoId.
+     ON FAIL — a repository is ABSENT — STOP and say so plainly; never answer
+     from memory about a repository that is not indexed.
+     A ROSTER pin that differs from roll_call's is NOT drift. roll_call reports
+     only each repository's NEWEST indexed commit, never its indexed history.
+0.2  COMMIT DISCIPLINE. DO pass commitHash = THAT REPOSITORY'S OWN ROSTER pin on
+     every call into it — stakeout, shakedown, case_file, the_receipts,
+     collateral_damage, all of them. The pins differ per repo; one repo's pin
+     passed to another, or omitted, answers at the wrong snapshot and comes back
+     a CLEAN ABSENCE, indistinguishable from "no such file" and silently
+     unrecoverable.
+0.3  DO rap_sheet once, no arguments — ~150 tokens per repository saying what
+     each one is FOR. STEP 1's repos[] is computed from it.
+     RANK, NEVER EXCLUDE. A repository whose brief reads wrong can still hold
+     the other half of the contract.
+0.4  MODULE ROOTS ARE PER REPOSITORY, and you buy them only where you need them.
+     For any repository that scores at STEP 2, DO blueprint(knowledgeId,
+     commitHash) -> its module map: every module, its role, its root. WRITE THE
+     ROOTS DOWN; STEP 3's text probe iterates them and gets its scoping from this
+     list and nowhere else. In a single-package repository the root is the repo.
+     For one module's EXACT members DO blueprint(module=<name>) — not
+     stakeout(pathContains=<root>). A root is a display label; a module can span
+     sibling directories and two modules can share one directory.
+0.5  For a repository you are about to fold in, DO kingpin(knowledgeId,
+     commitHash) -> the files its import graph converges on. A wrongly-read
+     value is most often read in a hub.
+
+---- STEP 1 — REGISTERS AND THEIR REPOSITORIES. Before any search. ----
+A change set spans REGISTERS — the different vocabularies one behaviour is
+written in. The PROBLEM arrives in exactly one, and across a roster this size the
+other repositories write the same behaviour in a register the PROBLEM does not
+use at all. Measured on a comparable case, one search per register: the register
+as asked returned 2 of 11 gold files, the payload register 4, the cross-cutting
+register 1, and every collateral_damage lens 0. The three that scored SHARE NO
+HIT; their union was 7 of 11.
+1.1  Write one entry per register:
+       ENFORCEMENT  where the rule is checked or applied — the PROBLEM's own words
+       PAYLOAD      what BUILDS the value before anything enforces it: the store,
+                    the mapper that assembles it, the options object, the schema,
+                    the input DTO, the server-side transform. It holds NO import
+                    edge to the enforcement point, so NO edge-tier lens reaches
+                    it. YOURS, and the highest-paying line in this prompt: ask
+                    what object carries this value, and name THAT.
+       CONTRACT     the published API surface — the exported type, the barrel,
+                    the versioned entry point. Narrow it with pathContains;
+                    generic type names outscore it and crowd it off the page.
+       CROSSCUTTING logging, telemetry, devtools, serialization, i18n, templating.
+1.2  ASSERT: |REG[]| == 4, and no two phrases share a content word.
+     ON FAIL -> you have written one register four times in one subsystem's
+     vocabulary. That is the commonest way this step is skipped while looking
+     done. Re-word against the rap_sheet briefs.
+1.3  Keep each phrase SHORT — a handful of content words. Padding a phrase into a
+     sentence dilutes the match enough to drop real hits out of range.
+1.4  FOR EACH register, build repos[] from the rap_sheet briefs: EVERY repository
+     whose subject matter could plausibly write this behaviour in this register.
+     Be generous. The FIRST scoped call into a repository this run has not
+     queried yet is never rationed, however much you have already spent;
+     re-querying one you HAVE searched is what gets rationed. The cheap move and
+     the correct move are the same move.
+     ASSERT: |repos| >= 4 per register, and at least one entry is a repository
+     whose brief does NOT obviously fit.
+     ASSERT: every ROSTER repository appears in some register's repos[].
+     ON FAIL -> assign it to the nearest register. Full coverage is free.
+1.5  THE OBVIOUS-OWNER TRAP — this is where runs are lost. When a behaviour has
+     one famous owner ("keyed reconciliation", "a store", "a scheduler"), naming
+     that owner FEELS like completing this step. It is skipping it. The more
+     obviously one repository owns a behaviour, the more certainly the OTHER
+     implementations of it are the ones you have not thought of.
+
+---- STEP 2 — SEARCH EACH REGISTER, SCOPED INTO EACH REPOSITORY ----
+FOR EACH r IN REG[]:
+  FOR EACH repo IN r.repos:
+  2.1  IF (r, repo) IN SWEPT -> skip.
+       DO stakeout( query = r.phrase, knowledgeId = <that repo>,  <-- MUST be set
+                    commitHash = <that repo's pin>, searchIn = 'both' ).
+       'both' unions prose, declarations, signatures and the behavioural
+       substrate. Use searchIn='substrate' alone when the register describes what
+       code DOES ("suspends until", "throws when") rather than what it is about.
+       Write a REAL reason: it is read, and it widens the search into the
+       codebase's own register.
+  2.2  Add (r, repo) to SWEPT. SEEN += every path returned, lead rows included.
+  2.3  DO NOT BREAK. A hit does not end the register and does not end the loop.
+       The first repository that answers is the one sharing the most vocabulary
+       with your words — not necessarily the one the PROBLEM means.
+2.4  READ THE UNSCORED ROWS. matchedIn=['neighbour'] is one import hop from a
+     ranked hit — the schema a hit validates against, the mapper that builds what
+     it consumes; a row reached via two ranked files is the strongest lead on the
+     page. matchedIn=['subtree'] is a sibling group — the ancestor directory of
+     the files it ranked, which is how a fix touching every alike file becomes
+     visible. matchedIn=['path-guess'] means the PATH matched, not the text:
+     confirm with case_file before citing it.
+2.5  IF a page is dominated by type declarations or barrels, RE-CALL with
+     pathContains narrowed to a module root from 0.4. Ranking defect, not an
+     absent register.
+2.6  knowledgeId SET vs OMITTED decides runs. An org-wide search ranks whichever
+     repository shares the most vocabulary with your words and never reaches the
+     others at all. The same phrase scoped INTO a repository is answered from
+     that repository's own register and returns what an org-wide sweep could not
+     see.
+2.7  ASSERT ON EXIT: count{ repo : (r, repo) IN SWEPT } == |r.repos|, FOR EVERY
+     register. A register is not swept because SOME repository answered it, and a
+     repository swept with one register's words HAS NOT BEEN SWEPT for another.
+     A register that comes back empty after 2.5 is RECORDED empty — never
+     assumed absent.
+
+---- STEP 3 — IDENTIFIER SWEEP. The step this prompt exists for. ----
+Once a register lands, the defect has a NAME: the field, flag, key, option or
+symbol the behaviour is written with. Write it to KEY[]. One identifier is
+usually enough; add a second only if the PROBLEM plainly names two behaviours.
+FOR THE PRIMARY IDENTIFIER, ALL THREE PROBES. They read three different tiers and
+their results routinely do not overlap at all.
+3.1  PROBE 1 — DECLARED. DO manhunt(name=<identifier>) with knowledgeId OMITTED —
+     one call, exact, every repository at once. THEN DO manhunt(query=<identifier
+     plus behaviour words>), also org-wide. name and query hit DIFFERENT indexes;
+     a miss in one says nothing about the other, and this is the commonest false
+     negative on the tool. Read the `commits` array: units are content-addressed
+     and shared across commits, so pass commitHash for a pinned question.
+     This returns where the name is DECLARED or TYPED. It does NOT return where
+     the value is read.
+3.2  SIBLING PACKAGES ARE THE POINT. A repository shipping one capability as
+     several adapter packages — framework bindings, drivers, backends, engines —
+     implements the SAME name in each, and those packages do not import one
+     another, so no fold and no dependency walk ever crosses between them. The
+     org-wide name sweep is the only thing that reaches them all.
+     ASSERT: name one sibling -> name all N of that filename. One of N is a
+     coin-flip; all N costs N slots and cannot miss.
+3.3  PROBE 2 — WIRED. DO collateral_damage(relativePath=<a file that declares or
+     resolves it>, knowledgeId=<its repo>, commitHash=<that repo's pin>) with ALL
+     SEVEN lenses on the first call per seed. Read `direction` on every row: six
+     lenses walk DOWNSTREAM, `dependencies` alone walks UPSTREAM — what the seed
+     READS, which usually carries the change first. Every narrowed call keeps
+     `dependencies`; dropping it is not a narrowing, it is a direction you
+     stopped searching. For a type or interface, re-call lens=['types'] as a
+     FOLLOW-UP: type consumers call nothing and the other lenses are blind.
+     TRACED += the call. Seed EVERY register's top hit and every kingpin hub, not
+     one file.
+     SEED THE SHARED CORE, NOT THE ADAPTER YOU FOUND FIRST. Adapter packages have
+     no edges to each other, so a fold from one reaches none of the rest; the core
+     they all import does.
+     If the defect is that call sites BYPASS a resolver, what this probe returns
+     are the files that already do it RIGHT — the complement of the answer.
+     `dependencies` covers in-repo upstream only: the resolved import edge stops
+     at the repository boundary. When a row names a PACKAGE or an exported symbol
+     rather than a file, DO cross_repo_lookup(<package or symbol>) to land it on
+     the files on each side — no lens returns that hop, and in this task that hop
+     is where the second repository comes from.
+3.4  PROBE 3 — READ. DO shakedown(pattern=<identifier>, knowledgeId=<repo>,
+     commitHash=<that repo's pin>, pathContains=<one module root from 0.4>) —
+     ONCE PER MODULE ROOT, IN EVERY REPOSITORY THAT SCORED AT STEP 2.
+     THE CAP IS THE TRAP. maxMatches is 200 at most, and a name on a shared
+     model exceeds that repository-wide. The header then prints
+       ⚠ match cap hit — more hits exist
+     and pagination reports hasNextPage:false ANYWAY — the page describes only
+     the truncated scan. A capped result is a SAMPLE, never a set.
+     ASSERT: every scoped call either returns no cap warning, or is re-split into
+     narrower pathContains until it does.
+     Measured on a comparable case: a repository-wide scan capped at 200 hits /
+     57 files and never reached the package that held the answer; one scoped call
+     returned 8 gold files the whole rest of the run never saw.
+     This returns where the value is READ — a property read in an expression, a
+     key in an options object, a field on a config literal. Those are not
+     CodeUnits and not type members, so PROBE 1 cannot see them, and they hold no
+     import edge, so PROBE 2 cannot either. When the defect is "every call site
+     reads this directly", the entire answer is here.
+3.5  ASSERT: for the primary identifier, all three probes appear in
+     KEY[].probes_done, and roots_grepped names every module root you swept.
+     Two probes is not a sweep; it is the tier you happened to start in.
+3.6  IF you cannot name an identifier at all: DO dragnet(<the change described in
+     prose>) — it harvests the names from the graph instead of you guessing them.
+     Then return to 3.1 with what it names.
+3.7  ON REFUSAL (a budget cap — not an error, never a fact about your query):
+     three ways through, in order: (a) scope the call into a repository not yet
+     queried — a first touch is exempt regardless of what you have spent;
+     (b) spend a tool the refusal names; (c) return to the refused tool once the
+     total has risen.
+
+---- STEP 4 — GROUND. Prose is a lead; source is evidence. ----
+4.1  DO case_file(path, knowledgeId, commitHash) -> every code unit with its
+     DECLARED startLine-endLine.
+4.2  DO the_receipts on THAT DECLARED RANGE. A range you pick yourself is a
+     guess, and a guessed window that happens to look innocent is how a violating
+     file gets cleared. For many files at once, DO
+     the_receipts(operation='bulk_search', search=<the identifier>, paths=[...])
+     — one call confirms which of them really read it.
+     For a file with NO code units — a pure type, schema or re-export — read the
+     file's own lines; it still counts as impacted.
+4.3  For one unit's members and call edges, DO interrogation(qualifiedName) —
+     only on a qualifiedName a case_file or manhunt result produced this session,
+     never one you inferred.
+4.4  Never judge a file from purpose, summary, signature, path, or an empty
+     search. Those prose fields were written by a model at index time.
+4.5  CLASSIFY into CONFIRMED, from verbatim source:
+       VIOLATOR  it does the thing the PROBLEM describes going wrong, or passes
+                 the value on so that it does
+       OWNER     it defines, resolves or persists the rule — the contract
+       EVIDENCE  it grounded a verdict about ANOTHER file: the sibling that does
+                 it right, the contract a violator must be brought in line with,
+                 the counterexample that made an omission legible.
+     EVIDENCE IS A FULL ROLE, NOT A FOOTNOTE. See 5.4.
+     A CONFIRMED VIOLATOR DOES NOT END THE SEARCH FOR VIOLATORS. Nothing in the
+     PROBLEM says only one file violates; a peer is cleared by 4.7 or stays a
+     CANDIDATE, never by the fact that you already have one.
+4.6  FOLD FROM EVERY CONFIRMED FILE. A loop, not one call.
+     FOR EACH f IN CONFIRMED (VIOLATOR, OWNER and EVIDENCE alike), f NOT IN
+     FOLDED: collateral_damage(relativePath=f.path, knowledgeId=f.repo,
+     commitHash=<that repo's pin>). Add f to FOLDED, returns to SEEN.
+     One fold off one seed is a single point of failure: everything it reaches is
+     a neighbour of ONE file. It also reaches declarations, barrels and call
+     sites, which share no vocabulary with your phrases and so are invisible to
+     stakeout however often you run it.
+     ASSERT ON EXIT OF STEP 4: FOLDED == CONFIRMED.
+4.7  RULING OUT REQUIRES VERBATIM SOURCE. "I did not get to it", "the summary
+     looked wrong", "the search came back empty" and "its repository felt
+     off-topic" are NOT rulings — each leaves the file a CANDIDATE. Running out
+     of calls is not a verdict.
+4.8  ASSERT: |CONFIRMED| >= 5, or == |SEEN| if SEEN is smaller.
+     You will not read everything you retrieve. That is expected and not a
+     failure: the unread remainder is CANDIDATES, and 5.2 emits it.
+
+---- STEP 5 — EMIT. Computed from state. ----
+5.1  First, in plain text BEFORE the JSON, print the LEDGER:
+       (a) per register: name, phrase, and the files it closed — or the word
+           EMPTY. A register declared empty is a correct outcome; one silently
+           dropped is the failure this algorithm exists to prevent.
+       (b) the SWEEP MATRIX: one row per register listing the repositories in
+           SWEPT for it. A row shorter than that register's repos[] means 2.7 did
+           not hold — say so.
+5.2  BUILD THE LIST IN TWO BANDS, IN THIS ORDER. LIST_CAP = 75 paths total,
+     across all repositories.
+       BAND 1 — every path in CONFIRMED, whatever its role, most-likely first.
+                This is INVARIANT-1 and it is mechanical.
+       BAND 2 — every path in CANDIDATES, ranked by how strongly the search that
+                returned it bore on a register, appended BELOW band 1.
+     Truncate only at LIST_CAP, and only from the bottom. Reading decides a
+     file's BAND, not its presence.
+5.3  ROUND-ROBIN BY REPOSITORY. Reorder both bands before emitting:
+       WHILE any repository holds an unemitted path:
+         take its highest-ranked unemitted path, one repository at a time.
+     Band 1 round-robins first, then band 2. Within-repo order is preserved.
+     THIS IS NOT COSMETIC. The answer is scored on a prefix of the flattened
+     list, and the flattening reads the repository entries top to bottom: a
+     repository emitted second gets the ranks left over from the first. Grouping
+     by confidence alone hands the whole head of the list to one repository and
+     buries every other repository's best file below the cut.
+5.4  ASSERT: no repository holds > LIST_CAP/3 paths while a SWEPT repository
+     holds 0. ON FAIL -> swap its lowest-ranked paths for the best path from each
+     empty repository, one for one. The cheapest path you hold is the Nth from
+     ground already covered.
+5.5  ASSERT: |files across all entries| == min(|CONFIRMED| + |CANDIDATES|, 75).
+     ON FAIL -> you silently dropped paths this run RETRIEVED. Put them back.
+     A SHORT LIST IS NOT A CAREFUL LIST. You are scored on how much of the true
+     change set you name. A wrong path ranked 20th costs almost nothing; a right
+     one you declined to name is lost outright. When unsure, RANK IT LOWER —
+     never omit it. 5.3 reorders and 5.4 swaps one for one; neither reduces the
+     count.
+5.6  ASSERT: every path named ANYWHERE in the 5.1 ledger prose also appears in
+     the answer. If it was good enough to justify a verdict, it is good enough to
+     name.
+5.7  ASSERT: every path was RETURNED BY A CALL, at its repository's own pin.
+     Never completed from memory or inferred from directory layout.
+5.8  Source files only: no tests, docs, examples, fixtures, benchmarks, build
+     output, dependency directories, generated reports.
+5.9  Your FINAL message is the JSON object below and NOTHING ELSE — the 5.1
+     ledger belongs in the message BEFORE it. No prose, no markdown fence,
+     nothing after it:
+
+{
+  "answer":   [{"repo": "<repo>", "files": ["<path>", "..."]}],
+  "contract": "<the rule the defect breaks, phrased so it applies to every file named>",
+  "defect_location": {"repo": "<the repo the defect sits in>",
+                      "summary": "<where and why, citing <repo>/<path>:<lines> per claim>"},
+  "registers": [{"name": "ENFORCEMENT|PAYLOAD|CONTRACT|CROSSCUTTING",
+                 "phrase": "<the words you searched>",
+                 "repos_swept": ["<repo>"], "hits": 0}],
+  "identifiers": [{"identifier": "<the field/key/symbol>",
+                   "declared_files": 0, "wired_files": 0, "read_files": 0,
+                   "roots_grepped": ["<repo>:<module root>"], "capped_calls": 0}],
+  "traces":   ["<repo>/<each relativePath you passed to collateral_damage>"],
+  "counts":   {"seen": 0, "confirmed": 0, "ruled_out": 0, "candidates": 0},
+  "seen":     ["<repo>/<every path any call returned>"]
+}
+
+"answer" is GROUPED BY REPOSITORY and is what is scored: one entry per repository
+you name, "files" a flat array of repo-relative path strings in rank order. An
+object inside "files" voids the run. Paths carry no repo-name prefix — the
+entry's "repo" supplies it. Emit the repository entries in the order 5.3
+computed: read top to bottom, the entries ARE the ranking.
+"registers" holds all four with the words you searched, the repositories each was
+swept into, and the hits each returned — zero hits is a finding, not an omission.
+"identifiers" records the three-probe sweep: how many files each tier returned,
+which module roots you grepped, how many calls came back capped; a sweep missing
+a tier is visible here. "traces" is copied from the calls you issued and is
+checked against the transcript. "seen" is every path any call returned — a path
+left out of "seen" is a path this run can never be credited with.
+
+RUN CONDITIONS (the run is invalid if any fails)
+R1  One fresh session. Caching within this run is fine; inheriting an earlier
+    session's is not. Do not resume, reuse, or re-attempt a case.
+R2  STEP 0 must pass before any search. A missing index is a failed run to be
+    relaunched after indexing, not an empty answer.
+R3  The harness records the transcript, every call and the cost, and writes
+    ranked.json from your final message. You have no write tools — do not try to
+    create files. Your only job is the ranked answer.

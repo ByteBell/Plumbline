@@ -1,0 +1,71 @@
+{
+  "duration_api_ms": 71598,
+  "stop_reason": "end_turn",
+  "session_id": "cf1c9e34-61a6-4d3a-8c88-731cf2a3929d",
+  "total_cost_usd": 1.313875,
+  "usage": {
+    "input_tokens": 24,
+    "cache_creation_input_tokens": 84720,
+    "cache_read_input_tokens": 658710,
+    "output_tokens": 5488,
+    "output_tokens_details": { "thinking_tokens": 858 },
+    "server_tool_use": { "web_search_requests": 0, "web_fetch_requests": 0 },
+    "service_tier": "standard",
+    "cache_creation": { "ephemeral_1h_input_tokens": 84720, "ephemeral_5m_input_tokens": 0 },
+    "inference_geo": "not_available",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 1632,
+        "cache_read_input_tokens": 70186,
+        "cache_creation_input_tokens": 1533,
+        "cache_creation": { "ephemeral_5m_input_tokens": 0, "ephemeral_1h_input_tokens": 1533 },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-opus-5": {
+      "inputTokens": 24,
+      "outputTokens": 5488,
+      "cacheReadInputTokens": 658710,
+      "cacheCreationInputTokens": 84720,
+      "webSearchRequests": 0,
+      "costUSD": 1.313875,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "canonicalModel": "claude-opus-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": { "background": 0, "foreground": 0, "unset": 0 },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": { "parent": 0, "user": 0, "system": 0 },
+    "refused": { "depth_limit": 0, "concurrency_limit": 0, "budget": 0 },
+    "by_type": {}
+  },
+  "is_error": false,
+  "num_turns": 14,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Scored. Report:\n\n**Gold file:** `gold.json` (no `golden.json` in the case dir). I read `ranked.json` in full before opening it.\n\n**Answer shape:** flat single-repo array of 65 paths — matches the gold's flat `gold` list, no flattening needed. Scorer agreed: `case_family: single-repo`, `gold_schema: verified-no-split`.\n\n**Metrics** (from `score_arm.py`, verbatim into `result.json`):\n\n| metric | value |\n|---|---|\n| hits / gold_total | 19 / 31 |\n| recall@10 | 0.258 |\n| recall@20 | 0.387 |\n| recall@25 | 0.516 |\n| recall@50 / @75 (full list, 65 items) | 0.613 |\n| precision@5 | 0.600 |\n| MRR | 0.500 |\n\nThe scorer does not emit precision@10/@20, F1@20 or F1_full_list — those keys do not exist in `score_arm.py` (it computes `recall@{10,20,25,50,75}`, `precision@5`, `MRR`, plus the null core/propagation splits). Per the rule against substituting my own arithmetic, I left them out rather than hand-computing.\n\n**Found (19):** RegularBookingService.ts, sendVerifyEmailCode.handler.ts, handlePaymentSuccess.ts, apps/web .../useVerifyEmail.ts, handleConfirmation.ts, confirm.handler.ts, handleBookingRequested.ts, auth/lib/verifyEmail.ts, handleCancelBooking.ts, sendVerifyEmailCode.schema.ts, handleMarkNoShow.ts, EmailWorkflowService.ts, ManagedEventManualReassignmentService.ts, getEventTypesFromDB.ts, payment/getBooking.ts, getBookingToDelete.ts, BookingRepository.ts, VerifyEmailByCode.tsx, BaseScheduledEmail.tsx.\n\n**Missed (12):** `apps/web/modules/bookings/components/BookerWebWrapper.tsx`, `packages/emails/lib/types/email-types.ts`, `packages/emails/templates/attendee-verify-email.ts`, `packages/features/CalendarEventBuilder.ts`, `packages/features/bookings/lib/payment/handleNoShowFee.ts`, `packages/features/di/tokens.ts`, `packages/features/eventtypes/repositories/eventTypeRepository.ts`, `packages/platform/atoms/booker/BookerPlatformWrapper.tsx`, `packages/platform/atoms/hooks/useVerifyEmail.ts`, `packages/trpc/server/routers/loggedInViewer/connectAndJoin.handler.ts`, `packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts`, `packages/types/Calendar.d.ts`.\n\n**Surface verdict: NOT comparable.** Tool calls verified from `commands.log` (40 calls, and they agree with the run's own cost.json this time): stakeout 13, the_receipts 7, shakedown 5, manhunt 4, collateral_damage 4, case_file 2, roll_call/blueprint/rap_sheet 1 each, ToolSearch 2. No filesystem or shell tool was called, every plumbline tool used is inside the arm's `--allowedTools` list (rap_sheet included), and `stakeout` — the retriever's own search tool — was exercised heavily, so the surface itself is clean. The single disqualifier is cost: `cache_read=5,696,371` and `cache_creation=194,106`, i.e. the run was warm, so its $5.59 is not comparable with cold runs in the series. (ToolSearch is exempt from surface purity; it only loads MCP schemas.)\n\n**What the misses share:** they sit at the two ends the run never walked to — the type/wiring register above the handlers (`Calendar.d.ts`, `email-types.ts`, `di/tokens.ts`, `CalendarEventBuilder.ts`, `eventTypeRepository.ts`) and the caller register at the edges (`BookerWebWrapper.tsx`, `BookerPlatformWrapper.tsx`, `platform/atoms/hooks/useVerifyEmail.ts`, `connectAndJoin.handler.ts`, `addGuests.handler.ts`, `handleNoShowFee.ts`). Everything retrieved lives in the middle band: server-side booking/email handlers that literally mention the flag. The platform-atoms duplicates of surfaces that *were* found (the web `useVerifyEmail` hook hit, its atoms twin missed) and the declaration-only files that carry the flag's type rather than a read of it are the recurring shape of the misses.",
+  "ttft_ms": 1550,
+  "type": "result",
+  "duration_ms": 72556,
+  "uuid": "4fe2fd29-7390-4586-b291-a2e07de22d0c",
+  "ttft_stream_ms": 1088,
+  "time_to_request_ms": 20,
+  "queued_turn_count": 0
+}

@@ -1,0 +1,159 @@
+You are performing a cross-repository information-retrieval task over the
+React state-management ecosystem.
+
+CASE:       xrepo-v7-2-first-paint-contradicts-what-was-sent-hard
+ECOSYSTEM:  16 sibling repositories. They are separate products with separate
+            release trains; most of them do not import one another, and there is
+            no monorepo, workspace or shared package graph tying them together.
+CHECKOUTS:  /Users/sauravverma/programs/benchmarks/react-ecosystem/<repo>
+            Each repository is checked out at exactly the commit below and at no
+            other revision. The repositories at those commits are the whole world
+            for this task: do not use any other revision, and do not rely on
+            knowledge of these projects' later history.
+
+  repo             commit
+  redux            3aa561f9fc13f3287e6d83764f85fe0e82437c5f
+  redux-toolkit    b1c5130154c454ca8387f55da6122fcb507c560c
+  react-redux      ad5d1e0816d0cb1464b25cf2853f2a7d73433f5b
+  reselect         950112a328f71d97d18fd543159d6fdefa432b38
+  react            3a717e42438afac81020cdec297dadb5613a4304
+  jotai            5c4ca26b0db5571114be58393e17854a771f7790
+  zustand          beca84e600e4e250f6b244d22878e72948f331c7
+  db               7f0fa36ff6d48b0494ed5f6a1223fd18c317e41f
+  xyflow           360f5b13e2bc6899ea06b4be1a49b068d86926cf
+  query            46d7f02f1c7b9fcd3255082cc7103e8bfa3dab76
+  table            d08af367e11c539bb7e18c2472aa761149ef6db6
+  tldraw           5590d14d8edd4faab7dc1177b6e1adb28876fd23
+  redux-devtools   f4b4668c30ae08920c59a76cc4629c35c16ef0fa
+  router           3dee5b2e9453d01a3172c73426959007b290b3fc
+  primitives       58164e06ca67dff9a68dd375d858180cfdc8ec27
+  zod              912f0f51b0ced654d0069741e7160834dca742ee
+
+PROBLEM
+A behaviour-level description of a defect and the contract it belongs to. The
+identifiers used in the code are deliberately withheld, so searching for the
+words below will not find the answer:
+
+Something rendered away from the browser arrives already filled in, and for a single frame after it becomes interactive it is replaced by an empty or default version of itself before settling back to what it first showed. On a fast connection it reads as a flicker; on a slow one people report the real content 'arriving twice'. In at least one of these libraries the same situation instead produces a hard complaint in the console about the two renderings not agreeing, and a subtree that silently stops being interactive. The libraries here differ in what they hand back when asked for a value in a setting where there is no live source to read from, and in whether that answer is guaranteed to be the same one the first interactive render will compute. Which files decide what is handed back in that setting, and which own the requirement that the two renderings agree?
+
+TASK
+Identify every file, in every repository listed above, that would have to change
+to satisfy the described contract. The answer spans MULTIPLE repositories that do
+not import one another - do not stop at the first repository that matches, and do
+not assume the repository where the symptom appears is the only one affected.
+
+RULES
+- Use the plumbline MCP server and nothing else. Its tools - roll_call, blueprint,
+  stakeout, manhunt, dragnet, cross_repo_lookup, case_file, collateral_damage,
+  the_receipts, interrogation, kingpin, shakedown - are your whole surface: no
+  filesystem tools, no Bash, Read, Grep or Glob, no other MCP server, no network, no
+  WebSearch or WebFetch, no subagents. The graph already spans every repository in the
+  roster, so one call reaches all of them; you do not need to, and cannot, walk the
+  checkouts. Every path you name must have come back from a plumbline call. A run that
+  reaches the answer by another route is a void measurement, not a faster one.
+- Do not stop at the first plausible file, and do not stop at the first repository.
+  Work outward from the symptom to the contract: once you can state the rule the
+  defect breaks, find every other file in the roster that defines, enforces,
+  relies on, or violates that same rule.
+- Return repo-relative paths: no leading slash, no repository name prefix.
+  Example: packages/<package-name>/src/<SomeFile>.ts
+- Every path must exist in that repository AT THE PINNED COMMIT. Your index was
+  built from exactly those commits, so a path it returned is a path that exists;
+  a path you assembled by hand, completed from memory, or guessed from a directory
+  layout is not. Name only paths a tool call actually returned to you.
+- Name source files only. Ignore tests, docs, examples, fixtures, benchmarks,
+  build output, dependency directories and generated API reports.
+- Prefer the files that define, enforce, or violate the contract over files that
+  merely mention it.
+- Rank most likely first and cap the whole answer at 75 paths across all
+  repositories combined.
+
+PARALLEL LINES OF INQUIRY (MANDATORY - this replaces a single linear search)
+
+Run THREE lines of inquiry concurrently rather than one search to exhaustion. Each
+line is a different way of reaching files; they are not stages, and you do not
+finish one before starting the next. Interleave them.
+
+  L1 ANCHOR-FOLD    Locate the repository where the behaviour starts, then walk
+                    edges out of your own best file: collateral_damage on the file
+                    you currently rank highest, structural lenses (imports,
+                    dependencies, types, contracts). `dependencies` is the ONLY
+                    upstream lens - the types a file imports, the constants it
+                    reads - so include it whenever you narrow.
+  L2 BREADTH-LEDGER One search scoped to EACH roster repository's own knowledgeId,
+                    phrased in the CONTRACT's vocabulary rather than the symptom's.
+                    Sibling libraries solve the same problem in their own words.
+  L3 CONCEPT-BRIDGE cross_repo_lookup / dragnet / keyword-seeded collateral_damage,
+                    to cross repository boundaries where no import edge exists.
+                    These repos mostly do not import one another, so for many of
+                    them this is the ONLY route that can connect them at all.
+
+BUDGET AND CHECKPOINTS
+Give each line 4 tool calls. Then STOP and write a checkpoint, in plain text, before
+any further call:
+
+  CHECKPOINT <n>
+  L1  calls spent: <k>  new candidate files: <count>  KEEP | ABANDON
+  L2  calls spent: <k>  new candidate files: <count>  KEEP | ABANDON
+  L3  calls spent: <k>  new candidate files: <count>  KEEP | ABANDON
+
+A "new candidate file" is a SOURCE file you had not already seen AND would
+genuinely consider naming in your answer - not a raw result-row count, and never a
+test, doc, example, fixture or benchmark. Count honestly; a line that returned
+forty rows of documentation scored zero.
+
+  - A line that scores 0 new candidates at a checkpoint is ABANDONED. Do not return
+    to it, do not retry it with different wording. It has told you what it can.
+  - The remaining lines split the abandoned line's budget, weighted to whichever
+    scored highest.
+  - Re-checkpoint every 4 calls until you answer.
+  - If ALL THREE lines score 0 at the same checkpoint, stop searching and answer
+    with what you have. More calls will not help.
+
+Abandoning a line early is the point of this structure, not a failure of it. A line
+that cannot reach anything is costing you the calls that another line would convert.
+
+RANKING DISCIPLINE (this is where multi-line searches usually go wrong)
+Rank by STRENGTH OF EVIDENCE, not by how recently a file arrived:
+
+  1. files you OPENED and confirmed own or violate the contract
+  2. files a scoped search returned whose path and purpose fit the contract
+  3. files that appeared ONLY as a neighbour in a collateral_damage fold
+
+A file in band 3 must NEVER rank above a file in band 1 or 2. Reaching a file by
+walking an edge proves it is connected to something you care about; it does not
+prove it owns the contract. Do not append a file to your answer merely because a
+fold returned it, and do not pad the list toward the cap - if you have twenty files
+with real evidence, name twenty.
+
+RUN CONDITIONS (MANDATORY - this run is invalid if any of these is not met):
+- LAUNCH: one fresh session per run. Prompt caching WITHIN this run is fine -
+  cache this session creates and reads back is expected and costs nothing in
+  comparability. What is forbidden is inheriting cache from an EARLIER session:
+  do not resume or continue a prior session, do not reuse a session across cases
+  or arms, and do not re-attempt a case in a session that already attempted it.
+  A run that starts warm on someone else's context is not a measurement.
+- CHECKOUT: before searching, confirm your surface is actually live for THESE
+  repositories at THESE commits. Verify the revision of every repository you
+  intend to answer from before you trust anything you read out of it. If a
+  repository is missing, or sits at a different revision than the one pinned
+  above, STOP and say so plainly. Do not answer from parametric memory, from
+  another revision, or from a partially materialised tree, and do not return a
+  guessed list. A run against a missing or drifted checkout is a failed run to be
+  relaunched - it is not an empty answer.
+- COST: cost.json must record cache_read and cache_creation next to the USD
+  figure, and both must be attributable to THIS run alone. If the session was
+  resumed, reused, or had already attempted the case, say so plainly in your final
+  message so the run can be marked not-comparable instead of scored against clean runs.
+
+DELIVERABLES: the harness captures this run for you - it records the full transcript,
+every tool call, and the cost, and it writes ranked.json from your final message. You
+have no write tools; do not attempt to create files. Your only job is the ranked answer.
+result.json is NOT yours to produce and nothing you emit lands in it: after the run the
+scorer writes it from ranked.json against the held-out gold set, carrying recall,
+precision, F1, MRR and hits alongside ranked_detail, found, missed_gold and retriever.
+
+FINAL MESSAGE
+Output ONLY a JSON array, most likely first, with no prose and no markdown fence.
+One object per repository you are naming; omit repositories you are not naming:
+[{"repo": "<repo>", "files": ["<path>", "..."]}, ...]

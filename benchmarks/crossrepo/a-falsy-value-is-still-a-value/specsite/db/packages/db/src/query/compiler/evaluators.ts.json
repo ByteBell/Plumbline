@@ -1,0 +1,1889 @@
+{
+  "schema": 1,
+  "kind": "file",
+  "repoName": "db",
+  "commitHash": "7f0fa36ff6d48b0494ed5f6a1223fd18c317e41f",
+  "generatedAt": "2026-07-18T07:32:21.777Z",
+  "file": {
+    "relativePath": "packages/db/src/query/compiler/evaluators.ts",
+    "language": "typescript",
+    "sizeBytes": 18486,
+    "tokenCount": 4620,
+    "model": "poolside/laguna-xs-2.1",
+    "analysedAt": "2026-07-17T15:57:38.829Z",
+    "module": {
+      "purpose": "Compiles database query expressions into optimized evaluator functions for runtime evaluation with 3-valued logic (true, false, null/UNKNOWN) support matching PostgreSQL semantics.",
+      "summary": "This file provides expression compilation for a database query engine, transforming abstract syntax tree representations into highly optimized evaluator functions. It handles three-valued logic where null/undefined represents UNKNOWN, following PostgreSQL semantics for comparisons including NaN and invalid Dates. The compiler pre-processes expression trees to eliminate runtime branching, supporting references across namespaces, function calls (comparisons, boolean operators, string functions, math), and pattern matching with LIKE/ILIKE.",
+      "businessContext": "Enables efficient query evaluation in a database engine, critical for filtering rows in WHERE/HAVING clauses and computing SELECT projections. Incorrect 3-valued logic or comparison semantics would produce wrong query results, silently corrupting data analysis and applications depending on this database.",
+      "classes": [],
+      "functions": [
+        "isUnknown (~L14-16): Checks if a value is null or undefined representing UNKNOWN in 3-valued logic",
+        "valuesEqual (~L20-25): Compares values with PostgreSQL float semantics for NaN/invalid Dates",
+        "toDateValue (~L28-37): Converts various inputs to a valid Date object or null",
+        "evaluateStrftime (~L40-45): Formats Date objects using specified strftime patterns",
+        "toBooleanPredicate (~L50-62): Converts 3-valued logic result to boolean for WHERE/HAVING filters",
+        "compileExpression (~L74-80): Public entry point to compile expressions into evaluator functions",
+        "compileSingleRowExpression (~L85-89): Compiles expressions for single-row evaluation context",
+        "compileExpressionInternal (~L95-116): Unified compiler handling both evaluation modes",
+        "compileRef (~L122-177): Compiles reference expressions with property path navigation",
+        "compileSingleRowRef (~L183-196): Compiles references for single-row context",
+        "compileFunction (~L201-476): Compiles function expressions with operator-specific logic",
+        "isCaseWhenConditionTrue (~L482-501): Evaluates truthiness for CASE WHEN conditions handling various types",
+        "evaluateLike (~L507-527): Evaluates SQL LIKE/ILIKE pattern matching using regex conversion"
+      ],
+      "keywords": [
+        "3-valued logic",
+        "expression compilation",
+        "PostgreSQL semantics",
+        "query evaluation",
+        "LIKE pattern",
+        "type coercion",
+        "property navigation",
+        "benchmark optimization"
+      ],
+      "ontologyConcepts": [
+        "Expression evaluation",
+        "3-valued logic",
+        "Query compilation",
+        "Pattern matching",
+        "Type coercion",
+        "Null semantics",
+        "Predicate evaluation",
+        "Runtime optimization"
+      ],
+      "businessEntities": ["Expression", "Reference", "Function", "Row", "Value", "Pattern", "Condition", "Result"],
+      "systemCapabilities": [
+        "Compile expressions to optimized evaluators",
+        "Implement 3-valued logic for null handling",
+        "Evaluate comparison operators with PostgreSQL semantics",
+        "Process LIKE/ILIKE patterns",
+        "Navigate nested property paths",
+        "Handle CASE WHEN conditions"
+      ],
+      "configDependencies": [],
+      "importsInternal": [
+        {
+          "spec": "../../errors.js",
+          "symbols": ["EmptyReferencePathError", "UnknownExpressionTypeError", "UnknownFunctionError"],
+          "anchor": { "startLine": 1, "endLine": 3 },
+          "resolvedRelativePath": "packages/db/src/errors.ts",
+          "resolvedFileId": "packages/db/src/errors.ts",
+          "resolvedHint": null
+        },
+        {
+          "spec": "../../utils/comparison.js",
+          "symbols": ["areValuesEqual", "isUnorderable", "normalizeValue"],
+          "anchor": { "startLine": 5, "endLine": 7 },
+          "resolvedRelativePath": "packages/db/src/utils/comparison.ts",
+          "resolvedFileId": "packages/db/src/utils/comparison.ts",
+          "resolvedHint": null
+        },
+        {
+          "spec": "../ir.js",
+          "symbols": ["BasicExpression", "Func", "PropRef"],
+          "anchor": { "startLine": 8, "endLine": 9 },
+          "resolvedRelativePath": "packages/db/src/query/ir.ts",
+          "resolvedFileId": "packages/db/src/query/ir.ts",
+          "resolvedHint": null
+        },
+        {
+          "spec": "../../types.js",
+          "symbols": ["NamespacedRow"],
+          "anchor": { "startLine": 10, "endLine": 10 },
+          "resolvedRelativePath": "packages/db/src/types.ts",
+          "resolvedFileId": "packages/db/src/types.ts",
+          "resolvedHint": null
+        }
+      ],
+      "importsExternal": [],
+      "sideEffects": { "io": [], "network": [], "env": [], "fs": [], "process": [], "mutationOfArg": [] },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "toBooleanPredicate",
+          "shape": "(result: boolean | null) => boolean",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "CompiledExpression",
+          "shape": "(namespacedRow: NamespacedRow) => any",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "CompiledSingleRowExpression",
+          "shape": "(item: Record<string, unknown>) => any",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "compileExpression",
+          "shape": "(expr: BasicExpression, isSingleRow?: boolean) => CompiledExpression | CompiledSingleRowExpression",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "compileSingleRowExpression",
+          "shape": "(expr: BasicExpression) => CompiledSingleRowExpression",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "isCaseWhenConditionTrue",
+          "shape": "(value: any) => boolean",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "EmptyReferencePathError",
+          "shape": "Error class from '../../errors.js'",
+          "resolvedRelativePath": "packages/db/src/errors.ts",
+          "resolvedFileId": "packages/db/src/errors.ts"
+        },
+        {
+          "name": "UnknownExpressionTypeError",
+          "shape": "Error class from '../../errors.js'",
+          "resolvedRelativePath": "packages/db/src/errors.ts",
+          "resolvedFileId": "packages/db/src/errors.ts"
+        },
+        {
+          "name": "UnknownFunctionError",
+          "shape": "Error class from '../../errors.js'",
+          "resolvedRelativePath": "packages/db/src/errors.ts",
+          "resolvedFileId": "packages/db/src/errors.ts"
+        },
+        {
+          "name": "areValuesEqual",
+          "shape": "(a: any, b: any) => boolean from '../../utils/comparison.js'",
+          "resolvedRelativePath": "packages/db/src/utils/comparison.ts",
+          "resolvedFileId": "packages/db/src/utils/comparison.ts"
+        },
+        {
+          "name": "isUnorderable",
+          "shape": "(value: any) => boolean from '../../utils/comparison.js'",
+          "resolvedRelativePath": "packages/db/src/utils/comparison.ts",
+          "resolvedFileId": "packages/db/src/utils/comparison.ts"
+        },
+        {
+          "name": "normalizeValue",
+          "shape": "(value: any) => any from '../../utils/comparison.js'",
+          "resolvedRelativePath": "packages/db/src/utils/comparison.ts",
+          "resolvedFileId": "packages/db/src/utils/comparison.ts"
+        },
+        {
+          "name": "BasicExpression",
+          "shape": "Type from '../ir.js'",
+          "resolvedRelativePath": "packages/db/src/query/ir.ts",
+          "resolvedFileId": "packages/db/src/query/ir.ts"
+        },
+        {
+          "name": "Func",
+          "shape": "Type from '../ir.js'",
+          "resolvedRelativePath": "packages/db/src/query/ir.ts",
+          "resolvedFileId": "packages/db/src/query/ir.ts"
+        },
+        {
+          "name": "PropRef",
+          "shape": "Type from '../ir.js'",
+          "resolvedRelativePath": "packages/db/src/query/ir.ts",
+          "resolvedFileId": "packages/db/src/query/ir.ts"
+        },
+        {
+          "name": "NamespacedRow",
+          "shape": "Type from '../../types.js'",
+          "resolvedRelativePath": "packages/db/src/types.ts",
+          "resolvedFileId": "packages/db/src/types.ts"
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "imports",
+          "intent": "Import error types, comparison utilities, and type definitions",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 1, "endLine": 10 }
+        },
+        {
+          "name": "isUnknown_helper",
+          "intent": "Check if value is null or undefined representing UNKNOWN",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 14, "endLine": 16 }
+        },
+        {
+          "name": "valuesEqual_comparison",
+          "intent": "Compare values with PostgreSQL NaN/invalid Date semantics",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 20, "endLine": 25 }
+        },
+        {
+          "name": "toDateValue_conversion",
+          "intent": "Convert various inputs to valid Date or null",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 28, "endLine": 37 }
+        },
+        {
+          "name": "evaluateStrftime_formatting",
+          "intent": "Format Date using strftime patterns",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 40, "endLine": 45 }
+        },
+        {
+          "name": "toBooleanPredicate_conversion",
+          "intent": "Convert 3VL result to boolean for WHERE/HAVING",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 50, "endLine": 62 }
+        },
+        {
+          "name": "type_definitions",
+          "intent": "Define compiled expression function type signatures",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 64, "endLine": 72 }
+        },
+        {
+          "name": "compileExpression_public",
+          "intent": "Public entry point for expression compilation",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 74, "endLine": 80 }
+        },
+        {
+          "name": "compileSingleRowExpression_public",
+          "intent": "Compile expression for single-row context",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 85, "endLine": 89 }
+        },
+        {
+          "name": "compileExpressionInternal_dispatch",
+          "intent": "Dispatch to appropriate compiler based on expression type",
+          "structureKind": "branch",
+          "predicate": "switch (expr.type)",
+          "branchOutcomes": ["val", "ref", "func", "default"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 95, "endLine": 116 }
+        },
+        {
+          "name": "compileRef_namespace_routing",
+          "intent": "Route reference compilation based on namespace ($selected vs table alias)",
+          "structureKind": "branch",
+          "predicate": "namespace === `$selected`",
+          "branchOutcomes": ["$selected", "table_alias"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 141, "endLine": 177 }
+        },
+        {
+          "name": "compileRef_property_navigation",
+          "intent": "Navigate property paths with early termination on null",
+          "structureKind": "loop",
+          "predicate": "for (const prop of propertyPath)",
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": "if (value == null) { return value }",
+          "anchor": { "startLine": 161, "endLine": 166 }
+        },
+        {
+          "name": "compileFunction_comparison_ops",
+          "intent": "Handle comparison operators with 3VL and PostgreSQL semantics",
+          "structureKind": "branch",
+          "predicate": "switch (func.name) with cases eq, gt, gte, lt, lte",
+          "branchOutcomes": [
+            "eq",
+            "gt",
+            "gte",
+            "lt",
+            "lte",
+            "and",
+            "or",
+            "not",
+            "in",
+            "like",
+            "ilike",
+            "upper",
+            "lower",
+            "length",
+            "concat",
+            "coalesce",
+            "caseWhen",
+            "add",
+            "subtract",
+            "multiply",
+            "divide",
+            "date",
+            "datetime",
+            "strftime",
+            "isUndefined",
+            "isNull",
+            "default"
+          ],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 201, "endLine": 476 }
+        },
+        {
+          "name": "evaluateLike_pattern_matching",
+          "intent": "Convert SQL LIKE pattern to regex and test against value",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 507, "endLine": 527 }
+        }
+      ],
+      "representationFamily": "module",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "type_alias",
+          "name": "CompiledExpression",
+          "signature": "export type CompiledExpression = (namespacedRow: NamespacedRow) => any",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 64, "endLine": 66 }
+        },
+        {
+          "kind": "type_alias",
+          "name": "CompiledSingleRowExpression",
+          "signature": "export type CompiledSingleRowExpression = (item: Record<string, unknown>) => any",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 70, "endLine": 72 }
+        },
+        {
+          "kind": "function",
+          "name": "toBooleanPredicate",
+          "signature": "export function toBooleanPredicate(result: boolean | null): boolean",
+          "generics": null,
+          "decorators": [],
+          "returnType": "boolean",
+          "exported": true,
+          "anchor": { "startLine": 50, "endLine": 62 }
+        },
+        {
+          "kind": "function",
+          "name": "compileExpression",
+          "signature": "export function compileExpression(expr: BasicExpression, isSingleRow: boolean = false): CompiledExpression | CompiledSingleRowExpression",
+          "generics": null,
+          "decorators": [],
+          "returnType": "CompiledExpression | CompiledSingleRowExpression",
+          "exported": true,
+          "anchor": { "startLine": 74, "endLine": 80 }
+        },
+        {
+          "kind": "function",
+          "name": "compileSingleRowExpression",
+          "signature": "export function compileSingleRowExpression(expr: BasicExpression): CompiledSingleRowExpression",
+          "generics": null,
+          "decorators": [],
+          "returnType": "CompiledSingleRowExpression",
+          "exported": true,
+          "anchor": { "startLine": 85, "endLine": 89 }
+        },
+        {
+          "kind": "function",
+          "name": "isCaseWhenConditionTrue",
+          "signature": "export function isCaseWhenConditionTrue(value: any): boolean",
+          "generics": null,
+          "decorators": [],
+          "returnType": "boolean",
+          "exported": true,
+          "anchor": { "startLine": 482, "endLine": 501 }
+        }
+      ],
+      "typeShapes": [],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "NaN or invalid Date values",
+          "handled": true,
+          "behavior": "Treated as equal to each other, unequal to all other values per PostgreSQL semantics",
+          "anchor": { "startLine": 20, "endLine": 21 }
+        },
+        {
+          "inputShape": "null or undefined operands in comparisons",
+          "handled": true,
+          "behavior": "Returns null (UNKNOWN) following 3-valued logic",
+          "anchor": { "startLine": 303, "endLine": 305 }
+        },
+        {
+          "inputShape": "empty property path in reference",
+          "handled": true,
+          "behavior": "Throws EmptyReferencePathError",
+          "anchor": { "startLine": 131, "endLine": 133 }
+        },
+        {
+          "inputShape": "non-array in 'in' operator",
+          "handled": true,
+          "behavior": "Returns false",
+          "anchor": { "startLine": 383, "endLine": 385 }
+        },
+        {
+          "inputShape": "non-string in LIKE/ILIKE",
+          "handled": true,
+          "behavior": "Returns false",
+          "anchor": { "startLine": 400, "endLine": 402 }
+        },
+        {
+          "inputShape": "invalid strftime format",
+          "handled": true,
+          "behavior": "Returns null",
+          "anchor": { "startLine": 438, "endLine": 440 }
+        },
+        {
+          "inputShape": "division by zero",
+          "handled": true,
+          "behavior": "Returns null",
+          "anchor": { "startLine": 456, "endLine": 458 }
+        },
+        {
+          "inputShape": "caseWhen with no matching condition and no default",
+          "handled": true,
+          "behavior": "Returns null",
+          "anchor": { "startLine": 466, "endLine": 470 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": "==",
+          "left": "value",
+          "right": "null",
+          "inclusive": true,
+          "intent": "Check for UNKNOWN (null) in 3-valued logic comparisons",
+          "anchor": { "startLine": 303, "endLine": 303 }
+        },
+        {
+          "operator": "==",
+          "left": "value",
+          "right": "undefined",
+          "inclusive": true,
+          "intent": "Check for UNKNOWN (undefined) in 3-valued logic comparisons",
+          "anchor": { "startLine": 303, "endLine": 303 }
+        },
+        {
+          "operator": "==",
+          "left": "result",
+          "right": "false",
+          "inclusive": true,
+          "intent": "AND operator short-circuits on false",
+          "anchor": { "startLine": 341, "endLine": 341 }
+        },
+        {
+          "operator": "==",
+          "left": "result",
+          "right": "true",
+          "inclusive": true,
+          "intent": "OR operator short-circuits on true",
+          "anchor": { "startLine": 363, "endLine": 363 }
+        },
+        {
+          "operator": "==",
+          "left": "value",
+          "right": "0",
+          "inclusive": true,
+          "intent": "isCaseWhenConditionTrue returns false for numeric zero",
+          "anchor": { "startLine": 492, "endLine": 492 }
+        },
+        {
+          "operator": "!=",
+          "left": "value",
+          "right": "0",
+          "inclusive": false,
+          "intent": "isCaseWhenConditionTrue returns true for non-zero numbers",
+          "anchor": { "startLine": 492, "endLine": 492 }
+        },
+        {
+          "operator": "==",
+          "left": "compiledArgs.length",
+          "right": "2",
+          "inclusive": true,
+          "intent": "caseWhen requires at least two arguments (one condition-value pair)",
+          "anchor": { "startLine": 451, "endLine": 452 }
+        },
+        {
+          "operator": "==",
+          "left": "divisor",
+          "right": "0",
+          "inclusive": false,
+          "intent": "Division by zero check returns null instead of Infinity",
+          "anchor": { "startLine": 456, "endLine": 457 }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": "EmptyReferencePathError",
+          "caught": null,
+          "action": "Throw when reference path has no namespace",
+          "fallback": null,
+          "anchor": { "startLine": 131, "endLine": 133 }
+        },
+        {
+          "thrown": "UnknownExpressionTypeError",
+          "caught": null,
+          "action": "Throw when expression type is not recognized",
+          "fallback": null,
+          "anchor": { "startLine": 113, "endLine": 115 }
+        },
+        {
+          "thrown": "UnknownFunctionError",
+          "caught": null,
+          "action": "Throw when function name is not recognized",
+          "fallback": null,
+          "anchor": { "startLine": 478, "endLine": 479 }
+        },
+        {
+          "thrown": "Error",
+          "caught": null,
+          "action": "Throw when caseWhen has insufficient arguments",
+          "fallback": null,
+          "anchor": { "startLine": 450, "endLine": 450 }
+        }
+      ],
+      "invariants": [
+        {
+          "kind": "postcondition",
+          "description": "valuesEqual requires non-null operands - callers must handle UNKNOWN first",
+          "anchor": { "startLine": 18, "endLine": 19 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "toBooleanPredicate returns true only when result is explicitly true, treating null as false per SQL semantics",
+          "anchor": { "startLine": 60, "endLine": 61 }
+        },
+        {
+          "kind": "non-null",
+          "description": "isCaseWhenConditionTrue returns false for null, false, 0, 0n, and NaN",
+          "anchor": { "startLine": 484, "endLine": 486 }
+        },
+        {
+          "kind": "invariant",
+          "description": "3-valued logic: any comparison with null/undefined returns UNKNOWN (null)",
+          "anchor": { "startLine": 303, "endLine": 305 }
+        },
+        {
+          "kind": "invariant",
+          "description": "NaN and invalid Dates are equal to each other but unequal to all other values",
+          "anchor": { "startLine": 20, "endLine": 21 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "Caller handles UNKNOWN (null) before passing to valuesEqual",
+          "anchor": { "startLine": 18, "endLine": 19 }
+        },
+        {
+          "kind": "caller",
+          "description": "Caller provides valid BasicExpression AST with valid type field",
+          "anchor": { "startLine": 95, "endLine": 96 }
+        }
+      ],
+      "ambiguities": [],
+      "concurrencyModel": {
+        "kind": "sync",
+        "reentrant": true,
+        "ordering": "deterministic",
+        "notes": "Functions are pure and reentrant - no shared mutable state, same inputs always produce same outputs"
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [],
+      "language": "typescript",
+      "moduleLayout": [
+        "imports",
+        "isUnknown function",
+        "valuesEqual function",
+        "toDateValue function",
+        "evaluateStrftime function",
+        "toBooleanPredicate function",
+        "CompiledExpression type",
+        "CompiledSingleRowExpression type",
+        "compileExpression function",
+        "compileSingleRowExpression function",
+        "compileExpressionInternal function",
+        "compileRef function",
+        "compileSingleRowRef function",
+        "compileFunction function",
+        "isCaseWhenConditionTrue function",
+        "evaluateLike function"
+      ],
+      "moduleLevelCode": "ES module with imports and exported declarations",
+      "exports": [
+        { "name": "toBooleanPredicate", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "CompiledExpression", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "CompiledSingleRowExpression", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "compileExpression", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "compileSingleRowExpression", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "isCaseWhenConditionTrue", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "EmptyReferencePathError", "module": "../../errors.js", "alias": null, "kind": "internal" },
+        { "symbol": "UnknownExpressionTypeError", "module": "../../errors.js", "alias": null, "kind": "internal" },
+        { "symbol": "UnknownFunctionError", "module": "../../errors.js", "alias": null, "kind": "internal" },
+        { "symbol": "areValuesEqual", "module": "../../utils/comparison.js", "alias": null, "kind": "internal" },
+        { "symbol": "isUnorderable", "module": "../../utils/comparison.js", "alias": null, "kind": "internal" },
+        { "symbol": "normalizeValue", "module": "../../utils/comparison.js", "alias": null, "kind": "internal" },
+        { "symbol": "BasicExpression", "module": "../ir.js", "alias": null, "kind": "internal" },
+        { "symbol": "Func", "module": "../ir.js", "alias": null, "kind": "internal" },
+        { "symbol": "PropRef", "module": "../ir.js", "alias": null, "kind": "internal" },
+        { "symbol": "NamespacedRow", "module": "../../types.js", "alias": null, "kind": "internal" }
+      ],
+      "fileConstants": [],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/db/src/query/compiler/evaluators.ts__isUnknown#function:isUnknown",
+        "unitKind": "function",
+        "name": "isUnknown",
+        "qualifiedName": "isUnknown",
+        "parentUnitId": null,
+        "startLine": 14,
+        "endLine": 16,
+        "isBehavioral": true,
+        "source": "/**\n * Helper function to check if a value is null or undefined (represents UNKNOWN in 3-valued logic)\n */",
+        "detail": {
+          "unitId": "packages/db/src/query/compiler/evaluators.ts__isUnknown#function:isUnknown",
+          "fileId": "packages/db/src/query/compiler/evaluators.ts__isUnknown",
+          "unitKind": "function",
+          "name": "isUnknown",
+          "qualifiedName": "isUnknown",
+          "parentUnitId": null,
+          "startLine": 14,
+          "endLine": 16,
+          "signature": null,
+          "parameters": [
+            { "name": "value", "type": null, "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [
+            "When value is null, returns true",
+            "When value is undefined, returns true",
+            "When value is any other type, returns false"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Checks if a value is null or undefined, representing UNKNOWN in 3-valued logic.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "14d70d222f2ceba0c98161015f455e6e26eebb8b9635f715c02264730dafa628"
+        }
+      },
+      {
+        "unitId": "packages/db/src/query/compiler/evaluators.ts__valuesEqual#function:valuesEqual",
+        "unitKind": "function",
+        "name": "valuesEqual",
+        "qualifiedName": "valuesEqual",
+        "parentUnitId": null,
+        "startLine": 20,
+        "endLine": 25,
+        "isBehavioral": true,
+        "source": "\n/**\n * Equality that follows PostgreSQL float semantics for `NaN`/invalid Dates:\n * such values are equal to one another and unequal to anything else. For all\n * other values it defers to {@link areValuesEqual}. Operands must not be\n * null/undefined (callers handle UNKNOWN first).",
+        "detail": {
+          "unitId": "packages/db/src/query/compiler/evaluators.ts__valuesEqual#function:valuesEqual",
+          "fileId": "packages/db/src/query/compiler/evaluators.ts__valuesEqual",
+          "unitKind": "function",
+          "name": "valuesEqual",
+          "qualifiedName": "valuesEqual",
+          "parentUnitId": null,
+          "startLine": 20,
+          "endLine": 25,
+          "signature": null,
+          "parameters": [
+            { "name": "a", "type": null, "default": null, "optional": false, "variadic": false, "order": 0 },
+            { "name": "b", "type": null, "default": null, "optional": false, "variadic": false, "order": 1 }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["Operands must not be null or undefined."],
+          "postconditions": [
+            "Returns true if the two values are equal according to PostgreSQL float semantics for NaN and invalid dates, false otherwise."
+          ],
+          "invariants": [],
+          "edgeCases": [
+            "When both operands are NaN, returns true.",
+            "When both operands are invalid Date objects, returns true.",
+            "When one operand is NaN and the other is not, returns false.",
+            "For other values, defers to areValuesEqual."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "undefined behavior or throws if operands are null/undefined",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "areValuesEqual", "source": null, "kind": "internal" }],
+          "symbolReferences": ["areValuesEqual"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "This function checks equality between two values with special handling for NaN and invalid dates, where such values are equal only to each other. It delegates to areValuesEqual for other values and requires non-null inputs.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "calling valuesEqual(NaN, NaN)",
+              "then": "returns true",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "calling valuesEqual(invalidDate1, invalidDate2)",
+              "then": "returns true",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "calling valuesEqual(NaN, 42)",
+              "then": "returns false",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "6dbcaa2f4fd93ac3462e1e3db3088486c56558f74029e8e125771535b4886a43"
+        }
+      },
+      {
+        "unitId": "packages/db/src/query/compiler/evaluators.ts__toDateValue#function:toDateValue",
+        "unitKind": "function",
+        "name": "toDateValue",
+        "qualifiedName": "toDateValue",
+        "parentUnitId": null,
+        "startLine": 28,
+        "endLine": 37,
+        "isBehavioral": true,
+        "source": "  if (isUnorderable(a) || isUnorderable(b)) {\n    return isUnorderable(a) && isUnorderable(b)\n  }\n  return areValuesEqual(a, b)\n}\n\nfunction toDateValue(value: any): Date | null {\n  if (value instanceof Date) {\n    return Number.isNaN(value.getTime()) ? null : value\n  }",
+        "detail": {
+          "unitId": "packages/db/src/query/compiler/evaluators.ts__toDateValue#function:toDateValue",
+          "fileId": "packages/db/src/query/compiler/evaluators.ts__toDateValue",
+          "unitKind": "function",
+          "name": "toDateValue",
+          "qualifiedName": "toDateValue",
+          "parentUnitId": null,
+          "startLine": 28,
+          "endLine": 37,
+          "signature": "function toDateValue(value: any): Date | null",
+          "parameters": [
+            { "name": "value", "type": "any", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "Date | null",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "pure",
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [
+            "Returns a Date if the input is a Date instance with a valid time (not NaN)",
+            "Returns null if the input is not a Date instance or is a Date with invalid time"
+          ],
+          "invariants": [],
+          "edgeCases": [
+            "If input is a Date instance with NaN time, returns null",
+            "If input is not a Date instance (including null, undefined, primitives, objects), returns null"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": "returns null", "returnsOnError": "null" },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "Date.prototype.getTime", "source": "built-in", "kind": "external" },
+            { "name": "Number.isNaN", "source": "built-in", "kind": "external" }
+          ],
+          "symbolReferences": ["Date", "Number"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Converts a value to a Date object or null. If the value is a Date and not invalid (NaN time), it is returned; otherwise returns null.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Calling toDateValue with the valid Date",
+              "then": "Returns the same Date object",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Calling toDateValue with the invalid Date",
+              "then": "Returns null",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Calling toDateValue with the non-Date value",
+              "then": "Returns null",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "997bec81bca808bdc020deb2968ffb896c43073cf15d7aed03d2a79fea4034df"
+        }
+      },
+      {
+        "unitId": "packages/db/src/query/compiler/evaluators.ts__evaluateStrftime#function:evaluateStrftime",
+        "unitKind": "function",
+        "name": "evaluateStrftime",
+        "qualifiedName": "evaluateStrftime",
+        "parentUnitId": null,
+        "startLine": 40,
+        "endLine": 45,
+        "isBehavioral": true,
+        "source": "    const parsed = new Date(value)\n    return Number.isNaN(parsed.getTime()) ? null : parsed\n  }\n\n  return null\n}",
+        "detail": {
+          "unitId": "packages/db/src/query/compiler/evaluators.ts__evaluateStrftime#function:evaluateStrftime",
+          "fileId": "packages/db/src/query/compiler/evaluators.ts__evaluateStrftime",
+          "unitKind": "function",
+          "name": "evaluateStrftime",
+          "qualifiedName": "evaluateStrftime",
+          "parentUnitId": null,
+          "startLine": 40,
+          "endLine": 45,
+          "signature": "evaluateStrftime(value: any): Date | null",
+          "parameters": [
+            { "name": "value", "type": "any", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "Date | null",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": ["Returns a Date object if the input value is a valid date, otherwise returns null."],
+          "invariants": [],
+          "edgeCases": [
+            "If the input value is not parseable as a date, returns null.",
+            "If the input is null or undefined, returns null since the Date constructor returns an Invalid Date."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": "returns null", "returnsOnError": "null" },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "Date", "source": "global", "kind": "external" }],
+          "symbolReferences": ["Date", "Number"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Evaluates a value as a date and returns a Date object if valid, or null if the date is invalid.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "evaluateStrftime is called with the string",
+              "then": "returns a Date object representing that date",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "evaluateStrftime is called with the string",
+              "then": "returns null",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "evaluateStrftime is called with null",
+              "then": "returns null",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "091e20b3fc2735b02d27eb788c183ee25b1b0be5ff949e41cfbe528262a3841e"
+        }
+      },
+      {
+        "unitId": "packages/db/src/query/compiler/evaluators.ts__toBooleanPredicate#function:toBooleanPredicate",
+        "unitKind": "function",
+        "name": "toBooleanPredicate",
+        "qualifiedName": "toBooleanPredicate",
+        "parentUnitId": null,
+        "startLine": 50,
+        "endLine": 62,
+        "isBehavioral": true,
+        "source": "  }\n\n  if (format === `%Y-%m-%dT%H:%M:%fZ`) {\n    return date.toISOString()\n  }\n\n  return date.toISOString()\n}\n\n/**\n * Converts a 3-valued logic result to a boolean for use in WHERE/HAVING filters.\n * In SQL, UNKNOWN (null) values in WHERE clauses exclude rows, matching false behavior.\n *",
+        "detail": {
+          "unitId": "packages/db/src/query/compiler/evaluators.ts__toBooleanPredicate#function:toBooleanPredicate",
+          "fileId": "packages/db/src/query/compiler/evaluators.ts__toBooleanPredicate",
+          "unitKind": "function",
+          "name": "toBooleanPredicate",
+          "qualifiedName": "toBooleanPredicate",
+          "parentUnitId": null,
+          "startLine": 50,
+          "endLine": 62,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "pure",
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["Input must be a value interpretable as true, false, or null in three-valued logic."],
+          "postconditions": ["Returns true if input is true, false if input is false or null."],
+          "invariants": [],
+          "edgeCases": [
+            "If input is null, returns false.",
+            "If input is true, returns true.",
+            "If input is false, returns false."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Converts a three-valued logic result (true, false, null) to a boolean, treating null as false for SQL WHERE/HAVING clause filtering.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "toBooleanPredicate is called",
+              "then": "returns false",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "toBooleanPredicate is called",
+              "then": "returns true",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "toBooleanPredicate is called",
+              "then": "returns false",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "6fd5f8a268e06622c43de8cc835f7f00ebf84b695681901ff268f229a73051dd"
+        }
+      },
+      {
+        "unitId": "packages/db/src/query/compiler/evaluators.ts__compileExpression#function:compileExpression",
+        "unitKind": "function",
+        "name": "compileExpression",
+        "qualifiedName": "compileExpression",
+        "parentUnitId": null,
+        "startLine": 74,
+        "endLine": 80,
+        "isBehavioral": true,
+        "source": "\n/**\n * Compiled expression evaluator function type\n */\nexport type CompiledExpression = (namespacedRow: NamespacedRow) => any\n\n/**",
+        "detail": {
+          "unitId": "packages/db/src/query/compiler/evaluators.ts__compileExpression#function:compileExpression",
+          "fileId": "packages/db/src/query/compiler/evaluators.ts__compileExpression",
+          "unitKind": "function",
+          "name": "compileExpression",
+          "qualifiedName": "compileExpression",
+          "parentUnitId": null,
+          "startLine": 74,
+          "endLine": 80,
+          "signature": null,
+          "parameters": [],
+          "returnType": "CompiledExpression",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["The input expression AST node is valid and has been fully parsed."],
+          "postconditions": [
+            "Returns a function that takes a NamespacedRow and returns the evaluated result of the expression.",
+            "The returned function is pure and stateless."
+          ],
+          "invariants": [],
+          "edgeCases": [
+            "If the expression is a literal, the returned function simply returns the literal value.",
+            "If the expression references a column, the returned function retrieves the value from the provided row."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "compileExpressionInternal", "source": null, "kind": "internal" }],
+          "symbolReferences": ["NamespacedRow", "CompiledExpression", "Expression"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Compiles a given expression AST node into a function that evaluates the expression against a namespaced row.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "99873aee9ecce24d19ca1654a11f70c99dcb7bc0e37d604b13c9b7eb5a9d21b8"
+        }
+      },
+      {
+        "unitId": "packages/db/src/query/compiler/evaluators.ts__compileSingleRowExpression#function:compileSingleRowExpression",
+        "unitKind": "function",
+        "name": "compileSingleRowExpression",
+        "qualifiedName": "compileSingleRowExpression",
+        "parentUnitId": null,
+        "startLine": 85,
+        "endLine": 89,
+        "isBehavioral": true,
+        "source": "/**\n * Compiles an expression into an optimized evaluator function.\n * This eliminates branching during evaluation by pre-compiling the expression structure.\n */\nexport function compileExpression(",
+        "detail": {
+          "unitId": "packages/db/src/query/compiler/evaluators.ts__compileSingleRowExpression#function:compileSingleRowExpression",
+          "fileId": "packages/db/src/query/compiler/evaluators.ts__compileSingleRowExpression",
+          "unitKind": "function",
+          "name": "compileSingleRowExpression",
+          "qualifiedName": "compileSingleRowExpression",
+          "parentUnitId": null,
+          "startLine": 85,
+          "endLine": 89,
+          "signature": "export function compileSingleRowExpression(",
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": ["export"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Compiles a single-row expression into an optimized evaluator function, pre-compiling the expression structure to eliminate branching during evaluation.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "cb0b2fb7840f0aee57230f06bd7e99b51ee784bc6de5edf0c9018e9d4f281d59"
+        }
+      },
+      {
+        "unitId": "packages/db/src/query/compiler/evaluators.ts__compileExpressionInternal#function:compileExpressionInternal",
+        "unitKind": "function",
+        "name": "compileExpressionInternal",
+        "qualifiedName": "compileExpressionInternal",
+        "parentUnitId": null,
+        "startLine": 95,
+        "endLine": 116,
+        "isBehavioral": true,
+        "source": "}\n\n/**\n * Compiles a single-row expression into an optimized evaluator function.\n */\nexport function compileSingleRowExpression(\n  expr: BasicExpression,\n): CompiledSingleRowExpression {\n  const compiledFn = compileExpressionInternal(expr, true)\n  return compiledFn as CompiledSingleRowExpression\n}\n\n/**\n * Internal unified expression compiler that handles both namespaced and single-row evaluation\n */\nfunction compileExpressionInternal(\n  expr: BasicExpression,\n  isSingleRow: boolean,\n): (data: any) => any {\n  switch (expr.type) {\n    case `val`: {\n      // For constant values, return a function that just returns the value",
+        "detail": {
+          "unitId": "packages/db/src/query/compiler/evaluators.ts__compileExpressionInternal#function:compileExpressionInternal",
+          "fileId": "packages/db/src/query/compiler/evaluators.ts__compileExpressionInternal",
+          "unitKind": "function",
+          "name": "compileExpressionInternal",
+          "qualifiedName": "compileExpressionInternal",
+          "parentUnitId": null,
+          "startLine": 95,
+          "endLine": 116,
+          "signature": "function compileExpressionInternal(expr: BasicExpression, isSingleRow: boolean): (data: any) => any",
+          "parameters": [
+            {
+              "name": "expr",
+              "type": "BasicExpression",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "isSingleRow",
+              "type": "boolean",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "(data: any) => any",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "pure",
+          "visibility": "private",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["expr must be a valid BasicExpression object with a type property"],
+          "postconditions": [
+            "Returns a function that, when called with a data context object, returns the evaluated result of the expression"
+          ],
+          "invariants": ["The returned evaluator function is pure with respect to its input data context"],
+          "edgeCases": [
+            "Expression type 'val' (constant) returns an evaluator that ignores the data context and returns the constant value",
+            "Unknown expression types may cause runtime errors or fallback behavior"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["Error"],
+            "reverts": [],
+            "onInvalidInput": "Throws an error for unrecognized expression types or malformed AST",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "compileFunction", "source": "./evaluators.ts", "kind": "internal" },
+            { "name": "compileRef", "source": "./evaluators.ts", "kind": "internal" },
+            { "name": "isCaseWhenConditionTrue", "source": "./evaluators.ts", "kind": "internal" },
+            { "name": "evaluateLike", "source": "./evaluators.ts", "kind": "internal" }
+          ],
+          "symbolReferences": ["BasicExpression", "CompiledSingleRowExpression"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Compiles a given expression AST node into an optimized evaluator function that can be invoked with a data context, handling both namespaced and single-row evaluation contexts based on a boolean flag.",
+          "specLiterals": [
+            { "kind": "enum-value", "value": "val", "role": "Expression type discriminator for constant value nodes" }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "compileExpressionInternal is called and the returned evaluator is invoked with any data context",
+              "then": "The evaluator returns the constant value 42",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "compileExpressionInternal is called",
+              "then": "The function throws an error or returns a function that throws when invoked",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "b339aa4675f8b56d46ee758055d6c254ee8430f90139c078dbac51ae0bb0da86"
+        }
+      },
+      {
+        "unitId": "packages/db/src/query/compiler/evaluators.ts__compileRef#function:compileRef",
+        "unitKind": "function",
+        "name": "compileRef",
+        "qualifiedName": "compileRef",
+        "parentUnitId": null,
+        "startLine": 122,
+        "endLine": 177,
+        "isBehavioral": true,
+        "source": "      // For references, compile based on evaluation mode\n      return isSingleRow ? compileSingleRowRef(expr) : compileRef(expr)\n    }\n\n    case `func`: {\n      // For functions, use the unified compiler\n      return compileFunction(expr, isSingleRow)\n    }\n\n    default:\n      throw new UnknownExpressionTypeError((expr as any).type)\n  }\n}\n\n/**\n * Compiles a reference expression into an optimized evaluator\n */\nfunction compileRef(ref: PropRef): CompiledExpression {\n  const [namespace, ...propertyPath] = ref.path\n\n  if (!namespace) {\n    throw new EmptyReferencePathError()\n  }\n\n  // Handle $selected namespace - references SELECT result fields\n  if (namespace === `$selected`) {\n    // Access $selected directly\n    if (propertyPath.length === 0) {\n      // Just $selected - return entire $selected object\n      return (namespacedRow) => (namespacedRow as any).$selected\n    } else if (propertyPath.length === 1) {\n      // Single property access - most common case\n      const prop = propertyPath[0]!\n      return (namespacedRow) => {\n        const selectResults = (namespacedRow as any).$selected\n        return selectResults?.[prop]\n      }\n    } else {\n      // Multiple property navigation (nested SELECT fields)\n      return (namespacedRow) => {\n        const selectResults = (namespacedRow as any).$selected\n        if (selectResults === undefined) {\n          return undefined\n        }\n\n        let value: any = selectResults\n        for (const prop of propertyPath) {\n          if (value == null) {\n            return value\n          }\n          value = value[prop]\n        }\n        return value\n      }\n    }\n  }",
+        "detail": {
+          "unitId": "packages/db/src/query/compiler/evaluators.ts__compileRef#function:compileRef",
+          "fileId": "packages/db/src/query/compiler/evaluators.ts__compileRef",
+          "unitKind": "function",
+          "name": "compileRef",
+          "qualifiedName": "compileRef",
+          "parentUnitId": null,
+          "startLine": 122,
+          "endLine": 177,
+          "signature": "function compileRef(ref: PropRef): CompiledExpression",
+          "parameters": [
+            { "name": "ref", "type": "PropRef", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "CompiledExpression",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["ref.path must be a non-empty array to avoid EmptyReferencePathError"],
+          "postconditions": [
+            "Returns a function that takes a namespacedRow and returns the value extracted based on the reference path"
+          ],
+          "invariants": [],
+          "edgeCases": [
+            "Empty ref.path throws EmptyReferencePathError",
+            "$selected namespace with no property path returns the entire $selected object",
+            "$selected namespace with one property returns the property value",
+            "$selected namespace with multiple properties navigates the path, returning undefined if any intermediate is null"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["EmptyReferencePathError"],
+            "reverts": [],
+            "onInvalidInput": "throws EmptyReferencePathError",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["PropRef", "CompiledExpression"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Compiles a reference expression (PropRef) into an optimized evaluator function that extracts values from namespaced rows, specifically handling the $selected namespace with different property path lengths.",
+          "specLiterals": [
+            {
+              "kind": "string",
+              "value": "$selected",
+              "role": "namespace identifier for accessing SELECT result fields"
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "compileRef(ref) is called",
+              "then": "returns a function that extracts the $selected property from a namespaced row",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "compileRef(ref) is called",
+              "then": "returns a function that extracts the nested field value from $selected",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "compileRef(ref) is called",
+              "then": "throws EmptyReferencePathError",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "22022ed33a827bfa944f9ffaefe63dcb15934c932bcb8ebd4047848cc828cab6"
+        }
+      },
+      {
+        "unitId": "packages/db/src/query/compiler/evaluators.ts__compileSingleRowRef#function:compileSingleRowRef",
+        "unitKind": "function",
+        "name": "compileSingleRowRef",
+        "qualifiedName": "compileSingleRowRef",
+        "parentUnitId": null,
+        "startLine": 183,
+        "endLine": 196,
+        "isBehavioral": true,
+        "source": "  if (propertyPath.length === 0) {\n    // Simple table reference\n    return (namespacedRow) => namespacedRow[tableAlias]\n  } else if (propertyPath.length === 1) {\n    // Single property access - most common case\n    const prop = propertyPath[0]!\n    return (namespacedRow) => {\n      const tableData = namespacedRow[tableAlias]\n      return tableData?.[prop]\n    }\n  } else {\n    // Multiple property navigation\n    return (namespacedRow) => {\n      const tableData = namespacedRow[tableAlias]",
+        "detail": {
+          "unitId": "packages/db/src/query/compiler/evaluators.ts__compileSingleRowRef#function:compileSingleRowRef",
+          "fileId": "packages/db/src/query/compiler/evaluators.ts__compileSingleRowRef",
+          "unitKind": "function",
+          "name": "compileSingleRowRef",
+          "qualifiedName": "compileSingleRowRef",
+          "parentUnitId": null,
+          "startLine": 183,
+          "endLine": 196,
+          "signature": "function compileSingleRowRef(tableAlias: string, propertyPath: string[]): (namespacedRow: Record<string, any>) => any",
+          "parameters": [
+            {
+              "name": "tableAlias",
+              "type": "string",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "propertyPath",
+              "type": "string[]",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "(namespacedRow: Record<string, any>) => any",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "pure",
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "tableAlias must be a non-empty string",
+            "propertyPath must be an array of strings representing the property navigation path"
+          ],
+          "postconditions": [
+            "Returns a function that, given a namespacedRow object, returns the value at the specified path or undefined if the path or table alias is invalid"
+          ],
+          "invariants": [],
+          "edgeCases": [
+            "When propertyPath is empty, the accessor returns the entire row object for the given table alias",
+            "When propertyPath has one element, the accessor accesses a single property on the row",
+            "When propertyPath has multiple elements, the accessor navigates through nested properties",
+            "If namespacedRow does not contain the table alias, the accessor returns undefined"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": "Returns undefined if the path is not valid or if the table alias is missing in the namespacedRow"
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Compiles a row reference based on a table alias and property path into an accessor function that retrieves the corresponding value from a namespaced row object.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "compileSingleRowRef('t', [])(namespacedRow)",
+              "then": "returns { a: 1, b: { c: 2 } }",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "compileSingleRowRef('t', ['a'])(namespacedRow)",
+              "then": "returns 1",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "compileSingleRowRef('t', ['b', 'c'])(namespacedRow)",
+              "then": "returns 2",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "ad8096b1dd065a741b4c8aef08eb1e4e5a171e0ec5181f32cee2102295b24d3d"
+        }
+      },
+      {
+        "unitId": "packages/db/src/query/compiler/evaluators.ts__compileFunction#function:compileFunction",
+        "unitKind": "function",
+        "name": "compileFunction",
+        "qualifiedName": "compileFunction",
+        "parentUnitId": null,
+        "startLine": 201,
+        "endLine": 476,
+        "isBehavioral": true,
+        "source": "      let value: any = tableData\n      for (const prop of propertyPath) {\n        if (value == null) {\n          return value\n        }\n        value = value[prop]\n      }\n      return value\n    }\n  }\n}\n\n/**\n * Compiles a reference expression for single-row evaluation\n */\nfunction compileSingleRowRef(ref: PropRef): CompiledSingleRowExpression {\n  const propertyPath = ref.path\n\n  // This function works for all path lengths including empty path\n  return (item) => {\n    let value: any = item\n    for (const prop of propertyPath) {\n      if (value == null) {\n        return value\n      }\n      value = value[prop]\n    }\n    return value\n  }\n}\n\n/**\n * Compiles a function expression for both namespaced and single-row evaluation\n */\nfunction compileFunction(func: Func, isSingleRow: boolean): (data: any) => any {\n  // Pre-compile all arguments using the appropriate compiler\n  const compiledArgs = func.args.map((arg) =>\n    compileExpressionInternal(arg, isSingleRow),\n  )\n\n  switch (func.name) {\n    // Comparison operators\n    case `eq`: {\n      const argA = compiledArgs[0]!\n      const argB = compiledArgs[1]!\n      return (data) => {\n        const a = normalizeValue(argA(data))\n        const b = normalizeValue(argB(data))\n        // In 3-valued logic, any comparison with null/undefined returns UNKNOWN\n        if (isUnknown(a) || isUnknown(b)) {\n          return null\n        }\n        // NaN/invalid Dates are equal to one another (PostgreSQL semantics);\n        // otherwise use areValuesEqual for proper Uint8Array/Buffer comparison\n        return valuesEqual(a, b)\n      }\n    }\n    case `gt`: {\n      const argA = compiledArgs[0]!\n      const argB = compiledArgs[1]!\n      return (data) => {\n        const a = argA(data)\n        const b = argB(data)\n        // In 3-valued logic, any comparison with null/undefined returns UNKNOWN\n        if (isUnknown(a) || isUnknown(b)) {\n          return null\n        }\n        // NaN/invalid Dates sort greater than every other value, and are equal\n        // to one another (PostgreSQL semantics)\n        if (isUnorderable(a) || isUnorderable(b)) {\n          return isUnorderable(a) && !isUnorderable(b)\n        }\n        return a > b\n      }\n    }\n    case `gte`: {\n      const argA = compiledArgs[0]!\n      const argB = compiledArgs[1]!\n      return (data) => {\n        const a = argA(data)\n        const b = argB(data)\n        // In 3-valued logic, any comparison with null/undefined returns UNKNOWN\n        if (isUnknown(a) || isUnknown(b)) {\n          return null\n        }\n        if (isUnorderable(a) || isUnorderable(b)) {\n          return isUnorderable(a)\n        }\n        return a >= b\n      }\n    }\n    case `lt`: {\n      const argA = compiledArgs[0]!\n      const argB = compiledArgs[1]!\n      return (data) => {\n        const a = argA(data)\n        const b = argB(data)\n        // In 3-valued logic, any comparison with null/undefined returns UNKNOWN\n        if (isUnknown(a) || isUnknown(b)) {\n          return null\n        }\n        if (isUnorderable(a) || isUnorderable(b)) {\n          return isUnorderable(b) && !isUnorderable(a)\n        }\n        return a < b\n      }\n    }\n    case `lte`: {\n      const argA = compiledArgs[0]!\n      const argB = compiledArgs[1]!\n      return (data) => {\n        const a = argA(data)\n        const b = argB(data)\n        // In 3-valued logic, any comparison with null/undefined returns UNKNOWN\n        if (isUnknown(a) || isUnknown(b)) {\n          return null\n        }\n        if (isUnorderable(a) || isUnorderable(b)) {\n          return isUnorderable(b)\n        }\n        return a <= b\n      }\n    }\n\n    // Boolean operators\n    case `and`:\n      return (data) => {\n        // 3-valued logic for AND:\n        // - false AND anything = false (short-circuit)\n        // - null AND false = false\n        // - null AND anything (except false) = null\n        // - anything (except false) AND null = null\n        // - true AND true = true\n        let hasUnknown = false\n        for (const compiledArg of compiledArgs) {\n          const result = compiledArg(data)\n          if (result === false) {\n            return false\n          }\n          if (isUnknown(result)) {\n            hasUnknown = true\n          }\n        }\n        // If we got here, no operand was false\n        // If any operand was null, return null (UNKNOWN)\n        if (hasUnknown) {\n          return null\n        }\n\n        return true\n      }\n    case `or`:\n      return (data) => {\n        // 3-valued logic for OR:\n        // - true OR anything = true (short-circuit)\n        // - null OR anything (except true) = null\n        // - false OR false = false\n        let hasUnknown = false\n        for (const compiledArg of compiledArgs) {\n          const result = compiledArg(data)\n          if (result === true) {\n            return true\n          }\n          if (isUnknown(result)) {\n            hasUnknown = true\n          }\n        }\n        // If we got here, no operand was true\n        // If any operand was null, return null (UNKNOWN)\n        if (hasUnknown) {\n          return null\n        }\n\n        return false\n      }\n    case `not`: {\n      const arg = compiledArgs[0]!\n      return (data) => {\n        // 3-valued logic for NOT:\n        // - NOT null = null\n        // - NOT true = false\n        // - NOT false = true\n        const result = arg(data)\n        if (isUnknown(result)) {\n          return null\n        }\n        return !result\n      }\n    }\n\n    // Array operators\n    case `in`: {\n      const valueEvaluator = compiledArgs[0]!\n      const arrayEvaluator = compiledArgs[1]!\n      return (data) => {\n        const value = normalizeValue(valueEvaluator(data))\n        const array = arrayEvaluator(data)\n        // In 3-valued logic, if the value is null/undefined, return UNKNOWN\n        if (isUnknown(value)) {\n          return null\n        }\n        if (!Array.isArray(array)) {\n          return false\n        }\n        return array.some((item) => valuesEqual(normalizeValue(item), value))\n      }\n    }\n\n    // String operators\n    case `like`: {\n      const valueEvaluator = compiledArgs[0]!\n      const patternEvaluator = compiledArgs[1]!\n      return (data) => {\n        const value = valueEvaluator(data)\n        const pattern = patternEvaluator(data)\n        // In 3-valued logic, if value or pattern is null/undefined, return UNKNOWN\n        if (isUnknown(value) || isUnknown(pattern)) {\n          return null\n        }\n        return evaluateLike(value, pattern, false)\n      }\n    }\n    case `ilike`: {\n      const valueEvaluator = compiledArgs[0]!\n      const patternEvaluator = compiledArgs[1]!\n      return (data) => {\n        const value = valueEvaluator(data)\n        const pattern = patternEvaluator(data)\n        // In 3-valued logic, if value or pattern is null/undefined, return UNKNOWN\n        if (isUnknown(value) || isUnknown(pattern)) {\n          return null\n        }\n        return evaluateLike(value, pattern, true)\n      }\n    }\n\n    // String functions\n    case `upper`: {\n      const arg = compiledArgs[0]!\n      return (data) => {\n        const value = arg(data)\n        return typeof value === `string` ? value.toUpperCase() : value\n      }\n    }\n    case `lower`: {\n      const arg = compiledArgs[0]!\n      return (data) => {\n        const value = arg(data)\n        return typeof value === `string` ? value.toLowerCase() : value\n      }\n    }\n    case `length`: {\n      const arg = compiledArgs[0]!\n      return (data) => {\n        const value = arg(data)\n        if (typeof value === `string`) {\n          return value.length\n        }\n        if (Array.isArray(value)) {\n          return value.length\n        }\n        return 0\n      }\n    }\n    case `concat`:\n      return (data) => {\n        return compiledArgs\n          .map((evaluator) => {\n            const arg = evaluator(data)\n            try {\n              return String(arg ?? ``)\n            } catch {\n              try {\n                return JSON.stringify(arg) || ``\n              } catch {\n                return `[object]`",
+        "detail": {
+          "unitId": "packages/db/src/query/compiler/evaluators.ts__compileFunction#function:compileFunction",
+          "fileId": "packages/db/src/query/compiler/evaluators.ts__compileFunction",
+          "unitKind": "function",
+          "name": "compileFunction",
+          "qualifiedName": "compileFunction",
+          "parentUnitId": null,
+          "startLine": 201,
+          "endLine": 476,
+          "signature": "function compileFunction(func: Func, isSingleRow: boolean): (data: any) => any",
+          "parameters": [
+            { "name": "func", "type": "Func", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "isSingleRow",
+              "type": "boolean",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "(data: any) => any",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The `func` parameter must be a valid function expression with a recognized name.",
+            "Arguments to the function expression must themselves be compilable expressions."
+          ],
+          "postconditions": [
+            "Returns a function that, when called with data context, returns the evaluated result of the function expression.",
+            "The returned function implements 3-valued logic (true, false, null) for comparisons and boolean operations.",
+            "The returned function handles null/unknown values by propagating them appropriately."
+          ],
+          "invariants": [
+            "The returned function always handles null/unknown inputs according to 3-valued logic rules.",
+            "Comparison operators treat NaN and invalid Dates as unorderable and follow PostgreSQL semantics."
+          ],
+          "edgeCases": [
+            "If `func.name` is not recognized, the function falls through the switch statement and returns undefined.",
+            "Arguments to the compiled function are recursively compiled using `compileExpressionInternal`.",
+            "The `and` operator short-circuits on false and propagates null (unknown) when no false is found.",
+            "The `or` operator short-circuits on true and propagates null (unknown) when no true is found.",
+            "The `in` operator handles non-array values by returning false.",
+            "The `like` and `ilike` operators return null when either operand is null/unknown.",
+            "String functions (`upper`, `lower`, `length`, `concat`) handle non-string inputs by returning the input unchanged or a default value.",
+            "The `length` function returns 0 for non-string and non-array values."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Returns undefined for unrecognized function names.",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "compileExpressionInternal", "source": "local", "kind": "internal" },
+            { "name": "normalizeValue", "source": "local", "kind": "internal" },
+            { "name": "isUnknown", "source": "local", "kind": "internal" },
+            { "name": "valuesEqual", "source": "local", "kind": "internal" },
+            { "name": "isUnorderable", "source": "local", "kind": "internal" },
+            { "name": "evaluateLike", "source": "local", "kind": "internal" }
+          ],
+          "symbolReferences": ["Func", "PropRef", "CompiledSingleRowExpression"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Compiles a function expression into an evaluator function that applies PostgreSQL-like 3-valued logic semantics, handling null/unknown values and special ordering rules for unorderable types like NaN and invalid Dates.",
+          "specLiterals": [
+            {
+              "kind": "enum-value",
+              "value": "eq",
+              "role": "Function name for equality comparison with 3-valued logic"
+            },
+            {
+              "kind": "enum-value",
+              "value": "gt",
+              "role": "Function name for greater-than comparison with unorderable value handling"
+            },
+            { "kind": "enum-value", "value": "gte", "role": "Function name for greater-than-or-equal comparison" },
+            { "kind": "enum-value", "value": "lt", "role": "Function name for less-than comparison" },
+            { "kind": "enum-value", "value": "lte", "role": "Function name for less-than-or-equal comparison" },
+            { "kind": "enum-value", "value": "and", "role": "Function name for boolean AND with 3-valued logic" },
+            { "kind": "enum-value", "value": "or", "role": "Function name for boolean OR with 3-valued logic" },
+            { "kind": "enum-value", "value": "not", "role": "Function name for boolean NOT with 3-valued logic" },
+            { "kind": "enum-value", "value": "in", "role": "Function name for array membership test" },
+            { "kind": "enum-value", "value": "like", "role": "Function name for case-sensitive pattern matching" },
+            { "kind": "enum-value", "value": "ilike", "role": "Function name for case-insensitive pattern matching" },
+            { "kind": "enum-value", "value": "upper", "role": "Function name for converting string to uppercase" },
+            { "kind": "enum-value", "value": "lower", "role": "Function name for converting string to lowercase" },
+            { "kind": "enum-value", "value": "length", "role": "Function name for string or array length" },
+            { "kind": "enum-value", "value": "concat", "role": "Function name for string concatenation" }
+          ],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "42e037997fa78634bdee9d89c852fed40718d6e6c5b3e2c5f85375c5f86ec9a6"
+        }
+      },
+      {
+        "unitId": "packages/db/src/query/compiler/evaluators.ts__isCaseWhenConditionTrue#function:isCaseWhenConditionTrue",
+        "unitKind": "function",
+        "name": "isCaseWhenConditionTrue",
+        "qualifiedName": "isCaseWhenConditionTrue",
+        "parentUnitId": null,
+        "startLine": 482,
+        "endLine": 501,
+        "isBehavioral": true,
+        "source": "    case `coalesce`:\n      return (data) => {\n        for (const evaluator of compiledArgs) {\n          const value = evaluator(data)\n          if (value !== null && value !== undefined) {\n            return value\n          }\n        }\n        return null\n      }\n    case `caseWhen`: {\n      const hasDefaultValue = compiledArgs.length % 2 === 1\n      const pairCount = Math.floor(compiledArgs.length / 2)\n\n      if (compiledArgs.length < 2) {\n        throw new Error(`caseWhen() requires at least two arguments`)\n      }\n\n      return (data) => {\n        for (let i = 0; i < pairCount; i++) {",
+        "detail": {
+          "unitId": "packages/db/src/query/compiler/evaluators.ts__isCaseWhenConditionTrue#function:isCaseWhenConditionTrue",
+          "fileId": "packages/db/src/query/compiler/evaluators.ts__isCaseWhenConditionTrue",
+          "unitKind": "function",
+          "name": "isCaseWhenConditionTrue",
+          "qualifiedName": "isCaseWhenConditionTrue",
+          "parentUnitId": null,
+          "startLine": 482,
+          "endLine": 501,
+          "signature": "function isCaseWhenConditionTrue(value: unknown): boolean",
+          "parameters": [
+            { "name": "value", "type": "unknown", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "boolean",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "pure",
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [
+            "null/undefined input returns false (null is not a true condition in SQL CASE WHEN semantics)",
+            "falsy values (0, false, empty string) return false"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Evaluates whether a CASE WHEN condition value is considered true, used during CASE WHEN expression compilation to determine which branch to execute.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "bf76845bd3452756043b043f24fc5b07708a1caa1ebf43a40b96c83f4000d21c"
+        }
+      },
+      {
+        "unitId": "packages/db/src/query/compiler/evaluators.ts__evaluateLike#function:evaluateLike",
+        "unitKind": "function",
+        "name": "evaluateLike",
+        "qualifiedName": "evaluateLike",
+        "parentUnitId": null,
+        "startLine": 507,
+        "endLine": 527,
+        "isBehavioral": true,
+        "source": "        }\n\n        if (hasDefaultValue) {\n          return compiledArgs[compiledArgs.length - 1]!(data)\n        }\n\n        return null\n      }\n    }\n\n    // Math functions\n    case `add`: {\n      const argA = compiledArgs[0]!\n      const argB = compiledArgs[1]!\n      return (data) => {\n        const a = argA(data)\n        const b = argB(data)\n        return (a ?? 0) + (b ?? 0)\n      }\n    }\n    case `subtract`: {",
+        "detail": {
+          "unitId": "packages/db/src/query/compiler/evaluators.ts__evaluateLike#function:evaluateLike",
+          "fileId": "packages/db/src/query/compiler/evaluators.ts__evaluateLike",
+          "unitKind": "function",
+          "name": "evaluateLike",
+          "qualifiedName": "evaluateLike",
+          "parentUnitId": null,
+          "startLine": 507,
+          "endLine": 527,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["Value and pattern must be strings or coercible to strings."],
+          "postconditions": ["Returns a boolean indicating whether the value matches the pattern."],
+          "invariants": [],
+          "edgeCases": [
+            "Handles null values by returning false or null.",
+            "Empty pattern matches empty string.",
+            "Special characters in pattern are treated literally except for % and _."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Returns null or false",
+            "returnsOnError": "null"
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Evaluates whether a given value matches a LIKE pattern, supporting SQL-like pattern matching with % and _ wildcards.",
+          "specLiterals": [
+            {
+              "kind": "enum-value",
+              "value": "%",
+              "role": "Wildcard representing zero or more characters in LIKE pattern"
+            },
+            {
+              "kind": "enum-value",
+              "value": "_",
+              "role": "Wildcard representing exactly one character in LIKE pattern"
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "71952df8a61a22ac2a80e8e5c8d9c388fe6620bfbf250e6bbd650aaf66eb2090"
+        }
+      }
+    ]
+  },
+  "out": [
+    "packages/db/src/types.ts",
+    "packages/db/src/query/ir.ts",
+    "packages/db/src/utils/comparison.ts",
+    "packages/db/src/errors.ts"
+  ],
+  "in": [
+    "packages/db/src/query/compiler/group-by.ts",
+    "packages/db/src/indexes/base-index.ts",
+    "packages/db/src/query/compiler/joins.ts",
+    "packages/db/src/query/compiler/order-by.ts",
+    "packages/db/src/query/compiler/select.ts",
+    "packages/db/src/query/index.ts",
+    "packages/db/src/collection/change-events.ts",
+    "packages/db/src/collection/subscription.ts",
+    "packages/db/tests/query/compiler/evaluators.test.ts",
+    "packages/db/tests/query/builder/functions.test.ts"
+  ],
+  "externals": [],
+  "impact": {
+    "seeds": 13,
+    "callers": 12,
+    "impactedFiles": [
+      "packages/db/tests/query/compiler/evaluators.test.ts",
+      "packages/db/src/query/compiler/order-by.ts",
+      "packages/db/src/query/compiler/select.ts",
+      "packages/db/src/query/compiler/group-by.ts"
+    ]
+  }
+}

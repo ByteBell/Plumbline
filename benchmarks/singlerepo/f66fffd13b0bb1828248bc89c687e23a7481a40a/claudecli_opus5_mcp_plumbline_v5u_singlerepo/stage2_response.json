@@ -1,0 +1,71 @@
+{
+  "duration_api_ms": 64402,
+  "stop_reason": "end_turn",
+  "session_id": "c025bf2a-8bfe-48cd-b826-04973b6bf913",
+  "total_cost_usd": 0.8888050000000001,
+  "usage": {
+    "input_tokens": 14,
+    "cache_creation_input_tokens": 61317,
+    "cache_read_input_tokens": 313280,
+    "output_tokens": 4757,
+    "output_tokens_details": { "thinking_tokens": 1051 },
+    "server_tool_use": { "web_search_requests": 0, "web_fetch_requests": 0 },
+    "service_tier": "standard",
+    "cache_creation": { "ephemeral_1h_input_tokens": 61317, "ephemeral_5m_input_tokens": 0 },
+    "inference_geo": "not_available",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 1161,
+        "cache_read_input_tokens": 58953,
+        "cache_creation_input_tokens": 2364,
+        "cache_creation": { "ephemeral_5m_input_tokens": 0, "ephemeral_1h_input_tokens": 2364 },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-opus-5": {
+      "inputTokens": 14,
+      "outputTokens": 4757,
+      "cacheReadInputTokens": 313280,
+      "cacheCreationInputTokens": 61317,
+      "webSearchRequests": 0,
+      "costUSD": 0.8888050000000001,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "canonicalModel": "claude-opus-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": { "background": 0, "foreground": 0, "unset": 0 },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": { "parent": 0, "user": 0, "system": 0 },
+    "refused": { "depth_limit": 0, "concurrency_limit": 0, "budget": 0 },
+    "by_type": {}
+  },
+  "is_error": false,
+  "num_turns": 7,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "Both files written.\n\n**Gold file / order of reading.** I used `gold.json` (no `golden.json` in the case dir), and I read `ranked.json` in full before opening it.\n\n**Shape.** The answer is a flat array of 40 paths — single-repo form, the same form `gold.json` uses. No flattening was needed.\n\n**Metrics** (from `score_arm.py`, verbatim; hits 4 / gold_total 8):\n\n| metric | value |\n|---|---|\n| recall@10 | 0.25 |\n| recall@20 | 0.25 |\n| recall@25 | 0.25 |\n| recall@50 | 0.50 (degenerate — list is 40 long) |\n| recall@75 | 0.50 (degenerate) |\n| precision@5 | 0.40 |\n| MRR | 1.00 |\n\n`score_arm.py` does not emit precision@10, precision@20, F1@20 or F1_full_list — the only precision it computes is `precision@5` (score_arm.py:210). I did not hand-compute the missing ones.\n\n**found** (rank): `packages/features/ee/workflows/lib/service/EmailWorkflowService.ts` (1), `packages/features/bookings/lib/service/RegularBookingService.ts` (2), `packages/features/ee/workflows/lib/types.ts` (33), `packages/features/tasker/tasks/sendWorkflowEmails.ts` (34).\n\n**missed_gold**: `apps/api/v2/src/ee/bookings/2024-04-15/controllers/bookings.controller.ts`, `apps/api/v2/src/ee/bookings/2024-08-13/services/input.service.ts`, `packages/features/ee/workflows/api/scheduleEmailReminders.ts`, `packages/prisma/zod-utils.ts`.\n\n**Surface verdict: NOT comparable.** One reason: prompt caching was active — `cache_read=1,535,089`, `cache_creation=162,529`, so the $2.78 is a warm-cache figure and not comparable to cold runs. The tool surface itself is clean: 23 calls, all plumbline MCP plus 2 ToolSearch (schema loading, exempt); no filesystem or shell tool; `stakeout`, the retriever's own search tool, fired 6 times. My tally from `commands.log` matches the scorer's exactly. Note the scorer's own surface block reports `not_comparable: []` — it does not apply the cache rule; I preserved it under `surface.scorer_reported` and set the top-level verdict from the cache evidence.\n\n**What the misses share.** All four sit outside the `packages/features/**` workflow-and-booking layer the run worked in, and each belongs to a boundary register rather than a service register: two are v2 API edge files (`bookings.controller.ts`, `input.service.ts`), one is the HTTP cron entrypoint for the same workflow email path whose service layer the run did rank first (`scheduleEmailReminders.ts`), and one is the shared schema module (`packages/prisma/zod-utils.ts`). The run's four hits are all the service/type/task interior of the email-workflow path; what it did not reach is that path's inbound edge — request controllers, input coercion, the API route handler — and the schema definition those edges validate against. Everything retrieved past rank 2 stayed inside the same feature interior, extending laterally (reminder scheduling, branding, booking handlers, page props) rather than upward to the callers or downward to the shared schema.",
+  "ttft_ms": 1593,
+  "type": "result",
+  "duration_ms": 65298,
+  "uuid": "eabe3587-0b04-4b1e-af33-fb65e872c237",
+  "ttft_stream_ms": 1271,
+  "time_to_request_ms": 22,
+  "queued_turn_count": 0
+}

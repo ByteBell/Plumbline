@@ -1,0 +1,1389 @@
+{
+  "schema": 2,
+  "kind": "file",
+  "repoName": "tldraw",
+  "file": {
+    "relativePath": "packages/tlschema/src/records/TLPresence.ts",
+    "language": "typescript",
+    "sizeBytes": 6935,
+    "tokenCount": 1734,
+    "model": "us.openai.gpt-5.6-luna",
+    "analysedAt": "2026-08-24T12:15:54.386Z",
+    "module": {
+      "purpose": "Defines the collaborative presence record schema, runtime validation, migration history, and record-type factory for tldraw multiplayer sessions.",
+      "summary": "This module models ephemeral per-user collaboration state, including identity, cursor, camera, selection, brush, scribbles, chat, metadata, and page context. It exposes a runtime validator, ordered schema migrations for backward and forward compatibility, and a presence-scoped record type with defaults for nullable and collection fields. Migration steps mutate legacy records in place and provide downgrade normalization for fields introduced as nullable.",
+      "businessContext": "Supports real-time collaboration by representing what users are doing in a shared tldraw document. Failures can prevent presence data from validating, migrating, or displaying correctly for collaborators.",
+      "classes": [],
+      "functions": [
+        "up (~L161-164): Adds default scribble delay during legacy record migration",
+        "up (~L167-170): Removes obsolete instance identifier during migration",
+        "up (~L172-175): Initializes chat message for older presence records",
+        "up (~L177-180): Initializes metadata object for older presence records",
+        "up (~L182-185): Preserves records through a no-op migration step",
+        "up (~L187-190): Preserves nullable fields during forward migration",
+        "down (~L191-205): Restores non-null defaults for legacy presence records",
+        "() (~L237-249): Supplies default values for new presence records"
+      ],
+      "keywords": [
+        "tldraw presence",
+        "collaborative session",
+        "record migration",
+        "runtime validator",
+        "cursor state",
+        "camera state",
+        "scribbles",
+        "presence scope",
+        "schema compatibility",
+        "selected shapes"
+      ],
+      "ontologyConcepts": [
+        "collaborative presence",
+        "runtime validation",
+        "schema migration",
+        "backward compatibility",
+        "ephemeral state",
+        "record identity",
+        "default initialization"
+      ],
+      "businessEntities": ["User", "Cursor", "Camera", "Shape", "Page", "Scribble", "Chat message", "Presence record"],
+      "systemCapabilities": [
+        "Validate presence records",
+        "Migrate presence schemas",
+        "Downgrade nullable presence fields",
+        "Create presence-scoped records",
+        "Track collaborator activity",
+        "Initialize presence defaults"
+      ],
+      "configDependencies": [],
+      "importsInternal": [
+        {
+          "spec": "../misc/geometry-types",
+          "symbols": ["BoxModel", "boxModelValidator"],
+          "anchor": { "startLine": 9, "endLine": 9 },
+          "resolvedRelativePath": "packages/tlschema/src/misc/geometry-types.ts",
+          "resolvedFileId": "packages/tlschema/src/misc/geometry-types.ts",
+          "resolvedHint": "packages/tlschema/src/misc/geometry-types.ts"
+        },
+        {
+          "spec": "../misc/id-validator",
+          "symbols": ["idValidator"],
+          "anchor": { "startLine": 10, "endLine": 10 },
+          "resolvedRelativePath": "packages/tlschema/src/misc/id-validator.ts",
+          "resolvedFileId": "packages/tlschema/src/misc/id-validator.ts",
+          "resolvedHint": "packages/tlschema/src/misc/id-validator.ts"
+        },
+        {
+          "spec": "../misc/TLCursor",
+          "symbols": ["cursorTypeValidator", "TLCursor"],
+          "anchor": { "startLine": 11, "endLine": 11 },
+          "resolvedRelativePath": "packages/tlschema/src/misc/TLCursor.ts",
+          "resolvedFileId": "packages/tlschema/src/misc/TLCursor.ts",
+          "resolvedHint": "packages/tlschema/src/misc/TLCursor.ts"
+        },
+        {
+          "spec": "../misc/TLScribble",
+          "symbols": ["scribbleValidator", "TLScribble"],
+          "anchor": { "startLine": 12, "endLine": 12 },
+          "resolvedRelativePath": "packages/tlschema/src/misc/TLScribble.ts",
+          "resolvedFileId": "packages/tlschema/src/misc/TLScribble.ts",
+          "resolvedHint": "packages/tlschema/src/misc/TLScribble.ts"
+        },
+        {
+          "spec": "./TLPage",
+          "symbols": ["TLPageId"],
+          "anchor": { "startLine": 13, "endLine": 13 },
+          "resolvedRelativePath": "packages/tlschema/src/records/TLPage.ts",
+          "resolvedFileId": "packages/tlschema/src/records/TLPage.ts",
+          "resolvedHint": "packages/tlschema/src/records/TLPage.ts"
+        },
+        {
+          "spec": "./TLShape",
+          "symbols": ["TLShapeId"],
+          "anchor": { "startLine": 14, "endLine": 14 },
+          "resolvedRelativePath": "packages/tlschema/src/records/TLShape.ts",
+          "resolvedFileId": "packages/tlschema/src/records/TLShape.ts",
+          "resolvedHint": "packages/tlschema/src/records/TLShape.ts"
+        },
+        {
+          "spec": "./TLUser",
+          "symbols": ["TLUserId", "userIdValidator"],
+          "anchor": { "startLine": 15, "endLine": 15 },
+          "resolvedRelativePath": "packages/tlschema/src/records/TLUser.ts",
+          "resolvedFileId": "packages/tlschema/src/records/TLUser.ts",
+          "resolvedHint": "packages/tlschema/src/records/TLUser.ts"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "@tldraw/store",
+          "symbols": [
+            "BaseRecord",
+            "createMigrationIds",
+            "createRecordMigrationSequence",
+            "createRecordType",
+            "RecordId"
+          ],
+          "package": "@tldraw/store",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 6 }
+        },
+        {
+          "spec": "@tldraw/utils",
+          "symbols": ["JsonObject"],
+          "package": "@tldraw/utils",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 7, "endLine": 7 }
+        },
+        {
+          "spec": "@tldraw/validate",
+          "symbols": ["T"],
+          "package": "@tldraw/validate",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 8, "endLine": 8 }
+        }
+      ],
+      "sideEffects": {
+        "io": [],
+        "network": [],
+        "env": [],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": [
+          "Migration callbacks mutate legacy presence records in place.",
+          "The downgrade migration deletes obsolete instanceId and fills missing legacy fields."
+        ]
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "TLInstancePresence",
+          "shape": "interface TLInstancePresence extends BaseRecord<'instance_presence', TLInstancePresenceID>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "TLInstancePresenceID",
+          "shape": "type TLInstancePresenceID = RecordId<TLInstancePresence>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "instancePresenceValidator",
+          "shape": "const instancePresenceValidator: T.Validator<TLInstancePresence> = T.model('instance_presence', T.object({...}))",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "instancePresenceVersions",
+          "shape": "const instancePresenceVersions = createMigrationIds('com.tldraw.instance_presence', { AddScribbleDelay: 1, RemoveInstanceId: 2, AddChatMessage: 3, AddMeta: 4, RenameSelectedShapeIds: 5, NullableCameraCursor: 6 } as const)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "instancePresenceMigrations",
+          "shape": "const instancePresenceMigrations = createRecordMigrationSequence({ sequenceId: 'com.tldraw.instance_presence', recordType: 'instance_presence', sequence: [...] })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "InstancePresenceRecordType",
+          "shape": "const InstancePresenceRecordType = createRecordType<TLInstancePresence>('instance_presence', { validator: instancePresenceValidator, scope: 'presence' }).withDefaultProperties(() => ({...}))",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "BaseRecord",
+          "shape": "BaseRecord<'instance_presence', TLInstancePresenceID>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "RecordId",
+          "shape": "RecordId<TLInstancePresence>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "BoxModel",
+          "shape": "BoxModel | null",
+          "resolvedRelativePath": "packages/tlschema/src/misc/geometry-types.ts",
+          "resolvedFileId": "packages/tlschema/src/misc/geometry-types.ts"
+        },
+        {
+          "name": "TLScribble",
+          "shape": "TLScribble[]",
+          "resolvedRelativePath": "packages/tlschema/src/misc/TLScribble.ts",
+          "resolvedFileId": "packages/tlschema/src/misc/TLScribble.ts"
+        },
+        {
+          "name": "TLCursor",
+          "shape": "TLCursor['type']",
+          "resolvedRelativePath": "packages/tlschema/src/misc/TLCursor.ts",
+          "resolvedFileId": "packages/tlschema/src/misc/TLCursor.ts"
+        },
+        {
+          "name": "TLPageId",
+          "shape": "TLPageId",
+          "resolvedRelativePath": "packages/tlschema/src/records/TLPage.ts",
+          "resolvedFileId": "packages/tlschema/src/records/TLPage.ts"
+        },
+        {
+          "name": "TLShapeId",
+          "shape": "TLShapeId[]",
+          "resolvedRelativePath": "packages/tlschema/src/records/TLShape.ts",
+          "resolvedFileId": "packages/tlschema/src/records/TLShape.ts"
+        },
+        {
+          "name": "TLUserId",
+          "shape": "TLUserId",
+          "resolvedRelativePath": "packages/tlschema/src/records/TLUser.ts",
+          "resolvedFileId": "packages/tlschema/src/records/TLUser.ts"
+        },
+        { "name": "JsonObject", "shape": "JsonObject", "resolvedRelativePath": null, "resolvedFileId": null },
+        {
+          "name": "instance_presence",
+          "shape": "T.model('instance_presence', T.object({...}))",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "presence-scope record",
+          "shape": "scope: 'presence'",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "presence-validation",
+          "intent": "Builds a runtime validator for every presence record field.",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 97, "endLine": 126 }
+        },
+        {
+          "name": "migration-identifiers",
+          "intent": "Declares ordered identifiers for presence schema revisions.",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 134, "endLine": 141 }
+        },
+        {
+          "name": "migration-sequence",
+          "intent": "Applies forward and backward transformations across presence schema versions.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 155, "endLine": 207 }
+        },
+        {
+          "name": "legacy-field-guards",
+          "intent": "Restores concrete defaults when downgrading nullable presence fields.",
+          "structureKind": "branch",
+          "predicate": "record.camera === null",
+          "branchOutcomes": ["camera default assigned", "camera retained"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 192, "endLine": 195 }
+        },
+        {
+          "name": "default-properties",
+          "intent": "Provides initial values for optional and collection presence properties.",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 231, "endLine": 249 }
+        }
+      ],
+      "representationFamily": "schema",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "interface",
+          "name": "TLInstancePresence",
+          "signature": "export interface TLInstancePresence extends BaseRecord<'instance_presence', TLInstancePresenceID> {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 41, "endLine": 41 }
+        },
+        {
+          "kind": "type",
+          "name": "TLInstancePresenceID",
+          "signature": "export type TLInstancePresenceID = RecordId<TLInstancePresence>",
+          "generics": null,
+          "decorators": [],
+          "returnType": "RecordId<TLInstancePresence>",
+          "exported": true,
+          "anchor": { "startLine": 75, "endLine": 75 }
+        },
+        {
+          "kind": "const",
+          "name": "instancePresenceValidator",
+          "signature": "export const instancePresenceValidator: T.Validator<TLInstancePresence> = T.model(",
+          "generics": "TLInstancePresence",
+          "decorators": [],
+          "returnType": "T.Validator<TLInstancePresence>",
+          "exported": true,
+          "anchor": { "startLine": 97, "endLine": 97 }
+        },
+        {
+          "kind": "const",
+          "name": "instancePresenceVersions",
+          "signature": "export const instancePresenceVersions = createMigrationIds('com.tldraw.instance_presence', {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 134, "endLine": 134 }
+        },
+        {
+          "kind": "const",
+          "name": "instancePresenceMigrations",
+          "signature": "export const instancePresenceMigrations = createRecordMigrationSequence({",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 155, "endLine": 155 }
+        },
+        {
+          "kind": "const",
+          "name": "InstancePresenceRecordType",
+          "signature": "export const InstancePresenceRecordType = createRecordType<TLInstancePresence>(",
+          "generics": "TLInstancePresence",
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 231, "endLine": 231 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "interface",
+          "name": "TLInstancePresence",
+          "shape": "{\n\tuserId: TLUserId\n\tuserName: string\n\tlastActivityTimestamp: number | null\n\tcolor: string // can be any hex color\n\tcamera: { x: number; y: number; z: number } | null\n\tselectedShapeIds: TLShapeId[]\n\tcurrentPageId: TLPageId\n\tbrush: BoxModel | null\n\tscribbles: TLScribble[]\n\tscreenBounds: BoxModel | null\n\tfollowingUserId: TLUserId | null\n\tcursor: {\n\t\tx: number\n\t\ty: number\n\t\ttype: TLCursor['type']\n\t\trotation: number\n\t} | null\n\tchatMessage: string\n\tmeta: JsonObject\n}",
+          "discriminant": "typeName",
+          "anchor": { "startLine": 41, "endLine": 61 }
+        },
+        {
+          "kind": "alias",
+          "name": "TLInstancePresenceID",
+          "shape": "RecordId<TLInstancePresence>",
+          "discriminant": null,
+          "anchor": { "startLine": 75, "endLine": 75 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "null camera, cursor, screenBounds, or lastActivityTimestamp during downgrade",
+          "handled": true,
+          "behavior": "Each null value is replaced with a concrete legacy-compatible default.",
+          "anchor": { "startLine": 192, "endLine": 204 }
+        },
+        {
+          "inputShape": "legacy record containing scribble",
+          "handled": true,
+          "behavior": "The scribble delay is initialized to zero when the scribble is non-null.",
+          "anchor": { "startLine": 161, "endLine": 164 }
+        },
+        {
+          "inputShape": "legacy record containing instanceId",
+          "handled": true,
+          "behavior": "The obsolete instanceId property is deleted.",
+          "anchor": { "startLine": 166, "endLine": 170 }
+        },
+        {
+          "inputShape": "record from before chat or metadata fields existed",
+          "handled": true,
+          "behavior": "Missing chatMessage becomes an empty string and missing meta becomes an empty object.",
+          "anchor": { "startLine": 171, "endLine": 180 }
+        },
+        {
+          "inputShape": "malformed presence record",
+          "handled": true,
+          "behavior": "The runtime validator rejects values that do not match the declared model.",
+          "anchor": { "startLine": 97, "endLine": 126 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": "==",
+          "left": "instance.scribble",
+          "right": "null",
+          "inclusive": false,
+          "intent": "Only initialize delay when the legacy scribble exists.",
+          "anchor": { "startLine": 162, "endLine": 164 }
+        },
+        {
+          "operator": "==",
+          "left": "record.camera",
+          "right": "null",
+          "inclusive": false,
+          "intent": "Restore a legacy camera when the downgraded value is null.",
+          "anchor": { "startLine": 192, "endLine": 195 }
+        },
+        {
+          "operator": "==",
+          "left": "record.lastActivityTimestamp",
+          "right": "null",
+          "inclusive": false,
+          "intent": "Restore zero activity time when the downgraded value is null.",
+          "anchor": { "startLine": 196, "endLine": 199 }
+        },
+        {
+          "operator": "==",
+          "left": "record.cursor",
+          "right": "null",
+          "inclusive": false,
+          "intent": "Restore a default cursor when the downgraded value is null.",
+          "anchor": { "startLine": 199, "endLine": 201 }
+        },
+        {
+          "operator": "==",
+          "left": "record.screenBounds",
+          "right": "null",
+          "inclusive": false,
+          "intent": "Restore default screen bounds when the downgraded value is null.",
+          "anchor": { "startLine": 202, "endLine": 204 }
+        }
+      ],
+      "errorHandling": [],
+      "invariants": [
+        {
+          "kind": "invariant",
+          "description": "Validated records use the instance_presence typeName and matching instance_presence identifier prefix.",
+          "anchor": { "startLine": 100, "endLine": 101 }
+        },
+        {
+          "kind": "non-null",
+          "description": "Presence records always contain user identity, page identity, chat text, metadata, and collection fields.",
+          "anchor": { "startLine": 102, "endLine": 124 }
+        },
+        {
+          "kind": "ordering",
+          "description": "Migration transformations execute in the declared sequence order.",
+          "anchor": { "startLine": 158, "endLine": 206 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Downgraded records receive concrete camera, activity timestamp, cursor, and screen bounds when nullable values are absent.",
+          "anchor": { "startLine": 192, "endLine": 204 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "schema",
+          "description": "Migration inputs are mutable record-like objects whose legacy properties can be assigned or deleted.",
+          "anchor": { "startLine": 161, "endLine": 205 }
+        },
+        {
+          "kind": "schema",
+          "description": "Imported validators and record helpers enforce the intended identifier and nested geometry schemas.",
+          "anchor": { "startLine": 97, "endLine": 126 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "What historical record shape contains instance.scribble and its delay property?",
+          "affects": "migration compatibility",
+          "anchor": { "startLine": 161, "endLine": 164 },
+          "resolution": null
+        },
+        {
+          "question": "Why is RenameSelectedShapeIds intentionally a no-op despite its migration name?",
+          "affects": "migration semantics",
+          "anchor": { "startLine": 181, "endLine": 185 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "sync",
+        "reentrant": true,
+        "ordering": "deterministic",
+        "notes": "Validation, default construction, and migration callbacks are synchronous; no asynchronous or shared scheduling is introduced."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "validates-instance-presence-record",
+          "scenario": "A complete instance presence record is accepted by the runtime validator.",
+          "given": [
+            "const presence = { typeName: 'instance_presence', id: 'instance_presence:user1', userId: 'user1', userName: 'John', color: '#007AFF', lastActivityTimestamp: null, followingUserId: null, cursor: null, camera: null, screenBounds: null, selectedShapeIds: [], currentPageId: 'page:main', brush: null, scribbles: [], chatMessage: '', meta: {} }"
+          ],
+          "when": "instancePresenceValidator.isValid(presence)",
+          "then": "true",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins the complete wire shape and required instance_presence discriminator."
+        },
+        {
+          "testId": "applies-presence-default-properties",
+          "scenario": "Creating a presence record without optional activity fields supplies the declared defaults.",
+          "given": [
+            "const input = { id: 'instance_presence:user1', userId: 'user1', userName: 'Alice', currentPageId: 'page:main' }"
+          ],
+          "when": "InstancePresenceRecordType.create(input)",
+          "then": "the result has color '#FF0000', camera null, cursor null, selectedShapeIds [], scribbles [], chatMessage '', and meta {}",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Guards stable defaults for newly created ephemeral presence records."
+        },
+        {
+          "testId": "downgrades-nullable-presence-fields",
+          "scenario": "Downgrading a record with nullable camera, activity timestamp, cursor, or screen bounds restores legacy values.",
+          "given": ["const record = { camera: null, lastActivityTimestamp: null, cursor: null, screenBounds: null }"],
+          "when": "instancePresenceMigrations.migrate(record, instancePresenceVersions.NullableCameraCursor - 1)",
+          "then": "record.camera equals { x: 0, y: 0, z: 1 }, record.lastActivityTimestamp equals 0, record.cursor equals { type: 'default', x: 0, y: 0, rotation: 0 }, and record.screenBounds equals { x: 0, y: 0, w: 1, h: 1 }",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Pins backward compatibility behavior for the NullableCameraCursor migration."
+        },
+        {
+          "testId": "adds-metadata-during-migration",
+          "scenario": "Migrating an older presence record through the AddMeta version initializes missing metadata.",
+          "given": ["const record = {}"],
+          "when": "instancePresenceMigrations.migrate(record, instancePresenceVersions.AddMeta)",
+          "then": "record.meta equals {}",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Guards schema evolution for the required meta object."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "import declarations",
+        "TLInstancePresence interface",
+        "TLInstancePresenceID type alias",
+        "instancePresenceValidator declaration",
+        "instancePresenceVersions declaration",
+        "instancePresenceMigrations declaration",
+        "InstancePresenceRecordType declaration"
+      ],
+      "moduleLevelCode": "import {\n\tBaseRecord,\n\tcreateMigrationIds,\n\tcreateRecordMigrationSequence,\n\tcreateRecordType,\n\tRecordId,\n} from '@tldraw/store'\nimport { JsonObject } from '@tldraw/utils'\nimport { T } from '@tldraw/validate'\nimport { BoxModel, boxModelValidator } from '../misc/geometry-types'\nimport { idValidator } from '../misc/id-validator'\nimport { cursorTypeValidator, TLCursor } from '../misc/TLCursor'\nimport { scribbleValidator, TLScribble } from '../misc/TLScribble'\nimport { TLPageId } from './TLPage'\nimport { TLShapeId } from './TLShape'\nimport { TLUserId, userIdValidator } from './TLUser'",
+      "exports": [
+        { "name": "TLInstancePresence", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "TLInstancePresenceID", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "instancePresenceValidator", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "instancePresenceVersions", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "instancePresenceMigrations", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "InstancePresenceRecordType", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "BaseRecord", "module": "@tldraw/store", "alias": null, "kind": "external" },
+        { "symbol": "createMigrationIds", "module": "@tldraw/store", "alias": null, "kind": "external" },
+        { "symbol": "createRecordMigrationSequence", "module": "@tldraw/store", "alias": null, "kind": "external" },
+        { "symbol": "createRecordType", "module": "@tldraw/store", "alias": null, "kind": "external" },
+        { "symbol": "RecordId", "module": "@tldraw/store", "alias": null, "kind": "external" },
+        { "symbol": "JsonObject", "module": "@tldraw/utils", "alias": null, "kind": "external" },
+        { "symbol": "T", "module": "@tldraw/validate", "alias": null, "kind": "external" },
+        { "symbol": "BoxModel", "module": "../misc/geometry-types", "alias": null, "kind": "internal" },
+        { "symbol": "boxModelValidator", "module": "../misc/geometry-types", "alias": null, "kind": "internal" },
+        { "symbol": "idValidator", "module": "../misc/id-validator", "alias": null, "kind": "internal" },
+        { "symbol": "cursorTypeValidator", "module": "../misc/TLCursor", "alias": null, "kind": "internal" },
+        { "symbol": "TLCursor", "module": "../misc/TLCursor", "alias": null, "kind": "internal" },
+        { "symbol": "scribbleValidator", "module": "../misc/TLScribble", "alias": null, "kind": "internal" },
+        { "symbol": "TLScribble", "module": "../misc/TLScribble", "alias": null, "kind": "internal" },
+        { "symbol": "TLPageId", "module": "./TLPage", "alias": null, "kind": "internal" },
+        { "symbol": "TLShapeId", "module": "./TLShape", "alias": null, "kind": "internal" },
+        { "symbol": "TLUserId", "module": "./TLUser", "alias": null, "kind": "internal" },
+        { "symbol": "userIdValidator", "module": "./TLUser", "alias": null, "kind": "internal" }
+      ],
+      "fileConstants": [],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/tlschema/src/records/TLPresence.ts__TLPresence#module:TLPresence",
+        "unitKind": "module",
+        "name": "TLPresence",
+        "qualifiedName": "TLPresence",
+        "parentUnitId": null,
+        "startLine": 1,
+        "endLine": 249,
+        "isBehavioral": true,
+        "source": "import {\n\tBaseRecord,\n\tcreateMigrationIds,\n\tcreateRecordMigrationSequence,\n\tcreateRecordType,\n\tRecordId,\n} from '@tldraw/store'\nimport { JsonObject } from '@tldraw/utils'\nimport { T } from '@tldraw/validate'\nimport { BoxModel, boxModelValidator } from '../misc/geometry-types'\nimport { idValidator } from '../misc/id-validator'\nimport { cursorTypeValidator, TLCursor } from '../misc/TLCursor'\nimport { scribbleValidator, TLScribble } from '../misc/TLScribble'\nimport { TLPageId } from './TLPage'\nimport { TLShapeId } from './TLShape'\nimport { TLUserId, userIdValidator } from './TLUser'\n\n/**\n * Represents the presence state of a user in a collaborative tldraw session.\n * This record tracks what another user is doing: their cursor position, selected\n * shapes, current page, and other real-time activity indicators.\n *\n * Instance presence records are used in multiplayer environments to show\n * where other collaborators are working and what they're doing.\n *\n * @example\n * ```ts\n * const presence: TLInstancePresence = {\n *   id: 'instance_presence:user123',\n *   typeName: 'instance_presence',\n *   userId: 'user123',\n *   userName: 'Alice',\n *   color: '#FF6B6B',\n *   cursor: { x: 100, y: 150, type: 'default', rotation: 0 },\n *   currentPageId: 'page:main',\n *   selectedShapeIds: ['shape:rect1']\n * }\n * ```\n *\n * @public\n */\nexport interface TLInstancePresence extends BaseRecord<'instance_presence', TLInstancePresenceID> {\n\tuserId: TLUserId\n\tuserName: string\n\tlastActivityTimestamp: number | null\n\tcolor: string // can be any hex color\n\tcamera: { x: number; y: number; z: number } | null\n\tselectedShapeIds: TLShapeId[]\n\tcurrentPageId: TLPageId\n\tbrush: BoxModel | null\n\tscribbles: TLScribble[]\n\tscreenBounds: BoxModel | null\n\tfollowingUserId: TLUserId | null\n\tcursor: {\n\t\tx: number\n\t\ty: number\n\t\ttype: TLCursor['type']\n\t\trotation: number\n\t} | null\n\tchatMessage: string\n\tmeta: JsonObject\n}\n\n/**\n * A unique identifier for TLInstancePresence records.\n *\n * Instance presence IDs follow the format 'instance_presence:' followed\n * by a unique identifier, typically the user ID.\n *\n * @example\n * ```ts\n * const presenceId: TLInstancePresenceID = 'instance_presence:user123'\n * ```\n *\n * @public\n */\nexport type TLInstancePresenceID = RecordId<TLInstancePresence>\n\n/**\n * Runtime validator for TLInstancePresence records. Validates the structure\n * and types of all instance presence properties to ensure data integrity.\n *\n * @example\n * ```ts\n * const presence = {\n *   id: 'instance_presence:user1',\n *   typeName: 'instance_presence',\n *   userId: 'user1',\n *   userName: 'John',\n *   color: '#007AFF',\n *   cursor: { x: 0, y: 0, type: 'default', rotation: 0 },\n *   currentPageId: 'page:main',\n *   selectedShapeIds: []\n * }\n * const isValid = instancePresenceValidator.isValid(presence) // true\n * ```\n *\n * @public\n */\nexport const instancePresenceValidator: T.Validator<TLInstancePresence> = T.model(\n\t'instance_presence',\n\tT.object({\n\t\ttypeName: T.literal('instance_presence'),\n\t\tid: idValidator<TLInstancePresenceID>('instance_presence'),\n\t\tuserId: userIdValidator,\n\t\tuserName: T.string,\n\t\tlastActivityTimestamp: T.number.nullable(),\n\t\tfollowingUserId: userIdValidator.nullable(),\n\t\tcursor: T.object({\n\t\t\tx: T.number,\n\t\t\ty: T.number,\n\t\t\ttype: cursorTypeValidator,\n\t\t\trotation: T.number,\n\t\t}).nullable(),\n\t\tcolor: T.string,\n\t\tcamera: T.object({\n\t\t\tx: T.number,\n\t\t\ty: T.number,\n\t\t\tz: T.number,\n\t\t}).nullable(),\n\t\tscreenBounds: boxModelValidator.nullable(),\n\t\tselectedShapeIds: T.arrayOf(idValidator<TLShapeId>('shape')),\n\t\tcurrentPageId: idValidator<TLPageId>('page'),\n\t\tbrush: boxModelValidator.nullable(),\n\t\tscribbles: T.arrayOf(scribbleValidator),\n\t\tchatMessage: T.string,\n\t\tmeta: T.jsonValue as T.ObjectValidator<JsonObject>,\n\t})\n)\n\n/**\n * Migration version identifiers for TLInstancePresence records. Each version\n * represents a schema change that requires data transformation when loading\n * older documents.\n *\n * @public\n */\nexport const instancePresenceVersions = createMigrationIds('com.tldraw.instance_presence', {\n\tAddScribbleDelay: 1,\n\tRemoveInstanceId: 2,\n\tAddChatMessage: 3,\n\tAddMeta: 4,\n\tRenameSelectedShapeIds: 5,\n\tNullableCameraCursor: 6,\n} as const)\n\n/**\n * Migration sequence for TLInstancePresence records. Defines how to transform\n * instance presence records between different schema versions, ensuring data\n * compatibility when loading documents created with different versions.\n *\n * @example\n * ```ts\n * // Migrations are applied automatically when loading documents\n * const migrated = instancePresenceMigrations.migrate(oldPresence, targetVersion)\n * ```\n *\n * @public\n */\nexport const instancePresenceMigrations = createRecordMigrationSequence({\n\tsequenceId: 'com.tldraw.instance_presence',\n\trecordType: 'instance_presence',\n\tsequence: [\n\t\t{\n\t\t\tid: instancePresenceVersions.AddScribbleDelay,\n\t\t\tup: (instance: any) => {\n\t\t\t\tif (instance.scribble !== null) {\n\t\t\t\t\tinstance.scribble.delay = 0\n\t\t\t\t}\n\t\t\t},\n\t\t},\n\t\t{\n\t\t\tid: instancePresenceVersions.RemoveInstanceId,\n\t\t\tup: (instance: any) => {\n\t\t\t\tdelete instance.instanceId\n\t\t\t},\n\t\t},\n\t\t{\n\t\t\tid: instancePresenceVersions.AddChatMessage,\n\t\t\tup: (instance: any) => {\n\t\t\t\tinstance.chatMessage = ''\n\t\t\t},\n\t\t},\n\t\t{\n\t\t\tid: instancePresenceVersions.AddMeta,\n\t\t\tup: (record: any) => {\n\t\t\t\trecord.meta = {}\n\t\t\t},\n\t\t},\n\t\t{\n\t\t\tid: instancePresenceVersions.RenameSelectedShapeIds,\n\t\t\tup: (_record) => {\n\t\t\t\t// noop, whoopsie\n\t\t\t},\n\t\t},\n\t\t{\n\t\t\tid: instancePresenceVersions.NullableCameraCursor,\n\t\t\tup: (_record: any) => {\n\t\t\t\t// noop\n\t\t\t},\n\t\t\tdown: (record: any) => {\n\t\t\t\tif (record.camera === null) {\n\t\t\t\t\trecord.camera = { x: 0, y: 0, z: 1 }\n\t\t\t\t}\n\t\t\t\tif (record.lastActivityTimestamp === null) {\n\t\t\t\t\trecord.lastActivityTimestamp = 0\n\t\t\t\t}\n\t\t\t\tif (record.cursor === null) {\n\t\t\t\t\trecord.cursor = { type: 'default', x: 0, y: 0, rotation: 0 }\n\t\t\t\t}\n\t\t\t\tif (record.screenBounds === null) {\n\t\t\t\t\trecord.screenBounds = { x: 0, y: 0, w: 1, h: 1 }\n\t\t\t\t}\n\t\t\t},\n\t\t},\n\t],\n})\n\n/**\n * The RecordType definition for TLInstancePresence records. Defines validation,\n * scope, and default properties for instance presence records.\n *\n * Instance presence records are scoped to the presence level, meaning they\n * represent real-time collaborative state that is ephemeral and tied to\n * active user sessions.\n *\n * @example\n * ```ts\n * const presence = InstancePresenceRecordType.create({\n *   id: 'instance_presence:user1',\n *   userId: 'user1',\n *   userName: 'Alice',\n *   color: '#FF6B6B',\n *   currentPageId: 'page:main'\n * })\n * ```\n *\n * @public\n */\nexport const InstancePresenceRecordType = createRecordType<TLInstancePresence>(\n\t'instance_presence',\n\t{\n\t\tvalidator: instancePresenceValidator,\n\t\tscope: 'presence',\n\t}\n).withDefaultProperties(() => ({\n\tlastActivityTimestamp: null,\n\tfollowingUserId: null,\n\tcolor: '#FF0000',",
+        "detail": {
+          "unitId": "packages/tlschema/src/records/TLPresence.ts__TLPresence#module:TLPresence",
+          "fileId": "packages/tlschema/src/records/TLPresence.ts__TLPresence",
+          "unitKind": "module",
+          "name": "TLPresence",
+          "qualifiedName": "TLPresence",
+          "parentUnitId": null,
+          "startLine": 1,
+          "endLine": 249,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [
+            {
+              "name": "TLInstancePresence",
+              "kind": "interface",
+              "type": null,
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "TLInstancePresenceID",
+              "kind": "type",
+              "type": "RecordId<TLInstancePresence>",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "instancePresenceValidator",
+              "kind": "const",
+              "type": "T.Validator<TLInstancePresence>",
+              "default": null,
+              "visibility": "public",
+              "static": true
+            },
+            {
+              "name": "instancePresenceVersions",
+              "kind": "const",
+              "type": null,
+              "default": null,
+              "visibility": "public",
+              "static": true
+            },
+            {
+              "name": "instancePresenceMigrations",
+              "kind": "const",
+              "type": null,
+              "default": null,
+              "visibility": "public",
+              "static": true
+            },
+            {
+              "name": "InstancePresenceRecordType",
+              "kind": "const",
+              "type": null,
+              "default": null,
+              "visibility": "public",
+              "static": true
+            }
+          ],
+          "memberUnitIds": [
+            "instancePresenceMigrations.sequence[0].up",
+            "instancePresenceMigrations.sequence[1].up",
+            "instancePresenceMigrations.sequence[2].up",
+            "instancePresenceMigrations.sequence[3].up",
+            "instancePresenceMigrations.sequence[4].up",
+            "instancePresenceMigrations.sequence[5].up",
+            "instancePresenceMigrations.sequence[5].down",
+            "InstancePresenceRecordType.defaultProperties"
+          ],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Defines the public types, validator, migration sequence, and record type for ephemeral collaborative instance-presence records. The module guarantees a consistent schema and record identity for presence state such as cursor, camera, selection, and collaboration metadata.",
+          "specLiterals": [
+            {
+              "kind": "enum-value",
+              "value": "instance_presence",
+              "role": "Record type name and validator model identifier."
+            },
+            {
+              "kind": "format-string",
+              "value": "com.tldraw.instance_presence",
+              "role": "Migration sequence namespace and version identifier prefix."
+            },
+            {
+              "kind": "format-string",
+              "value": "presence",
+              "role": "Record scope for ephemeral collaborative presence state."
+            },
+            { "kind": "enum-value", "value": "AddScribbleDelay", "role": "Public migration version key." },
+            { "kind": "enum-value", "value": "RemoveInstanceId", "role": "Public migration version key." },
+            { "kind": "enum-value", "value": "AddChatMessage", "role": "Public migration version key." },
+            { "kind": "enum-value", "value": "AddMeta", "role": "Public migration version key." },
+            { "kind": "enum-value", "value": "RenameSelectedShapeIds", "role": "Public migration version key." },
+            { "kind": "enum-value", "value": "NullableCameraCursor", "role": "Public migration version key." },
+            {
+              "kind": "enum-value",
+              "value": "#FF0000",
+              "role": "Default color for newly created instance-presence records."
+            }
+          ],
+          "declaredConstants": [
+            {
+              "name": "instancePresenceVersions",
+              "value": "{ AddScribbleDelay: 1, RemoveInstanceId: 2, AddChatMessage: 3, AddMeta: 4, RenameSelectedShapeIds: 5, NullableCameraCursor: 6 }",
+              "kind": "object"
+            }
+          ],
+          "specTests": [],
+          "semanticFingerprint": "e1e1a27b503f391dfe6fc87ea181dcfa11ca4b41ffd930b088a08b85101484cd"
+        }
+      },
+      {
+        "unitId": "packages/tlschema/src/records/TLPresence.ts__instancePresenceMigrations.sequence[0].up#function:instancePresenceMigrations.sequence[0].up",
+        "unitKind": "function",
+        "name": "up",
+        "qualifiedName": "instancePresenceMigrations.sequence[0].up",
+        "parentUnitId": null,
+        "startLine": 161,
+        "endLine": 164,
+        "isBehavioral": true,
+        "source": "\tsequenceId: 'com.tldraw.instance_presence',\n\trecordType: 'instance_presence',\n\tsequence: [\n\t\t{",
+        "detail": {
+          "unitId": "packages/tlschema/src/records/TLPresence.ts__instancePresenceMigrations.sequence[0].up#function:instancePresenceMigrations.sequence[0].up",
+          "fileId": "packages/tlschema/src/records/TLPresence.ts__instancePresenceMigrations.sequence[0].up",
+          "unitKind": "function",
+          "name": "up",
+          "qualifiedName": "instancePresenceMigrations.sequence[0].up",
+          "parentUnitId": null,
+          "startLine": 161,
+          "endLine": 164,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Applies the first upward migration for instance-presence records, transforming a record from its prior schema version to the next supported version.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "8cc6f38d3d13c6e77848d9240e8fa2f4b33a06f01fc38b77ba007aa4938cf166"
+        }
+      },
+      {
+        "unitId": "packages/tlschema/src/records/TLPresence.ts__instancePresenceMigrations.sequence[1].up#function:instancePresenceMigrations.sequence[1].up",
+        "unitKind": "function",
+        "name": "up",
+        "qualifiedName": "instancePresenceMigrations.sequence[1].up",
+        "parentUnitId": null,
+        "startLine": 167,
+        "endLine": 170,
+        "isBehavioral": true,
+        "source": "\t\t\t\tif (instance.scribble !== null) {\n\t\t\t\t\tinstance.scribble.delay = 0\n\t\t\t\t}\n\t\t\t},",
+        "detail": {
+          "unitId": "packages/tlschema/src/records/TLPresence.ts__instancePresenceMigrations.sequence[1].up#function:instancePresenceMigrations.sequence[1].up",
+          "fileId": "packages/tlschema/src/records/TLPresence.ts__instancePresenceMigrations.sequence[1].up",
+          "unitKind": "function",
+          "name": "up",
+          "qualifiedName": "instancePresenceMigrations.sequence[1].up",
+          "parentUnitId": null,
+          "startLine": 167,
+          "endLine": 170,
+          "signature": null,
+          "parameters": [
+            { "name": "instance", "type": null, "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["The instance argument is available to the migration callback."],
+          "postconditions": [
+            "If instance.scribble is not null, instance.scribble.delay equals 0.",
+            "If instance.scribble is null, the instance remains unchanged."
+          ],
+          "invariants": [
+            "The migration does not create scribble data when it is null.",
+            "Only the scribble delay field is changed by the observed operation."
+          ],
+          "edgeCases": [
+            "When instance.scribble is null, no mutation is performed.",
+            "When instance.scribble is non-null, its delay is set to 0 regardless of its prior value."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": ["instance.scribble.delay when instance.scribble is non-null"],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Updates an instance migration record by resetting the scribble delay to zero when scribble data is present. Instances without scribble data are left unchanged.",
+          "specLiterals": [
+            { "kind": "magic-number", "value": "0", "role": "The migration resets the scribble delay to this value." }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Run the migration's up function.",
+              "then": "The same scribble object has delay equal to 0.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Run the migration's up function.",
+              "then": "The instance remains unchanged and no scribble object is created.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "691f8d182e1234690399b1858bef134d4b55b18baa41f2a009a8169d6ca21bd0"
+        }
+      },
+      {
+        "unitId": "packages/tlschema/src/records/TLPresence.ts__instancePresenceMigrations.sequence[2].up#function:instancePresenceMigrations.sequence[2].up",
+        "unitKind": "function",
+        "name": "up",
+        "qualifiedName": "instancePresenceMigrations.sequence[2].up",
+        "parentUnitId": null,
+        "startLine": 172,
+        "endLine": 175,
+        "isBehavioral": true,
+        "source": "\t\t{\n\t\t\tid: instancePresenceVersions.RemoveInstanceId,\n\t\t\tup: (instance: any) => {\n\t\t\t\tdelete instance.instanceId",
+        "detail": {
+          "unitId": "packages/tlschema/src/records/TLPresence.ts__instancePresenceMigrations.sequence[2].up#function:instancePresenceMigrations.sequence[2].up",
+          "fileId": "packages/tlschema/src/records/TLPresence.ts__instancePresenceMigrations.sequence[2].up",
+          "unitKind": "function",
+          "name": "up",
+          "qualifiedName": "instancePresenceMigrations.sequence[2].up",
+          "parentUnitId": null,
+          "startLine": 172,
+          "endLine": 175,
+          "signature": "(instance: any) => void",
+          "parameters": [
+            { "name": "instance", "type": "any", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "void",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["instance is an object whose properties may be modified."],
+          "postconditions": ["instance no longer has its own instanceId property.", "The function returns undefined."],
+          "invariants": ["No properties other than instanceId are changed."],
+          "edgeCases": [
+            "If instanceId is absent, the operation is a no-op.",
+            "If instanceId is present, it is deleted from the instance.",
+            "If instance is null or undefined, property deletion fails with the runtime TypeError produced by JavaScript."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["TypeError when the supplied value cannot be used as an object, such as null or undefined."],
+            "reverts": [],
+            "onInvalidInput": "The runtime property-deletion error is propagated.",
+            "returnsOnError": null
+          },
+          "stateMutations": ["Deletes instance.instanceId."],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Migrates an instance presence record by removing its legacy instanceId property.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The migration function is applied.",
+              "then": "instanceId is absent afterward and the unrelated property remains unchanged.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The migration function is applied.",
+              "then": "The object remains unchanged and the function returns undefined.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "980810c24c5249fa2dc61ef35a9f7a959964be41fcc21d95d94534e0e33034b0"
+        }
+      },
+      {
+        "unitId": "packages/tlschema/src/records/TLPresence.ts__instancePresenceMigrations.sequence[3].up#function:instancePresenceMigrations.sequence[3].up",
+        "unitKind": "function",
+        "name": "up",
+        "qualifiedName": "instancePresenceMigrations.sequence[3].up",
+        "parentUnitId": null,
+        "startLine": 177,
+        "endLine": 180,
+        "isBehavioral": true,
+        "source": "\t\t},\n\t\t{\n\t\t\tid: instancePresenceVersions.AddChatMessage,\n\t\t\tup: (instance: any) => {",
+        "detail": {
+          "unitId": "packages/tlschema/src/records/TLPresence.ts__instancePresenceMigrations.sequence[3].up#function:instancePresenceMigrations.sequence[3].up",
+          "fileId": "packages/tlschema/src/records/TLPresence.ts__instancePresenceMigrations.sequence[3].up",
+          "unitKind": "function",
+          "name": "up",
+          "qualifiedName": "instancePresenceMigrations.sequence[3].up",
+          "parentUnitId": null,
+          "startLine": 177,
+          "endLine": 180,
+          "signature": "(instance: any) =>",
+          "parameters": [
+            { "name": "instance", "type": "any", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Migration callback for the fourth presence-record migration step. It receives a presence instance and applies the migration defined for that step.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "44976647010a3c4f161567373688d6fa46a9ec3f62b3a62776cbd37f44d4f729"
+        }
+      },
+      {
+        "unitId": "packages/tlschema/src/records/TLPresence.ts__instancePresenceMigrations.sequence[4].up#function:instancePresenceMigrations.sequence[4].up",
+        "unitKind": "function",
+        "name": "up",
+        "qualifiedName": "instancePresenceMigrations.sequence[4].up",
+        "parentUnitId": null,
+        "startLine": 182,
+        "endLine": 185,
+        "isBehavioral": false,
+        "source": "\t\t\t},\n\t\t},\n\t\t{\n\t\t\tid: instancePresenceVersions.AddMeta,",
+        "detail": {
+          "unitId": "packages/tlschema/src/records/TLPresence.ts__instancePresenceMigrations.sequence[4].up#function:instancePresenceMigrations.sequence[4].up",
+          "fileId": "packages/tlschema/src/records/TLPresence.ts__instancePresenceMigrations.sequence[4].up",
+          "unitKind": "function",
+          "name": "up",
+          "qualifiedName": "instancePresenceMigrations.sequence[4].up",
+          "parentUnitId": null,
+          "startLine": 182,
+          "endLine": 185,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Defines the upward migration function for the fifth instance-presence migration step, associated with the AddMeta version.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "f749df1fa515c5e0c0ee64fcfa5152ee6dec8b08856cc570a5c1a4d88d286057"
+        }
+      },
+      {
+        "unitId": "packages/tlschema/src/records/TLPresence.ts__instancePresenceMigrations.sequence[5].up#function:instancePresenceMigrations.sequence[5].up",
+        "unitKind": "function",
+        "name": "up",
+        "qualifiedName": "instancePresenceMigrations.sequence[5].up",
+        "parentUnitId": null,
+        "startLine": 187,
+        "endLine": 190,
+        "isBehavioral": false,
+        "source": "\t\t\t\trecord.meta = {}\n\t\t\t},\n\t\t},\n\t\t{",
+        "detail": {
+          "unitId": "packages/tlschema/src/records/TLPresence.ts__instancePresenceMigrations.sequence[5].up#function:instancePresenceMigrations.sequence[5].up",
+          "fileId": "packages/tlschema/src/records/TLPresence.ts__instancePresenceMigrations.sequence[5].up",
+          "unitKind": "function",
+          "name": "up",
+          "qualifiedName": "instancePresenceMigrations.sequence[5].up",
+          "parentUnitId": null,
+          "startLine": 187,
+          "endLine": 190,
+          "signature": null,
+          "parameters": [
+            { "name": "record", "type": null, "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": ["The record's meta field is an empty object."],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": ["record.meta"],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Initializes the presence record's metadata field to an empty object during the migration.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "921270e2b927454a473693707730a632718667757a9f256ad85f65f4c7cd78c6"
+        }
+      },
+      {
+        "unitId": "packages/tlschema/src/records/TLPresence.ts__instancePresenceMigrations.sequence[5].down#function:instancePresenceMigrations.sequence[5].down",
+        "unitKind": "function",
+        "name": "down",
+        "qualifiedName": "instancePresenceMigrations.sequence[5].down",
+        "parentUnitId": null,
+        "startLine": 191,
+        "endLine": 205,
+        "isBehavioral": true,
+        "source": "\t\t\tid: instancePresenceVersions.RenameSelectedShapeIds,\n\t\t\tup: (_record) => {\n\t\t\t\t// noop, whoopsie\n\t\t\t},\n\t\t},\n\t\t{\n\t\t\tid: instancePresenceVersions.NullableCameraCursor,\n\t\t\tup: (_record: any) => {\n\t\t\t\t// noop\n\t\t\t},\n\t\t\tdown: (record: any) => {\n\t\t\t\tif (record.camera === null) {\n\t\t\t\t\trecord.camera = { x: 0, y: 0, z: 1 }\n\t\t\t\t}\n\t\t\t\tif (record.lastActivityTimestamp === null) {",
+        "detail": {
+          "unitId": "packages/tlschema/src/records/TLPresence.ts__instancePresenceMigrations.sequence[5].down#function:instancePresenceMigrations.sequence[5].down",
+          "fileId": "packages/tlschema/src/records/TLPresence.ts__instancePresenceMigrations.sequence[5].down",
+          "unitKind": "function",
+          "name": "down",
+          "qualifiedName": "instancePresenceMigrations.sequence[5].down",
+          "parentUnitId": null,
+          "startLine": 191,
+          "endLine": 205,
+          "signature": "(record: any) => void",
+          "parameters": [
+            { "name": "record", "type": "any", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "void",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["record is a mutable instance-presence record object."],
+          "postconditions": [
+            "record.camera is replaced with the default camera when it is null.",
+            "record.lastActivityTimestamp is replaced with its downgrade default when it is null.",
+            "Existing non-null camera and activity timestamp values are preserved."
+          ],
+          "invariants": ["The migration mutates the supplied record in place.", "Non-null fields are not changed."],
+          "edgeCases": [
+            "When record.camera is null, it becomes { x: 0, y: 0, z: 1 }.",
+            "When record.lastActivityTimestamp is null, it is restored to the migration's default timestamp value.",
+            "When either field is already non-null, that field is left unchanged."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [
+            "The supplied record.camera property may be mutated.",
+            "The supplied record.lastActivityTimestamp property may be mutated."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["instancePresenceVersions.NullableCameraCursor"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Downgrades an instance-presence record by restoring non-null camera and activity timestamp defaults when those fields are null.",
+          "specLiterals": [
+            {
+              "kind": "magic-number",
+              "value": "0",
+              "role": "Default camera x and y coordinates and the null activity-timestamp fallback."
+            },
+            { "kind": "magic-number", "value": "1", "role": "Default camera z coordinate." }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The migration down function is called.",
+              "then": "The record's camera becomes { x: 0, y: 0, z: 1 }, while the existing lastActivityTimestamp remains unchanged.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The migration down function is called.",
+              "then": "Both existing values are preserved.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "96300518ef73804f550070c6e22c46eae59bd78860232d2cea40ce1e20f434a6"
+        }
+      },
+      {
+        "unitId": "packages/tlschema/src/records/TLPresence.ts__InstancePresenceRecordType.defaultProperties#function:InstancePresenceRecordType.defaultProperties",
+        "unitKind": "function",
+        "name": "()",
+        "qualifiedName": "InstancePresenceRecordType.defaultProperties",
+        "parentUnitId": null,
+        "startLine": 237,
+        "endLine": 249,
+        "isBehavioral": true,
+        "source": " *\n * @public\n */\nexport const InstancePresenceRecordType = createRecordType<TLInstancePresence>(\n\t'instance_presence',\n\t{\n\t\tvalidator: instancePresenceValidator,\n\t\tscope: 'presence',\n\t}\n).withDefaultProperties(() => ({\n\tlastActivityTimestamp: null,\n\tfollowingUserId: null,\n\tcolor: '#FF0000',",
+        "detail": {
+          "unitId": "packages/tlschema/src/records/TLPresence.ts__InstancePresenceRecordType.defaultProperties#function:InstancePresenceRecordType.defaultProperties",
+          "fileId": "packages/tlschema/src/records/TLPresence.ts__InstancePresenceRecordType.defaultProperties",
+          "unitKind": "function",
+          "name": "()",
+          "qualifiedName": "InstancePresenceRecordType.defaultProperties",
+          "parentUnitId": null,
+          "startLine": 237,
+          "endLine": 249,
+          "signature": "() => ({ lastActivityTimestamp: null, followingUserId: null, color: '#FF0000' })",
+          "parameters": [],
+          "returnType": "TLInstancePresence",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [
+            "Returns a new default-properties object containing lastActivityTimestamp set to null, followingUserId set to null, and color set to '#FF0000'."
+          ],
+          "invariants": [
+            "The returned default values are independent of caller-provided input because the function accepts no arguments.",
+            "The color default is '#FF0000'."
+          ],
+          "edgeCases": [
+            "The function takes no input, so there are no input-dependent edge cases.",
+            "Each invocation produces the specified default property values."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["TLInstancePresence"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Produces the default properties for an instance-presence record, initializing activity and following-user state to null and the presence color to red.",
+          "specLiterals": [
+            {
+              "kind": "format-string",
+              "value": "#FF0000",
+              "role": "Default color assigned to an instance-presence record."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Invoke InstancePresenceRecordType.defaultProperties.",
+              "then": "The result has lastActivityTimestamp equal to null, followingUserId equal to null, and color equal to '#FF0000'.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "c9938f0d2dc944413ce0399dfce437fd932a656a93d4714c58fc5c82b23bc84b"
+        }
+      }
+    ]
+  },
+  "out": [
+    "packages/tlschema/src/misc/geometry-types.ts",
+    "packages/tlschema/src/records/TLUser.ts",
+    "packages/tlschema/src/records/TLShape.ts",
+    "packages/tlschema/src/records/TLPage.ts",
+    "packages/tlschema/src/misc/TLCursor.ts",
+    "packages/tlschema/src/misc/id-validator.ts",
+    "packages/tlschema/src/misc/TLScribble.ts"
+  ],
+  "in": [
+    "packages/tlschema/src/createTLSchema.ts",
+    "packages/tlschema/src/records/TLRecord.ts",
+    "packages/tlschema/src/index.ts",
+    "packages/tlschema/src/createPresenceStateDerivation.ts"
+  ],
+  "externals": ["@tldraw/store", "@tldraw/utils", "@tldraw/validate"],
+  "impact": { "seeds": 9, "callers": 0, "impactedFiles": [] }
+}

@@ -1,0 +1,2534 @@
+{
+  "schema": 2,
+  "kind": "file",
+  "repoName": "tldraw",
+  "file": {
+    "relativePath": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx",
+    "language": "typescript",
+    "sizeBytes": 10714,
+    "tokenCount": 2679,
+    "model": "us.openai.gpt-5.6-luna",
+    "analysedAt": "2026-08-24T12:13:04.691Z",
+    "module": {
+      "purpose": "Defines the rendering, geometry, editing, snapping, interpolation, and SVG export behavior for line shapes in tldraw.",
+      "summary": "This module implements the line-shape adapter used by the editor framework. It supplies default properties and display values, constructs cached line or cubic-spline geometry, exposes vertex and insertion handles, handles resizing and dragging, prevents degenerate newly created lines, supports self-snapping, interpolates shapes with differing point counts, and renders both editor and exported SVG representations.",
+      "businessContext": "Supports diagram and whiteboard line editing, rendering, and export. Failures affect line creation, manipulation, visual appearance, snapping, or serialized SVG output.",
+      "classes": ["LineShapeUtil (~L47-340): Shape adapter coordinating line geometry, editing, rendering, and export"],
+      "functions": [
+        "linePointsToArray (~L342-348): Sorts line points and removes duplicate ordering indices",
+        "getPathForLineShape (~L351-364): Builds cached line or cubic spline geometry",
+        "LineShapeSvg (~L366-396): Renders a line geometry path as SVG"
+      ],
+      "keywords": [
+        "line shape",
+        "cubic spline",
+        "handle snapping",
+        "PathBuilder",
+        "SVG export",
+        "shape interpolation",
+        "display values",
+        "WeakCache",
+        "grid snapping",
+        "tldraw"
+      ],
+      "ontologyConcepts": [
+        "shape geometry",
+        "interactive handles",
+        "spatial snapping",
+        "rendering",
+        " SVG export",
+        "shape interpolation",
+        "migration-aware model",
+        "cached computation"
+      ],
+      "businessEntities": ["Line", "Shape", "Vertex", "Handle", "Path", "SVG"],
+      "systemCapabilities": [
+        "Render line shapes",
+        "Edit line vertices",
+        "Snap handles to grid and geometry",
+        "Interpolate line shapes",
+        "Export lines to SVG",
+        "Generate cached path geometry"
+      ],
+      "configDependencies": [
+        "theme.colors",
+        "theme.strokeWidth",
+        "colorMode",
+        "shape.props.color",
+        "shape.props.size",
+        "shape.props.scale",
+        "shape.props.dash",
+        "shape.props.spline"
+      ],
+      "importsInternal": [
+        {
+          "spec": "../shared/default-shape-constants",
+          "symbols": ["STROKE_SIZES"],
+          "anchor": { "startLine": 30, "endLine": 30 },
+          "resolvedRelativePath": "packages/tldraw/src/lib/shapes/shared/default-shape-constants.ts",
+          "resolvedFileId": "packages/tldraw/src/lib/shapes/shared/default-shape-constants.ts",
+          "resolvedHint": "packages/tldraw/src/lib/shapes/shared/default-shape-constants.ts"
+        },
+        {
+          "spec": "../shared/getDisplayValues",
+          "symbols": ["ShapeOptionsWithDisplayValues", "getDisplayValues"],
+          "anchor": { "startLine": 31, "endLine": 31 },
+          "resolvedRelativePath": "packages/tldraw/src/lib/shapes/shared/getDisplayValues.ts",
+          "resolvedFileId": "packages/tldraw/src/lib/shapes/shared/getDisplayValues.ts",
+          "resolvedHint": "packages/tldraw/src/lib/shapes/shared/getDisplayValues.ts"
+        },
+        {
+          "spec": "../shared/PathBuilder",
+          "symbols": ["PathBuilder", "PathBuilderGeometry2d"],
+          "anchor": { "startLine": 32, "endLine": 32 },
+          "resolvedRelativePath": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx",
+          "resolvedFileId": "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx",
+          "resolvedHint": "packages/tldraw/src/lib/shapes/shared/PathBuilder.ts"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "@tldraw/editor",
+          "symbols": [
+            "Group2d",
+            "HandleSnapGeometry",
+            "SVGContainer",
+            "ShapeUtil",
+            "SvgExportContext",
+            "TLHandle",
+            "TLHandleDragInfo",
+            "TLLineShape",
+            "TLLineShapePoint",
+            "TLResizeInfo",
+            "Vec",
+            "WeakCache",
+            "ZERO_INDEX_KEY",
+            "assert",
+            "getColorValue",
+            "getIndexAbove",
+            "getIndexBetween",
+            "getIndices",
+            "lerp",
+            "lineShapeMigrations",
+            "lineShapeProps",
+            "mapObjectMapValues",
+            "maybeSnapToGrid",
+            "sortByIndex",
+            "useColorMode"
+          ],
+          "package": "@tldraw/editor",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 2, "endLine": 29 }
+        }
+      ],
+      "sideEffects": {
+        "io": [],
+        "network": [],
+        "env": [],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": [
+          "onBeforeCreate mutates the last point in next.props.points when all supplied points coincide."
+        ]
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "LineShapeUtilDisplayValues",
+          "shape": "export interface LineShapeUtilDisplayValues { strokeColor: string; strokeWidth: number }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "LineShapeOptions",
+          "shape": "export interface LineShapeOptions extends ShapeOptionsWithDisplayValues<TLLineShape, LineShapeUtilDisplayValues> {}",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "LineShapeUtil",
+          "shape": "export class LineShapeUtil extends ShapeUtil<TLLineShape>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        { "name": "TLLineShape", "shape": "TLLineShape", "resolvedRelativePath": null, "resolvedFileId": null },
+        {
+          "name": "TLLineShapePoint",
+          "shape": "TLLineShapePoint",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        { "name": "lineShapeProps", "shape": "lineShapeProps", "resolvedRelativePath": null, "resolvedFileId": null },
+        {
+          "name": "lineShapeMigrations",
+          "shape": "lineShapeMigrations",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "ShapeOptionsWithDisplayValues",
+          "shape": "ShapeOptionsWithDisplayValues<TLLineShape, LineShapeUtilDisplayValues>",
+          "resolvedRelativePath": "packages/tldraw/src/lib/shapes/shared/getDisplayValues.ts",
+          "resolvedFileId": "packages/tldraw/src/lib/shapes/shared/getDisplayValues.ts"
+        },
+        {
+          "name": "HandleSnapGeometry",
+          "shape": "HandleSnapGeometry",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        { "name": "TLHandle", "shape": "TLHandle", "resolvedRelativePath": null, "resolvedFileId": null },
+        {
+          "name": "TLHandleDragInfo",
+          "shape": "TLHandleDragInfo<TLLineShape>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "TLResizeInfo",
+          "shape": "TLResizeInfo<TLLineShape>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "SvgExportContext",
+          "shape": "SvgExportContext",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "default-properties",
+          "intent": "Creates a minimally valid two-point line with default visual properties.",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 85, "endLine": 104 }
+        },
+        {
+          "name": "handle-generation",
+          "intent": "Creates vertex and midpoint insertion handles from cached line geometry.",
+          "structureKind": "loop",
+          "predicate": "i < points.length - 1",
+          "branchOutcomes": [],
+          "bounds": "i < points.length - 1",
+          "terminationCondition": null,
+          "anchor": { "startLine": 106, "endLine": 136 }
+        },
+        {
+          "name": "degenerate-line-prevention",
+          "intent": "Rejects underspecified lines and separates coincident points.",
+          "structureKind": "branch",
+          "predicate": "pointKeys.length < 2",
+          "branchOutcomes": ["fewer than two points", "all points coincide", "points differ"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 152, "endLine": 174 }
+        },
+        {
+          "name": "handle-drag-start",
+          "intent": "Materializes a new vertex when an insertion handle begins dragging.",
+          "structureKind": "branch",
+          "predicate": "handle.type === 'create'",
+          "branchOutcomes": ["create handle", "existing vertex handle"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 190, "endLine": 207 }
+        },
+        {
+          "name": "self-snap-filtering",
+          "intent": "Excludes the active and adjacent vertices from self-snap candidates.",
+          "structureKind": "branch",
+          "predicate": "Math.abs(i - index) > 1",
+          "branchOutcomes": ["non-adjacent point", "current or adjacent point"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 247, "endLine": 278 }
+        },
+        {
+          "name": "point-count-interpolation",
+          "intent": "Expands or converges point arrays before interpolating coordinates and scale.",
+          "structureKind": "branch",
+          "predicate": "startPoints.length > endPoints.length",
+          "branchOutcomes": ["start has more points", "end has more points", "equal point counts"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 280, "endLine": 340 }
+        },
+        {
+          "name": "path-construction",
+          "intent": "Selects line or cubic spline geometry and caches it by shape.",
+          "structureKind": "branch",
+          "predicate": "shape.props.spline",
+          "branchOutcomes": ["cubic", "line"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 351, "endLine": 364 }
+        },
+        {
+          "name": "svg-rendering",
+          "intent": "Converts cached geometry into styled SVG path output.",
+          "structureKind": "io",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 366, "endLine": 396 }
+        }
+      ],
+      "representationFamily": "class-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "interface",
+          "name": "LineShapeUtilDisplayValues",
+          "signature": "export interface LineShapeUtilDisplayValues {",
+          "generics": null,
+          "decorators": ["/** @public */"],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 35, "endLine": 39 }
+        },
+        {
+          "kind": "interface",
+          "name": "LineShapeOptions",
+          "signature": "export interface LineShapeOptions extends ShapeOptionsWithDisplayValues<\n\tTLLineShape,\n\tLineShapeUtilDisplayValues\n> {}",
+          "generics": null,
+          "decorators": ["/** @public */"],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 41, "endLine": 45 }
+        },
+        {
+          "kind": "class",
+          "name": "LineShapeUtil",
+          "signature": "export class LineShapeUtil extends ShapeUtil<TLLineShape> {",
+          "generics": "<TLLineShape>",
+          "decorators": ["/** @public */"],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 47, "endLine": 340 }
+        },
+        {
+          "kind": "method",
+          "name": "getGeometry",
+          "signature": "getGeometry(shape: TLLineShape)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 99, "endLine": 104 }
+        },
+        {
+          "kind": "method",
+          "name": "getHandles",
+          "signature": "override getHandles(shape: TLLineShape)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 106, "endLine": 136 }
+        },
+        {
+          "kind": "method",
+          "name": "onResize",
+          "signature": "override onResize(shape: TLLineShape, info: TLResizeInfo<TLLineShape>)",
+          "generics": "<TLLineShape>",
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 140, "endLine": 150 }
+        },
+        {
+          "kind": "method",
+          "name": "onBeforeCreate",
+          "signature": "override onBeforeCreate(next: TLLineShape): void | TLLineShape",
+          "generics": null,
+          "decorators": [],
+          "returnType": "void | TLLineShape",
+          "exported": false,
+          "anchor": { "startLine": 152, "endLine": 174 }
+        },
+        {
+          "kind": "method",
+          "name": "onHandleDrag",
+          "signature": "override onHandleDrag(shape: TLLineShape, { handle }: TLHandleDragInfo<TLLineShape>)",
+          "generics": "<TLLineShape>",
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 176, "endLine": 188 }
+        },
+        {
+          "kind": "method",
+          "name": "onHandleDragStart",
+          "signature": "override onHandleDragStart(shape: TLLineShape, { handle }: TLHandleDragInfo<TLLineShape>)",
+          "generics": "<TLLineShape>",
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 190, "endLine": 207 }
+        },
+        {
+          "kind": "method",
+          "name": "component",
+          "signature": "component(shape: TLLineShape)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 209, "endLine": 218 }
+        },
+        {
+          "kind": "method",
+          "name": "getIndicatorPath",
+          "signature": "override getIndicatorPath(shape: TLLineShape): Path2D",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Path2D",
+          "exported": false,
+          "anchor": { "startLine": 220, "endLine": 233 }
+        },
+        {
+          "kind": "method",
+          "name": "toSvg",
+          "signature": "override toSvg(shape: TLLineShape, ctx: SvgExportContext)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 235, "endLine": 245 }
+        },
+        {
+          "kind": "method",
+          "name": "getHandleSnapGeometry",
+          "signature": "override getHandleSnapGeometry(shape: TLLineShape): HandleSnapGeometry",
+          "generics": null,
+          "decorators": [],
+          "returnType": "HandleSnapGeometry",
+          "exported": false,
+          "anchor": { "startLine": 247, "endLine": 278 }
+        },
+        {
+          "kind": "method",
+          "name": "getInterpolatedProps",
+          "signature": "override getInterpolatedProps(\n\t\tstartShape: TLLineShape,\n\t\tendShape: TLLineShape,\n\t\tt: number\n\t): TLLineShape['props']",
+          "generics": null,
+          "decorators": [],
+          "returnType": "TLLineShape['props']",
+          "exported": false,
+          "anchor": { "startLine": 280, "endLine": 340 }
+        },
+        {
+          "kind": "function",
+          "name": "linePointsToArray",
+          "signature": "function linePointsToArray(shape: TLLineShape)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 342, "endLine": 348 }
+        },
+        {
+          "kind": "function",
+          "name": "getPathForLineShape",
+          "signature": "function getPathForLineShape(shape: TLLineShape): PathBuilder",
+          "generics": null,
+          "decorators": [],
+          "returnType": "PathBuilder",
+          "exported": false,
+          "anchor": { "startLine": 351, "endLine": 364 }
+        },
+        {
+          "kind": "function",
+          "name": "LineShapeSvg",
+          "signature": "function LineShapeSvg({",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 366, "endLine": 396 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "interface",
+          "name": "LineShapeUtilDisplayValues",
+          "shape": "{\n\tstrokeColor: string\n\tstrokeWidth: number\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 36, "endLine": 39 }
+        },
+        {
+          "kind": "interface",
+          "name": "LineShapeOptions",
+          "shape": "extends ShapeOptionsWithDisplayValues<\n\tTLLineShape,\n\tLineShapeUtilDisplayValues\n> {}",
+          "discriminant": null,
+          "anchor": { "startLine": 42, "endLine": 45 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "Line with fewer than two points",
+          "handled": true,
+          "behavior": "onBeforeCreate returns without accepting the candidate.",
+          "anchor": { "startLine": 155, "endLine": 158 }
+        },
+        {
+          "inputShape": "Line whose points all share identical coordinates",
+          "handled": true,
+          "behavior": "The final point is offset by 0.1 in both axes and the modified shape is returned.",
+          "anchor": { "startLine": 159, "endLine": 171 }
+        },
+        {
+          "inputShape": "Malformed line with duplicate point indices",
+          "handled": true,
+          "behavior": "Only the first point at each repeated index is retained.",
+          "anchor": { "startLine": 342, "endLine": 347 }
+        },
+        {
+          "inputShape": "Create handle drag",
+          "handled": true,
+          "behavior": "A vertex is inserted at the create handle index before dragging continues.",
+          "anchor": { "startLine": 195, "endLine": 205 }
+        },
+        {
+          "inputShape": "Shape interpolation with unequal point counts",
+          "handled": true,
+          "behavior": "The shorter point array is expanded by repeating its terminal point.",
+          "anchor": { "startLine": 292, "endLine": 313 }
+        },
+        {
+          "inputShape": "Shape with no eligible self-snap outline segments",
+          "handled": true,
+          "behavior": "Self-snap outline returns null.",
+          "anchor": { "startLine": 269, "endLine": 275 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": "<",
+          "left": "pointKeys.length",
+          "right": "2",
+          "inclusive": false,
+          "intent": "Rejects candidates with fewer than two points.",
+          "anchor": { "startLine": 156, "endLine": 156 }
+        },
+        {
+          "operator": "==",
+          "left": "point.x",
+          "right": "firstPoint.x",
+          "inclusive": true,
+          "intent": "Checks whether each point shares the first point's x coordinate.",
+          "anchor": { "startLine": 162, "endLine": 162 }
+        },
+        {
+          "operator": "==",
+          "left": "point.y",
+          "right": "firstPoint.y",
+          "inclusive": true,
+          "intent": "Checks whether each point shares the first point's y coordinate.",
+          "anchor": { "startLine": 162, "endLine": 162 }
+        },
+        {
+          "operator": ">",
+          "left": "Math.abs(i - index)",
+          "right": "1",
+          "inclusive": false,
+          "intent": "Keeps only non-current and non-adjacent snap points.",
+          "anchor": { "startLine": 257, "endLine": 257 }
+        },
+        {
+          "operator": "!=",
+          "left": "i",
+          "right": "index - 1",
+          "inclusive": false,
+          "intent": "Excludes the segment immediately preceding the active handle.",
+          "anchor": { "startLine": 272, "endLine": 272 }
+        },
+        {
+          "operator": "!=",
+          "left": "i",
+          "right": "index",
+          "inclusive": false,
+          "intent": "Excludes the segment immediately following the active handle.",
+          "anchor": { "startLine": 272, "endLine": 272 }
+        },
+        {
+          "operator": ">",
+          "left": "startPoints.length",
+          "right": "endPoints.length",
+          "inclusive": false,
+          "intent": "Selects expansion of the end point array.",
+          "anchor": { "startLine": 292, "endLine": 292 }
+        },
+        {
+          "operator": "==",
+          "left": "endPoints[i]",
+          "right": "undefined",
+          "inclusive": true,
+          "intent": "Detects when the end shape lacks a corresponding point.",
+          "anchor": { "startLine": 296, "endLine": 296 }
+        },
+        {
+          "operator": ">",
+          "left": "endPoints.length",
+          "right": "startPoints.length",
+          "inclusive": false,
+          "intent": "Selects expansion of the start point array.",
+          "anchor": { "startLine": 303, "endLine": 303 }
+        },
+        {
+          "operator": "==",
+          "left": "startPoints[i]",
+          "right": "undefined",
+          "inclusive": true,
+          "intent": "Detects when the start shape lacks a corresponding point.",
+          "anchor": { "startLine": 307, "endLine": 307 }
+        },
+        {
+          "operator": "==",
+          "left": "i",
+          "right": "0",
+          "inclusive": true,
+          "intent": "Always retains the first sorted point.",
+          "anchor": { "startLine": 347, "endLine": 347 }
+        },
+        {
+          "operator": "!=",
+          "left": "point.index",
+          "right": "sorted[i - 1].index",
+          "inclusive": false,
+          "intent": "Removes subsequent points sharing an ordering index.",
+          "anchor": { "startLine": 347, "endLine": 347 }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": "assertion failure",
+          "caught": null,
+          "action": "Asserts that generated geometry is a PathBuilderGeometry2d.",
+          "fallback": null,
+          "anchor": { "startLine": 101, "endLine": 103 }
+        },
+        {
+          "thrown": "a2 >= a2 error from getIndexBetween",
+          "caught": null,
+          "action": "Avoids the error by filtering duplicate point indices before handle generation.",
+          "fallback": null,
+          "anchor": { "startLine": 342, "endLine": 347 }
+        }
+      ],
+      "invariants": [
+        {
+          "kind": "invariant",
+          "description": "Default lines contain two ordered points and a unit scale.",
+          "anchor": { "startLine": 85, "endLine": 97 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "Line geometry must be a PathBuilderGeometry2d before being returned.",
+          "anchor": { "startLine": 99, "endLine": 103 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Adjacent point indices must differ before insertion indices are generated.",
+          "anchor": { "startLine": 106, "endLine": 135 }
+        },
+        {
+          "kind": "invariant",
+          "description": "A line created with at least two identical points is adjusted to have nonzero extent.",
+          "anchor": { "startLine": 164, "endLine": 171 }
+        },
+        {
+          "kind": "ordering",
+          "description": "Points are sorted by index before handles or geometry are derived.",
+          "anchor": { "startLine": 342, "endLine": 347 }
+        },
+        {
+          "kind": "non-null",
+          "description": "A matching vertex handle is expected when computing self-snap indices.",
+          "anchor": { "startLine": 251, "endLine": 265 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "Shape framework callers provide valid TLLineShape objects and matching drag metadata.",
+          "anchor": { "startLine": 99, "endLine": 104 }
+        },
+        {
+          "kind": "schema",
+          "description": "Point map values contain stable ids, sortable indices, and numeric coordinates.",
+          "anchor": { "startLine": 342, "endLine": 347 }
+        },
+        {
+          "kind": "platform",
+          "description": "SVG and Path2D rendering APIs are available through the editor runtime.",
+          "anchor": { "startLine": 220, "endLine": 233 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "What external lifecycle guarantees invalidate or refresh the WeakCache entries?",
+          "affects": "geometry and handle caching",
+          "anchor": { "startLine": 33, "endLine": 33 },
+          "resolution": null
+        },
+        {
+          "question": "What exact runtime behavior is expected when spline is outside the declared line or cubic values?",
+          "affects": "getPathForLineShape return behavior",
+          "anchor": { "startLine": 355, "endLine": 361 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "sync",
+        "reentrant": true,
+        "ordering": "deterministic",
+        "notes": "All shape operations are synchronous; WeakCache memoization is keyed by shape or props objects."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "default-props-create-two-point-line",
+          "scenario": "A newly created line receives valid default styling, spline, scale, and two distinct points.",
+          "given": ["const util = new LineShapeUtil()"],
+          "when": "util.getDefaultProps()",
+          "then": "result.points has two points, result.spline === 'line', result.scale === 1, result.dash === 'draw', result.size === 'm', and result.color === 'black'",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins the serialized defaults required for newly created line shapes."
+        },
+        {
+          "testId": "corrects-degenerate-line",
+          "scenario": "A line whose points all share the same coordinates is created.",
+          "given": [
+            "const next = { props: { points: { a: { id: 'a', index: 'a', x: 1, y: 1 }, b: { id: 'b', index: 'b', x: 1, y: 1 } } } }"
+          ],
+          "when": "util.onBeforeCreate(next)",
+          "then": "the last point is moved to x === 1.1 and y === 1.1",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Prevents zero-length lines that cannot be meaningfully rendered or manipulated."
+        },
+        {
+          "testId": "creates-vertex-on-create-handle-drag",
+          "scenario": "A user begins dragging a segment create handle.",
+          "given": ["const handle = { type: 'create', index: 'b', x: 2, y: 3 }"],
+          "when": "util.onHandleDragStart(shape, { handle })",
+          "then": "the returned shape contains a point at key 'b' with id 'b', index 'b', x === 2, and y === 3",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins the contract that segment insertion happens before drag updates."
+        },
+        {
+          "testId": "updates-dragged-vertex",
+          "scenario": "A vertex handle is dragged to a new position.",
+          "given": ["const handle = { id: 'a', index: 'a', x: 4, y: 5 }"],
+          "when": "util.onHandleDrag(shape, { handle })",
+          "then": "the returned shape preserves all other points and updates points['a'] to the snapped handle coordinates",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Ensures handle identity updates the correct point without losing unrelated shape data."
+        },
+        {
+          "testId": "interpolates-point-count-mismatch",
+          "scenario": "Two line shapes with different numbers of points are interpolated.",
+          "given": ["const t = 0.5"],
+          "when": "util.getInterpolatedProps(startShape, endShape, t)",
+          "then": "the result contains the larger point count, interpolates every point coordinate, and interpolates scale",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Guards animation continuity when line vertex counts differ."
+        },
+        {
+          "testId": "filters-duplicate-point-indices",
+          "scenario": "Malformed line data contains adjacent points with the same index.",
+          "given": ["shape.props.points contains two adjacent points with equal index values"],
+          "when": "util.getHandles(shape)",
+          "then": "only the first point for each repeated index contributes a vertex handle",
+          "targets": [],
+          "oracleKind": "invariant-check",
+          "rationale": "Prevents equal adjacent indices from reaching getIndexBetween and throwing."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "oxlint disable directive",
+        "editor imports",
+        "shared shape constants import",
+        "display value imports",
+        "path builder imports",
+        "handles cache",
+        "LineShapeUtilDisplayValues interface",
+        "LineShapeOptions interface",
+        "LineShapeUtil class",
+        "linePointsToArray helper",
+        "pathCache",
+        "getPathForLineShape helper",
+        "LineShapeSvg component"
+      ],
+      "moduleLevelCode": "import declarations and cache initialization",
+      "exports": [
+        { "name": "LineShapeUtilDisplayValues", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "LineShapeOptions", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "LineShapeUtil", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "Group2d", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "HandleSnapGeometry", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "SVGContainer", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "ShapeUtil", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "SvgExportContext", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "TLHandle", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "TLHandleDragInfo", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "TLLineShape", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "TLLineShapePoint", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "TLResizeInfo", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "Vec", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "WeakCache", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "ZERO_INDEX_KEY", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "assert", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "getColorValue", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "getIndexAbove", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "getIndexBetween", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "getIndices", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "lerp", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "lineShapeMigrations", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "lineShapeProps", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "mapObjectMapValues", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "maybeSnapToGrid", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "sortByIndex", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "useColorMode", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "STROKE_SIZES", "module": "../shared/default-shape-constants", "alias": null, "kind": "internal" },
+        {
+          "symbol": "ShapeOptionsWithDisplayValues",
+          "module": "../shared/getDisplayValues",
+          "alias": null,
+          "kind": "internal"
+        },
+        { "symbol": "getDisplayValues", "module": "../shared/getDisplayValues", "alias": null, "kind": "internal" },
+        { "symbol": "PathBuilder", "module": "../shared/PathBuilder", "alias": null, "kind": "internal" },
+        { "symbol": "PathBuilderGeometry2d", "module": "../shared/PathBuilder", "alias": null, "kind": "internal" }
+      ],
+      "fileConstants": [
+        { "name": "handlesCache", "value": "new WeakCache<TLLineShape['props'], TLHandle[]>()", "kind": "cache" },
+        { "name": "pathCache", "value": "new WeakCache<TLLineShape, PathBuilder>()", "kind": "cache" }
+      ],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil#class:LineShapeUtil",
+        "unitKind": "class",
+        "name": "LineShapeUtil",
+        "qualifiedName": "LineShapeUtil",
+        "parentUnitId": null,
+        "startLine": 47,
+        "endLine": 340,
+        "isBehavioral": true,
+        "source": "/** @public */\nexport class LineShapeUtil extends ShapeUtil<TLLineShape> {\n\tstatic override type = 'line' as const\n\tstatic override props = lineShapeProps\n\tstatic override migrations = lineShapeMigrations\n\n\toverride options: LineShapeOptions = {\n\t\tgetDefaultDisplayValues(_editor, shape, theme, colorMode): LineShapeUtilDisplayValues {\n\t\t\tconst { color, size } = shape.props\n\t\t\treturn {\n\t\t\t\tstrokeColor: getColorValue(theme.colors[colorMode], color, 'solid'),\n\t\t\t\tstrokeWidth: theme.strokeWidth * STROKE_SIZES[size],\n\t\t\t}\n\t\t},\n\t\tgetCustomDisplayValues(): Partial<LineShapeUtilDisplayValues> {\n\t\t\treturn {}\n\t\t},\n\t}\n\n\toverride hideResizeHandles(shape: TLLineShape) {\n\t\treturn true\n\t}\n\toverride hideRotateHandle(shape: TLLineShape) {\n\t\treturn true\n\t}\n\toverride hideSelectionBoundsFg(shape: TLLineShape) {\n\t\treturn true\n\t}\n\toverride hideSelectionBoundsBg(shape: TLLineShape) {\n\t\treturn true\n\t}\n\toverride hideInMinimap() {\n\t\treturn true\n\t}\n\n\toverride getDefaultProps(): TLLineShape['props'] {\n\t\tconst [start, end] = getIndices(2)\n\t\treturn {\n\t\t\tdash: 'draw',\n\t\t\tsize: 'm',\n\t\t\tcolor: 'black',\n\t\t\tspline: 'line',\n\t\t\tpoints: {\n\t\t\t\t[start]: { id: start, index: start, x: 0, y: 0 },\n\t\t\t\t[end]: { id: end, index: end, x: 0.1, y: 0.1 },\n\t\t\t},\n\t\t\tscale: 1,\n\t\t}\n\t}\n\n\tgetGeometry(shape: TLLineShape) {\n\t\t// todo: should we have min size?\n\t\tconst geometry = getPathForLineShape(shape).toGeometry()\n\t\tassert(geometry instanceof PathBuilderGeometry2d)\n\t\treturn geometry\n\t}\n\n\toverride getHandles(shape: TLLineShape) {\n\t\treturn handlesCache.get(shape.props, () => {\n\t\t\tconst spline = this.getGeometry(shape)\n\n\t\t\tconst points = linePointsToArray(shape)\n\t\t\tconst results: TLHandle[] = points.map((point) => ({\n\t\t\t\t...point,\n\t\t\t\t// A vertex handle's id is the point's stable id (its map key), not its\n\t\t\t\t// index. The index is only ever used for ordering (sortByIndex) and for\n\t\t\t\t// computing the create-handle positions below.\n\t\t\t\tid: point.id,\n\t\t\t\ttype: 'vertex',\n\t\t\t\tcanSnap: true,\n\t\t\t}))\n\n\t\t\tfor (let i = 0; i < points.length - 1; i++) {\n\t\t\t\tconst index = getIndexBetween(points[i].index, points[i + 1].index)\n\t\t\t\tconst segment = spline.getSegments()[i]\n\t\t\t\tconst point = segment.interpolateAlongEdge(0.5)\n\t\t\t\tresults.push({\n\t\t\t\t\tid: index,\n\t\t\t\t\ttype: 'create',\n\t\t\t\t\tindex,\n\t\t\t\t\tx: point.x,\n\t\t\t\t\ty: point.y,\n\t\t\t\t\tcanSnap: true,\n\t\t\t\t})\n\t\t\t}\n\n\t\t\treturn results.sort(sortByIndex)\n\t\t})\n\t}\n\n\t//   Events\n\n\toverride onResize(shape: TLLineShape, info: TLResizeInfo<TLLineShape>) {\n\t\tconst { scaleX, scaleY } = info\n\n\t\treturn {\n\t\t\tprops: {\n\t\t\t\tpoints: mapObjectMapValues(shape.props.points, (_, { id, index, x, y }) => ({\n\t\t\t\t\tid,\n\t\t\t\t\tindex,\n\t\t\t\t\tx: x * scaleX,\n\t\t\t\t\ty: y * scaleY,\n\t\t\t\t})),\n\t\t\t},\n\t\t}\n\t}\n\n\toverride onBeforeCreate(next: TLLineShape): void | TLLineShape {\n\t\tconst {\n\t\t\tprops: { points },\n\t\t} = next\n\t\tconst pointKeys = Object.keys(points)\n\n\t\tif (pointKeys.length < 2) {\n\t\t\treturn\n\t\t}\n\n\t\tconst firstPoint = points[pointKeys[0]]\n\t\tconst allSame = pointKeys.every((key) => {\n\t\t\tconst point = points[key]\n\t\t\treturn point.x === firstPoint.x && point.y === firstPoint.y\n\t\t})\n\t\tif (allSame) {\n\t\t\tconst lastKey = pointKeys[pointKeys.length - 1]\n\t\t\tpoints[lastKey] = {\n\t\t\t\t...points[lastKey],\n\t\t\t\tx: points[lastKey].x + 0.1,\n\t\t\t\ty: points[lastKey].y + 0.1,\n\t\t\t}\n\t\t\treturn next\n\t\t}\n\t\treturn\n\t}\n\n\toverride onHandleDrag(shape: TLLineShape, { handle }: TLHandleDragInfo<TLLineShape>) {\n\t\tconst newPoint = maybeSnapToGrid(new Vec(handle.x, handle.y), this.editor)\n\t\t// handle.id is the point's key (== its id), so we update the point in place.\n\t\treturn {\n\t\t\t...shape,\n\t\t\tprops: {\n\t\t\t\t...shape.props,\n\t\t\t\tpoints: {\n\t\t\t\t\t...shape.props.points,\n\t\t\t\t\t[handle.id]: { id: handle.id, index: handle.index, x: newPoint.x, y: newPoint.y },\n\t\t\t\t},\n\t\t\t},\n\t\t}\n\t}\n\n\toverride onHandleDragStart(shape: TLLineShape, { handle }: TLHandleDragInfo<TLLineShape>) {\n\t\t// For line shapes, if we're dragging a \"create\" handle, then\n\t\t// create a new vertex handle at that point; and make this handle\n\t\t// the handle that we're dragging.\n\t\tif (handle.type === 'create') {\n\t\t\treturn {\n\t\t\t\t...shape,\n\t\t\t\tprops: {\n\t\t\t\t\t...shape.props,\n\t\t\t\t\tpoints: {\n\t\t\t\t\t\t...shape.props.points,\n\t\t\t\t\t\t[handle.index]: { id: handle.index, index: handle.index, x: handle.x, y: handle.y },\n\t\t\t\t\t},\n\t\t\t\t},\n\t\t\t}\n\t\t}\n\t\treturn\n\t}\n\n\tcomponent(shape: TLLineShape) {\n\t\t// eslint-disable-next-line react-hooks/rules-of-hooks\n\t\tconst colorMode = useColorMode()\n\t\tconst dv = getDisplayValues(this, shape, colorMode)\n\t\treturn (\n\t\t\t<SVGContainer style={{ minWidth: 50, minHeight: 50 }}>\n\t\t\t\t<LineShapeSvg shape={shape} strokeColor={dv.strokeColor} strokeWidth={dv.strokeWidth} />\n\t\t\t</SVGContainer>\n\t\t)\n\t}\n\n\toverride getIndicatorPath(shape: TLLineShape): Path2D {\n\t\tconst strokeWidth = getDisplayValues(this, shape).strokeWidth * shape.props.scale\n\t\tconst path = getPathForLineShape(shape)\n\t\tconst { dash } = shape.props\n\n\t\treturn path.toPath2D({\n\t\t\tstyle: dash === 'draw' ? 'draw' : 'solid',\n\t\t\tstrokeWidth: 1,\n\t\t\tpasses: 1,\n\t\t\trandomSeed: shape.id,\n\t\t\toffset: 0,\n\t\t\troundness: strokeWidth * 2,\n\t\t})\n\t}\n\n\toverride toSvg(shape: TLLineShape, ctx: SvgExportContext) {\n\t\tconst dv = getDisplayValues(this, shape, ctx.colorMode)\n\t\treturn (\n\t\t\t<LineShapeSvg\n\t\t\t\tshouldScale\n\t\t\t\tshape={shape}\n\t\t\t\tstrokeColor={dv.strokeColor}\n\t\t\t\tstrokeWidth={dv.strokeWidth}\n\t\t\t/>\n\t\t)\n\t}\n\n\toverride getHandleSnapGeometry(shape: TLLineShape): HandleSnapGeometry {\n\t\tconst points = linePointsToArray(shape)\n\t\treturn {\n\t\t\tpoints,\n\t\t\tgetSelfSnapPoints: (handle) => {\n\t\t\t\tconst index = this.getHandles(shape)\n\t\t\t\t\t.filter((h) => h.type === 'vertex')\n\t\t\t\t\t.findIndex((h) => h.id === handle.id)!\n\n\t\t\t\t// We want to skip the current and adjacent handles\n\t\t\t\treturn points.filter((_, i) => Math.abs(i - index) > 1).map(Vec.From)\n\t\t\t},\n\t\t\tgetSelfSnapOutline: (handle) => {\n\t\t\t\t// We want to skip the segments that include the handle, so\n\t\t\t\t// find the index of the handle that shares the same index property\n\t\t\t\t// as the initial dragging handle; this catches a quirk of create handles\n\t\t\t\tconst index = this.getHandles(shape)\n\t\t\t\t\t.filter((h) => h.type === 'vertex')\n\t\t\t\t\t.findIndex((h) => h.id === handle.id)!\n\n\t\t\t\t// Get all the outline segments from the shape that don't include the handle\n\t\t\t\tconst segments = this.getGeometry(shape)\n\t\t\t\t\t.getSegments()\n\t\t\t\t\t.filter((_, i) => i !== index - 1 && i !== index)\n\n\t\t\t\tif (!segments.length) return null\n\t\t\t\treturn new Group2d({ children: segments })\n\t\t\t},\n\t\t}\n\t}\n\toverride getInterpolatedProps(\n\t\tstartShape: TLLineShape,\n\t\tendShape: TLLineShape,\n\t\tt: number\n\t): TLLineShape['props'] {\n\t\tconst startPoints = linePointsToArray(startShape)\n\t\tconst endPoints = linePointsToArray(endShape)\n\n\t\tconst pointsToUseStart: TLLineShapePoint[] = []\n\t\tconst pointsToUseEnd: TLLineShapePoint[] = []\n\n\t\tlet index = ZERO_INDEX_KEY\n\n\t\tif (startPoints.length > endPoints.length) {\n\t\t\t// we'll need to expand points\n\t\t\tfor (let i = 0; i < startPoints.length; i++) {\n\t\t\t\tpointsToUseStart[i] = { ...startPoints[i] }\n\t\t\t\tif (endPoints[i] === undefined) {\n\t\t\t\t\tpointsToUseEnd[i] = { ...endPoints[endPoints.length - 1], id: index }\n\t\t\t\t} else {\n\t\t\t\t\tpointsToUseEnd[i] = { ...endPoints[i], id: index }\n\t\t\t\t}\n\t\t\t\tindex = getIndexAbove(index)\n\t\t\t}\n\t\t} else if (endPoints.length > startPoints.length) {\n\t\t\t// we'll need to converge points\n\t\t\tfor (let i = 0; i < endPoints.length; i++) {\n\t\t\t\tpointsToUseEnd[i] = { ...endPoints[i] }\n\t\t\t\tif (startPoints[i] === undefined) {\n\t\t\t\t\tpointsToUseStart[i] = {\n\t\t\t\t\t\t...startPoints[startPoints.length - 1],\n\t\t\t\t\t\tid: index,\n\t\t\t\t\t}\n\t\t\t\t} else {\n\t\t\t\t\tpointsToUseStart[i] = { ...startPoints[i], id: index }\n\t\t\t\t}\n\t\t\t\tindex = getIndexAbove(index)\n\t\t\t}\n\t\t} else {\n\t\t\t// noop, easy\n\t\t\tfor (let i = 0; i < endPoints.length; i++) {\n\t\t\t\tpointsToUseStart[i] = startPoints[i]\n\t\t\t\tpointsToUseEnd[i] = endPoints[i]\n\t\t\t}\n\t\t}\n\n\t\treturn {\n\t\t\t...(t > 0.5 ? endShape.props : startShape.props),\n\t\t\tpoints: Object.fromEntries(\n\t\t\t\tpointsToUseStart.map((point, i) => {\n\t\t\t\t\tconst endPoint = pointsToUseEnd[i]\n\t\t\t\t\treturn [\n\t\t\t\t\t\tpoint.id,\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t...point,\n\t\t\t\t\t\t\tx: lerp(point.x, endPoint.x, t),\n\t\t\t\t\t\t\ty: lerp(point.y, endPoint.y, t),\n\t\t\t\t\t\t},",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil#class:LineShapeUtil",
+          "fileId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil",
+          "unitKind": "class",
+          "name": "LineShapeUtil",
+          "qualifiedName": "LineShapeUtil",
+          "parentUnitId": null,
+          "startLine": 47,
+          "endLine": 340,
+          "signature": "export class LineShapeUtil extends ShapeUtil<TLLineShape>",
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": ["ShapeUtil<TLLineShape>"],
+          "implementsTypes": [],
+          "members": [
+            {
+              "name": "type",
+              "kind": "static property",
+              "type": "'line' as const",
+              "default": "'line' as const",
+              "visibility": "public",
+              "static": true
+            },
+            {
+              "name": "props",
+              "kind": "static property",
+              "type": "typeof lineShapeProps",
+              "default": "lineShapeProps",
+              "visibility": "public",
+              "static": true
+            },
+            {
+              "name": "migrations",
+              "kind": "static property",
+              "type": "typeof lineShapeMigrations",
+              "default": "lineShapeMigrations",
+              "visibility": "public",
+              "static": true
+            },
+            {
+              "name": "options",
+              "kind": "property",
+              "type": "LineShapeOptions",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "getDefaultProps",
+              "kind": "method",
+              "type": "() => TLLineShape['props']",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "getGeometry",
+              "kind": "method",
+              "type": "(shape: TLLineShape) => PathBuilderGeometry2d",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "getHandles",
+              "kind": "method",
+              "type": "(shape: TLLineShape) => TLHandle[]",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "onResize",
+              "kind": "method",
+              "type": "(shape: TLLineShape, info: TLResizeInfo<TLLineShape>) => object",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "onBeforeCreate",
+              "kind": "method",
+              "type": "(next: TLLineShape) => void | TLLineShape",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "onHandleDrag",
+              "kind": "method",
+              "type": "(shape: TLLineShape, info: TLHandleDragInfo<TLLineShape>) => TLLineShape",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "onHandleDragStart",
+              "kind": "method",
+              "type": "(shape: TLLineShape, info: TLHandleDragInfo<TLLineShape>) => void | TLLineShape",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "component",
+              "kind": "method",
+              "type": "(shape: TLLineShape) => JSX.Element",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "getIndicatorPath",
+              "kind": "method",
+              "type": "(shape: TLLineShape) => Path2D",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "toSvg",
+              "kind": "method",
+              "type": "(shape: TLLineShape, ctx: SvgExportContext) => JSX.Element",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "getHandleSnapGeometry",
+              "kind": "method",
+              "type": "(shape: TLLineShape) => HandleSnapGeometry",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "getInterpolatedProps",
+              "kind": "method",
+              "type": "(startShape: TLLineShape, endShape: TLLineShape, t: number) => TLLineShape['props']",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "hideResizeHandles",
+              "kind": "method",
+              "type": "(shape: TLLineShape) => boolean",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "hideRotateHandle",
+              "kind": "method",
+              "type": "(shape: TLLineShape) => boolean",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "hideSelectionBoundsFg",
+              "kind": "method",
+              "type": "(shape: TLLineShape) => boolean",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "hideSelectionBoundsBg",
+              "kind": "method",
+              "type": "(shape: TLLineShape) => boolean",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            },
+            {
+              "name": "hideInMinimap",
+              "kind": "method",
+              "type": "() => boolean",
+              "default": null,
+              "visibility": "public",
+              "static": false
+            }
+          ],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "LineShapeUtil defines the public shape-util contract for TLLineShape instances, including their static schema metadata, default properties, display options, geometry, handles, and editor/export integration surface.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "f6d39fd96e1b66daf0a5430be835d2c3daba8028a7f17e772b707e5c9cab717c"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil.getGeometry#method:LineShapeUtil.getGeometry",
+        "unitKind": "method",
+        "name": "getGeometry",
+        "qualifiedName": "LineShapeUtil.getGeometry",
+        "parentUnitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil#class:LineShapeUtil",
+        "startLine": 99,
+        "endLine": 104,
+        "isBehavioral": true,
+        "source": "\t\tconst geometry = getPathForLineShape(shape).toGeometry()\n\t\tassert(geometry instanceof PathBuilderGeometry2d)\n\t\treturn geometry\n\t}\n\n\toverride getHandles(shape: TLLineShape) {",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil.getGeometry#method:LineShapeUtil.getGeometry",
+          "fileId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil.getGeometry",
+          "unitKind": "method",
+          "name": "getGeometry",
+          "qualifiedName": "LineShapeUtil.getGeometry",
+          "parentUnitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil#class:LineShapeUtil",
+          "startLine": 99,
+          "endLine": 104,
+          "signature": "override getGeometry(shape: TLLineShape)",
+          "parameters": [
+            {
+              "name": "shape",
+              "type": "TLLineShape",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "PathBuilderGeometry2d",
+          "decorators": [],
+          "modifiersApplied": ["override"],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["The argument conforms to the TLLineShape shape contract."],
+          "postconditions": [
+            "Returns the geometry produced from the line shape's path.",
+            "The returned value is a PathBuilderGeometry2d instance."
+          ],
+          "invariants": ["The returned geometry corresponds to the path generated from the supplied shape."],
+          "edgeCases": [
+            "Any shape data that causes getPathForLineShape to produce a non-PathBuilderGeometry2d geometry fails the runtime assertion rather than returning that geometry."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["Assertion error when the generated geometry is not an instance of PathBuilderGeometry2d."],
+            "reverts": [],
+            "onInvalidInput": "Input is not otherwise validated by this method; invalid shape data is handled by getPathForLineShape or the geometry-type assertion.",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "getPathForLineShape", "source": "LineShapeUtil.tsx", "kind": "internal" },
+            { "name": "toGeometry", "source": "path builder returned by getPathForLineShape", "kind": "internal" },
+            { "name": "assert", "source": "assertion utility", "kind": "internal" }
+          ],
+          "symbolReferences": ["TLLineShape", "PathBuilderGeometry2d"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Converts a line shape into its path geometry and guarantees that the resulting geometry is a PathBuilderGeometry2d instance.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "e46a39b217515038a87bfd9c81d34d3542f5909a64cf4b7cd6a65a9fd8aea52c"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil.getHandles#method:LineShapeUtil.getHandles",
+        "unitKind": "method",
+        "name": "getHandles",
+        "qualifiedName": "LineShapeUtil.getHandles",
+        "parentUnitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil#class:LineShapeUtil",
+        "startLine": 106,
+        "endLine": 136,
+        "isBehavioral": true,
+        "source": "\t\t\tconst spline = this.getGeometry(shape)\n\n\t\t\tconst points = linePointsToArray(shape)\n\t\t\tconst results: TLHandle[] = points.map((point) => ({\n\t\t\t\t...point,\n\t\t\t\t// A vertex handle's id is the point's stable id (its map key), not its\n\t\t\t\t// index. The index is only ever used for ordering (sortByIndex) and for\n\t\t\t\t// computing the create-handle positions below.\n\t\t\t\tid: point.id,\n\t\t\t\ttype: 'vertex',\n\t\t\t\tcanSnap: true,\n\t\t\t}))\n\n\t\t\tfor (let i = 0; i < points.length - 1; i++) {\n\t\t\t\tconst index = getIndexBetween(points[i].index, points[i + 1].index)\n\t\t\t\tconst segment = spline.getSegments()[i]\n\t\t\t\tconst point = segment.interpolateAlongEdge(0.5)\n\t\t\t\tresults.push({\n\t\t\t\t\tid: index,\n\t\t\t\t\ttype: 'create',\n\t\t\t\t\tindex,\n\t\t\t\t\tx: point.x,\n\t\t\t\t\ty: point.y,\n\t\t\t\t\tcanSnap: true,\n\t\t\t\t})\n\t\t\t}\n\n\t\t\treturn results.sort(sortByIndex)\n\t\t})\n\t}\n",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil.getHandles#method:LineShapeUtil.getHandles",
+          "fileId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil.getHandles",
+          "unitKind": "method",
+          "name": "getHandles",
+          "qualifiedName": "LineShapeUtil.getHandles",
+          "parentUnitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil#class:LineShapeUtil",
+          "startLine": 106,
+          "endLine": 136,
+          "signature": "getHandles(shape: TLLineShape): TLHandle[]",
+          "parameters": [
+            {
+              "name": "shape",
+              "type": "TLLineShape",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "TLHandle[]",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The input is a line shape whose points can be converted by linePointsToArray and whose geometry exposes segments corresponding to consecutive points."
+          ],
+          "postconditions": [
+            "Every line point produces one vertex handle preserving the point's coordinates and stable id.",
+            "Every consecutive pair of points produces one create handle positioned at the midpoint of the corresponding geometry segment.",
+            "All returned handles have canSnap set to true.",
+            "The returned handle array is sorted by index using sortByIndex."
+          ],
+          "invariants": [
+            "Vertex handle ids are the stable point ids, not point-array positions.",
+            "Create handle ids and indexes are the value returned by getIndexBetween for the adjacent point indexes.",
+            "The number of returned handles is 2n - 1 for n line points when n is at least one."
+          ],
+          "edgeCases": [
+            "A shape with no points produces an empty handle array.",
+            "A shape with one point produces exactly one vertex handle and no create handles.",
+            "A shape with multiple points produces one create handle for each adjacent point pair, located by interpolating along that segment at 0.5."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "getGeometry", "source": "LineShapeUtil", "kind": "internal" },
+            { "name": "linePointsToArray", "source": null, "kind": "internal" },
+            { "name": "getSegments", "source": null, "kind": "internal" },
+            { "name": "interpolateAlongEdge", "source": null, "kind": "internal" },
+            { "name": "getIndexBetween", "source": null, "kind": "internal" },
+            { "name": "sortByIndex", "source": null, "kind": "internal" }
+          ],
+          "symbolReferences": ["TLLineShape", "TLHandle"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Returns vertex handles for every point in a line shape and create handles at the midpoint of each consecutive segment. The returned handles are ordered by their handle index.",
+          "specLiterals": [
+            {
+              "kind": "enum-value",
+              "value": "vertex",
+              "role": "Handle type assigned to handles representing existing line points."
+            },
+            {
+              "kind": "enum-value",
+              "value": "create",
+              "role": "Handle type assigned to handles inserted between existing line points."
+            },
+            {
+              "kind": "magic-number",
+              "value": "0.5",
+              "role": "Interpolation parameter placing each create handle at the midpoint of its segment."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "getHandles is called.",
+              "then": "The result contains three vertex handles and two create handles; each vertex handle uses its point id, each create handle is at interpolation parameter 0.5 on its segment, and all handles can snap.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "getHandles is called.",
+              "then": "The result contains exactly one vertex handle and no create handles.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "getHandles is called.",
+              "then": "Vertex ids remain the points' stable ids, while create-handle ids and indexes are derived from adjacent point indexes and the complete result is sorted by index.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "57bce76cfc2f5174c1c7063fe1cb78fa91178f2b22d9aa05d78a78afe051b6c0"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil.onResize#method:LineShapeUtil.onResize",
+        "unitKind": "method",
+        "name": "onResize",
+        "qualifiedName": "LineShapeUtil.onResize",
+        "parentUnitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil#class:LineShapeUtil",
+        "startLine": 140,
+        "endLine": 150,
+        "isBehavioral": true,
+        "source": "\t\tconst { scaleX, scaleY } = info\n\n\t\treturn {\n\t\t\tprops: {\n\t\t\t\tpoints: mapObjectMapValues(shape.props.points, (_, { id, index, x, y }) => ({\n\t\t\t\t\tid,\n\t\t\t\t\tindex,\n\t\t\t\t\tx: x * scaleX,\n\t\t\t\t\ty: y * scaleY,\n\t\t\t\t})),\n\t\t\t},",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil.onResize#method:LineShapeUtil.onResize",
+          "fileId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil.onResize",
+          "unitKind": "method",
+          "name": "onResize",
+          "qualifiedName": "LineShapeUtil.onResize",
+          "parentUnitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil#class:LineShapeUtil",
+          "startLine": 140,
+          "endLine": 150,
+          "signature": "onResize(shape: TLLineShape, info: TLResizeInfo<TLLineShape>)",
+          "parameters": [
+            {
+              "name": "shape",
+              "type": "TLLineShape",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "info",
+              "type": "TLResizeInfo<TLLineShape>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "{ props: { points: ... } }",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "shape.props.points is a point collection whose entries provide id, index, x, and y values.",
+            "info provides numeric scaleX and scaleY resize factors."
+          ],
+          "postconditions": [
+            "Returns an object containing props.points with the same point entries as the input.",
+            "Each returned point preserves its id and index.",
+            "Each returned point has x equal to the input x multiplied by scaleX.",
+            "Each returned point has y equal to the input y multiplied by scaleY."
+          ],
+          "invariants": [
+            "The number and keys of points are preserved.",
+            "Point ordering metadata is preserved through each point's index.",
+            "The input shape is not mutated."
+          ],
+          "edgeCases": [
+            "An empty point collection produces an empty resized point collection.",
+            "A zero scale factor sets the corresponding coordinate of every point to zero.",
+            "Negative scale factors mirror the corresponding coordinates through multiplication."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "mapObjectMapValues", "source": null, "kind": "internal" }],
+          "symbolReferences": ["TLLineShape", "TLResizeInfo"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Returns resized line-shape properties by scaling every point's x and y coordinates according to the supplied resize factors while preserving each point's identity and index.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "onResize is called with the shape and resize info.",
+              "then": "The result contains points with p1 coordinates {x:4, y:-3} and p2 coordinates {x:-8, y:-5}, while preserving both ids and indexes.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "0c26cb7959e67f006978265606e5dbe4c4d6c9e42214bed8e6b84463ce7468ef"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil.onBeforeCreate#method:LineShapeUtil.onBeforeCreate",
+        "unitKind": "method",
+        "name": "onBeforeCreate",
+        "qualifiedName": "LineShapeUtil.onBeforeCreate",
+        "parentUnitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil#class:LineShapeUtil",
+        "startLine": 152,
+        "endLine": 174,
+        "isBehavioral": true,
+        "source": "\t}\n\n\toverride onBeforeCreate(next: TLLineShape): void | TLLineShape {\n\t\tconst {\n\t\t\tprops: { points },\n\t\t} = next\n\t\tconst pointKeys = Object.keys(points)\n\n\t\tif (pointKeys.length < 2) {\n\t\t\treturn\n\t\t}\n\n\t\tconst firstPoint = points[pointKeys[0]]\n\t\tconst allSame = pointKeys.every((key) => {\n\t\t\tconst point = points[key]\n\t\t\treturn point.x === firstPoint.x && point.y === firstPoint.y\n\t\t})\n\t\tif (allSame) {\n\t\t\tconst lastKey = pointKeys[pointKeys.length - 1]\n\t\t\tpoints[lastKey] = {\n\t\t\t\t...points[lastKey],\n\t\t\t\tx: points[lastKey].x + 0.1,\n\t\t\t\ty: points[lastKey].y + 0.1,",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil.onBeforeCreate#method:LineShapeUtil.onBeforeCreate",
+          "fileId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil.onBeforeCreate",
+          "unitKind": "method",
+          "name": "onBeforeCreate",
+          "qualifiedName": "LineShapeUtil.onBeforeCreate",
+          "parentUnitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil#class:LineShapeUtil",
+          "startLine": 152,
+          "endLine": 174,
+          "signature": "override onBeforeCreate(next: TLLineShape): void | TLLineShape",
+          "parameters": [
+            { "name": "next", "type": "TLLineShape", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "void | TLLineShape",
+          "decorators": [],
+          "modifiersApplied": ["override"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["next.props.points is a point map whose values provide numeric x and y coordinates."],
+          "postconditions": [
+            "If fewer than two points exist, the method returns void and does not alter the shape.",
+            "If at least two points exist and not all points coincide, the shape is returned unchanged.",
+            "If at least two points all coincide, the last point in object-key order is updated by adding 0.1 to both x and y, and the shape is returned."
+          ],
+          "invariants": [
+            "Point-key enumeration order determines which point is treated as the last point.",
+            "Only the final point is changed when all points coincide.",
+            "The existing properties of the adjusted final point are preserved."
+          ],
+          "edgeCases": [
+            "An empty point map or a one-point map causes an early void return with no mutation.",
+            "Two or more coincident points cause the final point to be offset diagonally by 0.1 in both coordinates.",
+            "Two or more points with at least one differing coordinate are returned unchanged."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [
+            "Mutates next.props.points at the last point key when all points have identical coordinates."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["TLLineShape"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Validates line creation points and ensures a line whose points are all coincident has a minimally nonzero endpoint offset. Lines with fewer than two points are left without a replacement shape.",
+          "specLiterals": [
+            {
+              "kind": "magic-number",
+              "value": "0.1",
+              "role": "Coordinate offset applied to both x and y of the final coincident point."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "onBeforeCreate is called.",
+              "then": "It returns the shape and changes the last point to { x: 5.1, y: 7.1 } while preserving its other properties.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "onBeforeCreate is called.",
+              "then": "It returns the shape with both points unchanged.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "onBeforeCreate is called.",
+              "then": "It returns void and does not mutate the point map.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "e783019c70757a11a2093dd93a787eec4d8fbfdb7c723609b3ed69cb9e742a7c"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil.onHandleDrag#method:LineShapeUtil.onHandleDrag",
+        "unitKind": "method",
+        "name": "onHandleDrag",
+        "qualifiedName": "LineShapeUtil.onHandleDrag",
+        "parentUnitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil#class:LineShapeUtil",
+        "startLine": 176,
+        "endLine": 188,
+        "isBehavioral": true,
+        "source": "\t\t\treturn next\n\t\t}\n\t\treturn\n\t}\n\n\toverride onHandleDrag(shape: TLLineShape, { handle }: TLHandleDragInfo<TLLineShape>) {\n\t\tconst newPoint = maybeSnapToGrid(new Vec(handle.x, handle.y), this.editor)\n\t\t// handle.id is the point's key (== its id), so we update the point in place.\n\t\treturn {\n\t\t\t...shape,\n\t\t\tprops: {\n\t\t\t\t...shape.props,\n\t\t\t\tpoints: {",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil.onHandleDrag#method:LineShapeUtil.onHandleDrag",
+          "fileId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil.onHandleDrag",
+          "unitKind": "method",
+          "name": "onHandleDrag",
+          "qualifiedName": "LineShapeUtil.onHandleDrag",
+          "parentUnitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil#class:LineShapeUtil",
+          "startLine": 176,
+          "endLine": 188,
+          "signature": "override onHandleDrag(shape: TLLineShape, { handle }: TLHandleDragInfo<TLLineShape>)",
+          "parameters": [
+            {
+              "name": "shape",
+              "type": "TLLineShape",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "{ handle }",
+              "type": "TLHandleDragInfo<TLLineShape>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": ["override"],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "shape is a TLLineShape.",
+            "The handle drag information contains a handle whose id identifies a point in shape.props.points."
+          ],
+          "postconditions": [
+            "Returns a shape value derived from the input shape.",
+            "The point identified by handle.id is updated to the snapped handle position.",
+            "Unrelated shape properties and line points are preserved."
+          ],
+          "invariants": [
+            "The handle id is used as the key of the point to update.",
+            "The input shape is not mutated in place."
+          ],
+          "edgeCases": [
+            "A handle position that is not on the grid is converted to the corresponding grid-snapped position before updating the point.",
+            "The dragged point is selected by handle.id, which is also the point key."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "maybeSnapToGrid", "source": null, "kind": "internal" },
+            { "name": "Vec", "source": null, "kind": "internal" }
+          ],
+          "symbolReferences": ["TLLineShape", "TLHandleDragInfo<TLLineShape>"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Updates the dragged point of a line shape using the handle's position after applying grid snapping. The returned shape preserves the existing shape and point data except for the dragged point's position.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "onHandleDrag is called with that shape and handle.",
+              "then": "The result contains the same shape data with the identified point updated to the grid-snapped handle position, while other points remain unchanged.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "d599d2768a5332c400fda120b5a371314bcabaf0621499555697abae9b35098e"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil.onHandleDragStart#method:LineShapeUtil.onHandleDragStart",
+        "unitKind": "method",
+        "name": "onHandleDragStart",
+        "qualifiedName": "LineShapeUtil.onHandleDragStart",
+        "parentUnitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil#class:LineShapeUtil",
+        "startLine": 190,
+        "endLine": 207,
+        "isBehavioral": true,
+        "source": "\t\t\t\t\t[handle.id]: { id: handle.id, index: handle.index, x: newPoint.x, y: newPoint.y },\n\t\t\t\t},\n\t\t\t},\n\t\t}\n\t}\n\n\toverride onHandleDragStart(shape: TLLineShape, { handle }: TLHandleDragInfo<TLLineShape>) {\n\t\t// For line shapes, if we're dragging a \"create\" handle, then\n\t\t// create a new vertex handle at that point; and make this handle\n\t\t// the handle that we're dragging.\n\t\tif (handle.type === 'create') {\n\t\t\treturn {\n\t\t\t\t...shape,\n\t\t\t\tprops: {\n\t\t\t\t\t...shape.props,\n\t\t\t\t\tpoints: {\n\t\t\t\t\t\t...shape.props.points,\n\t\t\t\t\t\t[handle.index]: { id: handle.index, index: handle.index, x: handle.x, y: handle.y },",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil.onHandleDragStart#method:LineShapeUtil.onHandleDragStart",
+          "fileId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil.onHandleDragStart",
+          "unitKind": "method",
+          "name": "onHandleDragStart",
+          "qualifiedName": "LineShapeUtil.onHandleDragStart",
+          "parentUnitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil#class:LineShapeUtil",
+          "startLine": 190,
+          "endLine": 207,
+          "signature": "override onHandleDragStart(shape: TLLineShape, { handle }: TLHandleDragInfo<TLLineShape>)",
+          "parameters": [
+            {
+              "name": "shape",
+              "type": "TLLineShape",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "{ handle }",
+              "type": "TLHandleDragInfo<TLLineShape>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": ["override"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "shape is a TLLineShape.",
+            "The second argument contains a handle with an id, index, type, x, and y."
+          ],
+          "postconditions": [
+            "For a create handle, the returned shape preserves the original shape and props while adding or replacing the point at handle.index with a point whose id and index equal handle.index and whose coordinates equal handle.x and handle.y.",
+            "For a non-create handle, the method returns undefined."
+          ],
+          "invariants": [
+            "Existing shape properties and points remain unchanged except for the point at the create handle's index.",
+            "The inserted point's id and index are both equal to the handle's index."
+          ],
+          "edgeCases": [
+            "A create handle whose index already exists replaces the point stored at that index.",
+            "A non-create handle does not modify the shape and produces no return value."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["TLLineShape", "TLHandleDragInfo"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Initializes dragging for a line handle. When the dragged handle is a create handle, it returns the line shape with a new point inserted at that handle's index and coordinates.",
+          "specLiterals": [
+            {
+              "kind": "enum-value",
+              "value": "create",
+              "role": "Identifies handles that cause a new line vertex point to be initialized."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "onHandleDragStart is called with the shape and that handle.",
+              "then": "It returns a shape preserving the original shape and points while setting points[\"2\"] to { id: \"2\", index: \"2\", x: 10, y: 20 }.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "onHandleDragStart is called.",
+              "then": "It returns undefined and does not alter the shape.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "b4e286e76fd30a8a99bd6d699577fd687a9147f9785cb2a5dcb27cb0c565dceb"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil.component#method:LineShapeUtil.component",
+        "unitKind": "method",
+        "name": "component",
+        "qualifiedName": "LineShapeUtil.component",
+        "parentUnitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil#class:LineShapeUtil",
+        "startLine": 209,
+        "endLine": 218,
+        "isBehavioral": true,
+        "source": "\t\t\t\t},\n\t\t\t}\n\t\t}\n\t\treturn\n\t}\n\n\tcomponent(shape: TLLineShape) {\n\t\t// eslint-disable-next-line react-hooks/rules-of-hooks\n\t\tconst colorMode = useColorMode()\n\t\tconst dv = getDisplayValues(this, shape, colorMode)",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil.component#method:LineShapeUtil.component",
+          "fileId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil.component",
+          "unitKind": "method",
+          "name": "component",
+          "qualifiedName": "LineShapeUtil.component",
+          "parentUnitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil#class:LineShapeUtil",
+          "startLine": 209,
+          "endLine": 218,
+          "signature": "component(shape: TLLineShape)",
+          "parameters": [
+            {
+              "name": "shape",
+              "type": "TLLineShape",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["shape is a valid TLLineShape value."],
+          "postconditions": [
+            "Returns the rendered line-shape component for the supplied shape and current color mode."
+          ],
+          "invariants": ["Rendering is derived from the supplied shape and the current color-mode context."],
+          "edgeCases": [
+            "Different color modes produce the corresponding display values used by the rendered component.",
+            "Any valid TLLineShape geometry or styling values are passed through the line-shape rendering path without mutating the shape."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "useColorMode", "source": null, "kind": "external" },
+            { "name": "getDisplayValues", "source": "LineShapeUtil", "kind": "internal" }
+          ],
+          "symbolReferences": ["TLLineShape", "useColorMode", "getDisplayValues"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Renders the visual component for a line shape using the current color mode and the shape's derived display values.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "e5654164fab74e06ee08e829e204992c5294e2d398ce0be5dc4bb79c256b119c"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil.getIndicatorPath#method:LineShapeUtil.getIndicatorPath",
+        "unitKind": "method",
+        "name": "getIndicatorPath",
+        "qualifiedName": "LineShapeUtil.getIndicatorPath",
+        "parentUnitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil#class:LineShapeUtil",
+        "startLine": 220,
+        "endLine": 233,
+        "isBehavioral": true,
+        "source": "\t\t\t<SVGContainer style={{ minWidth: 50, minHeight: 50 }}>\n\t\t\t\t<LineShapeSvg shape={shape} strokeColor={dv.strokeColor} strokeWidth={dv.strokeWidth} />\n\t\t\t</SVGContainer>\n\t\t)\n\t}\n\n\toverride getIndicatorPath(shape: TLLineShape): Path2D {\n\t\tconst strokeWidth = getDisplayValues(this, shape).strokeWidth * shape.props.scale\n\t\tconst path = getPathForLineShape(shape)\n\t\tconst { dash } = shape.props\n\n\t\treturn path.toPath2D({\n\t\t\tstyle: dash === 'draw' ? 'draw' : 'solid',\n\t\t\tstrokeWidth: 1,",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil.getIndicatorPath#method:LineShapeUtil.getIndicatorPath",
+          "fileId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil.getIndicatorPath",
+          "unitKind": "method",
+          "name": "getIndicatorPath",
+          "qualifiedName": "LineShapeUtil.getIndicatorPath",
+          "parentUnitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil#class:LineShapeUtil",
+          "startLine": 220,
+          "endLine": 233,
+          "signature": "override getIndicatorPath(shape: TLLineShape): Path2D",
+          "parameters": [
+            {
+              "name": "shape",
+              "type": "TLLineShape",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "Path2D",
+          "decorators": [],
+          "modifiersApplied": ["override"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["shape is a valid TLLineShape with displayable stroke properties and line geometry."],
+          "postconditions": [
+            "Returns a Path2D generated from the geometry of shape.",
+            "Uses indicator style 'draw' when shape.props.dash is 'draw'; otherwise uses 'solid'.",
+            "Passes an indicator stroke width of 1 to the path conversion."
+          ],
+          "invariants": [
+            "The returned indicator is derived from the same line geometry produced by getPathForLineShape(shape).",
+            "Any dash value other than 'draw' is treated as solid for indicator generation."
+          ],
+          "edgeCases": [
+            "When shape.props.dash is 'draw', the generated indicator uses draw styling.",
+            "When shape.props.dash is any value other than 'draw', including other supported dash styles, the generated indicator uses solid styling.",
+            "The display stroke width is read and scaled by shape.props.scale before path conversion."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "getDisplayValues", "source": "LineShapeUtil", "kind": "internal" },
+            {
+              "name": "getPathForLineShape",
+              "source": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx",
+              "kind": "internal"
+            },
+            { "name": "toPath2D", "source": "line path geometry", "kind": "internal" }
+          ],
+          "symbolReferences": ["TLLineShape", "Path2D"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Builds and returns the Path2D indicator corresponding to a line shape. The indicator preserves the line's draw-versus-solid dash style while using the line geometry generated for the shape.",
+          "specLiterals": [
+            {
+              "kind": "enum-value",
+              "value": "draw",
+              "role": "Dash value that selects draw styling for the indicator path."
+            },
+            {
+              "kind": "enum-value",
+              "value": "solid",
+              "role": "Fallback indicator style used for every dash value other than draw."
+            },
+            { "kind": "magic-number", "value": "1", "role": "Stroke width supplied to indicator path conversion." }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "getIndicatorPath(shape) is called.",
+              "then": "It returns a Path2D generated from the shape's line geometry with draw styling and strokeWidth 1.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "getIndicatorPath(shape) is called.",
+              "then": "It returns a Path2D generated from the shape's line geometry with solid styling and strokeWidth 1.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "b3b8c35c3654ec41a8380b9aa55dc222655a77abac99082546fe3120a2df0a52"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil.toSvg#method:LineShapeUtil.toSvg",
+        "unitKind": "method",
+        "name": "toSvg",
+        "qualifiedName": "LineShapeUtil.toSvg",
+        "parentUnitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil#class:LineShapeUtil",
+        "startLine": 235,
+        "endLine": 245,
+        "isBehavioral": true,
+        "source": "\t\t\trandomSeed: shape.id,\n\t\t\toffset: 0,\n\t\t\troundness: strokeWidth * 2,\n\t\t})\n\t}\n\n\toverride toSvg(shape: TLLineShape, ctx: SvgExportContext) {\n\t\tconst dv = getDisplayValues(this, shape, ctx.colorMode)\n\t\treturn (\n\t\t\t<LineShapeSvg\n\t\t\t\tshouldScale",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil.toSvg#method:LineShapeUtil.toSvg",
+          "fileId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil.toSvg",
+          "unitKind": "method",
+          "name": "toSvg",
+          "qualifiedName": "LineShapeUtil.toSvg",
+          "parentUnitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil#class:LineShapeUtil",
+          "startLine": 235,
+          "endLine": 245,
+          "signature": "override toSvg(shape: TLLineShape, ctx: SvgExportContext)",
+          "parameters": [
+            {
+              "name": "shape",
+              "type": "TLLineShape",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "ctx",
+              "type": "SvgExportContext",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": ["override"],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["shape is a valid TLLineShape.", "ctx is a valid SvgExportContext with a colorMode value."],
+          "postconditions": [
+            "Returns an SVG representation for the supplied line shape.",
+            "The SVG representation uses display values computed for the shape and the context color mode."
+          ],
+          "invariants": ["The input shape and export context are not mutated."],
+          "edgeCases": [
+            "Different colorMode values produce the corresponding display values used by the SVG representation.",
+            "The method delegates line SVG rendering to the LineShapeSvg component."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "getDisplayValues", "source": "LineShapeUtil.tsx", "kind": "internal" },
+            { "name": "LineShapeSvg", "source": "LineShapeUtil.tsx", "kind": "internal" }
+          ],
+          "symbolReferences": ["TLLineShape", "SvgExportContext", "LineShapeSvg"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Returns a JSX SVG representation suitable for SVG export.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Converts a line shape into its SVG export representation. The representation is built using display values derived from the shape and the export context's color mode.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "1c957472427c6a143f4f78cd4e919089a54b79083187c8f04631b550be1140d9"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil.getHandleSnapGeometry#method:LineShapeUtil.getHandleSnapGeometry",
+        "unitKind": "method",
+        "name": "getHandleSnapGeometry",
+        "qualifiedName": "LineShapeUtil.getHandleSnapGeometry",
+        "parentUnitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil#class:LineShapeUtil",
+        "startLine": 247,
+        "endLine": 278,
+        "isBehavioral": true,
+        "source": "\t\t\t\tstrokeColor={dv.strokeColor}\n\t\t\t\tstrokeWidth={dv.strokeWidth}\n\t\t\t/>\n\t\t)\n\t}\n\n\toverride getHandleSnapGeometry(shape: TLLineShape): HandleSnapGeometry {\n\t\tconst points = linePointsToArray(shape)\n\t\treturn {\n\t\t\tpoints,\n\t\t\tgetSelfSnapPoints: (handle) => {\n\t\t\t\tconst index = this.getHandles(shape)\n\t\t\t\t\t.filter((h) => h.type === 'vertex')\n\t\t\t\t\t.findIndex((h) => h.id === handle.id)!\n\n\t\t\t\t// We want to skip the current and adjacent handles\n\t\t\t\treturn points.filter((_, i) => Math.abs(i - index) > 1).map(Vec.From)\n\t\t\t},\n\t\t\tgetSelfSnapOutline: (handle) => {\n\t\t\t\t// We want to skip the segments that include the handle, so\n\t\t\t\t// find the index of the handle that shares the same index property\n\t\t\t\t// as the initial dragging handle; this catches a quirk of create handles\n\t\t\t\tconst index = this.getHandles(shape)\n\t\t\t\t\t.filter((h) => h.type === 'vertex')\n\t\t\t\t\t.findIndex((h) => h.id === handle.id)!\n\n\t\t\t\t// Get all the outline segments from the shape that don't include the handle\n\t\t\t\tconst segments = this.getGeometry(shape)\n\t\t\t\t\t.getSegments()\n\t\t\t\t\t.filter((_, i) => i !== index - 1 && i !== index)\n\n\t\t\t\tif (!segments.length) return null",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil.getHandleSnapGeometry#method:LineShapeUtil.getHandleSnapGeometry",
+          "fileId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil.getHandleSnapGeometry",
+          "unitKind": "method",
+          "name": "getHandleSnapGeometry",
+          "qualifiedName": "LineShapeUtil.getHandleSnapGeometry",
+          "parentUnitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil#class:LineShapeUtil",
+          "startLine": 247,
+          "endLine": 278,
+          "signature": "override getHandleSnapGeometry(shape: TLLineShape): HandleSnapGeometry",
+          "parameters": [
+            {
+              "name": "shape",
+              "type": "TLLineShape",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "HandleSnapGeometry",
+          "decorators": [],
+          "modifiersApplied": ["override"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The shape is a valid TLLineShape whose line points and geometry can be resolved.",
+            "The supplied handle corresponds to a vertex handle when invoking the returned callback functions."
+          ],
+          "postconditions": [
+            "Returns a HandleSnapGeometry containing the line's points.",
+            "The returned self-snap point callback excludes the selected vertex and its immediately adjacent vertices.",
+            "The returned self-snap outline callback excludes the two segments incident to the selected vertex, or returns null when no outline segments remain."
+          ],
+          "invariants": [
+            "Point order is preserved from linePointsToArray(shape).",
+            "Self-snap point filtering is based on the vertex handle's index in the line's vertex handles.",
+            "Self-snap outline filtering is based on the vertex handle's index and removes segment indices index - 1 and index."
+          ],
+          "edgeCases": [
+            "A line with no remaining outline segments returns null from getSelfSnapOutline.",
+            "A handle at the first vertex excludes the first vertex and its adjacent vertex from self-snap points, and excludes the segment at index 0 from the outline.",
+            "A handle at the last vertex excludes the last vertex and its adjacent vertex from self-snap points, and excludes the final incident segment from the outline.",
+            "A handle that is not found among vertex handles produces an index of -1 at runtime; filtering then follows that index without raising from the lookup itself."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "No explicit validation or fallback is performed; downstream point, handle, or geometry resolution may fail if the shape is invalid.",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "linePointsToArray", "source": "same module", "kind": "internal" },
+            { "name": "getHandles", "source": "LineShapeUtil", "kind": "internal" },
+            { "name": "getGeometry", "source": "LineShapeUtil", "kind": "internal" },
+            { "name": "Vec.From", "source": "Vec utility", "kind": "external" }
+          ],
+          "symbolReferences": ["TLLineShape", "HandleSnapGeometry", "Vec"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Provides the snapping points and self-snap outline geometry for a line shape. Self-snapping excludes the dragged vertex and its adjacent vertices or segments.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The returned getSelfSnapPoints callback is invoked for that handle.",
+              "then": "It returns Vec instances for P3 only; the current point P1 and adjacent points P0 and P2 are excluded.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The returned getSelfSnapOutline callback is invoked for that handle.",
+              "then": "It returns outline segments excluding S0 and S1, leaving only S2.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The returned getSelfSnapOutline callback is invoked.",
+              "then": "It returns null because all segments incident to the handle are removed.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "f7a30af94aa96701fbf6bae844419939ef6139e3e3a32680be23be9392b65d67"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil.getInterpolatedProps#method:LineShapeUtil.getInterpolatedProps",
+        "unitKind": "method",
+        "name": "getInterpolatedProps",
+        "qualifiedName": "LineShapeUtil.getInterpolatedProps",
+        "parentUnitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil#class:LineShapeUtil",
+        "startLine": 280,
+        "endLine": 340,
+        "isBehavioral": true,
+        "source": "\t\t\t},\n\t\t}\n\t}\n\toverride getInterpolatedProps(\n\t\tstartShape: TLLineShape,\n\t\tendShape: TLLineShape,\n\t\tt: number\n\t): TLLineShape['props'] {\n\t\tconst startPoints = linePointsToArray(startShape)\n\t\tconst endPoints = linePointsToArray(endShape)\n\n\t\tconst pointsToUseStart: TLLineShapePoint[] = []\n\t\tconst pointsToUseEnd: TLLineShapePoint[] = []\n\n\t\tlet index = ZERO_INDEX_KEY\n\n\t\tif (startPoints.length > endPoints.length) {\n\t\t\t// we'll need to expand points\n\t\t\tfor (let i = 0; i < startPoints.length; i++) {\n\t\t\t\tpointsToUseStart[i] = { ...startPoints[i] }\n\t\t\t\tif (endPoints[i] === undefined) {\n\t\t\t\t\tpointsToUseEnd[i] = { ...endPoints[endPoints.length - 1], id: index }\n\t\t\t\t} else {\n\t\t\t\t\tpointsToUseEnd[i] = { ...endPoints[i], id: index }\n\t\t\t\t}\n\t\t\t\tindex = getIndexAbove(index)\n\t\t\t}\n\t\t} else if (endPoints.length > startPoints.length) {\n\t\t\t// we'll need to converge points\n\t\t\tfor (let i = 0; i < endPoints.length; i++) {\n\t\t\t\tpointsToUseEnd[i] = { ...endPoints[i] }\n\t\t\t\tif (startPoints[i] === undefined) {\n\t\t\t\t\tpointsToUseStart[i] = {\n\t\t\t\t\t\t...startPoints[startPoints.length - 1],\n\t\t\t\t\t\tid: index,\n\t\t\t\t\t}\n\t\t\t\t} else {\n\t\t\t\t\tpointsToUseStart[i] = { ...startPoints[i], id: index }\n\t\t\t\t}\n\t\t\t\tindex = getIndexAbove(index)\n\t\t\t}\n\t\t} else {\n\t\t\t// noop, easy\n\t\t\tfor (let i = 0; i < endPoints.length; i++) {\n\t\t\t\tpointsToUseStart[i] = startPoints[i]\n\t\t\t\tpointsToUseEnd[i] = endPoints[i]\n\t\t\t}\n\t\t}\n\n\t\treturn {\n\t\t\t...(t > 0.5 ? endShape.props : startShape.props),\n\t\t\tpoints: Object.fromEntries(\n\t\t\t\tpointsToUseStart.map((point, i) => {\n\t\t\t\t\tconst endPoint = pointsToUseEnd[i]\n\t\t\t\t\treturn [\n\t\t\t\t\t\tpoint.id,\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t...point,\n\t\t\t\t\t\t\tx: lerp(point.x, endPoint.x, t),\n\t\t\t\t\t\t\ty: lerp(point.y, endPoint.y, t),\n\t\t\t\t\t\t},",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil.getInterpolatedProps#method:LineShapeUtil.getInterpolatedProps",
+          "fileId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil.getInterpolatedProps",
+          "unitKind": "method",
+          "name": "getInterpolatedProps",
+          "qualifiedName": "LineShapeUtil.getInterpolatedProps",
+          "parentUnitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeUtil#class:LineShapeUtil",
+          "startLine": 280,
+          "endLine": 340,
+          "signature": "override getInterpolatedProps(\n\t\tstartShape: TLLineShape,\n\t\tendShape: TLLineShape,\n\t\tt: number\n\t): TLLineShape['props']",
+          "parameters": [
+            {
+              "name": "startShape",
+              "type": "TLLineShape",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "endShape",
+              "type": "TLLineShape",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            { "name": "t", "type": "number", "default": null, "optional": false, "variadic": false, "order": 2 }
+          ],
+          "returnType": "TLLineShape['props']",
+          "decorators": [],
+          "modifiersApplied": ["override"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "startShape and endShape are valid TLLineShape values with point data consumable by linePointsToArray.",
+            "t is a numeric interpolation factor."
+          ],
+          "postconditions": [
+            "Returns a TLLineShape props object whose points contain interpolated x and y coordinates.",
+            "The returned props are shallowly based on startShape.props when t is less than or equal to 0.5, and on endShape.props when t is greater than 0.5.",
+            "When the input point counts differ, the shorter point sequence is extended by repeating its final point and assigning generated point ids."
+          ],
+          "invariants": [
+            "The returned point count equals the greater of the start and end point counts.",
+            "Each output point's x and y values are obtained by linear interpolation between corresponding prepared start and end points using t.",
+            "Point ids are preserved for equal-length inputs and regenerated in sequence for unequal-length inputs."
+          ],
+          "edgeCases": [
+            "Equal point counts use corresponding start and end points without preparing replacement points.",
+            "More start points than end points repeat the final end point for missing positions.",
+            "More end points than start points repeat the final start point for missing positions.",
+            "At t equal to 0.5, startShape.props is selected; only values greater than 0.5 select endShape.props.",
+            "Values of t outside the usual interpolation interval are passed through to the linear interpolation calculation."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "linePointsToArray", "source": "local function in LineShapeUtil.tsx", "kind": "internal" },
+            { "name": "getIndexAbove", "source": "imported helper", "kind": "external" },
+            { "name": "lerp", "source": "imported helper", "kind": "external" }
+          ],
+          "symbolReferences": ["TLLineShape", "TLLineShapePoint", "ZERO_INDEX_KEY"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Interpolates the point coordinates between two line shapes, accommodating differing point counts by expanding or converging point arrays. It uses the start shape's props through the midpoint and the end shape's props after it.",
+          "specLiterals": [
+            {
+              "kind": "magic-number",
+              "value": "0.5",
+              "role": "Determines whether the returned props are taken from the start or end shape."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "getInterpolatedProps(startShape, endShape, 0.5) is called.",
+              "then": "The returned point coordinates are halfway between the corresponding inputs, and the returned top-level props are based on startShape.props.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "getInterpolatedProps is called with any interpolation factor.",
+              "then": "The end sequence is expanded by repeating its final point for missing positions, while output coordinates are interpolated for every start point.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "getInterpolatedProps is called with any interpolation factor.",
+              "then": "The start sequence is expanded by repeating its final point for missing positions, while output coordinates are interpolated for every end point.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "f0b5bd12b256f9b90eddde6d56d46243310afc584e8dbde43a55f2fff64212a8"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__linePointsToArray#function:linePointsToArray",
+        "unitKind": "function",
+        "name": "linePointsToArray",
+        "qualifiedName": "linePointsToArray",
+        "parentUnitId": null,
+        "startLine": 342,
+        "endLine": 348,
+        "isBehavioral": true,
+        "source": "\t\t\t\t})\n\t\t\t),\n\t\t\tscale: lerp(startShape.props.scale, endShape.props.scale, t),\n\t\t}\n\t}\n}\n",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__linePointsToArray#function:linePointsToArray",
+          "fileId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__linePointsToArray",
+          "unitKind": "function",
+          "name": "linePointsToArray",
+          "qualifiedName": "linePointsToArray",
+          "parentUnitId": null,
+          "startLine": 342,
+          "endLine": 348,
+          "signature": "function linePointsToArray(points: LineShape['props']['points'])",
+          "parameters": [
+            {
+              "name": "points",
+              "type": "LineShape['props']['points']",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "LineShape['props']['points'][string][]",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["points is a line shape points record whose values are valid line point objects."],
+          "postconditions": [
+            "Returns an array containing the point values from points.",
+            "The returned array preserves the line's point ordering."
+          ],
+          "invariants": ["Point values are not modified.", "The input points record is not mutated."],
+          "edgeCases": [
+            "An empty points record produces an empty array.",
+            "A points record with multiple entries produces one array element per entry in line order."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["LineShape"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Converts a line shape's point record into an ordered array of point values for geometry and rendering operations.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "e4b91dbcec80dee1c00e7d55be25d5fb4e27ccd3e8c4a63468f6921d008bb546"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__getPathForLineShape#function:getPathForLineShape",
+        "unitKind": "function",
+        "name": "getPathForLineShape",
+        "qualifiedName": "getPathForLineShape",
+        "parentUnitId": null,
+        "startLine": 351,
+        "endLine": 364,
+        "isBehavioral": true,
+        "source": "\t// Tolerate malformed data where two points share an index: keep only the first\n\t// point at each index, so getHandles' getIndexBetween never sees equal adjacent\n\t// indices (which would throw \"a2 >= a2\"). A no-op for well-formed lines.\n\treturn sorted.filter((point, i) => i === 0 || point.index !== sorted[i - 1].index)\n}\n\nconst pathCache = new WeakCache<TLLineShape, PathBuilder>()\nfunction getPathForLineShape(shape: TLLineShape): PathBuilder {\n\treturn pathCache.get(shape, () => {\n\t\tconst points = linePointsToArray(shape).map(Vec.From)\n\n\t\tswitch (shape.props.spline) {\n\t\t\tcase 'cubic': {\n\t\t\t\treturn PathBuilder.cubicSplineThroughPoints(points, { endOffsets: 0 })",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__getPathForLineShape#function:getPathForLineShape",
+          "fileId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__getPathForLineShape",
+          "unitKind": "function",
+          "name": "getPathForLineShape",
+          "qualifiedName": "getPathForLineShape",
+          "parentUnitId": null,
+          "startLine": 351,
+          "endLine": 364,
+          "signature": "function getPathForLineShape(shape: TLLineShape): PathBuilder",
+          "parameters": [
+            {
+              "name": "shape",
+              "type": "TLLineShape",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "PathBuilder",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["shape is a TLLineShape with readable point data and spline properties."],
+          "postconditions": [
+            "Returns a PathBuilder representing the shape's points.",
+            "For cubic spline shapes, the path is built through the points with end offsets of 0.",
+            "Repeated calls for the same shape object reuse the cached path builder while the cache entry remains valid."
+          ],
+          "invariants": [
+            "Point data is converted to vector values before path construction.",
+            "Malformed point data with duplicate point indices is reduced to the first point at each index before path construction."
+          ],
+          "edgeCases": [
+            "Duplicate point indices are tolerated; only the first point at each index is used.",
+            "A shape with spline set to 'cubic' uses cubic spline construction with endOffsets set to 0.",
+            "A non-cubic line shape uses the ordinary point-based path construction.",
+            "The same shape object returns its cached PathBuilder rather than constructing a new one."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            {
+              "name": "linePointsToArray",
+              "source": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx",
+              "kind": "internal"
+            },
+            { "name": "Vec.From", "source": null, "kind": "external" },
+            { "name": "PathBuilder.cubicSplineThroughPoints", "source": null, "kind": "external" },
+            { "name": "PathBuilder.fromPoints", "source": null, "kind": "external" },
+            { "name": "pathCache.get", "source": null, "kind": "external" }
+          ],
+          "symbolReferences": ["TLLineShape", "PathBuilder", "Vec", "WeakCache"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Builds the path representation for a line shape according to its point data and spline mode. Reuses a cached PathBuilder for the same shape object.",
+          "specLiterals": [
+            { "kind": "enum-value", "value": "cubic", "role": "Selects cubic spline path construction." },
+            {
+              "kind": "magic-number",
+              "value": "0",
+              "role": "The cubic spline construction uses an endOffsets value of 0."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "getPathForLineShape(shape) is called.",
+              "then": "It returns a PathBuilder created from the shape's vector points using cubic spline construction with endOffsets equal to 0.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "getPathForLineShape(shape) is called.",
+              "then": "Only the first point at each duplicated index contributes to the constructed path.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Both calls are made.",
+              "then": "Both calls return the cached PathBuilder for that shape object.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "68b83e12e92461f402a9d95b7436be39a4de5134e57ba78fa5908ddba17e23c2"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeSvg#function:LineShapeSvg",
+        "unitKind": "function",
+        "name": "LineShapeSvg",
+        "qualifiedName": "LineShapeSvg",
+        "parentUnitId": null,
+        "startLine": 366,
+        "endLine": 396,
+        "isBehavioral": true,
+        "source": "\t\t\tcase 'line': {\n\t\t\t\treturn PathBuilder.lineThroughPoints(points, { endOffsets: 0 })\n\t\t\t}\n\t\t}\n\t})\n}\n\nfunction LineShapeSvg({\n\tshape,\n\tshouldScale = false,\n\tforceSolid = false,\n\tstrokeColor,\n\tstrokeWidth: baseStrokeWidth,\n}: {\n\tshape: TLLineShape\n\tshouldScale?: boolean\n\tforceSolid?: boolean\n\tstrokeColor: string\n\tstrokeWidth: number\n}) {\n\tconst path = getPathForLineShape(shape)\n\tconst { dash } = shape.props\n\n\tconst scaleFactor = 1 / shape.props.scale\n\n\tconst scale = shouldScale ? scaleFactor : 1\n\n\tconst strokeWidth = baseStrokeWidth * shape.props.scale\n\n\treturn path.toSvg({\n\t\tstyle: dash,",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeSvg#function:LineShapeSvg",
+          "fileId": "packages/tldraw/src/lib/shapes/line/LineShapeUtil.tsx__LineShapeSvg",
+          "unitKind": "function",
+          "name": "LineShapeSvg",
+          "qualifiedName": "LineShapeSvg",
+          "parentUnitId": null,
+          "startLine": 366,
+          "endLine": 396,
+          "signature": "function LineShapeSvg({ shape, shouldScale = false, forceSolid = false, strokeColor, strokeWidth: baseStrokeWidth }: { shape: TLLineShape; shouldScale?: boolean; forceSolid?: boolean; strokeColor: string; strokeWidth: number })",
+          "parameters": [
+            {
+              "name": "{ shape, shouldScale, forceSolid, strokeColor, strokeWidth: baseStrokeWidth }",
+              "type": "{ shape: TLLineShape; shouldScale?: boolean; forceSolid?: boolean; strokeColor: string; strokeWidth: number }",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "shape is a TLLineShape with a valid scale and line geometry.",
+            "strokeColor is a CSS/SVG color string.",
+            "strokeWidth is a numeric base stroke width."
+          ],
+          "postconditions": [
+            "Returns an SVG rendering of the line shape.",
+            "The rendered path is derived from getPathForLineShape(shape).",
+            "The effective stroke width is baseStrokeWidth multiplied by shape.props.scale."
+          ],
+          "invariants": [
+            "The line geometry is obtained from the supplied shape without mutating it.",
+            "When shouldScale is false, the SVG scale factor is 1.",
+            "When shouldScale is true, the SVG scale factor is the inverse of shape.props.scale."
+          ],
+          "edgeCases": [
+            "shouldScale omitted: uses false and does not apply the inverse scale.",
+            "forceSolid omitted: uses false.",
+            "A non-unit shape.props.scale changes the effective stroke width by the same multiplicative factor and determines the inverse scale used when shouldScale is true.",
+            "The shape's dash property is forwarded into SVG path styling."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "getPathForLineShape", "source": "LineShapeUtil.tsx", "kind": "internal" },
+            { "name": "path.toSvg", "source": null, "kind": "external" }
+          ],
+          "symbolReferences": ["TLLineShape"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Returns an SVG/JSX representation of the line path with stroke styling derived from strokeColor, the scaled stroke width, and the shape's dash configuration.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Renders a line shape as SVG using the shape's geometry, dash styling, color, and stroke width. It optionally applies the inverse shape scale when rendering.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "50a4e22266ead3a7661bf560c28d7003bbd36286779b74c14bf6418b473b9e4d"
+        }
+      }
+    ]
+  },
+  "out": [
+    "packages/tldraw/src/lib/shapes/shared/default-shape-constants.ts",
+    "packages/tldraw/src/lib/shapes/shared/PathBuilder.tsx",
+    "packages/tldraw/src/lib/shapes/shared/getDisplayValues.ts"
+  ],
+  "in": ["packages/tldraw/src/lib/defaultShapeUtils.ts"],
+  "externals": ["@tldraw/editor"],
+  "impact": { "seeds": 15, "callers": 8, "impactedFiles": [] }
+}

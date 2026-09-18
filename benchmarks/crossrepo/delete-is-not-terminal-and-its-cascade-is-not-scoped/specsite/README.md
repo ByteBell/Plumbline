@@ -4,20 +4,24 @@ One JSON spec page per file, laid out as `<repo>/<path in repo>.json`. The set o
 files is the union of
 
 - the 7 gold files in `../golden.json`, and
-- the 24 files any arm returned in its `ranked.json`.
+- the 45 files any arm returned in its `ranked.json`.
+
+Every page is taken at that repo's ROSTER PIN — the same commit the arms searched.
+A repo whose pinned commit has no page for a file gets no page at all; pages are
+never borrowed from another commit.
 
 `MANIFEST.json` says, for each file, whether it is gold, run-returned or both,
-which arms named it, the commit its page was taken from, and - when no page was
-copied - why. 20 of 27 files have a page; 7 do not.
-
-Pages come from /Users/sauravverma/programs/kube-package/temp/orgs/36af0f7a-fdf4-4497-9795-19d263268800/github (`<knowledgeId>/<owner>/<repo>/<scan>/<commit>/meta/spec-site/files/<sha>.json`).
+which arms named it, the pinned commit, where the page came from (`local` tree or
+`s3` mirror), and - when no page was copied - why, including the scan-manifest
+`kind` when that is what explains it. 42 of 45 files have a page
+(6 fetched from the mirror); 3 do not.
 
 Arms in this case:
 
 - `claudecli_opus5_bare` - contributed
-- `claudecli_opus5_mcp_graphify` - no ranked.json - arm not run (or run not finalized)
+- `claudecli_opus5_mcp_graphify` - contributed
 - `claudecli_opus5_mcp_plumbline` - no ranked.json - arm not run (or run not finalized)
 - `claudecli_opus5_mcp_serena` - no ranked.json - arm not run (or run not finalized)
-- `claudecli_opus5_mcp_turbovec` - no ranked.json - arm not run (or run not finalized)
+- `claudecli_opus5_mcp_turbovec` - contributed
 - `claudecode_opus5_mcp_plumbline` - contributed
-- `opencode_hy4preview_mcp_plumbline` - no ranked.json - arm not run (or run not finalized)
+- `opencode_hy4preview_mcp_plumbline` - contributed

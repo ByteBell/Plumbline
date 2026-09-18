@@ -1,0 +1,1368 @@
+{
+  "schema": 1,
+  "kind": "file",
+  "repoName": "redux-toolkit",
+  "commitHash": "b1c5130154c454ca8387f55da6122fcb507c560c",
+  "generatedAt": "2026-08-01T22:01:37.770Z",
+  "file": {
+    "relativePath": "packages/toolkit/src/immutableStateInvariantMiddleware.ts",
+    "language": "typescript",
+    "sizeBytes": 7491,
+    "tokenCount": 1709,
+    "model": "tencent/hy3",
+    "analysedAt": "2026-08-01T17:00:12.566Z",
+    "module": {
+      "purpose": "Provides a Redux middleware that detects illegal state mutations between and during dispatches in development, throwing errors to enforce immutability. Returns a no-op in production.",
+      "summary": "This module implements a Redux middleware factory that safeguards state immutability. It exports a default immutability check, a tracker that recursively records object references, and a mutation detector that compares prior and current state trees. The middleware skips all work when NODE_ENV is production, but in development it measures execution time, tracks state before and after dispatch, and throws descriptive errors if mutations are found. It supports ignoring specific dot-path subtrees via regex or string match and includes a circular-reference-safe JSON stringifier for error messages.",
+      "businessContext": "Critical dev-time guardrail for Redux applications; prevents subtle bugs from accidental state mutation. Failure yields silent data corruption in stores.",
+      "classes": [],
+      "functions": [
+        "isImmutableDefault (~L12-14): Default check if value is primitive or frozen object",
+        "trackForMutations (~L16-27): Returns tracker object with detectMutations closure",
+        "trackProperties (~L34-73): Recursively tracks object properties for later mutation detection",
+        "detectMutations (~L75-135): Recursively compares tracked vs current state to find mutations",
+        "createImmutableStateInvariantMiddleware (~L171-274): Creates Redux middleware enforcing state immutability in dev"
+      ],
+      "keywords": [
+        "redux middleware",
+        "immutability",
+        "state mutation detection",
+        "tracked properties",
+        "ignoredPaths",
+        "circular reference",
+        "dev-only",
+        "serialize"
+      ],
+      "ontologyConcepts": ["immutability", "state invariance", "middleware", "mutation tracking", "recursion"],
+      "businessEntities": ["Redux state", "action", "middleware", "dispatch"],
+      "systemCapabilities": [
+        "detect state mutations",
+        "throw on mutation",
+        "ignore configured paths",
+        "warn on slow checks"
+      ],
+      "configDependencies": [
+        "process.env.NODE_ENV",
+        "options.warnAfter",
+        "options.isImmutable",
+        "options.ignoredPaths"
+      ],
+      "importsInternal": [
+        {
+          "spec": "./serializableStateInvariantMiddleware",
+          "symbols": ["IgnoredPaths"],
+          "anchor": { "startLine": 2, "endLine": 2 },
+          "resolvedRelativePath": "packages/toolkit/src/serializableStateInvariantMiddleware.ts",
+          "resolvedFileId": "packages/toolkit/src/serializableStateInvariantMiddleware.ts",
+          "resolvedHint": "packages/toolkit/src/serializableStateInvariantMiddleware.ts"
+        },
+        {
+          "spec": "./utils",
+          "symbols": ["getTimeMeasureUtils"],
+          "anchor": { "startLine": 3, "endLine": 3 },
+          "resolvedRelativePath": "packages/toolkit/src/utils.ts",
+          "resolvedFileId": "packages/toolkit/src/utils.ts",
+          "resolvedHint": "packages/toolkit/src/utils.ts"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "redux",
+          "symbols": ["Middleware"],
+          "package": "redux",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 1 }
+        }
+      ],
+      "sideEffects": {
+        "io": [],
+        "network": [],
+        "env": ["Reads process.env.NODE_ENV to decide whether to install checks"],
+        "fs": [],
+        "process": [
+          "Throws Error when a state mutation is detected",
+          "May log performance warnings via getTimeMeasureUtils"
+        ],
+        "mutationOfArg": [
+          "Mutates tracked.children object during tracking",
+          "Mutates internal stack and keys arrays in getSerialize decycler"
+        ]
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "isImmutableDefault",
+          "shape": "(value: unknown) => boolean",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "trackForMutations",
+          "shape": "(isImmutable: IsImmutableFunc, ignoredPaths: IgnoredPaths | undefined, obj: any) => { detectMutations: () => { wasMutated: boolean; path?: string } }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "ImmutableStateInvariantMiddlewareOptions",
+          "shape": "{ isImmutable?: (value: any) => boolean; ignoredPaths?: IgnoredPaths; warnAfter?: number }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "createImmutableStateInvariantMiddleware",
+          "shape": "(options?: ImmutableStateInvariantMiddlewareOptions) => Middleware",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "Middleware",
+          "shape": "import type { Middleware } from 'redux'",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "IgnoredPaths",
+          "shape": "import type { IgnoredPaths } from './serializableStateInvariantMiddleware'",
+          "resolvedRelativePath": "packages/toolkit/src/serializableStateInvariantMiddleware.ts",
+          "resolvedFileId": "packages/toolkit/src/serializableStateInvariantMiddleware.ts"
+        },
+        {
+          "name": "getTimeMeasureUtils",
+          "shape": "import { getTimeMeasureUtils } from './utils'",
+          "resolvedRelativePath": "packages/toolkit/src/utils.ts",
+          "resolvedFileId": "packages/toolkit/src/utils.ts"
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "production_shortcircuit",
+          "intent": "Return no-op middleware when in production",
+          "structureKind": "branch",
+          "predicate": "process.env.NODE_ENV === 'production'",
+          "branchOutcomes": ["return no-op", "install dev middleware"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 174, "endLine": 175 }
+        },
+        {
+          "name": "trackProperties_loop",
+          "intent": "Recursively track mutable object children",
+          "structureKind": "loop",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": "for (const key in obj)",
+          "terminationCondition": null,
+          "anchor": { "startLine": 49, "endLine": 70 }
+        },
+        {
+          "name": "detectMutations_recursion",
+          "intent": "Recursively compare tracked and current keys",
+          "structureKind": "recursion",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": "returns { wasMutated: false } when no keys left",
+          "anchor": { "startLine": 106, "endLine": 133 }
+        },
+        {
+          "name": "betweenDispatchCheck",
+          "intent": "Detect mutations before calling next",
+          "structureKind": "try",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 232, "endLine": 246 }
+        },
+        {
+          "name": "insideDispatchCheck",
+          "intent": "Detect mutations after calling next",
+          "structureKind": "try",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 250, "endLine": 266 }
+        }
+      ],
+      "representationFamily": "function-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "function",
+          "name": "isImmutableDefault",
+          "signature": "export function isImmutableDefault(value: unknown): boolean {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "boolean",
+          "exported": true,
+          "anchor": { "startLine": 12, "endLine": 14 }
+        },
+        {
+          "kind": "function",
+          "name": "trackForMutations",
+          "signature": "export function trackForMutations(\n  isImmutable: IsImmutableFunc,\n  ignoredPaths: IgnoredPaths | undefined,\n  obj: any,\n) {",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 16, "endLine": 27 }
+        },
+        {
+          "kind": "function",
+          "name": "createImmutableStateInvariantMiddleware",
+          "signature": "export function createImmutableStateInvariantMiddleware(\n  options: ImmutableStateInvariantMiddlewareOptions = {},\n): Middleware {",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Middleware",
+          "exported": true,
+          "anchor": { "startLine": 171, "endLine": 274 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "type",
+          "name": "EntryProcessor",
+          "shape": "type EntryProcessor = (key: string, value: any) => any",
+          "discriminant": null,
+          "anchor": { "startLine": 5, "endLine": 5 }
+        },
+        {
+          "kind": "interface",
+          "name": "TrackedProperty",
+          "shape": "interface TrackedProperty {\n  value: any\n  children: Record<string, any>\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 29, "endLine": 32 }
+        },
+        {
+          "kind": "type",
+          "name": "IsImmutableFunc",
+          "shape": "type IsImmutableFunc = (value: any) => boolean",
+          "discriminant": null,
+          "anchor": { "startLine": 137, "endLine": 137 }
+        },
+        {
+          "kind": "interface",
+          "name": "ImmutableStateInvariantMiddlewareOptions",
+          "shape": "export interface ImmutableStateInvariantMiddlewareOptions {\n  isImmutable?: IsImmutableFunc\n  ignoredPaths?: IgnoredPaths\n  warnAfter?: number\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 144, "endLine": 160 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "ignoredPaths entry is RegExp",
+          "handled": true,
+          "behavior": "Tests path against regex and skips tracking",
+          "anchor": { "startLine": 54, "endLine": 55 }
+        },
+        {
+          "inputShape": "ignoredPaths entry is string",
+          "handled": true,
+          "behavior": "Skips when nestedPath strictly equals ignored",
+          "anchor": { "startLine": 57, "endLine": 57 }
+        },
+        {
+          "inputShape": "circular object reference",
+          "handled": true,
+          "behavior": "Decycler returns '[Circular ~...]' placeholder in stringify",
+          "anchor": { "startLine": 194, "endLine": 199 }
+        },
+        {
+          "inputShape": "obj is NaN and sameParentRef true",
+          "handled": true,
+          "behavior": "NaN is excluded from mutation detection via !Number.isNaN(obj)",
+          "anchor": { "startLine": 87, "endLine": 89 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": "==",
+          "left": "value",
+          "right": "null",
+          "inclusive": false,
+          "intent": "Treat null/undefined as immutable",
+          "anchor": { "startLine": 13, "endLine": 13 }
+        },
+        {
+          "operator": ">",
+          "left": "ignoredPaths.length",
+          "right": "0",
+          "inclusive": false,
+          "intent": "Check whether any ignored paths are configured during tracking",
+          "anchor": { "startLine": 47, "endLine": 47 }
+        },
+        {
+          "operator": ">",
+          "left": "ignoredPaths.length",
+          "right": "0",
+          "inclusive": false,
+          "intent": "Check whether any ignored paths are configured during detection",
+          "anchor": { "startLine": 104, "endLine": 104 }
+        },
+        {
+          "operator": ">",
+          "left": "stack.length",
+          "right": "0",
+          "inclusive": false,
+          "intent": "Determine if serialization stack already contains parent objects",
+          "anchor": { "startLine": 202, "endLine": 202 }
+        },
+        {
+          "operator": "==",
+          "left": "serializer",
+          "right": "null",
+          "inclusive": false,
+          "intent": "Return raw value when no custom serializer provided",
+          "anchor": { "startLine": 209, "endLine": 209 }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": "Error",
+          "caught": null,
+          "action": "Throw with path and docs link when mutation detected between dispatches",
+          "fallback": null,
+          "anchor": { "startLine": 240, "endLine": 245 }
+        },
+        {
+          "thrown": "Error",
+          "caught": null,
+          "action": "Throw with path, action string, and docs link when mutation detected inside dispatch",
+          "fallback": null,
+          "anchor": { "startLine": 258, "endLine": 265 }
+        }
+      ],
+      "invariants": [
+        {
+          "kind": "postcondition",
+          "description": "isImmutableDefault returns true for non-objects, null, or frozen objects",
+          "anchor": { "startLine": 13, "endLine": 13 }
+        },
+        {
+          "kind": "invariant",
+          "description": "tracked.children is only populated for non-immutable unvisited objects",
+          "anchor": { "startLine": 43, "endLine": 45 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "Middleware throws Error if result.wasMutated is true",
+          "anchor": { "startLine": 239, "endLine": 245 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "env",
+          "description": "process.env.NODE_ENV is set to 'production' in production builds",
+          "anchor": { "startLine": 174, "endLine": 174 }
+        },
+        {
+          "kind": "caller",
+          "description": "Caller provides Redux middleware API: ({getState}, next, action)",
+          "anchor": { "startLine": 221, "endLine": 226 }
+        },
+        {
+          "kind": "config",
+          "description": "options.ignoredPaths entries are either strings or RegExp objects",
+          "anchor": { "startLine": 53, "endLine": 57 }
+        }
+      ],
+      "ambiguities": [],
+      "concurrencyModel": {
+        "kind": "sync",
+        "reentrant": false,
+        "ordering": "deterministic",
+        "notes": "Middleware executes sequentially per dispatch; not designed for concurrent reentry"
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "immutability-default-true-for-primitives",
+          "scenario": "isImmutableDefault returns true for primitive values, null, and undefined",
+          "given": [],
+          "when": "isImmutableDefault(42); isImmutableDefault('str'); isImmutableDefault(true); isImmutableDefault(null); isImmutableDefault(undefined)",
+          "then": "all calls return true",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "immutability-default-true-for-frozen",
+          "scenario": "isImmutableDefault returns true for frozen objects",
+          "given": [],
+          "when": "isImmutableDefault(Object.freeze({ a: 1 }))",
+          "then": "returns true",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "immutability-default-false-for-mutable",
+          "scenario": "isImmutableDefault returns false for non-frozen mutable objects",
+          "given": ["const mutable = { a: 1 }"],
+          "when": "isImmutableDefault(mutable)",
+          "then": "returns false",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "track-detects-no-mutation",
+          "scenario": "trackForMutations detectMutations returns wasMutated: false when the tracked object is unchanged",
+          "given": ["const obj = { a: 1 }", "const tracker = trackForMutations(isImmutableDefault, undefined, obj)"],
+          "when": "tracker.detectMutations()",
+          "then": "returns { wasMutated: false }",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "track-detects-mutation",
+          "scenario": "trackForMutations detectMutations returns wasMutated: true when a property value is mutated in place",
+          "given": ["const obj = { a: 1 }", "const tracker = trackForMutations(isImmutableDefault, undefined, obj)"],
+          "when": "obj.a = 2; tracker.detectMutations()",
+          "then": "returns { wasMutated: true, path: 'a' }",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Pins the sameRef comparison invariant that guards mutation detection"
+        },
+        {
+          "testId": "track-detects-deep-nested-mutation",
+          "scenario": "trackForMutations detectMutations detects mutations at deeply nested object paths",
+          "given": [
+            "const obj = { level1: { level2: { value: 1 } } }",
+            "const tracker = trackForMutations(isImmutableDefault, undefined, obj)"
+          ],
+          "when": "obj.level1.level2.value = 99; tracker.detectMutations()",
+          "then": "returns { wasMutated: true, path: 'level1.level2.value' }",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "track-detects-reference-replacement",
+          "scenario": "trackForMutations detectMutations detects when a tracked child reference is replaced with a different object",
+          "given": [
+            "const obj = { child: { x: 1 } }",
+            "const tracker = trackForMutations(isImmutableDefault, undefined, obj)"
+          ],
+          "when": "obj.child = { x: 2 }; tracker.detectMutations()",
+          "then": "returns { wasMutated: true, path: 'child' }",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "ignored-paths-not-checked",
+          "scenario": "Properties at ignored paths are excluded from mutation tracking",
+          "given": [
+            "const state = { ignored: { count: 0 }, other: { count: 0 } }",
+            "const tracker = trackForMutations(isImmutableDefault, ['ignored'], state)"
+          ],
+          "when": "state.ignored.count = 1; tracker.detectMutations()",
+          "then": "returns { wasMutated: false }",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": ""
+        },
+        {
+          "testId": "custom-is-immutable-respected",
+          "scenario": "A user-supplied isImmutable predicate overrides the default immutability check",
+          "given": [
+            "const alwaysImmutable = () => true",
+            "const tracker = trackForMutations(alwaysImmutable, undefined, { a: 1 })"
+          ],
+          "when": "tracker.detectMutations()",
+          "then": "returns { wasMutated: false }",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Ensures the middleware never hardcodes isImmutableDefault"
+        },
+        {
+          "testId": "production-middleware-is-noop",
+          "scenario": "In production mode the middleware is a pass-through that never throws or tracks state",
+          "given": ["process.env.NODE_ENV = 'production'"],
+          "when": "createImmutableStateInvariantMiddleware()({ getState: () => ({}) })(() => 42)({})",
+          "then": "returns 42 and throws no error",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Production short-circuit must never throw or perform tracking"
+        },
+        {
+          "testId": "middleware-throws-on-between-dispatch-mutation",
+          "scenario": "Middleware throws an error mentioning between-dispatches when state is mutated between dispatches",
+          "given": [
+            "const state = { count: 0 }",
+            "const mw = createImmutableStateInvariantMiddleware()",
+            "const next = mw({ getState: () => state })(() => {})"
+          ],
+          "when": "state.count = 1; next({ type: 'TEST' })",
+          "then": "throws Error whose message contains 'between dispatches'",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": ""
+        },
+        {
+          "testId": "middleware-throws-on-dispatch-mutation",
+          "scenario": "Middleware throws an error mentioning inside-a-dispatch when state is mutated during a dispatch",
+          "given": [
+            "const state = { count: 0 }",
+            "const mw = createImmutableStateInvariantMiddleware()",
+            "let actionReceived; const next = mw({ getState: () => state })((a) => { state.count = 1; actionReceived = a; })"
+          ],
+          "when": "next({ type: 'TEST' })",
+          "then": "throws Error whose message contains 'inside a dispatch'",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": ""
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "import type { Middleware } from 'redux'",
+        "import type { IgnoredPaths } from './serializableStateInvariantMiddleware'",
+        "import { getTimeMeasureUtils } from './utils'",
+        "type EntryProcessor",
+        "function isImmutableDefault",
+        "function trackForMutations",
+        "interface TrackedProperty",
+        "function trackProperties",
+        "function detectMutations",
+        "type IsImmutableFunc",
+        "interface ImmutableStateInvariantMiddlewareOptions",
+        "function createImmutableStateInvariantMiddleware"
+      ],
+      "moduleLevelCode": "import type { Middleware } from 'redux'\nimport type { IgnoredPaths } from './serializableStateInvariantMiddleware'\nimport { getTimeMeasureUtils } from './utils'",
+      "exports": [
+        { "name": "isImmutableDefault", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "trackForMutations", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "ImmutableStateInvariantMiddlewareOptions", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "createImmutableStateInvariantMiddleware", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "Middleware", "module": "redux", "alias": null, "kind": "external" },
+        {
+          "symbol": "IgnoredPaths",
+          "module": "./serializableStateInvariantMiddleware",
+          "alias": null,
+          "kind": "internal"
+        },
+        { "symbol": "getTimeMeasureUtils", "module": "./utils", "alias": null, "kind": "internal" }
+      ],
+      "fileConstants": [],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/toolkit/src/immutableStateInvariantMiddleware.ts__isImmutableDefault#function:isImmutableDefault",
+        "unitKind": "function",
+        "name": "isImmutableDefault",
+        "qualifiedName": "isImmutableDefault",
+        "parentUnitId": null,
+        "startLine": 12,
+        "endLine": 14,
+        "isBehavioral": true,
+        "source": "export function isImmutableDefault(value: unknown): boolean {\n  return typeof value !== 'object' || value == null || Object.isFrozen(value)\n}",
+        "detail": {
+          "unitId": "packages/toolkit/src/immutableStateInvariantMiddleware.ts__isImmutableDefault#function:isImmutableDefault",
+          "fileId": "packages/toolkit/src/immutableStateInvariantMiddleware.ts__isImmutableDefault",
+          "unitKind": "function",
+          "name": "isImmutableDefault",
+          "qualifiedName": "isImmutableDefault",
+          "parentUnitId": null,
+          "startLine": 12,
+          "endLine": 14,
+          "signature": "export function isImmutableDefault(value: unknown): boolean",
+          "parameters": [
+            { "name": "value", "type": "unknown", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "boolean",
+          "decorators": [],
+          "modifiersApplied": ["export"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [
+            "Returns true if typeof value !== 'object' or value == null or Object.isFrozen(value) is true; otherwise returns false."
+          ],
+          "invariants": [],
+          "edgeCases": [
+            "Primitive value (e.g., number, string, boolean) -> returns true",
+            "null or undefined -> returns true",
+            "Non-frozen object -> returns false",
+            "Frozen object -> returns true"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [{ "name": "Object.isFrozen", "source": null, "kind": "external" }],
+          "symbolReferences": ["Object"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Returns true if the given value is not an object, is null, or is a frozen object, thereby indicating it is immutable by default.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "8f15d61bb499f727214610d1d64ce205fea6d04a68e07dd64fd94b9b2a5cdf3a"
+        }
+      },
+      {
+        "unitId": "packages/toolkit/src/immutableStateInvariantMiddleware.ts__trackForMutations#function:trackForMutations",
+        "unitKind": "function",
+        "name": "trackForMutations",
+        "qualifiedName": "trackForMutations",
+        "parentUnitId": null,
+        "startLine": 16,
+        "endLine": 27,
+        "isBehavioral": true,
+        "source": "export function trackForMutations(\n  isImmutable: IsImmutableFunc,\n  ignoredPaths: IgnoredPaths | undefined,\n  obj: any,\n) {\n  const trackedProperties = trackProperties(isImmutable, ignoredPaths, obj)\n  return {\n    detectMutations() {\n      return detectMutations(isImmutable, ignoredPaths, trackedProperties, obj)\n    },\n  }\n}",
+        "detail": {
+          "unitId": "packages/toolkit/src/immutableStateInvariantMiddleware.ts__trackForMutations#function:trackForMutations",
+          "fileId": "packages/toolkit/src/immutableStateInvariantMiddleware.ts__trackForMutations",
+          "unitKind": "function",
+          "name": "trackForMutations",
+          "qualifiedName": "trackForMutations",
+          "parentUnitId": null,
+          "startLine": 16,
+          "endLine": 27,
+          "signature": "export function trackForMutations(isImmutable: IsImmutableFunc, ignoredPaths: IgnoredPaths | undefined, obj: any)",
+          "parameters": [
+            {
+              "name": "isImmutable",
+              "type": "IsImmutableFunc",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "ignoredPaths",
+              "type": "IgnoredPaths | undefined",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            { "name": "obj", "type": "any", "default": null, "optional": false, "variadic": false, "order": 2 }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": ["export"],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "isImmutable must be a function accepting a value and returning a boolean indicating immutability",
+            "obj is the value to be tracked",
+            "ignoredPaths is either undefined or a paths specification to skip"
+          ],
+          "postconditions": [
+            "Returns an object containing a detectMutations method",
+            "The detectMutations method closes over the original arguments and tracked properties and delegates to detectMutations"
+          ],
+          "invariants": [],
+          "edgeCases": [
+            "ignoredPaths undefined is treated as no ignored paths",
+            "obj may be any type; tracking behavior depends on trackProperties implementation"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            {
+              "name": "trackProperties",
+              "source": "packages/toolkit/src/immutableStateInvariantMiddleware.ts",
+              "kind": "internal"
+            },
+            {
+              "name": "detectMutations",
+              "source": "packages/toolkit/src/immutableStateInvariantMiddleware.ts",
+              "kind": "internal"
+            }
+          ],
+          "symbolReferences": ["IsImmutableFunc", "IgnoredPaths"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Wraps an object with a mutation tracker that computes tracked properties upfront and exposes a detectMutations method to later check for mutations against the original object.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "ff6a04bb3d9cf4af4a815dd2446d4ecabffc7abbc54cde53ffda5bd571dcd8b1"
+        }
+      },
+      {
+        "unitId": "packages/toolkit/src/immutableStateInvariantMiddleware.ts__trackProperties#function:trackProperties",
+        "unitKind": "function",
+        "name": "trackProperties",
+        "qualifiedName": "trackProperties",
+        "parentUnitId": null,
+        "startLine": 34,
+        "endLine": 73,
+        "isBehavioral": true,
+        "source": "function trackProperties(\n  isImmutable: IsImmutableFunc,\n  ignoredPaths: IgnoredPaths = [],\n  obj: Record<string, any>,\n  path: string = '',\n  checkedObjects: Set<Record<string, any>> = new Set(),\n) {\n  const tracked: Partial<TrackedProperty> = { value: obj }\n\n  if (!isImmutable(obj) && !checkedObjects.has(obj)) {\n    checkedObjects.add(obj)\n    tracked.children = {}\n\n    const hasIgnoredPaths = ignoredPaths.length > 0\n\n    for (const key in obj) {\n      const nestedPath = path ? path + '.' + key : key\n\n      if (hasIgnoredPaths) {\n        const hasMatches = ignoredPaths.some((ignored) => {\n          if (ignored instanceof RegExp) {\n            return ignored.test(nestedPath)\n          }\n          return nestedPath === ignored\n        })\n        if (hasMatches) {\n          continue\n        }\n      }\n\n      tracked.children[key] = trackProperties(\n        isImmutable,\n        ignoredPaths,\n        obj[key],\n        nestedPath,\n      )\n    }\n  }\n  return tracked as TrackedProperty\n}",
+        "detail": {
+          "unitId": "packages/toolkit/src/immutableStateInvariantMiddleware.ts__trackProperties#function:trackProperties",
+          "fileId": "packages/toolkit/src/immutableStateInvariantMiddleware.ts__trackProperties",
+          "unitKind": "function",
+          "name": "trackProperties",
+          "qualifiedName": "trackProperties",
+          "parentUnitId": null,
+          "startLine": 34,
+          "endLine": 73,
+          "signature": "function trackProperties(isImmutable: IsImmutableFunc, ignoredPaths: IgnoredPaths = [], obj: Record<string, any>, path: string = '', checkedObjects: Set<Record<string, any>> = new Set()): TrackedProperty",
+          "parameters": [
+            {
+              "name": "isImmutable",
+              "type": "IsImmutableFunc",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "ignoredPaths",
+              "type": "IgnoredPaths",
+              "default": "[]",
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "obj",
+              "type": "Record<string, any>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            },
+            { "name": "path", "type": "string", "default": "''", "optional": false, "variadic": false, "order": 3 },
+            {
+              "name": "checkedObjects",
+              "type": "Set<Record<string, any>>",
+              "default": "new Set()",
+              "optional": false,
+              "variadic": false,
+              "order": 4
+            }
+          ],
+          "returnType": "TrackedProperty",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "view",
+          "visibility": "internal",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "isImmutable must be a callable function that reports whether a value is immutable",
+            "obj may be any value; non-objects are treated as leaves and not traversed",
+            "ignoredPaths entries must be either RegExp instances or string literals",
+            "checkedObjects must be a Set instance used to detect circular references"
+          ],
+          "postconditions": [
+            "Returns a TrackedProperty with its value set to obj",
+            "Children are populated only when obj is mutable and has not been previously seen",
+            "Each recursive child call uses an updated nested path"
+          ],
+          "invariants": [
+            "Circular references are prevented via checkedObjects; each mutable object is added exactly once",
+            "Immutable objects never produce children"
+          ],
+          "edgeCases": [
+            "When obj is immutable, the returned TrackedProperty has only value set (no children)",
+            "When obj is already in checkedObjects, it is not re-tracked (no children)",
+            "When ignoredPaths is empty or a path matches an ignore entry, that key is skipped",
+            "When obj is null or not an object, the for-in loop does not execute and tracked.children remains undefined"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": ["checkedObjects: adds obj to the Set when obj is mutable and not already present"],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "isImmutable", "source": null, "kind": "internal" },
+            { "name": "trackProperties", "source": null, "kind": "internal" }
+          ],
+          "symbolReferences": ["IsImmutableFunc", "IgnoredPaths", "TrackedProperty", "Record<string, any>"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Builds a tree snapshot of an object's own enumerable properties, marking each node's value and recursively tracking mutable children while skipping immutable and ignored paths.",
+          "specLiterals": [
+            {
+              "kind": "format-string",
+              "value": "path + '.' + key",
+              "role": "Constructs the nested property path for child property tracking"
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "fded73b03581d4b3b721bf003e48a7082d843e31b3d7b96bd9353a86bc7832c8"
+        }
+      },
+      {
+        "unitId": "packages/toolkit/src/immutableStateInvariantMiddleware.ts__detectMutations#function:detectMutations",
+        "unitKind": "function",
+        "name": "detectMutations",
+        "qualifiedName": "detectMutations",
+        "parentUnitId": null,
+        "startLine": 75,
+        "endLine": 135,
+        "isBehavioral": true,
+        "source": "function detectMutations(\n  isImmutable: IsImmutableFunc,\n  ignoredPaths: IgnoredPaths = [],\n  trackedProperty: TrackedProperty,\n  obj: any,\n  sameParentRef: boolean = false,\n  path: string = '',\n): { wasMutated: boolean; path?: string } {\n  const prevObj = trackedProperty ? trackedProperty.value : undefined\n\n  const sameRef = prevObj === obj\n\n  if (sameParentRef && !sameRef && !Number.isNaN(obj)) {\n    return { wasMutated: true, path }\n  }\n\n  if (isImmutable(prevObj) || isImmutable(obj)) {\n    return { wasMutated: false }\n  }\n\n  // Gather all keys from prev (tracked) and after objs\n  const keysToDetect: Record<string, boolean> = {}\n  for (let key in trackedProperty.children) {\n    keysToDetect[key] = true\n  }\n  for (let key in obj) {\n    keysToDetect[key] = true\n  }\n\n  const hasIgnoredPaths = ignoredPaths.length > 0\n\n  for (let key in keysToDetect) {\n    const nestedPath = path ? path + '.' + key : key\n\n    if (hasIgnoredPaths) {\n      const hasMatches = ignoredPaths.some((ignored) => {\n        if (ignored instanceof RegExp) {\n          return ignored.test(nestedPath)\n        }\n        return nestedPath === ignored\n      })\n      if (hasMatches) {\n        continue\n      }\n    }\n\n    const result = detectMutations(\n      isImmutable,\n      ignoredPaths,\n      trackedProperty.children[key],\n      obj[key],\n      sameRef,\n      nestedPath,\n    )\n\n    if (result.wasMutated) {\n      return result\n    }\n  }\n  return { wasMutated: false }\n}",
+        "detail": {
+          "unitId": "packages/toolkit/src/immutableStateInvariantMiddleware.ts__detectMutations#function:detectMutations",
+          "fileId": "packages/toolkit/src/immutableStateInvariantMiddleware.ts__detectMutations",
+          "unitKind": "function",
+          "name": "detectMutations",
+          "qualifiedName": "detectMutations",
+          "parentUnitId": null,
+          "startLine": 75,
+          "endLine": 135,
+          "signature": "function detectMutations(isImmutable: IsImmutableFunc, ignoredPaths: IgnoredPaths = [], trackedProperty: TrackedProperty, obj: any, sameParentRef: boolean = false, path: string = ''): { wasMutated: boolean; path?: string }",
+          "parameters": [
+            {
+              "name": "isImmutable",
+              "type": "IsImmutableFunc",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "ignoredPaths",
+              "type": "IgnoredPaths",
+              "default": "[]",
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "trackedProperty",
+              "type": "TrackedProperty",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            },
+            { "name": "obj", "type": "any", "default": null, "optional": false, "variadic": false, "order": 3 },
+            {
+              "name": "sameParentRef",
+              "type": "boolean",
+              "default": "false",
+              "optional": false,
+              "variadic": false,
+              "order": 4
+            },
+            { "name": "path", "type": "string", "default": "''", "optional": false, "variadic": false, "order": 5 }
+          ],
+          "returnType": "{ wasMutated: boolean; path?: string }",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "trackedProperty must be defined with `value` and `children` properties",
+            "isImmutable must be a function returning boolean for a given value",
+            "ignoredPaths must be an array of string or RegExp"
+          ],
+          "postconditions": [
+            "Returns object with wasMutated boolean",
+            "If wasMutated true, includes path string of first mutation detected",
+            "If no mutation, returns { wasMutated: false } without path"
+          ],
+          "invariants": [
+            "Traversal visits all keys present in either trackedProperty.children or obj",
+            "Paths matching ignoredPaths (string equality or RegExp test) are skipped"
+          ],
+          "edgeCases": [
+            "sameParentRef true and prevObj !== obj and obj not NaN => returns mutated at current path immediately",
+            "isImmutable(prevObj) or isImmutable(obj) true => returns not mutated without deep check",
+            "ignoredPaths entry is RegExp and tests nestedPath true => key skipped",
+            "ignoredPaths entry equals nestedPath string => key skipped",
+            "obj is NaN with sameParentRef true => not treated as mutation (Number.isNaN check)"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "detectMutations", "source": null, "kind": "internal" },
+            { "name": "isImmutable", "source": null, "kind": "internal" },
+            { "name": "Array.prototype.some", "source": null, "kind": "internal" },
+            { "name": "Number.isNaN", "source": null, "kind": "external" }
+          ],
+          "symbolReferences": ["IsImmutableFunc", "IgnoredPaths", "TrackedProperty"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Recursively compares a previously tracked property snapshot against a current object to detect whether any nested property was mutated, respecting ignored paths. Returns whether a mutation occurred and the path to the first mutated property.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "detectMutations(isImmutable, [], trackedProperty, obj)",
+              "then": "returns { wasMutated: true, path: 'a' }",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "detectMutations(isImmutable, ignoredPaths, trackedProperty, obj)",
+              "then": "returns { wasMutated: false } because path ignored",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "detectMutations(isImmutable, [], trackedProperty, obj, true, '')",
+              "then": "returns { wasMutated: true, path: '' }",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "edbeb8aee950dc29e6fdab8e906b2afa1c8854916b4cdf57a5df1366c787bec5"
+        }
+      },
+      {
+        "unitId": "packages/toolkit/src/immutableStateInvariantMiddleware.ts__createImmutableStateInvariantMiddleware#function:createImmutableStateInvariantMiddleware",
+        "unitKind": "function",
+        "name": "createImmutableStateInvariantMiddleware",
+        "qualifiedName": "createImmutableStateInvariantMiddleware",
+        "parentUnitId": null,
+        "startLine": 171,
+        "endLine": 274,
+        "isBehavioral": true,
+        "source": "export function createImmutableStateInvariantMiddleware(\n  options: ImmutableStateInvariantMiddlewareOptions = {},\n): Middleware {\n  if (process.env.NODE_ENV === 'production') {\n    return () => (next) => (action) => next(action)\n  } else {\n    function stringify(\n      obj: any,\n      serializer?: EntryProcessor,\n      indent?: string | number,\n      decycler?: EntryProcessor,\n    ): string {\n      return JSON.stringify(obj, getSerialize(serializer, decycler), indent)\n    }\n\n    function getSerialize(\n      serializer?: EntryProcessor,\n      decycler?: EntryProcessor,\n    ): EntryProcessor {\n      let stack: any[] = [],\n        keys: any[] = []\n\n      if (!decycler)\n        decycler = function (_: string, value: any) {\n          if (stack[0] === value) return '[Circular ~]'\n          return (\n            '[Circular ~.' + keys.slice(0, stack.indexOf(value)).join('.') + ']'\n          )\n        }\n\n      return function (this: any, key: string, value: any) {\n        if (stack.length > 0) {\n          var thisPos = stack.indexOf(this)\n          ~thisPos ? stack.splice(thisPos + 1) : stack.push(this)\n          ~thisPos ? keys.splice(thisPos, Infinity, key) : keys.push(key)\n          if (~stack.indexOf(value)) value = decycler!.call(this, key, value)\n        } else stack.push(value)\n\n        return serializer == null ? value : serializer.call(this, key, value)\n      }\n    }\n\n    let {\n      isImmutable = isImmutableDefault,\n      ignoredPaths,\n      warnAfter = 32,\n    } = options\n\n    const track = trackForMutations.bind(null, isImmutable, ignoredPaths)\n\n    return ({ getState }) => {\n      let state = getState()\n      let tracker = track(state)\n\n      let result\n      return (next) => (action) => {\n        const measureUtils = getTimeMeasureUtils(\n          warnAfter,\n          'ImmutableStateInvariantMiddleware',\n        )\n\n        measureUtils.measureTime(() => {\n          state = getState()\n\n          result = tracker.detectMutations()\n          // Track before potentially not meeting the invariant\n          tracker = track(state)\n\n          if (result.wasMutated) {\n            throw new Error(\n              `A state mutation was detected between dispatches, in the path '${\n                result.path || ''\n              }'.  This may cause incorrect behavior. (https://redux.js.org/style-guide/style-guide#do-not-mutate-state)`,\n            )\n          }\n        })\n\n        const dispatchedAction = next(action)\n\n        measureUtils.measureTime(() => {\n          state = getState()\n\n          result = tracker.detectMutations()\n          // Track before potentially not meeting the invariant\n          tracker = track(state)\n\n          if (result.wasMutated) {\n            throw new Error(\n              `A state mutation was detected inside a dispatch, in the path: ${\n                result.path || ''\n              }. Take a look at the reducer(s) handling the action ${stringify(\n                action,\n              )}. (https://redux.js.org/style-guide/style-guide#do-not-mutate-state)`,\n            )\n          }\n        })\n\n        measureUtils.warnIfExceeded()\n\n        return dispatchedAction\n      }\n    }\n  }\n}",
+        "detail": {
+          "unitId": "packages/toolkit/src/immutableStateInvariantMiddleware.ts__createImmutableStateInvariantMiddleware#function:createImmutableStateInvariantMiddleware",
+          "fileId": "packages/toolkit/src/immutableStateInvariantMiddleware.ts__createImmutableStateInvariantMiddleware",
+          "unitKind": "function",
+          "name": "createImmutableStateInvariantMiddleware",
+          "qualifiedName": "createImmutableStateInvariantMiddleware",
+          "parentUnitId": null,
+          "startLine": 171,
+          "endLine": 274,
+          "signature": "export function createImmutableStateInvariantMiddleware(options: ImmutableStateInvariantMiddlewareOptions = {}): Middleware",
+          "parameters": [
+            {
+              "name": "options",
+              "type": "ImmutableStateInvariantMiddlewareOptions",
+              "default": "{}",
+              "optional": true,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "Middleware",
+          "decorators": [],
+          "modifiersApplied": ["export"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["options is an object of type ImmutableStateInvariantMiddlewareOptions or undefined"],
+          "postconditions": [
+            "Returns a Middleware compliant function",
+            "If process.env.NODE_ENV === 'production', returned middleware delegates to next without tracking",
+            "Otherwise returned middleware tracks state and throws Error on detected mutation"
+          ],
+          "invariants": [],
+          "edgeCases": [
+            "When process.env.NODE_ENV === 'production', returns (next)=>(action)=>next(action) with no mutation checking",
+            "Mutation between dispatches throws Error with message containing 'A state mutation was detected between dispatches' and path",
+            "Mutation inside dispatch throws Error with message containing 'A state mutation was detected inside a dispatch' and stringified action",
+            "warnAfter option defaults to 32 if not provided"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [
+              "Error('A state mutation was detected between dispatches, in the path ...')",
+              "Error('A state mutation was detected inside a dispatch, in the path: ...')"
+            ],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": null
+          },
+          "stateMutations": ["Closure variables state, tracker, result are reassigned during middleware execution"],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "trackForMutations", "source": null, "kind": "internal" },
+            { "name": "isImmutableDefault", "source": null, "kind": "internal" },
+            { "name": "getTimeMeasureUtils", "source": null, "kind": "internal" },
+            { "name": "getState", "source": null, "kind": "external" },
+            { "name": "next", "source": null, "kind": "external" }
+          ],
+          "symbolReferences": [
+            "ImmutableStateInvariantMiddlewareOptions",
+            "Middleware",
+            "EntryProcessor",
+            "process.env.NODE_ENV"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Returns a Redux middleware that detects illegal state mutations in non-production builds; in production it returns a no-op pass-through middleware.",
+          "specLiterals": [
+            {
+              "kind": "format-string",
+              "value": "A state mutation was detected between dispatches, in the path '${result.path || ''}'.  This may cause incorrect behavior. (https://redux.js.org/style-guide/style-guide#do-not-mutate-state)",
+              "role": "Error thrown when state mutated between dispatches"
+            },
+            {
+              "kind": "format-string",
+              "value": "A state mutation was detected inside a dispatch, in the path: ${result.path || ''}. Take a look at the reducer(s) handling the action ${stringify(action)}. (https://redux.js.org/style-guide/style-guide#do-not-mutate-state)",
+              "role": "Error thrown when state mutated inside dispatch"
+            },
+            { "kind": "magic-number", "value": "32", "role": "Default value for warnAfter option" }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "middleware is created and an action is dispatched",
+              "then": "returns next(action) without mutation tracking or throwing",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "an action is dispatched through middleware",
+              "then": "throws Error containing 'A state mutation was detected between dispatches'",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "an action is dispatched",
+              "then": "throws Error containing 'A state mutation was detected inside a dispatch' with stringified action",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "decf7aa722c3939824494a2f06b16411da1220a54478d7fabee37f23ac5f85de"
+        }
+      },
+      {
+        "unitId": "packages/toolkit/src/immutableStateInvariantMiddleware.ts__createImmutableStateInvariantMiddleware.stringify#function:createImmutableStateInvariantMiddleware.stringify",
+        "unitKind": "function",
+        "name": "stringify",
+        "qualifiedName": "createImmutableStateInvariantMiddleware.stringify",
+        "parentUnitId": "packages/toolkit/src/immutableStateInvariantMiddleware.ts__createImmutableStateInvariantMiddleware#function:createImmutableStateInvariantMiddleware",
+        "startLine": 177,
+        "endLine": 184,
+        "isBehavioral": true,
+        "source": "    function stringify(\n      obj: any,\n      serializer?: EntryProcessor,\n      indent?: string | number,\n      decycler?: EntryProcessor,\n    ): string {\n      return JSON.stringify(obj, getSerialize(serializer, decycler), indent)\n    }",
+        "detail": {
+          "unitId": "packages/toolkit/src/immutableStateInvariantMiddleware.ts__createImmutableStateInvariantMiddleware.stringify#function:createImmutableStateInvariantMiddleware.stringify",
+          "fileId": "packages/toolkit/src/immutableStateInvariantMiddleware.ts__createImmutableStateInvariantMiddleware.stringify",
+          "unitKind": "function",
+          "name": "stringify",
+          "qualifiedName": "createImmutableStateInvariantMiddleware.stringify",
+          "parentUnitId": "packages/toolkit/src/immutableStateInvariantMiddleware.ts__createImmutableStateInvariantMiddleware#function:createImmutableStateInvariantMiddleware",
+          "startLine": 177,
+          "endLine": 184,
+          "signature": "function stringify(obj: any, serializer?: EntryProcessor, indent?: string | number, decycler?: EntryProcessor): string",
+          "parameters": [
+            { "name": "obj", "type": "any", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "serializer",
+              "type": "EntryProcessor",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "indent",
+              "type": "string | number",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 2
+            },
+            {
+              "name": "decycler",
+              "type": "EntryProcessor",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 3
+            }
+          ],
+          "returnType": "string",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "pure",
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "obj must be a value serializable by JSON.stringify",
+            "if provided, serializer and decycler must be callable EntryProcessor functions"
+          ],
+          "postconditions": [
+            "returns a valid JSON string representation of obj",
+            "throws if obj contains unserializable values and no decycler handles them"
+          ],
+          "invariants": [],
+          "edgeCases": [
+            "null or undefined obj produces 'null'",
+            "cyclical object structures are handled only if a decycler is provided",
+            "circular references without a decycler cause a TypeError"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["TypeError"],
+            "reverts": [],
+            "onInvalidInput": "throws TypeError for unserializable values (e.g., circular references without a decycler)",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            {
+              "name": "getSerialize",
+              "source": "createImmutableStateInvariantMiddleware.getSerialize",
+              "kind": "internal"
+            },
+            { "name": "JSON.stringify", "source": "global", "kind": "external" }
+          ],
+          "symbolReferences": ["EntryProcessor"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Returns a JSON string conforming to the output of JSON.stringify with an optional indentation level and a custom replacer derived from getSerialize(serializer, decycler).",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Serializes an object to a JSON string using a replacer function that supports optional custom serialization and cyclical reference handling.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "94a12920ea4c73ef8b37de4b06424e0ea129a86564eaa82e26dbd7ad835a0ba2"
+        }
+      },
+      {
+        "unitId": "packages/toolkit/src/immutableStateInvariantMiddleware.ts__createImmutableStateInvariantMiddleware.getSerialize#function:createImmutableStateInvariantMiddleware.getSerialize",
+        "unitKind": "function",
+        "name": "getSerialize",
+        "qualifiedName": "createImmutableStateInvariantMiddleware.getSerialize",
+        "parentUnitId": "packages/toolkit/src/immutableStateInvariantMiddleware.ts__createImmutableStateInvariantMiddleware#function:createImmutableStateInvariantMiddleware",
+        "startLine": 186,
+        "endLine": 211,
+        "isBehavioral": true,
+        "source": "    function getSerialize(\n      serializer?: EntryProcessor,\n      decycler?: EntryProcessor,\n    ): EntryProcessor {\n      let stack: any[] = [],\n        keys: any[] = []\n\n      if (!decycler)\n        decycler = function (_: string, value: any) {\n          if (stack[0] === value) return '[Circular ~]'\n          return (\n            '[Circular ~.' + keys.slice(0, stack.indexOf(value)).join('.') + ']'\n          )\n        }\n\n      return function (this: any, key: string, value: any) {\n        if (stack.length > 0) {\n          var thisPos = stack.indexOf(this)\n          ~thisPos ? stack.splice(thisPos + 1) : stack.push(this)\n          ~thisPos ? keys.splice(thisPos, Infinity, key) : keys.push(key)\n          if (~stack.indexOf(value)) value = decycler!.call(this, key, value)\n        } else stack.push(value)\n\n        return serializer == null ? value : serializer.call(this, key, value)\n      }\n    }",
+        "detail": {
+          "unitId": "packages/toolkit/src/immutableStateInvariantMiddleware.ts__createImmutableStateInvariantMiddleware.getSerialize#function:createImmutableStateInvariantMiddleware.getSerialize",
+          "fileId": "packages/toolkit/src/immutableStateInvariantMiddleware.ts__createImmutableStateInvariantMiddleware.getSerialize",
+          "unitKind": "function",
+          "name": "getSerialize",
+          "qualifiedName": "createImmutableStateInvariantMiddleware.getSerialize",
+          "parentUnitId": "packages/toolkit/src/immutableStateInvariantMiddleware.ts__createImmutableStateInvariantMiddleware#function:createImmutableStateInvariantMiddleware",
+          "startLine": 186,
+          "endLine": 211,
+          "signature": "function getSerialize(serializer?: EntryProcessor, decycler?: EntryProcessor): EntryProcessor",
+          "parameters": [
+            {
+              "name": "serializer",
+              "type": "EntryProcessor",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "decycler",
+              "type": "EntryProcessor",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "EntryProcessor",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "serializer and decycler parameters are either undefined or functions matching EntryProcessor signature"
+          ],
+          "postconditions": [
+            "Returns a function usable as a JSON replacer",
+            "If decycler is undefined, the returned function uses a built-in decycler that emits '[Circular ~]' or '[Circular ~.<path>]' for circular values",
+            "If serializer is null/undefined the returned function returns the (possibly decycled) value unchanged"
+          ],
+          "invariants": [
+            "Closure variables stack and keys track the current object traversal path across calls to the returned function"
+          ],
+          "edgeCases": [
+            "No decycler provided: root circular yields '[Circular ~]', nested circular yields '[Circular ~.<keys>]'",
+            "serializer undefined: value passed through after decycle check",
+            "value not previously seen in stack: no decycling applied"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [
+            "Mutates closure-local stack and keys arrays; they persist between top-level invocations of the returned function and are not reset"
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["EntryProcessor"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Returns a JSON replacer-style EntryProcessor that tracks object traversal to detect circular references, applying an optional custom serializer and a default decycler when none is supplied.",
+          "specLiterals": [
+            {
+              "kind": "format-string",
+              "value": "[Circular ~]",
+              "role": "default decycler output for circular reference to root"
+            },
+            {
+              "kind": "format-string",
+              "value": "[Circular ~.",
+              "role": "prefix for default decycler output for nested circular reference path"
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "JSON.stringify(obj, returnedFn) invoked",
+              "then": "The circular self-reference is replaced with the string '[Circular ~]'",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "JSON.stringify(obj, returnedFn) invoked",
+              "then": "The circular reference is replaced with '[Circular ~.a]'",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "9cbaf9b143c4421d3bb6ab3f1b0d2b4e55cb2bb37d3f74eccfa24e4c9e119ebc"
+        }
+      }
+    ]
+  },
+  "out": ["packages/toolkit/src/utils.ts", "packages/toolkit/src/serializableStateInvariantMiddleware.ts"],
+  "in": [
+    "packages/toolkit/src/index.ts",
+    "packages/toolkit/src/tests/immutableStateInvariantMiddleware.test.ts",
+    "packages/toolkit/src/getDefaultMiddleware.ts"
+  ],
+  "externals": ["redux"],
+  "impact": { "seeds": 7, "callers": 2, "impactedFiles": [] }
+}

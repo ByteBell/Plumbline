@@ -1,0 +1,1601 @@
+{
+  "schema": 2,
+  "kind": "file",
+  "repoName": "tldraw",
+  "file": {
+    "relativePath": "packages/tldraw/src/lib/utils/tldr/file.ts",
+    "language": "typescript",
+    "sizeBytes": 10091,
+    "tokenCount": 2523,
+    "model": "us.openai.gpt-5.6-luna",
+    "analysedAt": "2026-08-24T12:13:30.100Z",
+    "module": {
+      "purpose": "Provides serialization, validation, migration, loading, and asset extraction for tldraw JSON documents and blobs.",
+      "summary": "This module defines the tldraw file format contract, validates serialized documents, detects legacy files, migrates records through the current schema, removes unreferenced assets, and serializes editor state. It also coordinates document loading, error reporting, snapshot restoration, viewport fitting, dark-mode enforcement, and asynchronous conversion of embedded media into managed assets.",
+      "businessContext": "Supports importing, exporting, and restoring tldraw diagrams across application versions. Failures can prevent users from opening drawings or preserve assets incorrectly.",
+      "classes": ["TldrawFile (~L42-46): Serialized document envelope containing version, schema, and records"],
+      "functions": [
+        "isV1File (~L80-89): Detects whether arbitrary data matches the legacy document format",
+        "parseTldrawJsonFile (~L100-164): Validates, migrates, prunes, and constructs a document store",
+        "pruneUnusedAssets (~L166-173): Removes asset records not referenced by shape records",
+        "serializeTldrawJson (~L176-211): Serializes editor records and embeds fetchable assets",
+        "serializeTldrawJsonBlob (~L214-216): Wraps serialized document text in a typed Blob",
+        "parseAndLoadDocument (~L219-298): Parses, reports, restores, and configures an editor document",
+        "extractAssets (~L300-343): Converts embedded media data URLs into managed editor assets"
+      ],
+      "keywords": [
+        "tldraw file format",
+        "schema migration",
+        "serialized store",
+        "asset extraction",
+        "data URL",
+        "legacy v1 document",
+        "snapshot restoration",
+        "file validation"
+      ],
+      "ontologyConcepts": [
+        "serialization",
+        "schema evolution",
+        "document migration",
+        "validation",
+        "asset lifecycle",
+        "error recovery",
+        "state restoration"
+      ],
+      "businessEntities": ["TldrawFile", "document", "record", "asset", "shape", "editor", "store snapshot"],
+      "systemCapabilities": [
+        "Validate tldraw documents",
+        "Migrate serialized records",
+        "Serialize editor state",
+        "Restore documents into editors",
+        "Extract embedded media assets",
+        "Report file loading failures"
+      ],
+      "configDependencies": [],
+      "importsInternal": [
+        {
+          "spec": "../../ui/context/toasts",
+          "symbols": ["TLUiToastsContextType"],
+          "anchor": { "startLine": 26, "endLine": 26 },
+          "resolvedRelativePath": "packages/tldraw/src/lib/ui/context/toasts.tsx",
+          "resolvedFileId": "packages/tldraw/src/lib/ui/context/toasts.tsx",
+          "resolvedHint": "packages/tldraw/src/ui/context/toasts.ts"
+        },
+        {
+          "spec": "../../ui/hooks/useTranslation/TLUiTranslationKey",
+          "symbols": ["TLUiTranslationKey"],
+          "anchor": { "startLine": 27, "endLine": 27 },
+          "resolvedRelativePath": "packages/tldraw/src/lib/ui/hooks/useTranslation/TLUiTranslationKey.ts",
+          "resolvedFileId": "packages/tldraw/src/lib/ui/hooks/useTranslation/TLUiTranslationKey.ts",
+          "resolvedHint": "packages/tldraw/src/ui/hooks/useTranslation/TLUiTranslationKey.ts"
+        },
+        {
+          "spec": "../tldr/buildFromV1Document",
+          "symbols": ["buildFromV1Document"],
+          "anchor": { "startLine": 28, "endLine": 28 },
+          "resolvedRelativePath": "packages/tldraw/src/lib/utils/tldr/buildFromV1Document.ts",
+          "resolvedFileId": "packages/tldraw/src/lib/utils/tldr/buildFromV1Document.ts",
+          "resolvedHint": "packages/tldraw/src/lib/utils/tldr/buildFromV1Document.ts"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "@tldraw/editor",
+          "symbols": [
+            "Editor",
+            "FileHelpers",
+            "MigrationFailureReason",
+            "MigrationResult",
+            "RecordId",
+            "Result",
+            "SerializedSchema",
+            "SerializedSchemaV1",
+            "SerializedSchemaV2",
+            "SerializedStore",
+            "StoreSnapshot",
+            "T",
+            "TLAssetId",
+            "TLImageAsset",
+            "TLRecord",
+            "TLSchema",
+            "TLStore",
+            "TLVideoAsset",
+            "UnknownRecord",
+            "createTLStore",
+            "exhaustiveSwitchError",
+            "fetch",
+            "transact"
+          ],
+          "package": "@tldraw/editor",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 25 }
+        }
+      ],
+      "sideEffects": {
+        "io": ["Creates Blob and File objects for serialized and extracted media."],
+        "network": ["Fetches remote or data URL assets while serializing and extracting media."],
+        "env": [],
+        "fs": [],
+        "process": [
+          "Reports parse and record failures through reportError and editor error annotations.",
+          "Writes user-facing error toasts and logs failed asset extraction errors."
+        ],
+        "mutationOfArg": [
+          "Loads parsed snapshots into the supplied editor and clears its history.",
+          "Updates extracted assets in the supplied editor.",
+          "Updates dark-mode user preferences when requested."
+        ]
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "TLDRAW_FILE_MIMETYPE",
+          "shape": "export const TLDRAW_FILE_MIMETYPE = 'application/vnd.tldraw+json' as const",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "TLDRAW_FILE_EXTENSION",
+          "shape": "export const TLDRAW_FILE_EXTENSION = '.tldr' as const",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "TldrawFile",
+          "shape": "interface TldrawFile { tldrawFileFormatVersion: number; schema: SerializedSchema; records: UnknownRecord[] }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "isV1File",
+          "shape": "export function isV1File(data: any)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "TldrawFileParseError",
+          "shape": "type TldrawFileParseError = { type: 'v1File'; data: any } | { type: 'notATldrawFile'; cause: unknown } | { type: 'fileFormatVersionTooNew'; version: number } | { type: 'migrationFailed'; reason: MigrationFailureReason } | { type: 'invalidRecords'; cause: unknown }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "parseTldrawJsonFile",
+          "shape": "export function parseTldrawJsonFile({ json, schema }: { schema: TLSchema; json: string }): Result<TLStore, TldrawFileParseError>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "serializeTldrawJson",
+          "shape": "export async function serializeTldrawJson(editor: Editor): Promise<string>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "serializeTldrawJsonBlob",
+          "shape": "export async function serializeTldrawJsonBlob(editor: Editor): Promise<Blob>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "parseAndLoadDocument",
+          "shape": "export async function parseAndLoadDocument(editor: Editor, document: string, msg: (id: TLUiTranslationKey | Exclude<string, TLUiTranslationKey>) => string, addToast: TLUiToastsContextType['addToast'], onV1FileLoad?: () => void, forceDarkMode?: boolean)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "TLSchema.migrateStoreSnapshot",
+          "shape": "schema.migrateStoreSnapshot({ store: storeSnapshot, schema: data.schema })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "createTLStore",
+          "shape": "createTLStore({ snapshot: { store: storeSnapshot, schema: data.schema }, schema })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "Editor.store",
+          "shape": "editor.store.allRecords()",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "Editor.loadSnapshot",
+          "shape": "editor.loadSnapshot(snapshot)",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "buildFromV1Document",
+          "shape": "buildFromV1Document(editor, parseFileResult.error.data.document)",
+          "resolvedRelativePath": "packages/tldraw/src/lib/utils/tldr/buildFromV1Document.ts",
+          "resolvedFileId": "packages/tldraw/src/lib/utils/tldr/buildFromV1Document.ts"
+        },
+        {
+          "name": "Editor.getAssetForExternalContent",
+          "shape": "editor.getAssetForExternalContent({ type: 'file', file })",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "file validation",
+          "intent": "Parses JSON and validates the general tldraw file envelope.",
+          "structureKind": "try",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 108, "endLine": 124 }
+        },
+        {
+          "name": "format version gate",
+          "intent": "Rejects documents produced by newer unsupported file formats.",
+          "structureKind": "branch",
+          "predicate": "data.tldrawFileFormatVersion > LATEST_TLDRAW_FILE_FORMAT_VERSION",
+          "branchOutcomes": ["file format too new", "continue migration"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 127, "endLine": 131 }
+        },
+        {
+          "name": "record migration",
+          "intent": "Prunes unused assets and migrates the serialized store snapshot.",
+          "structureKind": "try",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 136, "endLine": 145 }
+        },
+        {
+          "name": "store construction",
+          "intent": "Creates a validated store or returns invalid-record failure.",
+          "structureKind": "try",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 154, "endLine": 163 }
+        },
+        {
+          "name": "asset record pruning",
+          "intent": "Collects referenced asset identifiers and filters unreferenced assets.",
+          "structureKind": "loop",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": "const record of records",
+          "terminationCondition": null,
+          "anchor": { "startLine": 168, "endLine": 172 }
+        },
+        {
+          "name": "editor serialization",
+          "intent": "Serializes all editor records while materializing external asset sources.",
+          "structureKind": "loop",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": "const record of editor.store.allRecords()",
+          "terminationCondition": null,
+          "anchor": { "startLine": 178, "endLine": 204 }
+        },
+        {
+          "name": "document restoration",
+          "intent": "Restores snapshot state, assets, history, viewport, and optional theme.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 284, "endLine": 297 }
+        },
+        {
+          "name": "embedded asset extraction",
+          "intent": "Converts embedded media assets asynchronously into managed external assets.",
+          "structureKind": "async",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 316, "endLine": 342 }
+        }
+      ],
+      "representationFamily": "module",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "const",
+          "name": "TLDRAW_FILE_MIMETYPE",
+          "signature": "export const TLDRAW_FILE_MIMETYPE = 'application/vnd.tldraw+json' as const",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 30, "endLine": 30 }
+        },
+        {
+          "kind": "const",
+          "name": "TLDRAW_FILE_EXTENSION",
+          "signature": "export const TLDRAW_FILE_EXTENSION = '.tldr' as const",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 36, "endLine": 36 }
+        },
+        {
+          "kind": "interface",
+          "name": "TldrawFile",
+          "signature": "export interface TldrawFile",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 42, "endLine": 46 }
+        },
+        {
+          "kind": "function",
+          "name": "isV1File",
+          "signature": "export function isV1File(data: any)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 80, "endLine": 80 }
+        },
+        {
+          "kind": "function",
+          "name": "parseTldrawJsonFile",
+          "signature": "export function parseTldrawJsonFile({\n\tjson,\n\tschema,\n}: {\n\tschema: TLSchema\n\tjson: string\n}): Result<TLStore, TldrawFileParseError>",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Result<TLStore, TldrawFileParseError>",
+          "exported": true,
+          "anchor": { "startLine": 100, "endLine": 106 }
+        },
+        {
+          "kind": "function",
+          "name": "serializeTldrawJson",
+          "signature": "export async function serializeTldrawJson(editor: Editor): Promise<string>",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Promise<string>",
+          "exported": true,
+          "anchor": { "startLine": 176, "endLine": 176 }
+        },
+        {
+          "kind": "function",
+          "name": "serializeTldrawJsonBlob",
+          "signature": "export async function serializeTldrawJsonBlob(editor: Editor): Promise<Blob>",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Promise<Blob>",
+          "exported": true,
+          "anchor": { "startLine": 214, "endLine": 214 }
+        },
+        {
+          "kind": "function",
+          "name": "parseAndLoadDocument",
+          "signature": "export async function parseAndLoadDocument(\n\teditor: Editor,\n\tdocument: string,\n\tmsg: (id: TLUiTranslationKey | Exclude<string, TLUiTranslationKey>) => string,\n\taddToast: TLUiToastsContextType['addToast'],\n\tonV1FileLoad?: () => void,\n\tforceDarkMode?: boolean\n)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 219, "endLine": 226 }
+        },
+        {
+          "kind": "function",
+          "name": "pruneUnusedAssets",
+          "signature": "function pruneUnusedAssets(records: TLRecord[])",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 166, "endLine": 166 }
+        },
+        {
+          "kind": "function",
+          "name": "extractAssets",
+          "signature": "async function extractAssets(\n\teditor: Editor,\n\tsnapshot: StoreSnapshot<TLRecord>,\n\tmsg: (id: TLUiTranslationKey | Exclude<string, TLUiTranslationKey>) => string,\n\taddToast: TLUiToastsContextType['addToast']\n)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 300, "endLine": 305 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "interface",
+          "name": "TldrawFile",
+          "shape": "{\n\ttldrawFileFormatVersion: number\n\tschema: SerializedSchema\n\trecords: UnknownRecord[]\n}",
+          "discriminant": null,
+          "anchor": { "startLine": 42, "endLine": 46 }
+        },
+        {
+          "kind": "union",
+          "name": "TldrawFileParseError",
+          "shape": "| { type: 'v1File'; data: any }\n\t| { type: 'notATldrawFile'; cause: unknown }\n\t| { type: 'fileFormatVersionTooNew'; version: number }\n\t| { type: 'migrationFailed'; reason: MigrationFailureReason }\n\t| { type: 'invalidRecords'; cause: unknown }",
+          "discriminant": "type",
+          "anchor": { "startLine": 92, "endLine": 97 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "Malformed JSON or data failing the tldraw validator",
+          "handled": true,
+          "behavior": "Attempts legacy detection, then returns a notATldrawFile error with the parse cause.",
+          "anchor": { "startLine": 109, "endLine": 124 }
+        },
+        {
+          "inputShape": "Legacy v1 document containing document.version",
+          "handled": true,
+          "behavior": "Returns a v1File parse error carrying the original data for legacy loading.",
+          "anchor": { "startLine": 113, "endLine": 117 }
+        },
+        {
+          "inputShape": "File format version newer than supported",
+          "handled": true,
+          "behavior": "Returns fileFormatVersionTooNew without attempting migration.",
+          "anchor": { "startLine": 127, "endLine": 131 }
+        },
+        {
+          "inputShape": "Migration failure or invalid records",
+          "handled": true,
+          "behavior": "Returns migrationFailed for reported migration errors and invalidRecords for thrown migration or store-construction errors.",
+          "anchor": { "startLine": 138, "endLine": 163 }
+        },
+        {
+          "inputShape": "Remote asset that cannot be fetched or converted to a data URL",
+          "handled": true,
+          "behavior": "Falls back to saving the asset's original source URL.",
+          "anchor": { "startLine": 186, "endLine": 196 }
+        },
+        {
+          "inputShape": "Embedded media asset that cannot be recreated",
+          "handled": true,
+          "behavior": "Shows an upload-failed toast, logs the error, and leaves that asset unreplaced.",
+          "anchor": { "startLine": 328, "endLine": 340 }
+        },
+        {
+          "inputShape": "Document with no current page bounds",
+          "handled": true,
+          "behavior": "Restores the document without zooming to bounds.",
+          "anchor": { "startLine": 291, "endLine": 294 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": ">",
+          "left": "data.tldrawFileFormatVersion",
+          "right": "LATEST_TLDRAW_FILE_FORMAT_VERSION",
+          "inclusive": false,
+          "intent": "Rejects only file versions strictly newer than the supported version.",
+          "anchor": { "startLine": 127, "endLine": 127 }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": null,
+          "caught": "JSON parsing or validator failure",
+          "action": "Attempts to parse again and identify a legacy v1 file.",
+          "fallback": "{ type: 'notATldrawFile', cause: e }",
+          "anchor": { "startLine": 109, "endLine": 124 }
+        },
+        {
+          "thrown": null,
+          "caught": "Migration setup or migration execution exception",
+          "action": "Treats malformed migration data as invalid records.",
+          "fallback": "{ type: 'invalidRecords', cause: e }",
+          "anchor": { "startLine": 138, "endLine": 145 }
+        },
+        {
+          "thrown": null,
+          "caught": "Store creation or post-migration validation exception",
+          "action": "Treats the document as containing invalid records.",
+          "fallback": "{ type: 'invalidRecords', cause: e }",
+          "anchor": { "startLine": 154, "endLine": 163 }
+        },
+        {
+          "thrown": null,
+          "caught": "Asset URL resolution, fetch, blob conversion, or data URL conversion failure",
+          "action": "Uses the original asset source for serialization.",
+          "fallback": "record.props.src",
+          "anchor": { "startLine": 186, "endLine": 196 }
+        },
+        {
+          "thrown": "Error('Could not create an asset')",
+          "caught": "Embedded asset extraction failure",
+          "action": "Displays an upload-failed toast, logs the error, and returns from that asset task.",
+          "fallback": null,
+          "anchor": { "startLine": 328, "endLine": 340 }
+        }
+      ],
+      "invariants": [
+        {
+          "kind": "invariant",
+          "description": "Only assets referenced by shape records are retained in serialized or parsed records.",
+          "anchor": { "startLine": 168, "endLine": 173 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "A successful parse returns a store created with the supplied schema and migrated snapshot.",
+          "anchor": { "startLine": 154, "endLine": 158 }
+        },
+        {
+          "kind": "ordering",
+          "description": "Document loading restores the snapshot and clears history before extracting assets and fitting bounds.",
+          "anchor": { "startLine": 285, "endLine": 294 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Embedded image and video assets retain their original identifiers after replacement.",
+          "anchor": { "startLine": 328, "endLine": 332 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "The caller supplies an editor whose schema and store are compatible with the serialized document.",
+          "anchor": { "startLine": 227, "endLine": 230 }
+        },
+        {
+          "kind": "caller",
+          "description": "The caller provides translation and toast functions for user-facing load errors.",
+          "anchor": { "startLine": 219, "endLine": 225 }
+        },
+        {
+          "kind": "schema",
+          "description": "Migrated records are expected to satisfy the supplied schema before store creation.",
+          "anchor": { "startLine": 146, "endLine": 163 }
+        },
+        {
+          "kind": "platform",
+          "description": "The runtime provides fetch, Blob, File, and Promise.allSettled APIs.",
+          "anchor": { "startLine": 191, "endLine": 192 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "Should embedded asset extraction be awaited before parseAndLoadDocument returns?",
+          "affects": "concurrency_model and document-loading completion semantics",
+          "anchor": { "startLine": 289, "endLine": 289 },
+          "resolution": null
+        },
+        {
+          "question": "What exact record and schema versions can migrateStoreSnapshot accept beyond the validator's declared shapes?",
+          "affects": "schema migration and error-handling guarantees",
+          "anchor": { "startLine": 141, "endLine": 141 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "mixed",
+        "reentrant": true,
+        "ordering": "unordered",
+        "notes": "Serialization and document parsing are asynchronous but sequential internally; embedded asset extraction starts independent Promise.allSettled tasks without awaiting their completion."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "rejects-invalid-json",
+          "scenario": "A document is not valid JSON and is not recognized as a legacy v1 file.",
+          "given": ["json = '{invalid'"],
+          "when": "parseTldrawJsonFile({ schema, json })",
+          "then": "result.error.type === 'notATldrawFile'",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Invalid input must produce a structured parse error rather than throw."
+        },
+        {
+          "testId": "rejects-newer-file-format",
+          "scenario": "A structurally valid file uses a format version newer than the supported version.",
+          "given": ["json = JSON.stringify({ tldrawFileFormatVersion: 2, schema, records: [] })"],
+          "when": "parseTldrawJsonFile({ schema, json })",
+          "then": "result.error.type === 'fileFormatVersionTooNew' && result.error.version === 2",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Newer persisted formats must fail deterministically instead of being opened incorrectly."
+        },
+        {
+          "testId": "round-trips-serialized-file",
+          "scenario": "An editor with records is serialized and parsed using its schema.",
+          "given": ["serialized = await serializeTldrawJson(editor)"],
+          "when": "parseTldrawJsonFile({ schema: editor.store.schema, json: serialized })",
+          "then": "result.ok === true",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Serialization and parsing must remain compatible across the file contract."
+        },
+        {
+          "testId": "detects-v1-document",
+          "scenario": "A legacy document contains a document.version field.",
+          "given": ["data = { document: { version: 1 } }"],
+          "when": "isV1File(data)",
+          "then": "isV1File(data) === true",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Legacy files must be routed to the v1 migration path."
+        },
+        {
+          "testId": "serializes-file-blob-mimetype",
+          "scenario": "An editor is serialized into a file blob.",
+          "given": [],
+          "when": "serializeTldrawJsonBlob(editor)",
+          "then": "blob.type === TLDRAW_FILE_MIMETYPE",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Consumers rely on the standard MIME type for downloaded tldraw files."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "import declarations",
+        "exported MIME type constant",
+        "exported file extension constant",
+        "latest file format version constant",
+        "TldrawFile interface",
+        "schemaV1 validator",
+        "schemaV2 validator",
+        "tldrawFileValidator",
+        "isV1File",
+        "TldrawFileParseError union",
+        "parseTldrawJsonFile",
+        "pruneUnusedAssets",
+        "serializeTldrawJson",
+        "serializeTldrawJsonBlob",
+        "parseAndLoadDocument",
+        "extractAssets"
+      ],
+      "moduleLevelCode": "import {\n\tEditor,\n\tFileHelpers,\n\tMigrationFailureReason,\n\tMigrationResult,\n\tRecordId,\n\tResult,\n\tSerializedSchema,\n\tSerializedSchemaV1,\n\tSerializedSchemaV2,\n\tSerializedStore,\n\tStoreSnapshot,\n\tT,\n\tTLAssetId,\n\tTLImageAsset,\n\tTLRecord,\n\tTLSchema,\n\tTLStore,\n\tTLVideoAsset,\n\tUnknownRecord,\n\tcreateTLStore,\n\texhaustiveSwitchError,\n\tfetch,\n\ttransact,\n} from '@tldraw/editor'\nimport { TLUiToastsContextType } from '../../ui/context/toasts'\nimport { TLUiTranslationKey } from '../../ui/hooks/useTranslation/TLUiTranslationKey'\nimport { buildFromV1Document } from '../tldr/buildFromV1Document'",
+      "exports": [
+        { "name": "TLDRAW_FILE_MIMETYPE", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "TLDRAW_FILE_EXTENSION", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "TldrawFile", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "isV1File", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "TldrawFileParseError", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "parseTldrawJsonFile", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "serializeTldrawJson", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "serializeTldrawJsonBlob", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "parseAndLoadDocument", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "Editor", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "FileHelpers", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "MigrationFailureReason", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "MigrationResult", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "RecordId", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "Result", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "SerializedSchema", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "SerializedSchemaV1", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "SerializedSchemaV2", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "SerializedStore", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "StoreSnapshot", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "T", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "TLAssetId", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "TLImageAsset", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "TLRecord", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "TLSchema", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "TLStore", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "TLVideoAsset", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "UnknownRecord", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "createTLStore", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "exhaustiveSwitchError", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "fetch", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "transact", "module": "@tldraw/editor", "alias": null, "kind": "external" },
+        { "symbol": "TLUiToastsContextType", "module": "../../ui/context/toasts", "alias": null, "kind": "internal" },
+        {
+          "symbol": "TLUiTranslationKey",
+          "module": "../../ui/hooks/useTranslation/TLUiTranslationKey",
+          "alias": null,
+          "kind": "internal"
+        },
+        { "symbol": "buildFromV1Document", "module": "../tldr/buildFromV1Document", "alias": null, "kind": "internal" }
+      ],
+      "fileConstants": [
+        { "name": "TLDRAW_FILE_MIMETYPE", "value": "'application/vnd.tldraw+json'", "kind": "string" },
+        { "name": "TLDRAW_FILE_EXTENSION", "value": "'.tldr'", "kind": "string" },
+        { "name": "LATEST_TLDRAW_FILE_FORMAT_VERSION", "value": "1", "kind": "number" }
+      ],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/tldraw/src/lib/utils/tldr/file.ts__isV1File#function:isV1File",
+        "unitKind": "function",
+        "name": "isV1File",
+        "qualifiedName": "isV1File",
+        "parentUnitId": null,
+        "startLine": 80,
+        "endLine": 89,
+        "isBehavioral": true,
+        "source": "export function isV1File(data: any) {\n\ttry {\n\t\tif (data.document?.version) {\n\t\t\treturn true\n\t\t}\n\t\treturn false\n\t} catch {\n\t\treturn false\n\t}\n}",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/utils/tldr/file.ts__isV1File#function:isV1File",
+          "fileId": "packages/tldraw/src/lib/utils/tldr/file.ts__isV1File",
+          "unitKind": "function",
+          "name": "isV1File",
+          "qualifiedName": "isV1File",
+          "parentUnitId": null,
+          "startLine": 80,
+          "endLine": 89,
+          "signature": "export function isV1File(data: any)",
+          "parameters": [
+            { "name": "data", "type": "any", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "boolean",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [
+            "Returns true exactly when data.document?.version evaluates to a truthy value without throwing.",
+            "Returns false when the evaluated version is falsy or property access throws."
+          ],
+          "invariants": [
+            "The function does not mutate the input or external state.",
+            "The function always returns a boolean and does not propagate property-access exceptions."
+          ],
+          "edgeCases": [
+            "Input with a truthy document.version returns true.",
+            "Input with no document or with a falsy document.version returns false.",
+            "Nullish input or input whose document/version property access throws returns false."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": "Returns false.", "returnsOnError": "false" },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Determines whether input data has a truthy document version, identifying it as a version 1 file. Returns false when the required property path is absent or access to it throws.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "isV1File is called with that object.",
+              "then": "The result is true.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "isV1File is called with that object.",
+              "then": "The result is false.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "isV1File is called with that value.",
+              "then": "The result is false and no exception escapes.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "a0f4ec1e9a03b85f3547461f000409aef061b0ab8ff1b6768ddcd485a46233b9"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/utils/tldr/file.ts__parseTldrawJsonFile#function:parseTldrawJsonFile",
+        "unitKind": "function",
+        "name": "parseTldrawJsonFile",
+        "qualifiedName": "parseTldrawJsonFile",
+        "parentUnitId": null,
+        "startLine": 100,
+        "endLine": 164,
+        "isBehavioral": true,
+        "source": "export function parseTldrawJsonFile({\n\tjson,\n\tschema,\n}: {\n\tschema: TLSchema\n\tjson: string\n}): Result<TLStore, TldrawFileParseError> {\n\t// first off, we parse .json file and check it matches the general shape of\n\t// a tldraw file\n\tlet data\n\ttry {\n\t\tdata = tldrawFileValidator.validate(JSON.parse(json))\n\t} catch (e) {\n\t\t// could be a v1 file!\n\t\ttry {\n\t\t\tdata = JSON.parse(json)\n\t\t\tif (isV1File(data)) {\n\t\t\t\treturn Result.err({ type: 'v1File', data })\n\t\t\t}\n\t\t} catch {\n\t\t\t// noop\n\t\t}\n\n\t\treturn Result.err({ type: 'notATldrawFile', cause: e })\n\t}\n\n\t// if the file format version isn't supported, we can't open it - it's\n\t// probably from a newer version of tldraw\n\tif (data.tldrawFileFormatVersion > LATEST_TLDRAW_FILE_FORMAT_VERSION) {\n\t\treturn Result.err({\n\t\t\ttype: 'fileFormatVersionTooNew',\n\t\t\tversion: data.tldrawFileFormatVersion,\n\t\t})\n\t}\n\n\t// even if the file version is up to date, it might contain old-format\n\t// records. lets create a store with the records and migrate it to the\n\t// latest version\n\tlet migrationResult: MigrationResult<SerializedStore<TLRecord>>\n\tlet storeSnapshot: SerializedStore<TLRecord>\n\ttry {\n\t\tconst records = pruneUnusedAssets(data.records as TLRecord[])\n\t\tstoreSnapshot = Object.fromEntries(records.map((r) => [r.id, r]))\n\t\tmigrationResult = schema.migrateStoreSnapshot({ store: storeSnapshot, schema: data.schema })\n\t} catch (e) {\n\t\t// junk data in the migration\n\t\treturn Result.err({ type: 'invalidRecords', cause: e })\n\t}\n\t// if the migration failed, we can't open the file\n\tif (migrationResult.type === 'error') {\n\t\treturn Result.err({ type: 'migrationFailed', reason: migrationResult.reason })\n\t}\n\n\t// at this stage, the store should have records at the latest versions, so\n\t// we should be able to validate them. if any of the records at this stage\n\t// are invalid, we don't open the file\n\ttry {\n\t\treturn Result.ok(\n\t\t\tcreateTLStore({\n\t\t\t\tsnapshot: { store: storeSnapshot, schema: data.schema },\n\t\t\t\tschema,\n\t\t\t})\n\t\t)\n\t} catch (e) {\n\t\t// junk data in the records (they're not validated yet!) could cause the",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/utils/tldr/file.ts__parseTldrawJsonFile#function:parseTldrawJsonFile",
+          "fileId": "packages/tldraw/src/lib/utils/tldr/file.ts__parseTldrawJsonFile",
+          "unitKind": "function",
+          "name": "parseTldrawJsonFile",
+          "qualifiedName": "parseTldrawJsonFile",
+          "parentUnitId": null,
+          "startLine": 100,
+          "endLine": 164,
+          "signature": "export function parseTldrawJsonFile({\n\tjson,\n\tschema,\n}: {\n\tschema: TLSchema\n\tjson: string\n}): Result<TLStore, TldrawFileParseError>",
+          "parameters": [
+            { "name": "json", "type": "string", "default": null, "optional": false, "variadic": false, "order": 0 },
+            { "name": "schema", "type": "TLSchema", "default": null, "optional": false, "variadic": false, "order": 1 }
+          ],
+          "returnType": "Result<TLStore, TldrawFileParseError>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "json is expected to contain a serialized tldraw file or a recognizable legacy v1 file.",
+            "schema must provide the migration and store-creation behavior required for TLSchema."
+          ],
+          "postconditions": [
+            "On success, returns Result.ok containing a TLStore created from the migrated file records.",
+            "On failure, returns Result.err with a TldrawFileParseError describing the failure category."
+          ],
+          "invariants": [
+            "Records are pruned for unused assets before being converted into a keyed store snapshot.",
+            "A file whose format version exceeds the supported latest version is not opened.",
+            "Records are migrated before the resulting store is created."
+          ],
+          "edgeCases": [
+            "Malformed JSON or JSON that fails the general tldraw file validator returns a notATldrawFile error, unless the parsed value is recognized as a v1 file.",
+            "A recognized legacy v1 file returns a v1File error containing the parsed legacy data.",
+            "A file format version newer than the supported version returns fileFormatVersionTooNew with the file version.",
+            "Exceptions while pruning records or migrating the store snapshot return invalidRecords with the caught cause.",
+            "A migration result of type error returns migrationFailed with the migration reason.",
+            "Invalid records that cause store creation or final validation to fail return an error rather than a successful store."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Returns a typed Result.err rather than propagating parsing, migration, or store-creation failures.",
+            "returnsOnError": "Returns one of the TldrawFileParseError variants notATldrawFile, v1File, fileFormatVersionTooNew, invalidRecords, or migrationFailed, with associated cause, data, version, or reason where applicable."
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "JSON.parse", "source": "global JSON API", "kind": "external" },
+            { "name": "tldrawFileValidator.validate", "source": "tldraw file validator", "kind": "external" },
+            { "name": "isV1File", "source": "local sibling function", "kind": "internal" },
+            { "name": "pruneUnusedAssets", "source": "local sibling function", "kind": "internal" },
+            { "name": "schema.migrateStoreSnapshot", "source": "TLSchema parameter", "kind": "external" },
+            { "name": "createTLStore", "source": "tldraw store creation dependency", "kind": "external" }
+          ],
+          "symbolReferences": [
+            "TLSchema",
+            "TLStore",
+            "TldrawFileParseError",
+            "tldrawFileValidator",
+            "LATEST_TLDRAW_FILE_FORMAT_VERSION",
+            "MigrationResult",
+            "SerializedStore<TLRecord>",
+            "TLRecord",
+            "Result"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Input is a JSON string representing a tldraw file. Valid input must satisfy the tldraw file validator and provide records, schema, and tldrawFileFormatVersion fields; successful output is Result.ok<TLStore>, while failures are Result.err<TldrawFileParseError>.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Parses and validates a serialized tldraw JSON file, migrates its records to the current schema, and returns a usable TLStore. Invalid, obsolete, unsupported, or unmigratable files are returned as typed errors.",
+          "specLiterals": [
+            {
+              "kind": "enum-value",
+              "value": "v1File",
+              "role": "Identifies a recognized legacy v1 tldraw file that cannot be opened through the current parser."
+            },
+            {
+              "kind": "enum-value",
+              "value": "notATldrawFile",
+              "role": "Identifies malformed JSON or input that does not match the general tldraw file shape."
+            },
+            {
+              "kind": "enum-value",
+              "value": "fileFormatVersionTooNew",
+              "role": "Identifies a file whose format version is newer than the supported version."
+            },
+            {
+              "kind": "enum-value",
+              "value": "invalidRecords",
+              "role": "Identifies records that fail during pruning, snapshot preparation, or migration setup."
+            },
+            {
+              "kind": "enum-value",
+              "value": "migrationFailed",
+              "role": "Identifies a migration result that explicitly reports failure."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "parseTldrawJsonFile is called with that JSON and a compatible TLSchema.",
+              "then": "The result is successful and contains a TLStore created from the migrated, keyed records.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "parseTldrawJsonFile is called.",
+              "then": "The result is an error with type fileFormatVersionTooNew and the input file's version.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "parseTldrawJsonFile is called.",
+              "then": "The result is an error with type notATldrawFile and the JSON parsing or validation failure as its cause.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "31760c78bb031dc4d7597fe457b35e884926fc9673fb74e37bc6ee5d9a674441"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/utils/tldr/file.ts__pruneUnusedAssets#function:pruneUnusedAssets",
+        "unitKind": "function",
+        "name": "pruneUnusedAssets",
+        "qualifiedName": "pruneUnusedAssets",
+        "parentUnitId": null,
+        "startLine": 166,
+        "endLine": 173,
+        "isBehavioral": true,
+        "source": "\t\t// invalid record\n\t\treturn Result.err({ type: 'invalidRecords', cause: e })\n\t}\n}\n\nfunction pruneUnusedAssets(records: TLRecord[]) {\n\tconst usedAssets = new Set<TLAssetId>()\n\tfor (const record of records) {",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/utils/tldr/file.ts__pruneUnusedAssets#function:pruneUnusedAssets",
+          "fileId": "packages/tldraw/src/lib/utils/tldr/file.ts__pruneUnusedAssets",
+          "unitKind": "function",
+          "name": "pruneUnusedAssets",
+          "qualifiedName": "pruneUnusedAssets",
+          "parentUnitId": null,
+          "startLine": 166,
+          "endLine": 173,
+          "signature": "function pruneUnusedAssets(records: TLRecord[])",
+          "parameters": [
+            {
+              "name": "records",
+              "type": "TLRecord[]",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "TLRecord[]",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["records is an array of TLRecord values."],
+          "postconditions": [
+            "Every retained asset record is referenced by a shape record's asset identifier.",
+            "All non-asset records are retained.",
+            "The returned collection contains the retained records in their original order."
+          ],
+          "invariants": [
+            "Asset usage is determined from shape records' asset references.",
+            "The input records are not mutated."
+          ],
+          "edgeCases": [
+            "An empty records array produces an empty array.",
+            "A collection with no asset records preserves all records.",
+            "An unreferenced asset record is removed.",
+            "A referenced asset record is retained.",
+            "Asset records and other records retain their original relative ordering."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["TLRecord", "TLAssetId"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Returns the records with asset records that are not referenced by any shape removed. Non-asset records and referenced assets are preserved.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "pruneUnusedAssets is called with the record list.",
+              "then": "The result contains the shape and asset A, but not asset B.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "pruneUnusedAssets is called.",
+              "then": "All records are returned in their original order.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "pruneUnusedAssets is called.",
+              "then": "The result is an empty record list.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "e283e2dfc61a0932d676fd6270e607760b34f4e22c454954ca741c32e5f48561"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/utils/tldr/file.ts__serializeTldrawJson#function:serializeTldrawJson",
+        "unitKind": "function",
+        "name": "serializeTldrawJson",
+        "qualifiedName": "serializeTldrawJson",
+        "parentUnitId": null,
+        "startLine": 176,
+        "endLine": 211,
+        "isBehavioral": true,
+        "source": "\t\t}\n\t}\n\treturn records.filter((r) => r.typeName !== 'asset' || usedAssets.has(r.id))\n}\n\n/** @public */\nexport async function serializeTldrawJson(editor: Editor): Promise<string> {\n\tconst records: TLRecord[] = []\n\tfor (const record of editor.store.allRecords()) {\n\t\tswitch (record.typeName) {\n\t\t\tcase 'asset':\n\t\t\t\tif (\n\t\t\t\t\trecord.type !== 'bookmark' &&\n\t\t\t\t\trecord.props.src &&\n\t\t\t\t\t!record.props.src.startsWith('data:')\n\t\t\t\t) {\n\t\t\t\t\tlet assetSrcToSave\n\t\t\t\t\ttry {\n\t\t\t\t\t\tlet src = record.props.src\n\t\t\t\t\t\tif (!src.startsWith('http')) {\n\t\t\t\t\t\t\tsrc =\n\t\t\t\t\t\t\t\t(await editor.resolveAssetUrl(record.id, { shouldResolveToOriginal: true })) || ''\n\t\t\t\t\t\t}\n\t\t\t\t\t\t// try to save the asset as a base64 string\n\t\t\t\t\t\tassetSrcToSave = await FileHelpers.blobToDataUrl(await (await fetch(src)).blob())\n\t\t\t\t\t} catch {\n\t\t\t\t\t\t// if that fails, just save the original src\n\t\t\t\t\t\tassetSrcToSave = record.props.src\n\t\t\t\t\t}\n\n\t\t\t\t\trecords.push({\n\t\t\t\t\t\t...record,\n\t\t\t\t\t\tprops: {\n\t\t\t\t\t\t\t...record.props,\n\t\t\t\t\t\t\tsrc: assetSrcToSave,\n\t\t\t\t\t\t},",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/utils/tldr/file.ts__serializeTldrawJson#function:serializeTldrawJson",
+          "fileId": "packages/tldraw/src/lib/utils/tldr/file.ts__serializeTldrawJson",
+          "unitKind": "function",
+          "name": "serializeTldrawJson",
+          "qualifiedName": "serializeTldrawJson",
+          "parentUnitId": null,
+          "startLine": 176,
+          "endLine": 211,
+          "signature": "export async function serializeTldrawJson(editor: Editor): Promise<string>",
+          "parameters": [
+            { "name": "editor", "type": "Editor", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "Promise<string>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "editor provides a store whose allRecords() method returns the records to serialize.",
+            "editor provides the schema information required for the serialized file format."
+          ],
+          "postconditions": [
+            "Returns a JSON string containing the editor's serialized records and schema.",
+            "Records other than eligible asset records are serialized without this function's asset-source transformation.",
+            "Eligible asset records have a data URL as their serialized src when fetching and conversion succeed, otherwise their original src is retained."
+          ],
+          "invariants": [
+            "The input editor store is not mutated.",
+            "Bookmark assets are not converted.",
+            "Assets with missing or falsy src values are not converted.",
+            "Asset src values already beginning with data: are not converted.",
+            "Records are serialized in the order returned by editor.store.allRecords()."
+          ],
+          "edgeCases": [
+            "A bookmark asset is retained without attempting URL resolution, fetching, or data-URL conversion.",
+            "An asset with a falsy src or a src beginning with data: is retained without conversion.",
+            "A non-bookmark asset with a non-data src is fetched and converted to a data URL when possible.",
+            "A non-http asset src is first passed to editor.resolveAssetUrl with shouldResolveToOriginal: true before fetching.",
+            "If asset URL resolution, fetching, blob retrieval, or blob-to-data-URL conversion fails, the asset's original src is serialized.",
+            "If the store or final JSON serialization fails outside the per-asset conversion fallback, the returned promise rejects."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Per-asset source-resolution or conversion failures are caught and handled by retaining the original asset src; failures outside that conversion attempt reject the promise.",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "editor.store.allRecords", "source": "editor.store", "kind": "internal" },
+            { "name": "editor.resolveAssetUrl", "source": "editor", "kind": "internal" },
+            { "name": "fetch", "source": null, "kind": "external" },
+            { "name": "FileHelpers.blobToDataUrl", "source": "FileHelpers", "kind": "external" },
+            { "name": "JSON.stringify", "source": null, "kind": "external" }
+          ],
+          "symbolReferences": ["Editor", "TLRecord", "FileHelpers"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Returns a JSON string representing a tldraw file object with tldrawFileFormatVersion, schema, and records fields. Asset records may contain data-URL strings in props.src.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Serializes the editor's records and schema into a tldraw JSON file string. Eligible non-bookmark assets are converted to data URLs when possible, while failed conversions retain their original source URLs.",
+          "specLiterals": [
+            {
+              "kind": "enum-value",
+              "value": "asset",
+              "role": "Identifies records whose asset source may require serialization transformation."
+            },
+            {
+              "kind": "enum-value",
+              "value": "bookmark",
+              "role": "Identifies asset records excluded from source conversion."
+            },
+            {
+              "kind": "format-string",
+              "value": "data:",
+              "role": "Prefix identifying asset sources already encoded as data URLs."
+            },
+            {
+              "kind": "format-string",
+              "value": "http",
+              "role": "Prefix used to determine whether an asset source can be fetched directly or requires URL resolution."
+            },
+            {
+              "kind": "enum-value",
+              "value": "tldrawFileFormatVersion",
+              "role": "Serialized tldraw file object field identifying the file format version."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "serializeTldrawJson(editor) is awaited.",
+              "then": "The returned JSON contains the asset record with props.src replaced by the data URL produced from the fetched blob.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "serializeTldrawJson(editor) is awaited.",
+              "then": "The returned JSON contains the asset record with its original props.src unchanged.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "serializeTldrawJson(editor) is awaited.",
+              "then": "Those records remain represented in the serialized output in the same order, and bookmark or already-data-URL sources are not converted.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "22a0aeef1dfbee6499a2727f3243e980219f03a5e6e581c3f5cdcc4edbf3aa5f"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/utils/tldr/file.ts__parseAndLoadDocument#function:parseAndLoadDocument",
+        "unitKind": "function",
+        "name": "parseAndLoadDocument",
+        "qualifiedName": "parseAndLoadDocument",
+        "parentUnitId": null,
+        "startLine": 219,
+        "endLine": 298,
+        "isBehavioral": true,
+        "source": "\t\t\t\tbreak\n\t\t}\n\t}\n\n\treturn JSON.stringify({\n\t\ttldrawFileFormatVersion: LATEST_TLDRAW_FILE_FORMAT_VERSION,\n\t\tschema: editor.store.schema.serialize(),\n\t\trecords: pruneUnusedAssets(records),\n\t})\n}\n\n/** @public */\nexport async function serializeTldrawJsonBlob(editor: Editor): Promise<Blob> {\n\treturn new Blob([await serializeTldrawJson(editor)], { type: TLDRAW_FILE_MIMETYPE })\n}\n\n/** @internal */\nexport async function parseAndLoadDocument(\n\teditor: Editor,\n\tdocument: string,\n\tmsg: (id: TLUiTranslationKey | Exclude<string, TLUiTranslationKey>) => string,\n\taddToast: TLUiToastsContextType['addToast'],\n\tonV1FileLoad?: () => void,\n\tforceDarkMode?: boolean\n) {\n\tconst parseFileResult = parseTldrawJsonFile({\n\t\tschema: editor.store.schema,\n\t\tjson: document,\n\t})\n\tif (!parseFileResult.ok) {\n\t\tlet description\n\t\tswitch (parseFileResult.error.type) {\n\t\t\tcase 'notATldrawFile':\n\t\t\t\teditor.annotateError(parseFileResult.error.cause, {\n\t\t\t\t\torigin: 'file-system.open.parse',\n\t\t\t\t\twillCrashApp: false,\n\t\t\t\t\ttags: { parseErrorType: parseFileResult.error.type },\n\t\t\t\t})\n\t\t\t\treportError(parseFileResult.error.cause)\n\t\t\t\tdescription = msg('file-system.file-open-error.not-a-tldraw-file')\n\t\t\t\tbreak\n\t\t\tcase 'fileFormatVersionTooNew':\n\t\t\t\tdescription = msg('file-system.file-open-error.file-format-version-too-new')\n\t\t\t\tbreak\n\t\t\tcase 'migrationFailed':\n\t\t\t\tif (parseFileResult.error.reason === MigrationFailureReason.TargetVersionTooNew) {\n\t\t\t\t\tdescription = msg('file-system.file-open-error.file-format-version-too-new')\n\t\t\t\t} else {\n\t\t\t\t\tdescription = msg('file-system.file-open-error.generic-corrupted-file')\n\t\t\t\t}\n\t\t\t\tbreak\n\t\t\tcase 'invalidRecords':\n\t\t\t\teditor.annotateError(parseFileResult.error.cause, {\n\t\t\t\t\torigin: 'file-system.open.parse',\n\t\t\t\t\twillCrashApp: false,\n\t\t\t\t\ttags: { parseErrorType: parseFileResult.error.type },\n\t\t\t\t})\n\t\t\t\treportError(parseFileResult.error.cause)\n\t\t\t\tdescription = msg('file-system.file-open-error.generic-corrupted-file')\n\t\t\t\tbreak\n\t\t\tcase 'v1File': {\n\t\t\t\tbuildFromV1Document(editor, parseFileResult.error.data.document)\n\t\t\t\tonV1FileLoad?.()\n\t\t\t\treturn\n\t\t\t}\n\t\t\tdefault:\n\t\t\t\texhaustiveSwitchError(parseFileResult.error, 'type')\n\t\t}\n\t\taddToast({\n\t\t\ttitle: msg('file-system.file-open-error.title'),\n\t\t\tdescription,\n\t\t\tseverity: 'error',\n\t\t})\n\n\t\treturn\n\t}\n\n\t// tldraw file contain the full state of the app,\n\t// including ephemeral data. it up to the opener to\n\t// decide what to restore and what to retain. Here, we",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/utils/tldr/file.ts__parseAndLoadDocument#function:parseAndLoadDocument",
+          "fileId": "packages/tldraw/src/lib/utils/tldr/file.ts__parseAndLoadDocument",
+          "unitKind": "function",
+          "name": "parseAndLoadDocument",
+          "qualifiedName": "parseAndLoadDocument",
+          "parentUnitId": null,
+          "startLine": 219,
+          "endLine": 298,
+          "signature": "export async function parseAndLoadDocument(\n\teditor: Editor,\n\tdocument: string,\n\tmsg: (id: TLUiTranslationKey | Exclude<string, TLUiTranslationKey>) => string,\n\taddToast: TLUiToastsContextType['addToast'],\n\tonV1FileLoad?: () => void,\n\tforceDarkMode?: boolean\n)",
+          "parameters": [
+            { "name": "editor", "type": "Editor", "default": null, "optional": false, "variadic": false, "order": 0 },
+            { "name": "document", "type": "string", "default": null, "optional": false, "variadic": false, "order": 1 },
+            {
+              "name": "msg",
+              "type": "(id: TLUiTranslationKey | Exclude<string, TLUiTranslationKey>) => string",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            },
+            {
+              "name": "addToast",
+              "type": "TLUiToastsContextType['addToast']",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 3
+            },
+            {
+              "name": "onV1FileLoad",
+              "type": "() => void",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 4
+            },
+            {
+              "name": "forceDarkMode",
+              "type": "boolean",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 5
+            }
+          ],
+          "returnType": "Promise<void>",
+          "decorators": [],
+          "modifiersApplied": ["export", "async"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "editor provides a store with a schema and supports the editor operations used by the loader",
+            "document is a serialized document string",
+            "msg returns localized text for every requested message identifier",
+            "addToast accepts the file-open error toast shape"
+          ],
+          "postconditions": [
+            "On a recognized v1 document, the document is loaded through buildFromV1Document and onV1FileLoad is invoked when provided",
+            "On a non-v1 parse failure, an error toast is added with the file-open error title, a mapped description, and severity error",
+            "On a notATldrawFile or invalidRecords failure, the underlying cause is annotated and reported before the error toast is added",
+            "The returned promise resolves after the applicable loading or error handling completes"
+          ],
+          "invariants": [
+            "A v1-file result returns immediately after v1 loading and optional callback invocation",
+            "A failed parse does not proceed through the normal document-loading path",
+            "file-system.open.parse is used as the annotation origin for reported parse causes",
+            "Parse failures are surfaced through the addToast callback with severity error"
+          ],
+          "edgeCases": [
+            "notATldrawFile: annotates and reports the parse cause, then shows the not-a-tldraw-file description",
+            "fileFormatVersionTooNew: shows the file-format-version-too-new description without reporting a parse cause",
+            "migrationFailed with TargetVersionTooNew: shows the file-format-version-too-new description",
+            "migrationFailed for another reason: shows the generic-corrupted-file description",
+            "invalidRecords: annotates and reports the parse cause, then shows the generic-corrupted-file description",
+            "v1File: loads the legacy document, invokes onV1FileLoad only when supplied, and does not add the error toast",
+            "forceDarkMode is accepted as an optional input; its handling occurs in the subsequent successful-load path"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Parse failures are handled without propagating an error: causes are reported for notATldrawFile and invalidRecords, and an error toast is added for non-v1 failures.",
+            "returnsOnError": "Resolves with undefined after handling the parse failure."
+          },
+          "stateMutations": [
+            "Mutates the supplied editor when loading a v1 document or otherwise completing document loading",
+            "May mutate editor error annotations for notATldrawFile and invalidRecords failures"
+          ],
+          "eventsEmitted": ["Adds an error toast through addToast for non-v1 parse failures"],
+          "complexity": null,
+          "calls": [
+            {
+              "name": "parseTldrawJsonFile",
+              "source": "packages/tldraw/src/lib/utils/tldr/file.ts",
+              "kind": "internal"
+            },
+            {
+              "name": "buildFromV1Document",
+              "source": "tldraw document migration/loading utilities",
+              "kind": "internal"
+            },
+            { "name": "editor.annotateError", "source": "Editor", "kind": "external" },
+            { "name": "reportError", "source": "error reporting utility", "kind": "external" },
+            { "name": "msg", "source": "caller-provided translation function", "kind": "external" },
+            { "name": "addToast", "source": "caller-provided toast callback", "kind": "external" },
+            { "name": "exhaustiveSwitchError", "source": "utility", "kind": "internal" }
+          ],
+          "symbolReferences": [
+            "Editor",
+            "TLUiTranslationKey",
+            "TLUiToastsContextType",
+            "MigrationFailureReason",
+            "parseTldrawJsonFile",
+            "buildFromV1Document",
+            "reportError"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Parses a serialized tldraw document and loads it into the supplied editor. Invalid or unsupported documents produce an error toast, while legacy v1 documents are migrated through the v1 loader and may invoke the supplied callback.",
+          "specLiterals": [
+            {
+              "kind": "enum-value",
+              "value": "notATldrawFile",
+              "role": "Parse-result error discriminator for documents that are not tldraw files."
+            },
+            {
+              "kind": "enum-value",
+              "value": "fileFormatVersionTooNew",
+              "role": "Parse-result error discriminator for unsupported newer file formats."
+            },
+            {
+              "kind": "enum-value",
+              "value": "migrationFailed",
+              "role": "Parse-result error discriminator for migration failures."
+            },
+            {
+              "kind": "enum-value",
+              "value": "invalidRecords",
+              "role": "Parse-result error discriminator for invalid document records."
+            },
+            { "kind": "enum-value", "value": "v1File", "role": "Parse-result discriminator for legacy v1 documents." },
+            {
+              "kind": "enum-value",
+              "value": "TargetVersionTooNew",
+              "role": "Migration failure reason mapped to the file-format-version-too-new message."
+            },
+            {
+              "kind": "format-string",
+              "value": "file-system.open.parse",
+              "role": "Error annotation origin for parse causes."
+            },
+            {
+              "kind": "format-string",
+              "value": "file-system.file-open-error.not-a-tldraw-file",
+              "role": "Translation key for notATldrawFile failures."
+            },
+            {
+              "kind": "format-string",
+              "value": "file-system.file-open-error.file-format-version-too-new",
+              "role": "Translation key for unsupported file-format versions."
+            },
+            {
+              "kind": "format-string",
+              "value": "file-system.file-open-error.generic-corrupted-file",
+              "role": "Translation key for migration and invalid-record failures."
+            },
+            {
+              "kind": "format-string",
+              "value": "file-system.file-open-error.title",
+              "role": "Translation key for the parse-error toast title."
+            },
+            { "kind": "enum-value", "value": "error", "role": "Toast severity for non-v1 parse failures." }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "parseAndLoadDocument is called",
+              "then": "the legacy document is loaded through the v1 loader, onV1FileLoad is invoked, and no error toast is added",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "parseAndLoadDocument is called",
+              "then": "editor.annotateError and reportError receive the cause, and addToast receives an error toast using the not-a-tldraw-file description",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "parseAndLoadDocument is called",
+              "then": "addToast receives an error toast using the file-format-version-too-new description",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "82af7786a711e60bb142db056b73b9c945d432d7c812e339fef2b2c1b71c9d83"
+        }
+      },
+      {
+        "unitId": "packages/tldraw/src/lib/utils/tldr/file.ts__extractAssets#function:extractAssets",
+        "unitKind": "function",
+        "name": "extractAssets",
+        "qualifiedName": "extractAssets",
+        "parentUnitId": null,
+        "startLine": 300,
+        "endLine": 343,
+        "isBehavioral": true,
+        "source": "\t// this file before they'll get their camera etc.\n\t// restored. we could change this in the future.\n\ttransact(() => {\n\t\tconst snapshot = parseFileResult.value.getStoreSnapshot()\n\t\teditor.loadSnapshot(snapshot)\n\t\teditor.clearHistory()\n\n\t\textractAssets(editor, snapshot, msg, addToast)\n\n\t\tconst bounds = editor.getCurrentPageBounds()\n\t\tif (bounds) {\n\t\t\teditor.zoomToBounds(bounds, { targetZoom: 1, immediate: true })\n\t\t}\n\t})\n\n\tif (forceDarkMode) editor.user.updateUserPreferences({ colorScheme: 'dark' })\n}\n\nasync function extractAssets(\n\teditor: Editor,\n\tsnapshot: StoreSnapshot<TLRecord>,\n\tmsg: (id: TLUiTranslationKey | Exclude<string, TLUiTranslationKey>) => string,\n\taddToast: TLUiToastsContextType['addToast']\n) {\n\tconst mediaAssets = new Map<TLAssetId, TLImageAsset | TLVideoAsset>()\n\tfor (const record of Object.values(snapshot.store)) {\n\t\tif (\n\t\t\trecord.typeName === 'asset' &&\n\t\t\trecord.props.src &&\n\t\t\trecord.props.src.startsWith('data:') &&\n\t\t\t(record.type === 'image' || record.type === 'video')\n\t\t) {\n\t\t\tmediaAssets.set(record.id, record)\n\t\t}\n\t}\n\n\tPromise.allSettled(\n\t\t[...mediaAssets].map(async ([id, asset]) => {\n\t\t\ttry {\n\t\t\t\tconst blob = await fetch(asset.props.src!).then((r) => r.blob())\n\t\t\t\tconst file = new File([blob], asset.props.name, {\n\t\t\t\t\ttype: asset.props.mimeType!,\n\t\t\t\t})\n",
+        "detail": {
+          "unitId": "packages/tldraw/src/lib/utils/tldr/file.ts__extractAssets#function:extractAssets",
+          "fileId": "packages/tldraw/src/lib/utils/tldr/file.ts__extractAssets",
+          "unitKind": "function",
+          "name": "extractAssets",
+          "qualifiedName": "extractAssets",
+          "parentUnitId": null,
+          "startLine": 300,
+          "endLine": 343,
+          "signature": "async function extractAssets(\n\teditor: Editor,\n\tsnapshot: StoreSnapshot<TLRecord>,\n\tmsg: (id: TLUiTranslationKey | Exclude<string, TLUiTranslationKey>) => string,\n\taddToast: TLUiToastsContextType['addToast']\n)",
+          "parameters": [
+            { "name": "editor", "type": "Editor", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "snapshot",
+              "type": "StoreSnapshot<TLRecord>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "msg",
+              "type": "(id: TLUiTranslationKey | Exclude<string, TLUiTranslationKey>) => string",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            },
+            {
+              "name": "addToast",
+              "type": "TLUiToastsContextType['addToast']",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 3
+            }
+          ],
+          "returnType": "Promise<void>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "snapshot.store is an object containing TLRecord values.",
+            "Each qualifying asset has a data-URI src, a name, and a MIME type."
+          ],
+          "postconditions": [
+            "Every qualifying embedded image or video asset has been scheduled for asynchronous processing.",
+            "The returned promise settles after all per-asset processing promises have settled."
+          ],
+          "invariants": [
+            "Only records with typeName equal to 'asset', a truthy src beginning with 'data:', and type equal to 'image' or 'video' are selected.",
+            "At most one selected asset is stored per asset id in the media-assets map."
+          ],
+          "edgeCases": [
+            "An empty snapshot or a snapshot with no qualifying assets produces no asset-processing tasks and completes successfully.",
+            "Assets whose src does not begin with 'data:' are ignored.",
+            "Non-asset records and assets whose type is neither 'image' nor 'video' are ignored.",
+            "A per-asset fetch or processing failure is handled within the per-asset operation and does not cause Promise.allSettled itself to reject."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Non-qualifying or incomplete records are ignored by the selection filter. Failures during individual asset processing are isolated to that asset; the aggregate operation waits for all settled results.",
+            "returnsOnError": null
+          },
+          "stateMutations": ["May mutate the document through the supplied editor while processing extracted assets."],
+          "eventsEmitted": [
+            "May publish a toast through the supplied addToast callback when asset processing reports an error."
+          ],
+          "complexity": null,
+          "calls": [
+            { "name": "fetch", "source": null, "kind": "external" },
+            { "name": "File", "source": null, "kind": "external" },
+            { "name": "Promise.allSettled", "source": "global runtime", "kind": "external" }
+          ],
+          "symbolReferences": [
+            "Editor",
+            "StoreSnapshot<TLRecord>",
+            "TLRecord",
+            "TLAssetId",
+            "TLImageAsset",
+            "TLVideoAsset",
+            "TLUiTranslationKey",
+            "TLUiToastsContextType"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Embedded asset sources are data URI strings. Each selected source is fetched as a Blob and wrapped in a File using the asset name and MIME type.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Extracts embedded data-URI image and video assets from a document snapshot and processes them as files. Asset processing is performed independently so one asset's failure does not prevent the remaining assets from settling.",
+          "specLiterals": [
+            {
+              "kind": "format-string",
+              "value": "data:",
+              "role": "Prefix used to identify embedded data-URI asset sources."
+            },
+            { "kind": "enum-value", "value": "asset", "role": "Record typeName required for asset selection." },
+            { "kind": "enum-value", "value": "image", "role": "Asset type accepted for extraction." },
+            { "kind": "enum-value", "value": "video", "role": "Asset type accepted for extraction." }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Call extractAssets with the snapshot and valid editor, translation, and toast dependencies.",
+              "then": "No fetch request is made for an asset, and the returned promise resolves after no processing tasks are scheduled.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "5137cd58dacd37be8e319cebe0e58ea47385962a91b29721512b54db7ecea945"
+        }
+      }
+    ]
+  },
+  "out": [
+    "packages/tldraw/src/lib/utils/tldr/buildFromV1Document.ts",
+    "packages/tldraw/src/lib/ui/hooks/useTranslation/TLUiTranslationKey.ts",
+    "packages/tldraw/src/lib/ui/context/toasts.tsx"
+  ],
+  "in": [],
+  "externals": ["@tldraw/editor"],
+  "impact": { "seeds": 6, "callers": 2, "impactedFiles": [] }
+}

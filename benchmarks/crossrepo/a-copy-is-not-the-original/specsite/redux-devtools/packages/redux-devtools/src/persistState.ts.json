@@ -1,0 +1,859 @@
+{
+  "schema": 1,
+  "kind": "file",
+  "repoName": "redux-devtools",
+  "commitHash": "f4b4668c30ae08920c59a76cc4629c35c16ef0fa",
+  "generatedAt": "2026-08-06T07:47:09.303Z",
+  "file": {
+    "relativePath": "packages/redux-devtools/src/persistState.ts",
+    "language": "typescript",
+    "sizeBytes": 2394,
+    "tokenCount": 519,
+    "model": "openai/gpt-5.6-luna",
+    "analysedAt": "2026-08-03T15:01:27.975Z",
+    "module": {
+      "purpose": "Provides a Redux store enhancer that restores and persists Redux DevTools lifted sessions in browser localStorage, with configurable state and action deserialization.",
+      "summary": "This module conditionally enhances Redux store creation based on an optional session identifier. It reads a serialized lifted DevTools state from localStorage, transforms persisted actions and state through caller-supplied deserializers, uses the restored state when available, and wraps dispatch to persist the latest store state. Storage and parsing failures are warned about and handled by removing the invalid session data or continuing without persistence.",
+      "businessContext": "Supports Redux DevTools session continuity for development workflows. Failure affects restoration and persistence of debugging sessions but does not prevent normal store operation.",
+      "classes": [],
+      "functions": [
+        "persistState (~L4-85): Creates a conditional Redux store enhancer for session persistence",
+        "deserialize (~L16-38): Rehydrates lifted state actions and state values",
+        "dispatch (~L73-83): Dispatches an action and persists the resulting store state"
+      ],
+      "keywords": [
+        "Redux store enhancer",
+        "Redux DevTools",
+        "lifted state",
+        "localStorage",
+        "session persistence",
+        "state deserialization",
+        "action deserialization",
+        "preloaded state",
+        "store dispatch"
+      ],
+      "ontologyConcepts": [
+        "state persistence",
+        "session restoration",
+        "serialization",
+        "deserialization",
+        "middleware enhancement",
+        "fault tolerance"
+      ],
+      "businessEntities": [
+        "Redux session",
+        "store state",
+        "action",
+        "lifted state",
+        "computed state",
+        "committed state"
+      ],
+      "systemCapabilities": [
+        "Restore persisted debugging sessions",
+        "Persist post-dispatch store state",
+        "Deserialize persisted actions and state",
+        "Recover from invalid storage data",
+        "Preserve normal Redux store behavior"
+      ],
+      "configDependencies": ["redux-dev-session-${sessionId}"],
+      "importsInternal": [],
+      "importsExternal": [
+        {
+          "spec": "redux",
+          "symbols": ["Action", "Reducer", "StoreEnhancer"],
+          "package": "redux",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 1 }
+        },
+        {
+          "spec": "@redux-devtools/instrument",
+          "symbols": ["LiftedState"],
+          "package": "@redux-devtools/instrument",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 2, "endLine": 2 }
+        }
+      ],
+      "sideEffects": {
+        "io": [
+          "Reads the persisted session string from localStorage.",
+          "Writes the serialized store state to localStorage after dispatch.",
+          "Removes the session key when loading or deserialization fails.",
+          "Emits warning messages through console.warn for storage failures."
+        ],
+        "network": [],
+        "env": [],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": []
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "persistState",
+          "shape": "function persistState<S, A extends Action<string>, MonitorState>(\n  sessionId?: string | null,\n  deserializeState: (state: S) => S = (state) => state,\n  deserializeAction: (action: A) => A = (state) => state,\n): StoreEnhancer",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        { "name": "StoreEnhancer", "shape": "StoreEnhancer", "resolvedRelativePath": null, "resolvedFileId": null },
+        {
+          "name": "LiftedState",
+          "shape": "LiftedState<S, A, MonitorState>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "Reducer",
+          "shape": "Reducer<S2, A2, PreloadedState>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        { "name": "Action", "shape": "Action<string>", "resolvedRelativePath": null, "resolvedFileId": null }
+      ],
+      "sectionMap": [
+        {
+          "name": "session bypass",
+          "intent": "Returns a pass-through enhancer when no session identifier is supplied.",
+          "structureKind": "branch",
+          "predicate": "!sessionId",
+          "branchOutcomes": [
+            "no session identifier: pass through Redux store creation",
+            "session identifier present: initialize persistence behavior"
+          ],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 9, "endLine": 14 }
+        },
+        {
+          "name": "lifted state deserialization",
+          "intent": "Rehydrates actions, committed state, and computed states using supplied callbacks.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 16, "endLine": 38 }
+        },
+        {
+          "name": "session load",
+          "intent": "Loads and parses persisted lifted state before creating the enhanced store.",
+          "structureKind": "try",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 49, "endLine": 56 }
+        },
+        {
+          "name": "persisted data presence",
+          "intent": "Only deserializes and probes the store when localStorage returned content.",
+          "structureKind": "branch",
+          "predicate": "if (json)",
+          "branchOutcomes": [
+            "stored content: deserialize content and invoke next with initial state",
+            "no stored content: retain undefined final initial state"
+          ],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 51, "endLine": 56 }
+        },
+        {
+          "name": "invalid session recovery",
+          "intent": "Warns about failed loading, removes the invalid key, and disables restoration.",
+          "structureKind": "try",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 57, "endLine": 64 }
+        },
+        {
+          "name": "store creation",
+          "intent": "Creates the actual Redux store using restored or caller-provided initial state.",
+          "structureKind": "sequence",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 66, "endLine": 69 }
+        },
+        {
+          "name": "dispatch persistence",
+          "intent": "Dispatches actions first, then serializes the resulting state into localStorage.",
+          "structureKind": "try",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 73, "endLine": 83 }
+        },
+        {
+          "name": "write failure recovery",
+          "intent": "Warns when state serialization or localStorage writing fails without rejecting dispatch.",
+          "structureKind": "try",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 76, "endLine": 80 }
+        }
+      ],
+      "representationFamily": "function-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "function",
+          "name": "persistState",
+          "signature": "export default function persistState<S, A extends Action<string>, MonitorState>(\n  sessionId?: string | null,\n  deserializeState: (state: S) => S = (state) => state,\n  deserializeAction: (action: A) => A = (state) => state,\n): StoreEnhancer",
+          "generics": "<S, A extends Action<string>, MonitorState>",
+          "decorators": [],
+          "returnType": "StoreEnhancer",
+          "exported": true,
+          "anchor": { "startLine": 4, "endLine": 8 }
+        },
+        {
+          "kind": "function",
+          "name": "deserialize",
+          "signature": "function deserialize(\n    state: LiftedState<S, A, MonitorState>,\n  ): LiftedState<S, A, MonitorState>",
+          "generics": null,
+          "decorators": [],
+          "returnType": "LiftedState<S, A, MonitorState>",
+          "exported": false,
+          "anchor": { "startLine": 16, "endLine": 18 }
+        },
+        {
+          "kind": "method",
+          "name": "dispatch",
+          "signature": "dispatch<T extends A2>(action: T)",
+          "generics": "<T extends A2>",
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 73, "endLine": 73 }
+        }
+      ],
+      "typeShapes": [],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "Missing, empty, or null session identifier",
+          "handled": true,
+          "behavior": "Returns a pass-through enhancer and performs no persistence operations.",
+          "anchor": { "startLine": 9, "endLine": 14 }
+        },
+        {
+          "inputShape": "No stored localStorage value",
+          "handled": true,
+          "behavior": "Skips restoration and creates the store with the caller-provided initial state.",
+          "anchor": { "startLine": 50, "endLine": 56 }
+        },
+        {
+          "inputShape": "Malformed JSON, invalid lifted state, or localStorage read failure",
+          "handled": true,
+          "behavior": "Warns, removes the persisted key, clears the restored initial state, and continues store creation.",
+          "anchor": { "startLine": 57, "endLine": 64 }
+        },
+        {
+          "inputShape": "Serialization or localStorage write failure after dispatch",
+          "handled": true,
+          "behavior": "Warns and returns the dispatched action without propagating the persistence error.",
+          "anchor": { "startLine": 76, "endLine": 81 }
+        },
+        {
+          "inputShape": "Falsy result from deserialization",
+          "handled": true,
+          "behavior": "Falls back to the caller-provided initial state.",
+          "anchor": { "startLine": 52, "endLine": 54 }
+        }
+      ],
+      "boundaryConditions": [],
+      "errorHandling": [
+        {
+          "thrown": null,
+          "caught": "Any error from localStorage.getItem, JSON.parse, deserialization, or the preliminary next call",
+          "action": "Logs a warning, removes the persisted session key, and sets finalInitialState to undefined.",
+          "fallback": "Creates the store without restored state, using undefined as the enhancer-provided initial state.",
+          "anchor": { "startLine": 57, "endLine": 64 }
+        },
+        {
+          "thrown": null,
+          "caught": "Any error from store.getState, JSON.stringify, or localStorage.setItem during persistence",
+          "action": "Logs a warning and suppresses the persistence failure.",
+          "fallback": "Returns the original dispatched action.",
+          "anchor": { "startLine": 76, "endLine": 81 }
+        }
+      ],
+      "invariants": [
+        {
+          "kind": "ordering",
+          "description": "Dispatch completes on the underlying store before persistence is attempted.",
+          "anchor": { "startLine": 74, "endLine": 77 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "The dispatch wrapper returns the original action after persistence handling.",
+          "anchor": { "startLine": 81, "endLine": 81 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Restored computed states retain their existing lifted-state fields while replacing state values.",
+          "anchor": { "startLine": 32, "endLine": 36 }
+        },
+        {
+          "kind": "invariant",
+          "description": "Persisted actions retain their lifted-action fields while replacing the action payload.",
+          "anchor": { "startLine": 22, "endLine": 30 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "The supplied reducer and initial state are compatible with the Redux store enhancer contract.",
+          "anchor": { "startLine": 42, "endLine": 45 }
+        },
+        {
+          "kind": "platform",
+          "description": "A browser-like localStorage implementation is available when a session identifier is supplied.",
+          "anchor": { "startLine": 50, "endLine": 50 }
+        },
+        {
+          "kind": "schema",
+          "description": "Persisted JSON conforms sufficiently to LiftedState for the deserializers and mapped fields to operate.",
+          "anchor": { "startLine": 52, "endLine": 54 }
+        },
+        {
+          "kind": "caller",
+          "description": "Actions and store state are serializable by JSON.stringify when persistence is expected to succeed.",
+          "anchor": { "startLine": 77, "endLine": 77 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "What exact Redux DevTools lifted-state schema and version compatibility guarantees apply to persisted JSON?",
+          "affects": "type_shapes and session restoration behavior",
+          "anchor": { "startLine": 52, "endLine": 54 },
+          "resolution": null
+        },
+        {
+          "question": "Why is next(reducer, initialState) invoked once during successful restoration before the actual store creation?",
+          "affects": "store initialization side effects and orchestration behavior",
+          "anchor": { "startLine": 55, "endLine": 55 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "sync",
+        "reentrant": true,
+        "ordering": "deterministic",
+        "notes": "Store creation, dispatch, deserialization, and localStorage persistence are synchronous; each dispatch persists after the underlying dispatch returns."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "returns-no-op-enhancer-without-session",
+          "scenario": "When no session identifier is supplied, the enhancer forwards reducer initialization without persistence.",
+          "given": ["persistState()", "const next = jest.fn((reducer, initialState) => ({ reducer, initialState }))"],
+          "when": "persistState()(next)(reducer, initialState)",
+          "then": "expect(next).toHaveBeenCalledWith(reducer, initialState)",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "A missing session must not access storage or alter enhancer initialization."
+        },
+        {
+          "testId": "restores-session-state",
+          "scenario": "When stored session JSON exists, the enhancer restores it as the reducer preloaded state.",
+          "given": [
+            "const key = `redux-dev-session-${sessionId}`",
+            "localStorage.setItem(key, JSON.stringify(liftedState))"
+          ],
+          "when": "persistState(sessionId)(next)(reducer, initialState)",
+          "then": "expect(next).toHaveBeenLastCalledWith(reducer, deserializedState)",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Session restoration is the primary persistence contract."
+        },
+        {
+          "testId": "deserializes-restored-actions-and-state",
+          "scenario": "When restoring a session, custom deserializers transform every lifted action, committed state, and computed state.",
+          "given": [
+            "const deserializeState = jest.fn((state) => state.value)",
+            "const deserializeAction = jest.fn((action) => ({ ...action, restored: true }))",
+            "localStorage.setItem(key, JSON.stringify(liftedState))"
+          ],
+          "when": "persistState(sessionId, deserializeState, deserializeAction)(next)(reducer, initialState)",
+          "then": "expect(deserializeAction).toHaveBeenCalledWith(liftedAction.action); expect(deserializeState).toHaveBeenCalledWith(liftedState.committedState); expect(deserializeState).toHaveBeenCalledWith(computedState.state)",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "All persisted lifted-state branches must use the supplied deserialization hooks."
+        },
+        {
+          "testId": "persists-dispatched-state",
+          "scenario": "After a successful dispatch, the current store state is serialized under the session key.",
+          "given": [
+            "const store = persistState(sessionId)(next)(reducer, initialState)",
+            "const action = { type: 'TEST' }"
+          ],
+          "when": "store.dispatch(action)",
+          "then": "expect(localStorage.setItem).toHaveBeenCalledWith(key, JSON.stringify(store.getState()))",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Every dispatch must update the persisted session snapshot."
+        },
+        {
+          "testId": "returns-dispatched-action",
+          "scenario": "After dispatching an action, the enhancer returns the same action value.",
+          "given": ["const action = { type: 'TEST' }"],
+          "when": "store.dispatch(action)",
+          "then": "expect(store.dispatch(action)).toBe(action)",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "The wrapper preserves Redux dispatch return semantics."
+        },
+        {
+          "testId": "clears-invalid-session-data",
+          "scenario": "When stored session data cannot be read or parsed, the invalid storage entry is removed and initialization proceeds without it.",
+          "given": ["localStorage.setItem(key, 'invalid json')"],
+          "when": "persistState(sessionId)(next)(reducer, initialState)",
+          "then": "expect(localStorage.removeItem).toHaveBeenCalledWith(key); expect(next).toHaveBeenLastCalledWith(reducer, undefined)",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Corrupt persisted state must not prevent store creation or remain available for repeated failures."
+        },
+        {
+          "testId": "continues-when-write-fails",
+          "scenario": "When local storage rejects a write after dispatch, the dispatch still returns the action.",
+          "given": [
+            "jest.spyOn(localStorage, 'setItem').mockImplementation(() => { throw new Error('quota exceeded'); })"
+          ],
+          "when": "store.dispatch(action)",
+          "then": "expect(store.dispatch(action)).toBe(action)",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Storage failures must not break Redux dispatch behavior."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "Redux type imports",
+        "LiftedState type import",
+        "Default exported persistence enhancer factory",
+        "Nested lifted-state deserializer",
+        "Conditional store initialization and dispatch persistence wrapper"
+      ],
+      "moduleLevelCode": "import { Action, Reducer, StoreEnhancer } from 'redux';\nimport { LiftedState } from '@redux-devtools/instrument';",
+      "exports": [{ "name": "persistState", "kind": "own", "fromSpec": null, "exportedAs": "default" }],
+      "importSymbolMap": [
+        { "symbol": "Action", "module": "redux", "alias": null, "kind": "external" },
+        { "symbol": "Reducer", "module": "redux", "alias": null, "kind": "external" },
+        { "symbol": "StoreEnhancer", "module": "redux", "alias": null, "kind": "external" },
+        { "symbol": "LiftedState", "module": "@redux-devtools/instrument", "alias": null, "kind": "external" }
+      ],
+      "fileConstants": [],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/redux-devtools/src/persistState.ts__persistState#function:persistState",
+        "unitKind": "function",
+        "name": "persistState",
+        "qualifiedName": "persistState",
+        "parentUnitId": null,
+        "startLine": 4,
+        "endLine": 85,
+        "isBehavioral": true,
+        "source": "export default function persistState<S, A extends Action<string>, MonitorState>(\n  sessionId?: string | null,\n  deserializeState: (state: S) => S = (state) => state,\n  deserializeAction: (action: A) => A = (state) => state,\n): StoreEnhancer {\n  if (!sessionId) {\n    return (next) =>\n      (...args) =>\n        next(...args);\n  }\n\n  function deserialize(\n    state: LiftedState<S, A, MonitorState>,\n  ): LiftedState<S, A, MonitorState> {\n    return {\n      ...state,\n      actionsById: Object.fromEntries(\n        Object.entries(state.actionsById).map(([actionId, liftedAction]) => [\n          actionId,\n          {\n            ...liftedAction,\n            action: deserializeAction(liftedAction.action),\n          },\n        ]),\n      ),\n      committedState: deserializeState(state.committedState),\n      computedStates: state.computedStates.map((computedState) => ({\n        ...computedState,\n        state: deserializeState(computedState.state),\n      })),\n    };\n  }\n\n  return (next) =>\n    <S2, A2 extends Action<string>, PreloadedState>(\n      reducer: Reducer<S2, A2, PreloadedState>,\n      initialState?: PreloadedState | undefined,\n    ) => {\n      const key = `redux-dev-session-${sessionId}`;\n\n      let finalInitialState;\n      try {\n        const json = localStorage.getItem(key);\n        if (json) {\n          finalInitialState =\n            deserialize(JSON.parse(json) as LiftedState<S, A, MonitorState>) ||\n            initialState;\n          next(reducer, initialState);\n        }\n      } catch (e) {\n        console.warn('Could not read debug session from localStorage:', e); // eslint-disable-line no-console\n        try {\n          localStorage.removeItem(key);\n        } finally {\n          finalInitialState = undefined;\n        }\n      }\n\n      const store = next(\n        reducer,\n        finalInitialState as PreloadedState | undefined,\n      );\n\n      return {\n        ...store,\n        dispatch<T extends A2>(action: T) {\n          store.dispatch(action);\n\n          try {\n            localStorage.setItem(key, JSON.stringify(store.getState()));\n          } catch (e) {\n            console.warn('Could not write debug session to localStorage:', e); // eslint-disable-line no-console\n          }\n\n          return action;\n        },\n      };\n    };\n}\n",
+        "detail": {
+          "unitId": "packages/redux-devtools/src/persistState.ts__persistState#function:persistState",
+          "fileId": "packages/redux-devtools/src/persistState.ts__persistState",
+          "unitKind": "function",
+          "name": "persistState",
+          "qualifiedName": "persistState",
+          "parentUnitId": null,
+          "startLine": 4,
+          "endLine": 85,
+          "signature": "export default function persistState<S, A extends Action<string>, MonitorState>(sessionId?: string | null, deserializeState: (state: S) => S = (state) => state, deserializeAction: (action: A) => A = (state) => state): StoreEnhancer",
+          "parameters": [
+            {
+              "name": "sessionId",
+              "type": "string | null",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "deserializeState",
+              "type": "(state: S) => S",
+              "default": "(state) => state",
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "deserializeAction",
+              "type": "(action: A) => A",
+              "default": "(state) => state",
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            }
+          ],
+          "returnType": "StoreEnhancer",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": ["S", "A extends Action<string>", "MonitorState"],
+          "logicOutline": [],
+          "preconditions": [
+            "When sessionId is truthy, localStorage is available for session restoration and persistence attempts.",
+            "The supplied deserializeState and deserializeAction callbacks accept the corresponding persisted state and action values."
+          ],
+          "postconditions": [
+            "With a truthy sessionId, the localStorage key is `redux-dev-session-${sessionId}`.",
+            "If a persisted lifted state is successfully read and deserialized, its committedState, computedStates state values, and actionsById action values are transformed by the supplied deserializers before being used as the store's preloaded state.",
+            "After each successful dispatch through an enhanced store, the store's current state is serialized with JSON.stringify and written to the session localStorage key.",
+            "The dispatch wrapper returns the action passed to it.",
+            "With a falsy sessionId, the returned enhancer delegates directly to the next store enhancer without reading or writing localStorage."
+          ],
+          "invariants": [
+            "The persisted lifted state's structure is preserved while only state values and action values are deserialized.",
+            "A localStorage read, JSON parse, or deserialization failure does not prevent store creation unless removal of the corrupted key itself throws.",
+            "A localStorage write or JSON serialization failure after dispatch is caught and does not replace the dispatch result."
+          ],
+          "edgeCases": [
+            "If sessionId is undefined, null, or another falsy value, no persistence is configured and the enhancer delegates directly.",
+            "If the session key is absent or localStorage.getItem returns a falsy value, the caller-provided initialState is used.",
+            "If the persisted JSON deserializes to a falsy value, the caller-provided initialState is used.",
+            "If reading, parsing, or deserializing persisted data throws, the session key is removed, a warning is emitted, and the store is created without the restored preloaded state.",
+            "If persisting after dispatch throws during JSON serialization or localStorage writing, a warning is emitted and the action is still returned."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Read, parse, deserialization, serialization, and localStorage write failures are caught where persistence is attempted; read failures trigger removal of the session key and creation continues without restored state.",
+            "returnsOnError": "The dispatch wrapper returns the original action even when persistence fails."
+          },
+          "stateMutations": [
+            "Writes the serialized store state to localStorage after each dispatch when sessionId is truthy.",
+            "Removes the session localStorage key when reading, parsing, or deserializing persisted data fails."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "next", "source": "StoreEnhancer", "kind": "internal" },
+            { "name": "reducer", "source": "Reducer<S2, A2, PreloadedState>", "kind": "internal" },
+            { "name": "deserializeState", "source": "caller-provided parameter", "kind": "internal" },
+            { "name": "deserializeAction", "source": "caller-provided parameter", "kind": "internal" },
+            { "name": "localStorage.getItem", "source": "global localStorage", "kind": "external" },
+            { "name": "localStorage.removeItem", "source": "global localStorage", "kind": "external" },
+            { "name": "localStorage.setItem", "source": "global localStorage", "kind": "external" },
+            { "name": "JSON.parse", "source": "global JSON", "kind": "external" },
+            { "name": "JSON.stringify", "source": "global JSON", "kind": "external" },
+            { "name": "console.warn", "source": "global console", "kind": "external" }
+          ],
+          "symbolReferences": [
+            "Action<string>",
+            "StoreEnhancer",
+            "LiftedState<S, A, MonitorState>",
+            "Reducer<S2, A2, PreloadedState>"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Persistence uses localStorage key `redux-dev-session-${sessionId}`. The stored value is JSON.stringify(store.getState()), and restored data is parsed as LiftedState<S, A, MonitorState>; its actionsById action values, committedState, and each computedStates state value are passed through the configured deserializers.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Creates a Redux store enhancer that restores a persisted lifted debug session from localStorage and persists the store state after dispatches. When no session identifier is supplied, it leaves store creation and dispatch behavior unchanged.",
+          "specLiterals": [
+            {
+              "kind": "format-string",
+              "value": "redux-dev-session-${sessionId}",
+              "role": "Constructs the localStorage key used for a debug session."
+            },
+            {
+              "kind": "error-message",
+              "value": "Could not read debug session from localStorage:",
+              "role": "Warning prefix emitted when reading, parsing, or deserializing persisted session data fails."
+            },
+            {
+              "kind": "error-message",
+              "value": "Could not write debug session to localStorage:",
+              "role": "Warning prefix emitted when serializing or writing the post-dispatch state fails."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "the returned enhancer creates a store and dispatches an action",
+              "then": "store creation and dispatch are delegated without localStorage reads or writes, and normal reducer behavior is preserved.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "persistState(\"test\", deserializeState, deserializeAction) enhances the store",
+              "then": "the restored committedState, every computedStates state, and every actionsById action are transformed by their corresponding deserializer before store initialization.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "dispatch is called with an action",
+              "then": "the underlying store dispatch occurs, a write warning is emitted, and the original action is returned.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "6d169750926a294f376d986f9bab823b2065ee51b98efcfb76b33e5354cf41f2"
+        }
+      },
+      {
+        "unitId": "packages/redux-devtools/src/persistState.ts__persistState.deserialize#function:persistState.deserialize",
+        "unitKind": "function",
+        "name": "deserialize",
+        "qualifiedName": "persistState.deserialize",
+        "parentUnitId": "packages/redux-devtools/src/persistState.ts__persistState#function:persistState",
+        "startLine": 16,
+        "endLine": 38,
+        "isBehavioral": true,
+        "source": "    state: LiftedState<S, A, MonitorState>,\n  ): LiftedState<S, A, MonitorState> {\n    return {\n      ...state,\n      actionsById: Object.fromEntries(\n        Object.entries(state.actionsById).map(([actionId, liftedAction]) => [\n          actionId,\n          {\n            ...liftedAction,\n            action: deserializeAction(liftedAction.action),\n          },\n        ]),\n      ),\n      committedState: deserializeState(state.committedState),\n      computedStates: state.computedStates.map((computedState) => ({\n        ...computedState,\n        state: deserializeState(computedState.state),\n      })),\n    };\n  }\n\n  return (next) =>\n    <S2, A2 extends Action<string>, PreloadedState>(",
+        "detail": {
+          "unitId": "packages/redux-devtools/src/persistState.ts__persistState.deserialize#function:persistState.deserialize",
+          "fileId": "packages/redux-devtools/src/persistState.ts__persistState.deserialize",
+          "unitKind": "function",
+          "name": "deserialize",
+          "qualifiedName": "persistState.deserialize",
+          "parentUnitId": "packages/redux-devtools/src/persistState.ts__persistState#function:persistState",
+          "startLine": 16,
+          "endLine": 38,
+          "signature": "(state: LiftedState<S, A, MonitorState>): LiftedState<S, A, MonitorState>",
+          "parameters": [
+            {
+              "name": "state",
+              "type": "LiftedState<S, A, MonitorState>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "LiftedState<S, A, MonitorState>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": ["S", "A", "MonitorState"],
+          "logicOutline": [],
+          "preconditions": [
+            "state is a LiftedState<S, A, MonitorState> with actionsById, committedState, and computedStates fields."
+          ],
+          "postconditions": [
+            "Returns a lifted state with each actionsById entry's action deserialized.",
+            "Returns a lifted state with committedState deserialized.",
+            "Returns a lifted state with each computedStates entry's state deserialized.",
+            "Preserves all non-transformed fields of the input state and its lifted action/computed-state entries."
+          ],
+          "invariants": [
+            "The set of action IDs is preserved.",
+            "The ordering and length of computedStates are preserved.",
+            "The input state is not mutated by this function.",
+            "Each output lifted action retains its original fields except for its deserialized action.",
+            "Each output computed-state entry retains its original fields except for its deserialized state."
+          ],
+          "edgeCases": [
+            "An empty actionsById object produces an empty actionsById object.",
+            "An empty computedStates array produces an empty computedStates array.",
+            "Any error raised while deserializing an action or state propagates to the caller; no fallback result is specified."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "deserializeAction", "source": "internal", "kind": "internal" },
+            { "name": "deserializeState", "source": "internal", "kind": "internal" },
+            { "name": "Object.entries", "source": "JavaScript standard library", "kind": "external" },
+            { "name": "Object.fromEntries", "source": "JavaScript standard library", "kind": "external" },
+            { "name": "Array.prototype.map", "source": "JavaScript standard library", "kind": "external" }
+          ],
+          "symbolReferences": ["LiftedState", "Action", "deserializeAction", "deserializeState"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Deserializes a lifted Redux state by converting every lifted action and every persisted state snapshot while preserving the surrounding lifted-state structure.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "persistState.deserialize is called with that state.",
+              "then": "The returned state has the same action IDs and computed-state ordering, with every action, committed state, and computed-state state passed through the corresponding deserializer.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "persistState.deserialize is called.",
+              "then": "The returned state preserves both collections as empty and still deserializes committedState.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "ed410c1c4d83dc984852c7062a7660b00985b905d60bfc1144e8d01459874560"
+        }
+      },
+      {
+        "unitId": "packages/redux-devtools/src/persistState.ts__persistState.dispatch#method:persistState.dispatch",
+        "unitKind": "method",
+        "name": "dispatch",
+        "qualifiedName": "persistState.dispatch",
+        "parentUnitId": "packages/redux-devtools/src/persistState.ts__persistState#function:persistState",
+        "startLine": 73,
+        "endLine": 83,
+        "isBehavioral": true,
+        "source": "            localStorage.setItem(key, JSON.stringify(store.getState()));\n          } catch (e) {\n            console.warn('Could not write debug session to localStorage:', e); // eslint-disable-line no-console\n          }\n\n          return action;\n        },\n      };\n    };\n}\n",
+        "detail": {
+          "unitId": "packages/redux-devtools/src/persistState.ts__persistState.dispatch#method:persistState.dispatch",
+          "fileId": "packages/redux-devtools/src/persistState.ts__persistState.dispatch",
+          "unitKind": "method",
+          "name": "dispatch",
+          "qualifiedName": "persistState.dispatch",
+          "parentUnitId": "packages/redux-devtools/src/persistState.ts__persistState#function:persistState",
+          "startLine": 73,
+          "endLine": 83,
+          "signature": null,
+          "parameters": [
+            { "name": "action", "type": null, "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "A storage key and store are available through the enclosing persistState context.",
+            "The dispatched action is available to return."
+          ],
+          "postconditions": [
+            "The store's current state is serialized with JSON.stringify and written to localStorage under the configured key when persistence succeeds.",
+            "The original action is returned.",
+            "A persistence failure does not prevent the method from returning the action."
+          ],
+          "invariants": [
+            "The action object is returned unchanged.",
+            "Persistence errors are handled locally rather than propagated."
+          ],
+          "edgeCases": [
+            "If JSON serialization or localStorage.setItem throws, the error is caught, a warning is emitted, and the action is still returned.",
+            "If the store state is serializable and storage accepts the write, the serialized current state is stored under the configured key."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": "Returns the original action even when state serialization or localStorage persistence fails."
+          },
+          "stateMutations": ["Writes the serialized store state to localStorage under the configured key."],
+          "eventsEmitted": ["Emits a console warning when persistence fails."],
+          "complexity": null,
+          "calls": [
+            { "name": "store.getState", "source": null, "kind": "internal" },
+            { "name": "JSON.stringify", "source": null, "kind": "external" },
+            { "name": "localStorage.setItem", "source": null, "kind": "external" },
+            { "name": "console.warn", "source": null, "kind": "external" }
+          ],
+          "symbolReferences": ["localStorage", "JSON", "console"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Stores JSON.stringify(store.getState()) in localStorage under the configured key.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Dispatch persists the store's current state to localStorage and returns the dispatched action. If persistence fails, it warns without preventing the action from being returned.",
+          "specLiterals": [
+            {
+              "kind": "error-message",
+              "value": "Could not write debug session to localStorage:",
+              "role": "Warning prefix emitted when state persistence fails."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "dispatch is called with an action.",
+              "then": "localStorage.setItem is called with the configured key and the JSON serialization of the current store state, and the same action is returned.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "dispatch is called with an action.",
+              "then": "console.warn is called with the warning prefix and the error, no error escapes the method, and the same action is returned.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "673fdb2cb51b2d177f1a46488e0f5e18598fc250a84015c33deaa19e3e7b0553"
+        }
+      }
+    ]
+  },
+  "out": [],
+  "in": ["packages/redux-devtools/src/index.ts"],
+  "externals": ["redux", "@redux-devtools/instrument"]
+}

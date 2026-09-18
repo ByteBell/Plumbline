@@ -1,0 +1,2487 @@
+{
+  "schema": 2,
+  "kind": "file",
+  "repoName": "tldraw",
+  "file": {
+    "relativePath": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts",
+    "language": "typescript",
+    "sizeBytes": 23750,
+    "tokenCount": 5926,
+    "model": "us.openai.gpt-5.6-luna",
+    "analysedAt": "2026-08-24T12:28:48.028Z",
+    "module": {
+      "purpose": "Provides the queue-backed orchestration for generating, caching, retrying, repairing, and deleting Open Graph thumbnails for shared and published boards.",
+      "summary": "This module manages asynchronous OG image rendering around an R2-backed single-flight marker and queue. It selects a meaningful board page, resolves current board state at delivery time, avoids redundant renders through version metadata, retries transient failures with bounded attempts, records telemetry, and handles cleanup for unviewable or deleted boards. Published boards receive special repair cooldown and follow-up behavior because their snapshots are immutable between publications, while shared files can continue changing.",
+      "businessContext": "Supports board previews shown by link unfurling and crawlers. Failures produce stale or generic previews, leaked storage objects, or unnecessary browser-rendering spend.",
+      "classes": [],
+      "functions": [
+        "pickOgImagePageId (~L37-41): Selects the first content-bearing page for an OG image.",
+        "getOgImageCacheKey (~L51-53): Builds the stable cache key for a board thumbnail.",
+        "getOgImagePendingKey (~L58-60): Derives the single-flight pending marker key.",
+        "getOgImageRepairCooldownKey (~L71-73): Derives the crawler repair cooldown key.",
+        "isOgImageRepairOnCooldown (~L75-85): Checks whether crawler repair is temporarily suppressed.",
+        "enqueueOgImageRender (~L87-143): Creates a pending marker and queues an OG render.",
+        "clearOgImagePendingMarker (~L157-165): Removes a board's pending render marker.",
+        "deleteOgImage (~L170-179): Deletes cached image, marker, and repair cooldown objects.",
+        "deleteBoardThumbnails (~L195-211): Removes all thumbnail artifacts for a deleted board.",
+        "enqueuePublishThumbnailRender (~L225-244): Enqueues publication rendering and reports failures.",
+        "handleOgImageRenderMessage (~L250-358): Resolves, renders, caches, retries, and acknowledges queue jobs.",
+        "enqueueFollowUpIfBoardMoved (~L365-405): Schedules one follow-up render for a changed publication.",
+        "readCurrentPublishedVersion (~L412-418): Reads the current published board version.",
+        "retryOrDrop (~L421-478): Records failures and retries or permanently acknowledges jobs."
+      ],
+      "keywords": [
+        "OG image rendering",
+        "Cloudflare R2",
+        "queue consumer",
+        "single-flight marker",
+        "thumbnail cache",
+        "repair cooldown",
+        "browser screenshot",
+        "published board",
+        "render retry",
+        "screenshot telemetry"
+      ],
+      "ontologyConcepts": [
+        "asynchronous job processing",
+        "cache invalidation",
+        "single-flight coordination",
+        "bounded retry",
+        "eventual consistency",
+        "resource cleanup",
+        "failure classification",
+        "content versioning"
+      ],
+      "businessEntities": [
+        "board",
+        "published snapshot",
+        "thumbnail",
+        "OG image",
+        "render job",
+        "publication",
+        "shared file",
+        "crawler"
+      ],
+      "systemCapabilities": [
+        "Queue board thumbnail renders",
+        "Cache generated OG images",
+        "Retry failed render jobs",
+        "Repair stale published previews",
+        "Clean up thumbnail artifacts",
+        "Emit render telemetry"
+      ],
+      "configDependencies": [
+        "OG_MAX_RENDER_ATTEMPTS",
+        "OG_PENDING_MARKER_TTL_MS",
+        "OG_REPAIR_COOLDOWN_MS",
+        "OG_RETRY_DELAY_SECONDS"
+      ],
+      "importsInternal": [
+        {
+          "spec": "../../config",
+          "symbols": [
+            "OG_MAX_RENDER_ATTEMPTS",
+            "OG_PENDING_MARKER_TTL_MS",
+            "OG_REPAIR_COOLDOWN_MS",
+            "OG_RETRY_DELAY_SECONDS"
+          ],
+          "anchor": { "startLine": 3, "endLine": 7 },
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/config.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/config.ts",
+          "resolvedHint": "apps/dotcom/sync-worker/src/config.ts"
+        },
+        {
+          "spec": "../../types",
+          "symbols": ["Environment", "OgImageRenderQueueMessage", "OgImageRenderReason", "ThumbnailBoardRef"],
+          "anchor": { "startLine": 8, "endLine": 13 },
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/types.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/types.ts",
+          "resolvedHint": "apps/dotcom/sync-worker/src/types.ts"
+        },
+        {
+          "spec": "../../utils/renderTokens",
+          "symbols": ["deleteRenderTokenRecord"],
+          "anchor": { "startLine": 14, "endLine": 14 },
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/utils/renderTokens.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/utils/renderTokens.ts",
+          "resolvedHint": "apps/dotcom/sync-worker/src/utils/renderTokens.ts"
+        },
+        {
+          "spec": "./boardTools",
+          "symbols": ["enumerateBoardPages"],
+          "anchor": { "startLine": 15, "endLine": 15 },
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/routes/tla/boardTools.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/routes/tla/boardTools.ts",
+          "resolvedHint": "apps/dotcom/sync-worker/src/routes/tla/boardTools.ts"
+        },
+        {
+          "spec": "./thumbnailRender",
+          "symbols": [
+            "ResolvedThumbnailBoard",
+            "captureThumbnailScreenshot",
+            "loadBoardSnapshot",
+            "putThumbnailPng",
+            "resolveThumbnailBoard",
+            "writeScreenshotTelemetry"
+          ],
+          "anchor": { "startLine": 16, "endLine": 23 },
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts",
+          "resolvedHint": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts"
+        },
+        {
+          "spec": "./thumbnailShared",
+          "symbols": ["classifyScreenshotFailure", "reportThumbnailError"],
+          "anchor": { "startLine": 24, "endLine": 24 },
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/routes/tla/thumbnailShared.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailShared.ts",
+          "resolvedHint": "apps/dotcom/sync-worker/src/routes/tla/thumbnailShared.ts"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "@tldraw/dotcom-shared",
+          "symbols": ["DEFAULT_THUMBNAIL_HEIGHT", "DEFAULT_THUMBNAIL_WIDTH"],
+          "package": "@tldraw/dotcom-shared",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 1, "endLine": 1 }
+        },
+        {
+          "spec": "@tldraw/sync-core",
+          "symbols": ["RoomSnapshot"],
+          "package": "@tldraw/sync-core",
+          "subpath": null,
+          "isBuiltin": false,
+          "anchor": { "startLine": 2, "endLine": 2 }
+        }
+      ],
+      "sideEffects": {
+        "io": ["Sends OG image render messages to the configured queue.", "Acknowledges or retries queue messages."],
+        "network": [
+          "Reads and writes thumbnail objects through the R2-compatible THUMBNAILS binding.",
+          "Reads current published board state and snapshots through imported resolver functions."
+        ],
+        "env": ["Reads THUMBNAILS and QUEUE bindings from the Environment."],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": ["Calls ack and retry methods on the received queue message."]
+      },
+      "integrationSurface": [
+        {
+          "kind": "queue",
+          "role": "provides",
+          "address": "og-image-render",
+          "payloadRef": "OgImageRenderQueueMessage",
+          "rawKind": null
+        },
+        {
+          "kind": "queue",
+          "role": "consumes",
+          "address": "og-image-render",
+          "payloadRef": "OgImageRenderQueueMessage",
+          "rawKind": null
+        },
+        {
+          "kind": "cache",
+          "role": "provides",
+          "address": "og/{kind}/{slug}/light.png",
+          "payloadRef": "PNG",
+          "rawKind": null
+        }
+      ],
+      "contractsProvided": [
+        {
+          "name": "getOgImageCacheKey",
+          "shape": "export function getOgImageCacheKey(board: ThumbnailBoardRef) { return `og/${board.kind}/${board.slug}/light.png` }",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "EnqueueOgImageResult",
+          "shape": "export type EnqueueOgImageResult = 'enqueued' | 'already_pending' | 'unavailable'",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "isOgImageRepairOnCooldown",
+          "shape": "export async function isOgImageRepairOnCooldown(env: Environment, board: ThumbnailBoardRef): Promise<boolean>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "enqueueOgImageRender",
+          "shape": "export async function enqueueOgImageRender(env: Environment, board: ThumbnailBoardRef, { reason, followUp, firedAt }: { reason: OgImageRenderReason; followUp?: boolean; firedAt?: number }): Promise<EnqueueOgImageResult>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "clearOgImagePendingMarker",
+          "shape": "export async function clearOgImagePendingMarker(env: Environment, board: ThumbnailBoardRef): Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "deleteOgImage",
+          "shape": "export async function deleteOgImage(env: Environment, board: ThumbnailBoardRef): Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "deleteBoardThumbnails",
+          "shape": "export async function deleteBoardThumbnails(env: Environment, { fileId, publishedSlug }: { fileId: string; publishedSlug?: string | null }): Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "enqueuePublishThumbnailRender",
+          "shape": "export async function enqueuePublishThumbnailRender(env: Environment, publishedSlug: string, reportProblem: (error: unknown) => void): Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "handleOgImageRenderMessage",
+          "shape": "export async function handleOgImageRenderMessage(env: Environment, message: Message<OgImageRenderQueueMessage>, ctx?: ExecutionContext): Promise<void>",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        { "name": "RoomSnapshot", "shape": "RoomSnapshot", "resolvedRelativePath": null, "resolvedFileId": null },
+        {
+          "name": "Environment",
+          "shape": "Environment",
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/types.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/types.ts"
+        },
+        {
+          "name": "OgImageRenderQueueMessage",
+          "shape": "OgImageRenderQueueMessage",
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/types.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/types.ts"
+        },
+        {
+          "name": "OgImageRenderReason",
+          "shape": "OgImageRenderReason",
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/types.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/types.ts"
+        },
+        {
+          "name": "ThumbnailBoardRef",
+          "shape": "ThumbnailBoardRef",
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/types.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/types.ts"
+        },
+        {
+          "name": "enumerateBoardPages",
+          "shape": "enumerateBoardPages(snapshot)",
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/routes/tla/boardTools.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/routes/tla/boardTools.ts"
+        },
+        {
+          "name": "resolveThumbnailBoard",
+          "shape": "resolveThumbnailBoard(env, kind, slug, { access: 'render' })",
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts"
+        },
+        {
+          "name": "loadBoardSnapshot",
+          "shape": "loadBoardSnapshot(env, board, { access: 'render', file: board.file })",
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts"
+        },
+        {
+          "name": "captureThumbnailScreenshot",
+          "shape": "captureThumbnailScreenshot(env, board, { surface: 'og', pageId, theme: 'light', width: DEFAULT_THUMBNAIL_WIDTH, height: DEFAULT_THUMBNAIL_HEIGHT, telemetry: { source: 'queue', reason } })",
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts"
+        },
+        {
+          "name": "putThumbnailPng",
+          "shape": "putThumbnailPng(env.THUMBNAILS, cacheKey, render.base64, board.version)",
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts"
+        },
+        {
+          "name": "writeScreenshotTelemetry",
+          "shape": "writeScreenshotTelemetry(env, { source: 'queue', reason, followUp, cacheStatus, failureReason })",
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts"
+        },
+        {
+          "name": "deleteRenderTokenRecord",
+          "shape": "deleteRenderTokenRecord(env, board)",
+          "resolvedRelativePath": "apps/dotcom/sync-worker/src/utils/renderTokens.ts",
+          "resolvedFileId": "apps/dotcom/sync-worker/src/utils/renderTokens.ts"
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "page selection and key derivation",
+          "intent": "Selects an OG page and derives stable image, pending, and cooldown keys.",
+          "structureKind": "declaration",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 37, "endLine": 73 }
+        },
+        {
+          "name": "enqueue single-flight render",
+          "intent": "Rejects unavailable or active jobs, then stores a marker and queues work.",
+          "structureKind": "branch",
+          "predicate": "if (!env.THUMBNAILS || !env.QUEUE)",
+          "branchOutcomes": ["unavailable", "continue"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 87, "endLine": 143 }
+        },
+        {
+          "name": "thumbnail cleanup",
+          "intent": "Removes pending markers, cached images, cooldowns, and board render tokens.",
+          "structureKind": "io",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 157, "endLine": 211 }
+        },
+        {
+          "name": "queue render delivery",
+          "intent": "Resolves current state, skips cached versions, captures, stores, and acknowledges.",
+          "structureKind": "try",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 250, "endLine": 358 }
+        },
+        {
+          "name": "follow-up publication check",
+          "intent": "Queues one follow-up when a published version changed during capture.",
+          "structureKind": "branch",
+          "predicate": "if (rendered.kind !== 'published') return",
+          "branchOutcomes": ["not published", "published"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 365, "endLine": 405 }
+        },
+        {
+          "name": "retry or give up",
+          "intent": "Records each failure, delays eligible retries, or acknowledges final failure.",
+          "structureKind": "branch",
+          "predicate": "if (message.attempts < OG_MAX_RENDER_ATTEMPTS)",
+          "branchOutcomes": ["retry", "give up"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 421, "endLine": 478 }
+        }
+      ],
+      "representationFamily": "module",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "function",
+          "name": "getOgImageCacheKey",
+          "signature": "export function getOgImageCacheKey(board: ThumbnailBoardRef)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": true,
+          "anchor": { "startLine": 51, "endLine": 51 }
+        },
+        {
+          "kind": "function",
+          "name": "isOgImageRepairOnCooldown",
+          "signature": "export async function isOgImageRepairOnCooldown(\n\tenv: Environment,\n\tboard: ThumbnailBoardRef\n): Promise<boolean>",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Promise<boolean>",
+          "exported": true,
+          "anchor": { "startLine": 75, "endLine": 78 }
+        },
+        {
+          "kind": "function",
+          "name": "enqueueOgImageRender",
+          "signature": "export async function enqueueOgImageRender(\n\tenv: Environment,\n\tboard: ThumbnailBoardRef,\n\t{\n\t\treason,\n\t\tfollowUp,\n\t\tfiredAt,\n\t}: {\n\t\treason: OgImageRenderReason\n\t\tfollowUp?: boolean\n\t\tfiredAt?: number\n\t}\n): Promise<EnqueueOgImageResult>",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Promise<EnqueueOgImageResult>",
+          "exported": true,
+          "anchor": { "startLine": 87, "endLine": 115 }
+        },
+        {
+          "kind": "function",
+          "name": "clearOgImagePendingMarker",
+          "signature": "export async function clearOgImagePendingMarker(\n\tenv: Environment,\n\tboard: ThumbnailBoardRef\n): Promise<void>",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Promise<void>",
+          "exported": true,
+          "anchor": { "startLine": 157, "endLine": 161 }
+        },
+        {
+          "kind": "function",
+          "name": "deleteOgImage",
+          "signature": "export async function deleteOgImage(env: Environment, board: ThumbnailBoardRef): Promise<void>",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Promise<void>",
+          "exported": true,
+          "anchor": { "startLine": 170, "endLine": 170 }
+        },
+        {
+          "kind": "function",
+          "name": "deleteBoardThumbnails",
+          "signature": "export async function deleteBoardThumbnails(\n\tenv: Environment,\n\t{ fileId, publishedSlug }: { fileId: string; publishedSlug?: string | null }\n): Promise<void>",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Promise<void>",
+          "exported": true,
+          "anchor": { "startLine": 195, "endLine": 198 }
+        },
+        {
+          "kind": "function",
+          "name": "enqueuePublishThumbnailRender",
+          "signature": "export async function enqueuePublishThumbnailRender(\n\tenv: Environment,\n\tpublishedSlug: string,\n\treportProblem: (error: unknown) => void\n): Promise<void>",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Promise<void>",
+          "exported": true,
+          "anchor": { "startLine": 225, "endLine": 229 }
+        },
+        {
+          "kind": "function",
+          "name": "handleOgImageRenderMessage",
+          "signature": "export async function handleOgImageRenderMessage(\n\tenv: Environment,\n\tmessage: Message<OgImageRenderQueueMessage>,\n\tctx?: ExecutionContext\n): Promise<void>",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Promise<void>",
+          "exported": true,
+          "anchor": { "startLine": 250, "endLine": 254 }
+        }
+      ],
+      "typeShapes": [
+        {
+          "kind": "union",
+          "name": "EnqueueOgImageResult",
+          "shape": "'enqueued' | 'already_pending' | 'unavailable'",
+          "discriminant": null,
+          "anchor": { "startLine": 55, "endLine": 55 }
+        }
+      ],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "Environment without THUMBNAILS or QUEUE",
+          "handled": true,
+          "behavior": "Returns unavailable without creating a marker or sending a message.",
+          "anchor": { "startLine": 117, "endLine": 117 }
+        },
+        {
+          "inputShape": "Board with no pages",
+          "handled": true,
+          "behavior": "Returns undefined as the selected page identifier.",
+          "anchor": { "startLine": 38, "endLine": 40 }
+        },
+        {
+          "inputShape": "Existing unexpired pending marker",
+          "handled": true,
+          "behavior": "Returns already_pending and does not enqueue another job.",
+          "anchor": { "startLine": 121, "endLine": 125 }
+        },
+        {
+          "inputShape": "Board no longer viewable",
+          "handled": true,
+          "behavior": "Deletes published artifacts or clears the shared-file marker, records telemetry, and acknowledges.",
+          "anchor": { "startLine": 266, "endLine": 276 }
+        },
+        {
+          "inputShape": "Missing persisted snapshot",
+          "handled": true,
+          "behavior": "Records board_empty through retryOrDrop instead of spending a browser-render slot.",
+          "anchor": { "startLine": 302, "endLine": 313 }
+        },
+        {
+          "inputShape": "Board changes while capture runs",
+          "handled": true,
+          "behavior": "Published boards receive one follow-up render when their version moved.",
+          "anchor": { "startLine": 365, "endLine": 405 }
+        },
+        {
+          "inputShape": "Maximum delivery attempts reached",
+          "handled": true,
+          "behavior": "Clears the marker, optionally arms crawler repair cooldown, and acknowledges without retrying.",
+          "anchor": { "startLine": 449, "endLine": 478 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": ">",
+          "left": "expiresAt",
+          "right": "Date.now()",
+          "inclusive": false,
+          "intent": "Treats a pending marker as active only after its expiration timestamp.",
+          "anchor": { "startLine": 123, "endLine": 124 }
+        },
+        {
+          "operator": ">",
+          "left": "expiresAt",
+          "right": "Date.now()",
+          "inclusive": false,
+          "intent": "Treats a repair cooldown as active only after its expiration timestamp.",
+          "anchor": { "startLine": 83, "endLine": 84 }
+        },
+        {
+          "operator": ">=",
+          "left": "message.attempts",
+          "right": "OG_MAX_RENDER_ATTEMPTS",
+          "inclusive": true,
+          "intent": "Reports a render failure when the delivery reaches the configured maximum.",
+          "anchor": { "startLine": 346, "endLine": 346 }
+        },
+        {
+          "operator": "<",
+          "left": "message.attempts",
+          "right": "OG_MAX_RENDER_ATTEMPTS",
+          "inclusive": false,
+          "intent": "Retries only while the current delivery is below the configured maximum.",
+          "anchor": { "startLine": 443, "endLine": 443 }
+        }
+      ],
+      "errorHandling": [
+        {
+          "thrown": null,
+          "caught": "R2 cooldown head read failure",
+          "action": "Treats the read as absent and fails open.",
+          "fallback": "false",
+          "anchor": { "startLine": 81, "endLine": 81 }
+        },
+        {
+          "thrown": null,
+          "caught": "Publish enqueue failure",
+          "action": "Reports the failure through reportProblem.",
+          "fallback": null,
+          "anchor": { "startLine": 241, "endLine": 243 }
+        },
+        {
+          "thrown": null,
+          "caught": "Render, snapshot, cache, or resolution failure",
+          "action": "Reports final failures, records telemetry, and delegates retry or drop handling.",
+          "fallback": null,
+          "anchor": { "startLine": 343, "endLine": 358 }
+        },
+        {
+          "thrown": null,
+          "caught": "Follow-up version check or enqueue failure",
+          "action": "Reports the failure without converting the completed render into a retry.",
+          "fallback": null,
+          "anchor": { "startLine": 396, "endLine": 404 }
+        },
+        {
+          "thrown": null,
+          "caught": "Cleanup deletion or cooldown-write failure",
+          "action": "Suppresses the failure as best-effort cleanup.",
+          "fallback": null,
+          "anchor": { "startLine": 164, "endLine": 177 }
+        }
+      ],
+      "invariants": [
+        {
+          "kind": "invariant",
+          "description": "A pending marker suppresses a new enqueue only while its expiresAt is in the future.",
+          "anchor": { "startLine": 119, "endLine": 126 }
+        },
+        {
+          "kind": "ordering",
+          "description": "The pending marker is written before the queue message is sent.",
+          "anchor": { "startLine": 128, "endLine": 141 }
+        },
+        {
+          "kind": "invariant",
+          "description": "A cached thumbnail is reusable only when its metadata version equals the resolved board version.",
+          "anchor": { "startLine": 279, "endLine": 287 }
+        },
+        {
+          "kind": "postcondition",
+          "description": "Successful rendering clears the pending marker before acknowledging the message.",
+          "anchor": { "startLine": 332, "endLine": 340 }
+        },
+        {
+          "kind": "invariant",
+          "description": "A final crawler failure arms a repair cooldown for published boards.",
+          "anchor": { "startLine": 463, "endLine": 475 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "Queue messages provide a body containing kind and slug, while reason and followUp may be absent on legacy messages.",
+          "anchor": { "startLine": 256, "endLine": 260 }
+        },
+        {
+          "kind": "env",
+          "description": "THUMBNAILS and QUEUE bindings are available for normal enqueue and render operations.",
+          "anchor": { "startLine": 117, "endLine": 117 }
+        },
+        {
+          "kind": "config",
+          "description": "Retry, marker, and cooldown constants are configured consistently with upstream debounce timing.",
+          "anchor": { "startLine": 57, "endLine": 57 }
+        },
+        {
+          "kind": "schema",
+          "description": "Thumbnail objects store the board version and cooldown objects store expiresAt in custom metadata.",
+          "anchor": { "startLine": 83, "endLine": 83 }
+        }
+      ],
+      "ambiguities": [
+        {
+          "question": "What external queue delivery system implements Message, ack, retry, and attempts semantics?",
+          "affects": "concurrency_model and retry behavior",
+          "anchor": { "startLine": 250, "endLine": 254 },
+          "resolution": null
+        },
+        {
+          "question": "What exact access and visibility rules are enforced by resolveThumbnailBoard and loadBoardSnapshot?",
+          "affects": "boundary behavior for deleted, unpublished, private, and empty boards",
+          "anchor": { "startLine": 279, "endLine": 302 },
+          "resolution": null
+        }
+      ],
+      "concurrencyModel": {
+        "kind": "async",
+        "reentrant": true,
+        "ordering": "unordered",
+        "notes": "Multiple queue deliveries and enqueue callers may overlap; the pending marker and cached version checks provide single-flight and duplicate-work suppression."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "selects-first-content-page",
+          "scenario": "A snapshot has multiple pages and only a later page contains content.",
+          "given": [
+            "enumerateBoardPages(snapshot) returns [{ id: 'p1', hasContent: false }, { id: 'p2', hasContent: true }]"
+          ],
+          "when": "pickOgImagePageId(snapshot)",
+          "then": "the result is 'p2'",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "OG previews must prefer the first page containing content."
+        },
+        {
+          "testId": "falls-back-to-first-page",
+          "scenario": "A snapshot has pages but none contain content.",
+          "given": [
+            "enumerateBoardPages(snapshot) returns [{ id: 'p1', hasContent: false }, { id: 'p2', hasContent: false }]"
+          ],
+          "when": "pickOgImagePageId(snapshot)",
+          "then": "the result is 'p1'",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Blank boards still render a deterministic page."
+        },
+        {
+          "testId": "returns-unavailable-without-bindings",
+          "scenario": "The thumbnail bucket or queue binding is absent.",
+          "given": ["env.THUMBNAILS is undefined or env.QUEUE is undefined"],
+          "when": "enqueueOgImageRender(env, board, { reason: 'crawler' })",
+          "then": "the result is 'unavailable' and no queue message is sent",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Missing infrastructure must not create a partial enqueue."
+        },
+        {
+          "testId": "coalesces-live-pending-marker",
+          "scenario": "A non-expired pending marker already exists.",
+          "given": ["env.THUMBNAILS.head(pendingKey) returns customMetadata.expiresAt greater than Date.now()"],
+          "when": "enqueueOgImageRender(env, board, { reason: 'publish' })",
+          "then": "the result is 'already_pending' and env.QUEUE.send is not called",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "The marker provides single-flight queue coalescing."
+        },
+        {
+          "testId": "stamps-fired-at-expiry",
+          "scenario": "A debounced trigger supplies a firing timestamp.",
+          "given": ["firedAt = 1000", "OG_PENDING_MARKER_TTL_MS = 5000"],
+          "when": "enqueueOgImageRender(env, board, { reason: 'edit', firedAt })",
+          "then": "the pending marker expiresAt is '6000'",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Expiry is measured from trigger time rather than delayed storage time."
+        },
+        {
+          "testId": "drops-unviewable-published-board",
+          "scenario": "A queued published board is no longer resolvable at render time.",
+          "given": ["resolveThumbnailBoard(env, 'published', slug, { access: 'render' }) returns { ok: false }"],
+          "when": "handleOgImageRenderMessage(env, message)",
+          "then": "the published image, pending marker, and repair cooldown are deleted, telemetry records failureReason 'board_not_viewable', and message.ack() is called",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Unpublished or deleted boards are terminal queue outcomes."
+        },
+        {
+          "testId": "acks-cache-hit",
+          "scenario": "The cached thumbnail already has the resolved board version.",
+          "given": ["cached.customMetadata.version === String(board.version)"],
+          "when": "handleOgImageRenderMessage(env, message)",
+          "then": "the pending marker is cleared, hit telemetry is written, no screenshot is captured, and message.ack() is called",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Matching versions must avoid redundant browser work."
+        },
+        {
+          "testId": "retries-empty-board",
+          "scenario": "The board resolves but has no persisted snapshot.",
+          "given": [
+            "resolveThumbnailBoard(env, kind, slug, { access: 'render' }) returns { ok: true, board }",
+            "loadBoardSnapshot(env, board, { access: 'render', file: board.file }) returns null",
+            "message.attempts < OG_MAX_RENDER_ATTEMPTS"
+          ],
+          "when": "handleOgImageRenderMessage(env, message)",
+          "then": "failure telemetry records 'board_empty' and message.retry({ delaySeconds: OG_RETRY_DELAY_SECONDS * message.attempts }) is called",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Transiently empty content is retried before being abandoned."
+        },
+        {
+          "testId": "writes-rendered-thumbnail",
+          "scenario": "A board snapshot resolves and screenshot capture succeeds.",
+          "given": [
+            "resolveThumbnailBoard(...) returns { ok: true, board }",
+            "loadBoardSnapshot(...) returns snapshot",
+            "captureThumbnailScreenshot(...) returns { base64 }"
+          ],
+          "when": "handleOgImageRenderMessage(env, message)",
+          "then": "putThumbnailPng(env.THUMBNAILS, cacheKey, render.base64, board.version) is called, the pending marker is cleared, success telemetry is written, and message.ack() is called",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Successful processing must publish the versioned image and acknowledge the job."
+        },
+        {
+          "testId": "arms-crawler-repair-cooldown",
+          "scenario": "A crawler-triggered render reaches its final retry attempt.",
+          "given": ["board.kind === 'published'", "reason === 'crawler'", "message.attempts >= OG_MAX_RENDER_ATTEMPTS"],
+          "when": "retryOrDrop(env, message, { reason, followUp, failureReason, board })",
+          "then": "the pending marker is cleared, a repair cooldown is written, and message.ack() is called",
+          "targets": [],
+          "oracleKind": "integration-trace",
+          "rationale": "Failed crawler repairs must be throttled without blocking publish-triggered renders."
+        },
+        {
+          "testId": "does-not-chain-published-follow-up",
+          "scenario": "A published board changes during capture and the current message is already a follow-up.",
+          "given": [
+            "rendered.kind === 'published'",
+            "message.body.followUp === true",
+            "current published version differs from rendered.version"
+          ],
+          "when": "enqueueFollowUpIfBoardMoved(env, message, rendered, reason)",
+          "then": "enqueueOgImageRender is not called",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Follow-ups are deliberately bounded to one extra render."
+        }
+      ],
+      "language": "typescript",
+      "moduleLayout": [
+        "imports",
+        "queue and thumbnail pipeline documentation",
+        "page selection helper",
+        "cache and coordination key helpers",
+        "repair cooldown lookup",
+        "enqueue and marker management",
+        "thumbnail cleanup",
+        "publication enqueue wrapper",
+        "queue consumer",
+        "published-version follow-up helper",
+        "current-version reader",
+        "retry-or-drop helper"
+      ],
+      "moduleLevelCode": "import { DEFAULT_THUMBNAIL_HEIGHT, DEFAULT_THUMBNAIL_WIDTH } from '@tldraw/dotcom-shared'\nimport { RoomSnapshot } from '@tldraw/sync-core'\nimport {\n\tOG_MAX_RENDER_ATTEMPTS,\n\tOG_PENDING_MARKER_TTL_MS,\n\tOG_REPAIR_COOLDOWN_MS,\n\tOG_RETRY_DELAY_SECONDS,\n} from '../../config'\nimport {\n\tEnvironment,\n\tOgImageRenderQueueMessage,\n\tOgImageRenderReason,\n\tThumbnailBoardRef,\n} from '../../types'\nimport { deleteRenderTokenRecord } from '../../utils/renderTokens'\nimport { enumerateBoardPages } from './boardTools'\nimport {\n\tResolvedThumbnailBoard,\n\tcaptureThumbnailScreenshot,\n\tloadBoardSnapshot,\n\tputThumbnailPng,\n\tresolveThumbnailBoard,\n\twriteScreenshotTelemetry,\n} from './thumbnailRender'\nimport { classifyScreenshotFailure, reportThumbnailError } from './thumbnailShared'",
+      "exports": [
+        { "name": "getOgImageCacheKey", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "EnqueueOgImageResult", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "isOgImageRepairOnCooldown", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "enqueueOgImageRender", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "clearOgImagePendingMarker", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "deleteOgImage", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "deleteBoardThumbnails", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "enqueuePublishThumbnailRender", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "handleOgImageRenderMessage", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        { "symbol": "DEFAULT_THUMBNAIL_HEIGHT", "module": "@tldraw/dotcom-shared", "alias": null, "kind": "external" },
+        { "symbol": "DEFAULT_THUMBNAIL_WIDTH", "module": "@tldraw/dotcom-shared", "alias": null, "kind": "external" },
+        { "symbol": "RoomSnapshot", "module": "@tldraw/sync-core", "alias": null, "kind": "external" },
+        { "symbol": "OG_MAX_RENDER_ATTEMPTS", "module": "../../config", "alias": null, "kind": "internal" },
+        { "symbol": "OG_PENDING_MARKER_TTL_MS", "module": "../../config", "alias": null, "kind": "internal" },
+        { "symbol": "OG_REPAIR_COOLDOWN_MS", "module": "../../config", "alias": null, "kind": "internal" },
+        { "symbol": "OG_RETRY_DELAY_SECONDS", "module": "../../config", "alias": null, "kind": "internal" },
+        { "symbol": "Environment", "module": "../../types", "alias": null, "kind": "internal" },
+        { "symbol": "OgImageRenderQueueMessage", "module": "../../types", "alias": null, "kind": "internal" },
+        { "symbol": "OgImageRenderReason", "module": "../../types", "alias": null, "kind": "internal" },
+        { "symbol": "ThumbnailBoardRef", "module": "../../types", "alias": null, "kind": "internal" },
+        {
+          "symbol": "deleteRenderTokenRecord",
+          "module": "../../utils/renderTokens",
+          "alias": null,
+          "kind": "internal"
+        },
+        { "symbol": "enumerateBoardPages", "module": "./boardTools", "alias": null, "kind": "internal" },
+        { "symbol": "ResolvedThumbnailBoard", "module": "./thumbnailRender", "alias": null, "kind": "internal" },
+        { "symbol": "captureThumbnailScreenshot", "module": "./thumbnailRender", "alias": null, "kind": "internal" },
+        { "symbol": "loadBoardSnapshot", "module": "./thumbnailRender", "alias": null, "kind": "internal" },
+        { "symbol": "putThumbnailPng", "module": "./thumbnailRender", "alias": null, "kind": "internal" },
+        { "symbol": "resolveThumbnailBoard", "module": "./thumbnailRender", "alias": null, "kind": "internal" },
+        { "symbol": "writeScreenshotTelemetry", "module": "./thumbnailRender", "alias": null, "kind": "internal" },
+        { "symbol": "classifyScreenshotFailure", "module": "./thumbnailShared", "alias": null, "kind": "internal" },
+        { "symbol": "reportThumbnailError", "module": "./thumbnailShared", "alias": null, "kind": "internal" }
+      ],
+      "fileConstants": [],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__pickOgImagePageId#function:pickOgImagePageId",
+        "unitKind": "function",
+        "name": "pickOgImagePageId",
+        "qualifiedName": "pickOgImagePageId",
+        "parentUnitId": null,
+        "startLine": 37,
+        "endLine": 41,
+        "isBehavioral": true,
+        "source": "\n// OG images render a single page as the unfurl preview. Pick the first page (in board order) that\n// has content, so a board whose first page is empty still gets a meaningful image; fall back to the\n// first page when none have content, which renders as a blank.\nfunction pickOgImagePageId(snapshot: RoomSnapshot): string | undefined {",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__pickOgImagePageId#function:pickOgImagePageId",
+          "fileId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__pickOgImagePageId",
+          "unitKind": "function",
+          "name": "pickOgImagePageId",
+          "qualifiedName": "pickOgImagePageId",
+          "parentUnitId": null,
+          "startLine": 37,
+          "endLine": 41,
+          "signature": "function pickOgImagePageId(snapshot: RoomSnapshot): string | undefined",
+          "parameters": [
+            {
+              "name": "snapshot",
+              "type": "RoomSnapshot",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "string | undefined",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["snapshot represents a board snapshot with an ordered page collection."],
+          "postconditions": [
+            "Returns the identifier of the first page with content when one exists.",
+            "Returns the identifier of the first page when no page has content but at least one page exists.",
+            "Returns undefined when the snapshot contains no pages."
+          ],
+          "invariants": [
+            "Page selection preserves the board's page order.",
+            "At most one page identifier is returned."
+          ],
+          "edgeCases": [
+            "When the first page is empty and a later page has content, returns the later page's identifier.",
+            "When all pages are empty, returns the first page's identifier.",
+            "When the snapshot has no pages, returns undefined."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["RoomSnapshot"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Selects the first page in board order that has content for OG image rendering. If no page has content, it falls back to the first page, or returns undefined when no page exists.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "pickOgImagePageId(snapshot) is called.",
+              "then": "The result is page B's identifier.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "pickOgImagePageId(snapshot) is called.",
+              "then": "The result is the first page's identifier.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "pickOgImagePageId(snapshot) is called.",
+              "then": "The result is undefined.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "8a68096f3d18c5e10abb330df61709e0d9b57e3a463a2e384e024485abc72fd7"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__getOgImageCacheKey#function:getOgImageCacheKey",
+        "unitKind": "function",
+        "name": "getOgImageCacheKey",
+        "qualifiedName": "getOgImageCacheKey",
+        "parentUnitId": null,
+        "startLine": 51,
+        "endLine": 53,
+        "isBehavioral": true,
+        "source": " * Keep it that way, and keep the output dimensions out in particular. This key is the image's sole\n * address, in a bucket with no expiration rule, so any segment that can change re-addresses every\n * board's image at once and strands the old objects permanently — unreachable, un-overwritable, one per",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__getOgImageCacheKey#function:getOgImageCacheKey",
+          "fileId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__getOgImageCacheKey",
+          "unitKind": "function",
+          "name": "getOgImageCacheKey",
+          "qualifiedName": "getOgImageCacheKey",
+          "parentUnitId": null,
+          "startLine": 51,
+          "endLine": 53,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": ["Returns the cache key used to address the OG image object."],
+          "invariants": ["Output dimensions are not included in the cache key."],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Defines the cache-key used as the sole address for an OG image object. The key must not include output dimensions, so dimension changes do not re-address every board image.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "83fef376faf2acc34d0228e30f0f59dfe10cec8a467e59a24490355edc78f951"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__getOgImagePendingKey#function:getOgImagePendingKey",
+        "unitKind": "function",
+        "name": "getOgImagePendingKey",
+        "qualifiedName": "getOgImagePendingKey",
+        "parentUnitId": null,
+        "startLine": 58,
+        "endLine": 60,
+        "isBehavioral": true,
+        "source": " * the stored `version` tracks board content rather than render parameters.\n */\nexport function getOgImageCacheKey(board: ThumbnailBoardRef) {",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__getOgImagePendingKey#function:getOgImagePendingKey",
+          "fileId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__getOgImagePendingKey",
+          "unitKind": "function",
+          "name": "getOgImagePendingKey",
+          "qualifiedName": "getOgImagePendingKey",
+          "parentUnitId": null,
+          "startLine": 58,
+          "endLine": 60,
+          "signature": "export function getOgImagePendingKey(board: ThumbnailBoardRef)",
+          "parameters": [
+            {
+              "name": "board",
+              "type": "ThumbnailBoardRef",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "string",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["The board reference is provided in the shape required by ThumbnailBoardRef."],
+          "postconditions": [
+            "Returns a deterministic string key for the board's pending OG image marker.",
+            "The returned key identifies the pending marker independently of unrelated boards."
+          ],
+          "invariants": [
+            "The same board reference produces the same pending key.",
+            "The pending key is distinct from the OG image cache key and repair cooldown key."
+          ],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["ThumbnailBoardRef"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Derives the storage key used to mark an OG image render as pending for a thumbnail board.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "3ac554bf20a91e4fe065a9cca80859e9bcbaa4d0a417ac8294f589a6f9ed1cbc"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__getOgImageRepairCooldownKey#function:getOgImageRepairCooldownKey",
+        "unitKind": "function",
+        "name": "getOgImageRepairCooldownKey",
+        "qualifiedName": "getOgImageRepairCooldownKey",
+        "parentUnitId": null,
+        "startLine": 71,
+        "endLine": 73,
+        "isBehavioral": true,
+        "source": "\n// Armed when a crawler-triggered job gives up, consulted only by the OG route's published-board\n// repair (see OG_REPAIR_COOLDOWN_MS in config.ts). Deliberately not consulted by enqueueOgImageRender",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__getOgImageRepairCooldownKey#function:getOgImageRepairCooldownKey",
+          "fileId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__getOgImageRepairCooldownKey",
+          "unitKind": "function",
+          "name": "getOgImageRepairCooldownKey",
+          "qualifiedName": "getOgImageRepairCooldownKey",
+          "parentUnitId": null,
+          "startLine": 71,
+          "endLine": 73,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["OG_REPAIR_COOLDOWN_MS"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Provides the key used to track the cooldown for crawler-triggered OG image repair jobs that have given up. The key is consulted by published-board repair handling and is not used by normal OG image enqueueing.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "c46643b82bab6725a3705ca76d3fe462b8642a794398bd976ce5dfe7919347c6"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__isOgImageRepairOnCooldown#function:isOgImageRepairOnCooldown",
+        "unitKind": "function",
+        "name": "isOgImageRepairOnCooldown",
+        "qualifiedName": "isOgImageRepairOnCooldown",
+        "parentUnitId": null,
+        "startLine": 75,
+        "endLine": 85,
+        "isBehavioral": true,
+        "source": "// went, so only the one ask an outside caller can cause is metered. For the same reason the publish\n// trigger *clears* it: the cooldown is evidence about the snapshot that failed, and a republish\n// replaces that snapshot, so the new one gets its own repair backstop — and re-arms the cooldown\n// itself if it turns out to fail too.\nfunction getOgImageRepairCooldownKey(board: ThumbnailBoardRef) {\n\treturn getOgImageCacheKey(board).replace(/\\.png$/, '.repair-cooldown')\n}\n\nexport async function isOgImageRepairOnCooldown(\n\tenv: Environment,\n\tboard: ThumbnailBoardRef",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__isOgImageRepairOnCooldown#function:isOgImageRepairOnCooldown",
+          "fileId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__isOgImageRepairOnCooldown",
+          "unitKind": "function",
+          "name": "isOgImageRepairOnCooldown",
+          "qualifiedName": "isOgImageRepairOnCooldown",
+          "parentUnitId": null,
+          "startLine": 75,
+          "endLine": 85,
+          "signature": "export async function isOgImageRepairOnCooldown(env: Environment, board: ThumbnailBoardRef)",
+          "parameters": [
+            { "name": "env", "type": "Environment", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "board",
+              "type": "ThumbnailBoardRef",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "Promise<boolean>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "env provides access to the storage used for OG image repair cooldown markers.",
+            "board identifies a valid thumbnail board reference."
+          ],
+          "postconditions": [
+            "Resolves to true when the board's repair cooldown marker exists.",
+            "Resolves to false when the board's repair cooldown marker does not exist."
+          ],
+          "invariants": [
+            "The cooldown lookup uses the board-specific repair cooldown key.",
+            "The function does not modify the board or cooldown state."
+          ],
+          "edgeCases": [
+            "A board with no cooldown marker is reported as not being on cooldown.",
+            "A board with an existing cooldown marker is reported as being on cooldown.",
+            "Storage lookup failures are not converted into a cooldown result."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "getOgImageRepairCooldownKey", "source": "same module", "kind": "internal" },
+            { "name": "cooldown marker storage lookup", "source": "env", "kind": "external" }
+          ],
+          "symbolReferences": ["Environment", "ThumbnailBoardRef"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Asynchronously determines whether repair rendering for a board is currently subject to its repair cooldown.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "e92845585a8350ee7788fdc16225d8cf660387c9878f810350f04ead90edffbf"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__enqueueOgImageRender#function:enqueueOgImageRender",
+        "unitKind": "function",
+        "name": "enqueueOgImageRender",
+        "qualifiedName": "enqueueOgImageRender",
+        "parentUnitId": null,
+        "startLine": 87,
+        "endLine": 143,
+        "isBehavioral": true,
+        "source": "\tif (!env.THUMBNAILS) return false\n\t// Fail open on a read error: the enqueue this gates needs the same bucket for its pending marker,\n\t// so if R2 is genuinely down the ask fails and reports there rather than being silently skipped.\n\tconst existing = await env.THUMBNAILS.head(getOgImageRepairCooldownKey(board)).catch(() => null)\n\tif (!existing) return false\n\tconst expiresAt = Number(existing.customMetadata?.expiresAt)\n\treturn Number.isFinite(expiresAt) && expiresAt > Date.now()\n}\n\nexport async function enqueueOgImageRender(\n\tenv: Environment,\n\tboard: ThumbnailBoardRef,\n\t{\n\t\treason,\n\t\tfollowUp,\n\t\tfiredAt,\n\t}: {\n\t\t// Required rather than defaulted: every trigger knows why it is asking, and a default would put\n\t\t// whichever one forgot to say into some other trigger's telemetry bucket.\n\t\treason: OgImageRenderReason\n\t\tfollowUp?: boolean\n\t\t/**\n\t\t * When the ask fired, for asks made by the file DO's debounce alarm. The marker's expiry is\n\t\t * stamped from it rather than from the moment the R2 write below lands: the alarm resets the\n\t\t * debouncer's window *before* this function's R2 round trip runs, so a persist can land in\n\t\t * between and start a new max-wait window earlier than the marker's write. Counting the TTL\n\t\t * from the fire keeps that window ending at or past the marker's expiry, which is what lets\n\t\t * OG_RENDER_MAX_WAIT_MS >= OG_PENDING_MARKER_TTL_MS hold by exact equality (both pinned in\n\t\t * ogImageQueue.test.ts). Callers that are not debounced fires omit it.\n\t\t */\n\t\tfiredAt?: number\n\t}\n): Promise<EnqueueOgImageResult> {\n\tif (!env.THUMBNAILS || !env.QUEUE) return 'unavailable'\n\n\tconst pendingKey = getOgImagePendingKey(board)\n\tconst existing = await env.THUMBNAILS.head(pendingKey)\n\tif (existing) {\n\t\tconst expiresAt = Number(existing.customMetadata?.expiresAt)\n\t\tif (Number.isFinite(expiresAt) && expiresAt > Date.now()) {\n\t\t\treturn 'already_pending'\n\t\t}\n\t}\n\n\tawait env.THUMBNAILS.put(pendingKey, new Uint8Array(), {\n\t\tcustomMetadata: {\n\t\t\texpiresAt: String((firedAt ?? Date.now()) + OG_PENDING_MARKER_TTL_MS),\n\t\t},\n\t})\n\n\tconst message: OgImageRenderQueueMessage = {\n\t\ttype: 'og-image-render',\n\t\tkind: board.kind,\n\t\tslug: board.slug,\n\t\treason,\n\t\t...(followUp ? { followUp } : null),\n\t}",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__enqueueOgImageRender#function:enqueueOgImageRender",
+          "fileId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__enqueueOgImageRender",
+          "unitKind": "function",
+          "name": "enqueueOgImageRender",
+          "qualifiedName": "enqueueOgImageRender",
+          "parentUnitId": null,
+          "startLine": 87,
+          "endLine": 143,
+          "signature": "export async function enqueueOgImageRender(env: Environment, board: ThumbnailBoardRef, { reason, followUp, firedAt }: { reason: OgImageRenderReason; followUp?: boolean; firedAt?: number }): Promise<EnqueueOgImageResult>",
+          "parameters": [
+            { "name": "env", "type": "Environment", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "board",
+              "type": "ThumbnailBoardRef",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "{ reason, followUp, firedAt }",
+              "type": "{ reason: OgImageRenderReason; followUp?: boolean; firedAt?: number }",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            }
+          ],
+          "returnType": "Promise<EnqueueOgImageResult>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The board argument provides the kind and slug required to derive the pending marker and queue message.",
+            "The reason argument identifies why the render was requested.",
+            "env.THUMBNAILS and env.QUEUE are available for a render to be enqueued; otherwise the function returns without external writes."
+          ],
+          "postconditions": [
+            "If either required binding is unavailable, returns 'unavailable' and does not enqueue a render.",
+            "If a non-expired pending marker exists, returns 'already_pending' and does not replace the marker or enqueue a render.",
+            "Otherwise, writes an empty pending marker with an expiresAt custom metadata value and sends an OG image render queue message containing the board kind, board slug, and reason.",
+            "The pending marker expiry is based on firedAt when provided, otherwise the current time, plus OG_PENDING_MARKER_TTL_MS."
+          ],
+          "invariants": [
+            "A pending marker is written before the render queue message is sent.",
+            "Only a pending marker whose expiresAt metadata is finite and greater than the current time suppresses enqueueing.",
+            "The queue message type is always 'og-image-render'.",
+            "The followUp property is included in the queue message only when followUp is truthy."
+          ],
+          "edgeCases": [
+            "When env.THUMBNAILS or env.QUEUE is absent, returns 'unavailable' without reading or writing the pending marker.",
+            "When the pending marker is absent, proceeds to write the marker and enqueue the render.",
+            "When the pending marker has a finite future expiresAt value, returns 'already_pending'.",
+            "When the pending marker has missing, non-finite, expired, or boundary-past expiry metadata, treats it as not pending, replaces it, and proceeds.",
+            "When firedAt is omitted, computes marker expiry from Date.now(); when provided, computes it from firedAt instead.",
+            "Errors from the pending-marker read or write, or from queue delivery, are not converted into an EnqueueOgImageResult and propagate to the caller."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [
+              "Errors from env.THUMBNAILS.head",
+              "Errors from env.THUMBNAILS.put",
+              "Errors from env.QUEUE.send"
+            ],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": null
+          },
+          "stateMutations": [
+            "Writes an empty object to the board-specific OG image pending marker in env.THUMBNAILS when no valid pending marker exists.",
+            "Publishes an OG image render message to env.QUEUE."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "getOgImagePendingKey", "source": "local module", "kind": "internal" },
+            { "name": "env.THUMBNAILS.head", "source": "Environment.THUMBNAILS", "kind": "external" },
+            { "name": "env.THUMBNAILS.put", "source": "Environment.THUMBNAILS", "kind": "external" },
+            { "name": "env.QUEUE.send", "source": "Environment.QUEUE", "kind": "external" }
+          ],
+          "symbolReferences": [
+            "Environment",
+            "ThumbnailBoardRef",
+            "OgImageRenderReason",
+            "EnqueueOgImageResult",
+            "OgImageRenderQueueMessage",
+            "OG_PENDING_MARKER_TTL_MS"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "The queue message has the shape { type: 'og-image-render', kind: board.kind, slug: board.slug, reason, and optionally followUp: true }. The pending R2 object is empty and has customMetadata.expiresAt as a decimal-string timestamp.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Attempts to enqueue an OG image render for a board while using an R2 pending marker to suppress duplicate renders. It reports unavailable environments and currently pending renders without enqueueing.",
+          "specLiterals": [
+            {
+              "kind": "enum-value",
+              "value": "og-image-render",
+              "role": "Queue message discriminator for OG image render requests."
+            },
+            {
+              "kind": "enum-value",
+              "value": "unavailable",
+              "role": "Result returned when the thumbnails or queue binding is unavailable."
+            },
+            {
+              "kind": "enum-value",
+              "value": "already_pending",
+              "role": "Result returned when a valid, non-expired pending marker already exists."
+            },
+            {
+              "kind": "string",
+              "value": "expiresAt",
+              "role": "R2 custom metadata key storing the pending marker expiry timestamp."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "enqueueOgImageRender is called",
+              "then": "it returns 'unavailable' and does not access the pending marker or send a queue message",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "enqueueOgImageRender is called",
+              "then": "it returns 'already_pending' without writing a replacement marker or sending a queue message",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "enqueueOgImageRender is called with reason, optional followUp, and firedAt",
+              "then": "it writes an empty marker whose expiresAt equals firedAt (or the current time when omitted) plus OG_PENDING_MARKER_TTL_MS, then sends an 'og-image-render' message containing the board kind, slug, and reason",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "27bb70bb2276226fca94b7a00a7c0eb5e9d8d8bc60261be1fe4b6de43f383c07"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__clearOgImagePendingMarker#function:clearOgImagePendingMarker",
+        "unitKind": "function",
+        "name": "clearOgImagePendingMarker",
+        "qualifiedName": "clearOgImagePendingMarker",
+        "parentUnitId": null,
+        "startLine": 157,
+        "endLine": 165,
+        "isBehavioral": true,
+        "source": "// Clears only the pending render marker, keeping the image. Called when a render job is dropped: a\n// marker left behind would suppress the next legitimate enqueue until it expired.\nexport async function clearOgImagePendingMarker(\n\tenv: Environment,\n\tboard: ThumbnailBoardRef\n): Promise<void> {\n\tif (!env.THUMBNAILS) return\n\tawait env.THUMBNAILS.delete(getOgImagePendingKey(board)).catch(() => {})\n}",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__clearOgImagePendingMarker#function:clearOgImagePendingMarker",
+          "fileId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__clearOgImagePendingMarker",
+          "unitKind": "function",
+          "name": "clearOgImagePendingMarker",
+          "qualifiedName": "clearOgImagePendingMarker",
+          "parentUnitId": null,
+          "startLine": 157,
+          "endLine": 165,
+          "signature": "export async function clearOgImagePendingMarker(env: Environment, board: ThumbnailBoardRef): Promise<void>",
+          "parameters": [
+            { "name": "env", "type": "Environment", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "board",
+              "type": "ThumbnailBoardRef",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "Promise<void>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "env and board are provided.",
+            "board can be converted to the pending-marker storage key by getOgImagePendingKey."
+          ],
+          "postconditions": [
+            "If env.THUMBNAILS exists, the pending-marker key for board is requested for deletion.",
+            "If env.THUMBNAILS is absent, no storage operation is performed.",
+            "The function resolves to void regardless of a deletion rejection."
+          ],
+          "invariants": [
+            "The existing OG image is not modified or deleted.",
+            "Deletion errors from the thumbnail storage are suppressed."
+          ],
+          "edgeCases": [
+            "When env.THUMBNAILS is absent, the function returns without attempting to derive or delete a storage key.",
+            "When thumbnail-marker deletion rejects, the rejection is caught and the function still resolves successfully.",
+            "Only the pending marker is targeted; the cached OG image remains untouched."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": "Resolves to void when thumbnail storage deletion fails."
+          },
+          "stateMutations": ["Deletes the board's OG image pending-marker entry from env.THUMBNAILS when available."],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "getOgImagePendingKey", "source": "ogImageQueue.ts", "kind": "internal" },
+            { "name": "env.THUMBNAILS.delete", "source": "Environment.THUMBNAILS", "kind": "external" }
+          ],
+          "symbolReferences": ["Environment", "ThumbnailBoardRef"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Clears the pending OG image render marker for a board without deleting its existing image. If thumbnail storage is unavailable or deletion fails, the function completes without propagating an error.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "clearOgImagePendingMarker is called",
+              "then": "It resolves to void without performing a storage deletion.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "clearOgImagePendingMarker is called",
+              "then": "It resolves to void and does not propagate the deletion error.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "9b181258e1812f787c305b49a2d7e51a680127859deac1883062074e60afdd6e"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__deleteOgImage#function:deleteOgImage",
+        "unitKind": "function",
+        "name": "deleteOgImage",
+        "qualifiedName": "deleteOgImage",
+        "parentUnitId": null,
+        "startLine": 170,
+        "endLine": 179,
+        "isBehavioral": true,
+        "source": "export async function deleteOgImage(env: Environment, board: ThumbnailBoardRef): Promise<void> {\n\tif (!env.THUMBNAILS) return\n\tawait Promise.all([\n\t\tenv.THUMBNAILS.delete(getOgImageCacheKey(board)).catch(() => {}),\n\t\tenv.THUMBNAILS.delete(getOgImagePendingKey(board)).catch(() => {}),\n\t\tenv.THUMBNAILS.delete(getOgImageRepairCooldownKey(board)).catch(() => {}),\n\t])\n}\n\n/**",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__deleteOgImage#function:deleteOgImage",
+          "fileId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__deleteOgImage",
+          "unitKind": "function",
+          "name": "deleteOgImage",
+          "qualifiedName": "deleteOgImage",
+          "parentUnitId": null,
+          "startLine": 170,
+          "endLine": 179,
+          "signature": "export async function deleteOgImage(env: Environment, board: ThumbnailBoardRef): Promise<void>",
+          "parameters": [
+            { "name": "env", "type": "Environment", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "board",
+              "type": "ThumbnailBoardRef",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "Promise<void>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "env.THUMBNAILS may be absent; if present, it supports deletion by the keys produced for the board."
+          ],
+          "postconditions": [
+            "If env.THUMBNAILS is absent, no storage operation is performed and the function resolves successfully.",
+            "If env.THUMBNAILS is present, deletion is attempted for the OG-image cache key, pending marker key, and repair-cooldown key.",
+            "The function resolves to void even when any individual storage deletion fails."
+          ],
+          "invariants": [
+            "Each of the three deletion attempts is independent; failure of one does not prevent attempts for the others.",
+            "All three deletion attempts are initiated as part of one concurrent batch."
+          ],
+          "edgeCases": [
+            "When env.THUMBNAILS is undefined or otherwise absent, the function returns without computing keys or performing deletions.",
+            "When one or more storage deletions reject, those errors are swallowed and the function still resolves successfully.",
+            "For a normal board reference with available thumbnail storage, all three board-specific keys are deleted."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": "Resolves to void; individual thumbnail-storage deletion errors are ignored."
+          },
+          "stateMutations": [
+            "Thumbnail storage entries addressed by the OG-image cache, pending, and repair-cooldown keys for the board are deleted."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            {
+              "name": "getOgImageCacheKey",
+              "source": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts",
+              "kind": "internal"
+            },
+            {
+              "name": "getOgImagePendingKey",
+              "source": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts",
+              "kind": "internal"
+            },
+            {
+              "name": "getOgImageRepairCooldownKey",
+              "source": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts",
+              "kind": "internal"
+            },
+            { "name": "env.THUMBNAILS.delete", "source": "env.THUMBNAILS", "kind": "external" }
+          ],
+          "symbolReferences": ["Environment", "ThumbnailBoardRef"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Deletes all OG-image cache, pending, and repair-cooldown entries for a board when thumbnail storage is available. Storage deletion failures are ignored and do not reject the operation.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "deleteOgImage is called.",
+              "then": "The cache, pending-marker, and repair-cooldown keys derived from the board are each submitted for deletion, and the promise resolves to void.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "deleteOgImage is called.",
+              "then": "The rejection is swallowed, deletion attempts for the other keys are still made, and the returned promise resolves successfully.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "deleteOgImage is called.",
+              "then": "No key helpers or storage deletions are invoked, and the promise resolves to void.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "35dad3c7c7d0c79dddc3731427fbafd5529b2bdefb4d41459dfc4dd7fc2b120a"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__deleteBoardThumbnails#function:deleteBoardThumbnails",
+        "unitKind": "function",
+        "name": "deleteBoardThumbnails",
+        "qualifiedName": "deleteBoardThumbnails",
+        "parentUnitId": null,
+        "startLine": 195,
+        "endLine": 211,
+        "isBehavioral": true,
+        "source": "\tenv: Environment,\n\t{ fileId, publishedSlug }: { fileId: string; publishedSlug?: string | null }\n): Promise<void> {\n\tconst boards: ThumbnailBoardRef[] = [{ kind: 'shared_file', slug: fileId }]\n\t// A file with no published slug never had a published key to delete, and deriving one from an empty\n\t// slug would address `og/published//light.png` — some other board's neighbourhood, not this one's.\n\tif (publishedSlug) boards.push({ kind: 'published', slug: publishedSlug })\n\tawait Promise.all(\n\t\tboards.flatMap((board) => [deleteOgImage(env, board), deleteRenderTokenRecord(env, board)])\n\t)\n}\n\n/**\n * The publish effect's ask, and the reporting that goes with it.\n *\n * This is the *only* trigger a published board has. Its snapshot is frozen, so nothing edits it into\n * asking again, where a shared file re-asks on every persist that advances its document clock. So an",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__deleteBoardThumbnails#function:deleteBoardThumbnails",
+          "fileId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__deleteBoardThumbnails",
+          "unitKind": "function",
+          "name": "deleteBoardThumbnails",
+          "qualifiedName": "deleteBoardThumbnails",
+          "parentUnitId": null,
+          "startLine": 195,
+          "endLine": 211,
+          "signature": "async function deleteBoardThumbnails(env: Environment, { fileId, publishedSlug }: { fileId: string; publishedSlug?: string | null }): Promise<void>",
+          "parameters": [
+            { "name": "env", "type": "Environment", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "{ fileId, publishedSlug }",
+              "type": "{ fileId: string; publishedSlug?: string | null }",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            }
+          ],
+          "returnType": "Promise<void>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "env provides the dependencies required by deleteOgImage and deleteRenderTokenRecord.",
+            "fileId is a string identifying the shared file."
+          ],
+          "postconditions": [
+            "The shared-file OG image and render-token records have been requested for deletion.",
+            "If publishedSlug is truthy, the corresponding published-board OG image and render-token records have also been requested for deletion.",
+            "The returned promise resolves to undefined after all applicable deletion operations settle successfully."
+          ],
+          "invariants": [
+            "A shared_file board reference is always constructed from fileId.",
+            "A published board reference is constructed only when publishedSlug is truthy.",
+            "Each selected board receives exactly one deleteOgImage call and one deleteRenderTokenRecord call."
+          ],
+          "edgeCases": [
+            "When publishedSlug is undefined, null, or another falsy value, only the shared_file board is processed.",
+            "When publishedSlug is a non-empty string, both shared_file and published board records are processed.",
+            "If any deletion operation rejects, the Promise.all result rejects with the deletion failure while the other already-started operations may continue."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["The rejection from a failed deleteOgImage or deleteRenderTokenRecord operation"],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": null
+          },
+          "stateMutations": [
+            "Deletes or requests deletion of OG image and render-token records through the provided environment for the selected boards."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "deleteOgImage", "source": "local function", "kind": "internal" },
+            { "name": "deleteRenderTokenRecord", "source": "local function", "kind": "internal" }
+          ],
+          "symbolReferences": ["Environment", "ThumbnailBoardRef"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Deletes thumbnail-related records for a shared file and, when a published slug exists, its published board. All applicable deletion operations are started concurrently and the function resolves only after they complete.",
+          "specLiterals": [
+            {
+              "kind": "enum-value",
+              "value": "shared_file",
+              "role": "Board-kind discriminator for the shared file thumbnail records."
+            },
+            {
+              "kind": "enum-value",
+              "value": "published",
+              "role": "Board-kind discriminator for published thumbnail records."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "deleteBoardThumbnails is called.",
+              "then": "deleteOgImage and deleteRenderTokenRecord are each called once for { kind: \"shared_file\", slug: \"file-1\" }, and no published-board deletion is requested.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "deleteBoardThumbnails is called.",
+              "then": "Both deletion functions are called for the shared_file board with slug \"file-1\" and the published board with slug \"my-board\".",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "0a55fbd8ee9aedfed643d3ae817025a38772b277c8f7b60d76a5860b5af91d7c"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__enqueuePublishThumbnailRender#function:enqueuePublishThumbnailRender",
+        "unitKind": "function",
+        "name": "enqueuePublishThumbnailRender",
+        "qualifiedName": "enqueuePublishThumbnailRender",
+        "parentUnitId": null,
+        "startLine": 225,
+        "endLine": 244,
+        "isBehavioral": true,
+        "source": "\t// repair. Cleared unconditionally and first: even if the enqueue below fails, the next crawl's\n\t// repair is exactly the backstop that failure needs.\n\tawait env.THUMBNAILS?.delete(getOgImageRepairCooldownKey(board)).catch(() => {})\n\ttry {\n\t\tconst result = await enqueueOgImageRender(env, board, { reason: 'publish' })\n\t\tif (result !== 'enqueued') {\n\t\t\treportProblem(new Error(`Publish thumbnail enqueue did not take effect: ${result}`))\n\t\t}\n\t} catch (error) {\n\t\treportProblem(error)\n\t}\n}\n\n// Queue consumer. Re-resolves the board at render time rather than trusting the enqueued state: a\n// board deleted or unpublished while queued is dropped without rendering, and the version is re-read\n// so the render captures the newest content, coalescing a burst of enqueues into one capture.\nexport async function handleOgImageRenderMessage(\n\tenv: Environment,\n\tmessage: Message<OgImageRenderQueueMessage>,\n\tctx?: ExecutionContext",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__enqueuePublishThumbnailRender#function:enqueuePublishThumbnailRender",
+          "fileId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__enqueuePublishThumbnailRender",
+          "unitKind": "function",
+          "name": "enqueuePublishThumbnailRender",
+          "qualifiedName": "enqueuePublishThumbnailRender",
+          "parentUnitId": null,
+          "startLine": 225,
+          "endLine": 244,
+          "signature": "async function enqueuePublishThumbnailRender(env: Environment, board: Board): Promise<void>",
+          "parameters": [
+            { "name": "env", "type": "Environment", "default": null, "optional": false, "variadic": false, "order": 0 },
+            { "name": "board", "type": "Board", "default": null, "optional": false, "variadic": false, "order": 1 }
+          ],
+          "returnType": "Promise<void>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "env and board identify the environment and board for which a publish thumbnail render should be scheduled."
+          ],
+          "postconditions": [
+            "The OG-image repair cooldown marker is deleted when the THUMBNAILS binding is available; deletion failures are ignored.",
+            "An OG-image render enqueue is attempted with reason set to publish.",
+            "The function resolves without propagating errors from cooldown deletion or enqueueOgImageRender.",
+            "A non-enqueued result or caught enqueue error is passed to reportProblem."
+          ],
+          "invariants": [
+            "The repair cooldown deletion is attempted before enqueueOgImageRender.",
+            "Cooldown deletion is unconditional with respect to enqueue success or failure."
+          ],
+          "edgeCases": [
+            "When env.THUMBNAILS is absent, cooldown deletion is skipped and enqueueOgImageRender is still attempted.",
+            "When cooldown deletion rejects, the rejection is swallowed and enqueue processing continues.",
+            "When enqueueOgImageRender returns a result other than enqueued, an Error describing that result is reported and the function still resolves.",
+            "When enqueueOgImageRender throws, the thrown value is reported and the function still resolves."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": "Resolves with undefined after reporting enqueue failures or non-enqueued results."
+          },
+          "stateMutations": [
+            "Deletes the board's OG-image repair cooldown marker from the THUMBNAILS binding when present.",
+            "May enqueue an OG-image render through enqueueOgImageRender."
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "getOgImageRepairCooldownKey", "source": "internal", "kind": "internal" },
+            { "name": "THUMBNAILS.delete", "source": "env.THUMBNAILS", "kind": "external" },
+            { "name": "enqueueOgImageRender", "source": "internal", "kind": "internal" },
+            { "name": "reportProblem", "source": "internal", "kind": "internal" }
+          ],
+          "symbolReferences": ["Environment", "Board", "enqueueOgImageRender", "reportProblem"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Clears the board's OG-image repair cooldown and attempts to enqueue a publish thumbnail render. Enqueue failures and non-effective enqueue results are reported without propagating the enqueue error.",
+          "specLiterals": [
+            {
+              "kind": "enum-value",
+              "value": "publish",
+              "role": "Reason passed to enqueueOgImageRender for this publish-triggered render."
+            },
+            {
+              "kind": "enum-value",
+              "value": "enqueued",
+              "role": "Successful enqueue result used to determine whether a problem must be reported."
+            },
+            {
+              "kind": "format-string",
+              "value": "Publish thumbnail enqueue did not take effect: ${result}",
+              "role": "Error message format reported when enqueueOgImageRender does not return enqueued."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "enqueuePublishThumbnailRender is called and enqueueOgImageRender returns enqueued.",
+              "then": "The repair cooldown key is deleted before the render is enqueued, no problem is reported, and the function resolves successfully.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "enqueuePublishThumbnailRender is called.",
+              "then": "reportProblem receives an Error whose message is `Publish thumbnail enqueue did not take effect: ${result}` with the returned result substituted, and the function resolves.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "enqueuePublishThumbnailRender is called.",
+              "then": "The thrown value is passed to reportProblem and is not propagated by the function.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "ae49a3069aff3b569c446e4064e60bdbec42fb81441692de701e5d6bf4ca16b6"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__handleOgImageRenderMessage#function:handleOgImageRenderMessage",
+        "unitKind": "function",
+        "name": "handleOgImageRenderMessage",
+        "qualifiedName": "handleOgImageRenderMessage",
+        "parentUnitId": null,
+        "startLine": 250,
+        "endLine": 358,
+        "isBehavioral": true,
+        "source": "\t// Normalised once, for the same reason `reason` is: the flag is optional on the wire (only follow-up\n\t// messages set it), and every delivery of one job must record the same value on every path.\n\tconst followUp = message.body.followUp ?? false\n\tconst cacheKey = getOgImageCacheKey(boardRef)\n\t// The board was deleted, was unpublished, or has no persisted content. Terminal, not transient: ack\n\t// rather than retry, since no number of retries brings the board back. Applies the same delete/keep\n\t// asymmetry as the effects above.\n\tconst dropNoLongerViewable = async () => {\n\t\tawait (kind === 'published'\n\t\t\t? deleteOgImage(env, boardRef)\n\t\t\t: clearOgImagePendingMarker(env, boardRef))\n\t\twriteScreenshotTelemetry(env, {\n\t\t\tsource: 'queue',\n\t\t\treason,\n\t\t\tfollowUp,\n\t\t\tcacheStatus: 'miss',\n\t\t\tfailureReason: 'board_not_viewable',\n\t\t})\n\t\tmessage.ack()\n\t}\n\n\ttry {\n\t\t// 'render' rather than 'public': every board gets a thumbnail, private ones included. The OG\n\t\t// route re-applies the public gate when it serves.\n\t\tconst resolved = await resolveThumbnailBoard(env, kind, slug, { access: 'render' })\n\t\tif (!resolved.ok) {\n\t\t\tawait dropNoLongerViewable()\n\t\t\treturn\n\t\t}\n\t\tconst board = resolved.board\n\n\t\t// Another consumer (or an earlier retry) may already have rendered this version.\n\t\tconst cached = await env.THUMBNAILS?.head(cacheKey)\n\t\tif (cached?.customMetadata?.version === String(board.version)) {\n\t\t\tawait clearOgImagePendingMarker(env, boardRef)\n\t\t\twriteScreenshotTelemetry(env, { source: 'queue', reason, followUp, cacheStatus: 'hit' })\n\t\t\tmessage.ack()\n\t\t\treturn\n\t\t}\n\n\t\tif (!env.THUMBNAILS) {\n\t\t\tthrow new Error('THUMBNAILS bucket is not configured')\n\t\t}\n\n\t\t// No capacity check, by design (see the top of this file). The version check above is what stops\n\t\t// redundant work: everything past this point is a board whose cached thumbnail genuinely no\n\t\t// longer matches its content.\n\n\t\t// Loaded to target the first page that has content, so a board whose first page is empty still\n\t\t// gets a meaningful unfurl image.\n\t\t//\n\t\t// `file` is the row the resolve above already gated on, handed back so this read re-applies the\n\t\t// gate without asking Postgres the same question a second time. Safe precisely here: the two are\n\t\t// microseconds apart in one function, where a re-read would return the row we already hold. The\n\t\t// render page's own read (getThumbnailSnapshot) deliberately does not do this — it is a separate\n\t\t// request, and its re-read is what makes an un-share land inside the token's window.\n\t\tconst snapshot = await loadBoardSnapshot(env, board, { access: 'render', file: board.file })\n\t\tif (!snapshot) {\n\t\t\t// No persisted content. The render page reads the snapshot through the same functions, so it\n\t\t\t// would 404 and come back as a render failure — after spending a Browser Run slot to learn\n\t\t\t// what we already know. Retry from here instead, in case content lands shortly after the\n\t\t\t// enqueue. A read that *fails* throws rather than landing here, and the catch below retries it\n\t\t\t// the same way, so neither path spends Browser Run.\n\t\t\tawait retryOrDrop(env, message, {\n\t\t\t\treason,\n\t\t\t\tfollowUp,\n\t\t\t\tfailureReason: 'board_empty',\n\t\t\t\tboard: boardRef,\n\t\t\t})\n\t\t\treturn\n\t\t}\n\n\t\t// The render page exports the chosen page; the worker screenshots it through the BROWSER\n\t\t// binding and writes the PNG to the cache key the OG route reads.\n\t\tconst render = await captureThumbnailScreenshot(env, board, {\n\t\t\tsurface: 'og',\n\t\t\tpageId: pickOgImagePageId(snapshot),\n\t\t\ttheme: 'light',\n\t\t\twidth: DEFAULT_THUMBNAIL_WIDTH,\n\t\t\theight: DEFAULT_THUMBNAIL_HEIGHT,\n\t\t\t// `source` is the telemetry surface, not the render pipeline: these sessions belong to the\n\t\t\t// queue's ledger even though the job is signed for the og pipeline.\n\t\t\ttelemetry: { source: 'queue', reason },\n\t\t})\n\t\tawait putThumbnailPng(env.THUMBNAILS, cacheKey, render.base64, board.version)\n\t\tawait clearOgImagePendingMarker(env, boardRef)\n\t\tawait enqueueFollowUpIfBoardMoved(env, message, board, reason, ctx)\n\n\t\twriteScreenshotTelemetry(env, { source: 'queue', reason, followUp, cacheStatus: 'miss' })\n\t\tmessage.ack()\n\t} catch (error) {\n\t\t// Reported once per job, on the delivery that gives up, rather than once per delivery: a board\n\t\t// that fails deterministically fails all OG_MAX_RENDER_ATTEMPTS times, and one problem should not\n\t\t// file three events. A failure that recovers on retry reports nothing, which is correct — the\n\t\t// render landed. Sentry gets the unbounded original; telemetry below gets a bounded reason code,\n\t\t// since raw error.message would blow up that dimension's cardinality.\n\t\tif (message.attempts >= OG_MAX_RENDER_ATTEMPTS) {\n\t\t\treportThumbnailError(error, {\n\t\t\t\tctx,\n\t\t\t\tenv,\n\t\t\t\tsurface: 'og_queue',\n\t\t\t\textras: { kind, attempts: message.attempts },\n\t\t\t})\n\t\t}\n\t\t// A board deleted between the resolve above and the snapshot read is retried rather than dropped,\n\t\t// because from here it looks like any other read failure. That costs one extra delivery, not one\n\t\t// extra render: the retry re-resolves at the top and drops before spending any Browser Run.\n\t\tawait retryOrDrop(env, message, {\n\t\t\treason,",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__handleOgImageRenderMessage#function:handleOgImageRenderMessage",
+          "fileId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__handleOgImageRenderMessage",
+          "unitKind": "function",
+          "name": "handleOgImageRenderMessage",
+          "qualifiedName": "handleOgImageRenderMessage",
+          "parentUnitId": null,
+          "startLine": 250,
+          "endLine": 358,
+          "signature": "async function handleOgImageRenderMessage(env: Env, message: OgImageRenderMessage, ctx: ExecutionContext)",
+          "parameters": [
+            { "name": "env", "type": "Env", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "message",
+              "type": "OgImageRenderMessage",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "ctx",
+              "type": "ExecutionContext",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            }
+          ],
+          "returnType": "Promise<void>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "message.body contains the board reference, board kind, slug, and render reason required to resolve the board.",
+            "message.body.followUp may be absent and is treated as false.",
+            "The queue message exposes attempts and ack behavior."
+          ],
+          "postconditions": [
+            "A successfully rendered current thumbnail is stored under the OG image cache key with the board version.",
+            "The OG image pending marker is cleared after a cache hit or successful render.",
+            "Terminally unviewable boards are acknowledged after deleting the published image or clearing the pending marker.",
+            "Successful processing and terminal no-longer-viewable handling emit queue screenshot telemetry.",
+            "Transient or rendering failures are passed to retryOrDrop according to the message attempt count."
+          ],
+          "invariants": [
+            "The followUp value is normalized to false when absent and the normalized value is used consistently for telemetry and retry handling.",
+            "A cached thumbnail is reused only when its customMetadata.version equals the resolved board version.",
+            "No browser screenshot is captured when the board is no longer viewable, the cache already contains the current version, or no persisted snapshot exists.",
+            "Rendering uses the OG surface, light theme, and the default thumbnail dimensions.",
+            "A board that is not publicly viewable may still be rendered when it is otherwise resolvable because resolution uses render access."
+          ],
+          "edgeCases": [
+            "If board resolution fails because the board was deleted, unpublished, or lacks persisted content, the function performs the kind-specific cleanup, records a board_not_viewable miss, acknowledges the message, and returns.",
+            "If the cache contains the resolved board version, the pending marker is cleared, a cache hit is recorded, the message is acknowledged, and no render occurs.",
+            "If the THUMBNAILS bucket is not configured, processing fails and enters the retry-or-drop path.",
+            "If the board snapshot has no persisted content, the function retries or drops with failure reason board_empty without consuming a browser render slot.",
+            "If an exception occurs, it is reported to Sentry only when message.attempts reaches the maximum render attempts, then retryOrDrop determines the delivery outcome.",
+            "If the board moves after rendering, enqueueFollowUpIfBoardMoved may enqueue a follow-up render before the current message is acknowledged."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [
+              "Error when env.THUMBNAILS is not configured; the error is caught and routed through retryOrDrop.",
+              "Errors from board resolution, cache access, snapshot loading, screenshot capture, cache writes, cleanup, or follow-up enqueueing are caught and routed through retryOrDrop."
+            ],
+            "reverts": [],
+            "onInvalidInput": "No-longer-viewable boards are treated as terminal and acknowledged; transient or unexpected failures are retried or dropped by retryOrDrop.",
+            "returnsOnError": "Promise<void>; the function does not return an error value."
+          },
+          "stateMutations": [
+            "Writes the rendered PNG and board version to env.THUMBNAILS under the OG cache key.",
+            "Deletes the cached OG image for published boards that are no longer viewable.",
+            "Clears the OG pending marker after terminal cleanup, cache hits, or successful rendering.",
+            "May enqueue a follow-up render when the board version moves during processing.",
+            "Acknowledges the queue message on successful completion or terminal no-longer-viewable handling.",
+            "May record screenshot telemetry and report terminal-attempt errors."
+          ],
+          "eventsEmitted": [
+            "Screenshot telemetry with source queue and cache status hit or miss.",
+            "Screenshot telemetry with failureReason board_not_viewable or board_empty where applicable.",
+            "A Sentry thumbnail error report when the maximum render attempt is reached.",
+            "A follow-up OG render queue message when the board moves during processing."
+          ],
+          "complexity": null,
+          "calls": [
+            { "name": "getOgImageCacheKey", "source": "internal", "kind": "internal" },
+            { "name": "resolveThumbnailBoard", "source": "internal", "kind": "internal" },
+            { "name": "deleteOgImage", "source": "internal", "kind": "internal" },
+            { "name": "clearOgImagePendingMarker", "source": "internal", "kind": "internal" },
+            { "name": "writeScreenshotTelemetry", "source": "internal", "kind": "internal" },
+            { "name": "loadBoardSnapshot", "source": "internal", "kind": "internal" },
+            { "name": "pickOgImagePageId", "source": "internal", "kind": "internal" },
+            { "name": "captureThumbnailScreenshot", "source": "internal", "kind": "internal" },
+            { "name": "putThumbnailPng", "source": "internal", "kind": "internal" },
+            { "name": "enqueueFollowUpIfBoardMoved", "source": "internal", "kind": "internal" },
+            { "name": "retryOrDrop", "source": "internal", "kind": "internal" },
+            { "name": "reportThumbnailError", "source": "internal", "kind": "internal" },
+            { "name": "env.THUMBNAILS.head", "source": "external", "kind": "external" },
+            { "name": "message.ack", "source": "external", "kind": "external" }
+          ],
+          "symbolReferences": [
+            "Env",
+            "ExecutionContext",
+            "OgImageRenderMessage",
+            "OG_MAX_RENDER_ATTEMPTS",
+            "DEFAULT_THUMBNAIL_WIDTH",
+            "DEFAULT_THUMBNAIL_HEIGHT"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Reads a queue message containing OG render metadata; resolves and snapshots the board; captures a PNG using surface og, theme light, the selected pageId, and DEFAULT_THUMBNAIL_WIDTH x DEFAULT_THUMBNAIL_HEIGHT; stores the PNG keyed by the board reference with metadata version; emits queue telemetry; acknowledges or retries the queue delivery.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Processes an OG image render queue message by resolving the board, rendering and caching the current thumbnail when needed, and acknowledging terminal outcomes. Transient failures are retried or dropped according to the queue attempt policy.",
+          "specLiterals": [
+            {
+              "kind": "error-message",
+              "value": "THUMBNAILS bucket is not configured",
+              "role": "Error raised when the thumbnail storage binding is absent."
+            },
+            {
+              "kind": "enum-value",
+              "value": "render",
+              "role": "Access mode used to resolve and load boards for thumbnail rendering, including private boards."
+            },
+            { "kind": "enum-value", "value": "og", "role": "Screenshot surface used for the OG image render." },
+            { "kind": "enum-value", "value": "light", "role": "Theme used for the rendered thumbnail." },
+            {
+              "kind": "enum-value",
+              "value": "queue",
+              "role": "Telemetry source identifying queue-originated screenshot work."
+            },
+            {
+              "kind": "enum-value",
+              "value": "miss",
+              "role": "Cache status recorded for terminal misses and newly rendered thumbnails."
+            },
+            {
+              "kind": "enum-value",
+              "value": "hit",
+              "role": "Cache status recorded when the cache already contains the current board version."
+            },
+            {
+              "kind": "enum-value",
+              "value": "board_not_viewable",
+              "role": "Bounded telemetry failure reason for terminal board resolution failure."
+            },
+            {
+              "kind": "enum-value",
+              "value": "board_empty",
+              "role": "Bounded retry failure reason for a board with no persisted snapshot content."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The queue message is processed.",
+              "then": "The pending marker is cleared, queue telemetry records cacheStatus hit, no screenshot is captured, and message.ack() is called.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The queue message is processed.",
+              "then": "No browser screenshot is captured and retryOrDrop is invoked with failureReason board_empty, the board reference, the normalized followUp value, and the message reason.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "The queue message is processed.",
+              "then": "The cached OG image is deleted, queue telemetry records a miss with failureReason board_not_viewable, and message.ack() is called without retrying.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "731d0112bbb56dece30ca1cd625420e1981c68480538899f75bfe897dd840259"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__enqueueFollowUpIfBoardMoved#function:enqueueFollowUpIfBoardMoved",
+        "unitKind": "function",
+        "name": "enqueueFollowUpIfBoardMoved",
+        "qualifiedName": "enqueueFollowUpIfBoardMoved",
+        "parentUnitId": null,
+        "startLine": 365,
+        "endLine": 405,
+        "isBehavioral": true,
+        "source": "\n/**\n * A capture takes seconds, and the board can change during one. A *publish* landing in that window\n * asks for a render, finds the pending marker this job set, and is turned away — the ask is\n * *dropped*, not deferred, and nothing ever re-asks for a published board: its snapshot is frozen,\n * so the render we just wrote would be the last word, showing the previous publication. This check\n * is what closes that, and it is `published`-only because published boards are the only kind whose\n * dropped ask stays dropped.\n *\n * A shared file's dropped ask is deferred by construction, in two halves pinned in\n * ogImageQueue.test.ts. A *debounced* fire's ask is only turned away while this job's marker is\n * alive, which places its persist a full OG_RENDER_DEBOUNCE_MS before the marker's clear — while\n * the image whose write performs that clear read its snapshot at most THUMBNAIL_RENDER_TIMEOUT_MS\n * plus the post-capture tail before it, retries included. The debounce being the longer of the two\n * means the dropped ask's content is already in the image. A *max-wait* fire escapes that bound but\n * cannot be turned away at all: the fire that enqueued this job reset the debouncer's window, so a\n * clamped fire lands at or past the marker's TTL. Following up here as well bought nothing worth\n * its cost — follow-ups were roughly a fifth of shared-file\n * queue captures in production (measured 2026-08-11 via the `followup` telemetry blob): on a board\n * that settled, the follow-up merely relocated the render the debounced ask was about to do; on a\n * board still moving, it rendered a mid-edit state the next debounced render superseded.\n *\n * Both halves price the job ending in an image write, which a give-up never does — the asks its\n * marker turned away deferred into nothing. A known residue, not a regression; see \"the deferral\n * stops at that give-up\" in browser-run-thumbnails.md.\n *\n * Deliberately never chained. A published board republished without pause would otherwise find\n * itself stale on every follow-up and render continuously. One extra render per triggered render is\n * the ceiling.\n *\n * Best effort: the image is already written and the marker already cleared, so a failure here loses a\n * refresh, not the render. It must not turn a completed job into a retry.\n */\nasync function enqueueFollowUpIfBoardMoved(\n\tenv: Environment,\n\tmessage: Message<OgImageRenderQueueMessage>,\n\trendered: ResolvedThumbnailBoard,\n\treason: OgImageRenderReason,\n\tctx?: ExecutionContext\n) {\n\tif (rendered.kind !== 'published') return",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__enqueueFollowUpIfBoardMoved#function:enqueueFollowUpIfBoardMoved",
+          "fileId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__enqueueFollowUpIfBoardMoved",
+          "unitKind": "function",
+          "name": "enqueueFollowUpIfBoardMoved",
+          "qualifiedName": "enqueueFollowUpIfBoardMoved",
+          "parentUnitId": null,
+          "startLine": 365,
+          "endLine": 405,
+          "signature": "async function enqueueFollowUpIfBoardMoved(\n\tenv: Environment,\n\tmessage: Message<OgImageRenderQueueMessage>,\n\trendered: ResolvedThumbnailBoard,\n\treason: OgImageRenderReason,\n\tctx?: ExecutionContext\n)",
+          "parameters": [
+            { "name": "env", "type": "Environment", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "message",
+              "type": "Message<OgImageRenderQueueMessage>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "rendered",
+              "type": "ResolvedThumbnailBoard",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            },
+            {
+              "name": "reason",
+              "type": "OgImageRenderReason",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 3
+            },
+            {
+              "name": "ctx",
+              "type": "ExecutionContext",
+              "default": null,
+              "optional": true,
+              "variadic": false,
+              "order": 4
+            }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "The rendered board value is available and has a discriminating kind.",
+            "The function is invoked after the current render has completed."
+          ],
+          "postconditions": [
+            "If rendered.kind is not 'published', the function resolves without scheduling a follow-up or performing other work visible from this unit.",
+            "A follow-up is never recursively chained from this function."
+          ],
+          "invariants": [
+            "Only published renders are eligible for follow-up evaluation.",
+            "A follow-up is best effort and must not convert a completed render into a retry."
+          ],
+          "edgeCases": [
+            "When rendered.kind is not 'published', the function returns immediately without further processing.",
+            "When a published board has not moved, no additional render is required.",
+            "When a published board moved during capture, at most one follow-up render is scheduled."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": [],
+            "reverts": [],
+            "onInvalidInput": "Non-published rendered values are ignored; no invalid-input exception is specified.",
+            "returnsOnError": "No error result is specified; the async function resolves without propagating a follow-up failure."
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [
+            "Environment",
+            "Message<OgImageRenderQueueMessage>",
+            "ResolvedThumbnailBoard",
+            "OgImageRenderReason",
+            "ExecutionContext"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Conditionally evaluates whether a completed published-board render requires one follow-up render when the board moved during capture. Non-published renders are ignored.",
+          "specLiterals": [
+            {
+              "kind": "enum-value",
+              "value": "published",
+              "role": "Selects published-board renders as the only renders eligible for follow-up evaluation."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "Call enqueueFollowUpIfBoardMoved with otherwise valid arguments.",
+              "then": "The returned promise resolves without scheduling a follow-up render or performing additional observable work.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "d4a38b8fb591ad51210422d031e2c9df8a4311c26895db92ae7a8e5db3fdfccd"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__readCurrentPublishedVersion#function:readCurrentPublishedVersion",
+        "unitKind": "function",
+        "name": "readCurrentPublishedVersion",
+        "qualifiedName": "readCurrentPublishedVersion",
+        "parentUnitId": null,
+        "startLine": 412,
+        "endLine": 418,
+        "isBehavioral": true,
+        "source": "\t} catch (error) {\n\t\treportThumbnailError(error, {\n\t\t\tctx,\n\t\t\tenv,\n\t\t\tsurface: 'og_queue',\n\t\t\textras: { kind: rendered.kind, followUpCheck: true },\n\t\t})",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__readCurrentPublishedVersion#function:readCurrentPublishedVersion",
+          "fileId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__readCurrentPublishedVersion",
+          "unitKind": "function",
+          "name": "readCurrentPublishedVersion",
+          "qualifiedName": "readCurrentPublishedVersion",
+          "parentUnitId": null,
+          "startLine": 412,
+          "endLine": 418,
+          "signature": null,
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": [],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": [],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Reads the currently published version associated with the relevant OG-image publishing state. Its contract is to expose that current version to callers without adding container-level behavior.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "0d822d4fe0f6d5c0372dccb79945e8516794277a5b97d69ad757008b12770862"
+        }
+      },
+      {
+        "unitId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__retryOrDrop#function:retryOrDrop",
+        "unitKind": "function",
+        "name": "retryOrDrop",
+        "qualifiedName": "retryOrDrop",
+        "parentUnitId": null,
+        "startLine": 421,
+        "endLine": 478,
+        "isBehavioral": true,
+        "source": "\n/**\n * The published board's current `lastPublished`, for the \"did it move while we were capturing?\"\n * check above and nothing else. `null` means there is nothing to compare against, which is treated\n * as \"don't follow up\". A full resolve rather than something lighter, because a published version is\n * a Postgres column with no R2 shortcut — and publishing is not a hot path.\n */\nasync function readCurrentPublishedVersion(\n\tenv: Environment,\n\tboard: ResolvedThumbnailBoard\n): Promise<string | number | null> {\n\tconst resolved = await resolveThumbnailBoard(env, board.kind, board.slug, { access: 'render' })\n\treturn resolved.ok ? resolved.board.version : null\n}\n\nasync function retryOrDrop(\n\tenv: Environment,\n\tmessage: Message<OgImageRenderQueueMessage>,\n\t{\n\t\treason,\n\t\tfollowUp,\n\t\tfailureReason,\n\t\tboard,\n\t}: {\n\t\t/**\n\t\t * Passed in already resolved rather than read off the message here, so a delivery that fails is\n\t\t * attributed to the same trigger as one that succeeds. Reading `message.body.reason` directly\n\t\t * would bucket a legacy message with no reason as `none` on this path and `crawler` on the\n\t\t * others, splitting one job's deliveries across two values.\n\t\t */\n\t\treason: OgImageRenderReason\n\t\t/** Resolved by the caller for the same reason as `reason` above. */\n\t\tfollowUp: boolean\n\t\tfailureReason: string\n\t\tboard: ThumbnailBoardRef\n\t}\n) {\n\t// One datapoint per delivery, the opposite of the Sentry report above: three deliveries are three\n\t// failures on this ledger, one problem on Sentry's. The Browser Run spend of a delivery that\n\t// reached the capture is on the browser_run_session event, written inside the render itself.\n\twriteScreenshotTelemetry(env, {\n\t\tsource: 'queue',\n\t\treason,\n\t\tfollowUp,\n\t\tcacheStatus: 'miss',\n\t\tfailureReason,\n\t})\n\t// attempts counts this delivery, so attempts >= MAX means this was the final try.\n\tif (message.attempts < OG_MAX_RENDER_ATTEMPTS) {\n\t\t// Marker kept: a retry is still this job in flight, and the next delivery re-resolves anyway, so\n\t\t// an ask turned away meanwhile costs nothing — it would have rendered the same content.\n\t\tmessage.retry({ delaySeconds: OG_RETRY_DELAY_SECONDS * message.attempts })\n\t\treturn\n\t}\n\t// Given up, so nothing is in flight and the marker has nothing left to single-flight. Clearing it\n\t// rather than letting it lapse means the next ask is acted on immediately instead of being turned\n\t// away for the rest of the TTL — which matters most here, since this board has no image at all.\n\tawait clearOgImagePendingMarker(env, board)",
+        "detail": {
+          "unitId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__retryOrDrop#function:retryOrDrop",
+          "fileId": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts__retryOrDrop",
+          "unitKind": "function",
+          "name": "retryOrDrop",
+          "qualifiedName": "retryOrDrop",
+          "parentUnitId": null,
+          "startLine": 421,
+          "endLine": 478,
+          "signature": "async function retryOrDrop(\n\tenv: Environment,\n\tmessage: Message<OgImageRenderQueueMessage>,\n\t{\n\t\treason,\n\t\tfollowUp,\n\t\tfailureReason,\n\t\tboard,\n\t}: {\n\t\treason: OgImageRenderReason\n\t\tfollowUp: boolean\n\t\tfailureReason: string\n\t\tboard: ThumbnailBoardRef\n\t}\n)",
+          "parameters": [
+            { "name": "env", "type": "Environment", "default": null, "optional": false, "variadic": false, "order": 0 },
+            {
+              "name": "message",
+              "type": "Message<OgImageRenderQueueMessage>",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "{ reason, followUp, failureReason, board }",
+              "type": "{ reason: OgImageRenderReason; followUp: boolean; failureReason: string; board: ThumbnailBoardRef }",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            }
+          ],
+          "returnType": "Promise<void>",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": true,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "reason is a resolved OgImageRenderReason for the delivery.",
+            "followUp is the resolved follow-up state for the delivery.",
+            "failureReason identifies the failure being recorded.",
+            "board identifies the thumbnail board whose pending marker may need clearing.",
+            "message.attempts is available for comparison with OG_MAX_RENDER_ATTEMPTS."
+          ],
+          "postconditions": [
+            "Exactly one queue screenshot telemetry datapoint is written with source 'queue', the supplied reason, followUp, cacheStatus 'miss', and failureReason.",
+            "If message.attempts is less than OG_MAX_RENDER_ATTEMPTS, message.retry is called with delaySeconds equal to OG_RETRY_DELAY_SECONDS multiplied by message.attempts.",
+            "If message.attempts is greater than or equal to OG_MAX_RENDER_ATTEMPTS, the OG image pending marker for board is cleared and no retry is scheduled."
+          ],
+          "invariants": [
+            "The supplied reason and followUp values are used for telemetry without being re-read from the message body.",
+            "A delivery at or above the maximum attempt count is dropped rather than retried."
+          ],
+          "edgeCases": [
+            "When message.attempts is below OG_MAX_RENDER_ATTEMPTS, the pending marker is retained and the message is retried with the calculated delay.",
+            "When message.attempts equals OG_MAX_RENDER_ATTEMPTS, the delivery is treated as the final try and the pending marker is cleared.",
+            "When message.attempts exceeds OG_MAX_RENDER_ATTEMPTS, the delivery is also dropped and the pending marker is cleared."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [
+            "Schedules a retry on message through message.retry when attempts remain.",
+            "Clears the OG image pending marker for board after the final attempt."
+          ],
+          "eventsEmitted": ["Writes one screenshot telemetry datapoint for the failed queue delivery."],
+          "complexity": null,
+          "calls": [
+            {
+              "name": "writeScreenshotTelemetry",
+              "source": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts",
+              "kind": "internal"
+            },
+            { "name": "message.retry", "source": "Message<OgImageRenderQueueMessage>", "kind": "external" },
+            {
+              "name": "clearOgImagePendingMarker",
+              "source": "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.ts",
+              "kind": "internal"
+            }
+          ],
+          "symbolReferences": [
+            "Environment",
+            "Message<OgImageRenderQueueMessage>",
+            "OgImageRenderReason",
+            "ThumbnailBoardRef",
+            "OG_MAX_RENDER_ATTEMPTS",
+            "OG_RETRY_DELAY_SECONDS"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Records a failed OG image delivery and retries the message while attempts remain. Once the maximum attempt count is reached, it clears the board's pending marker instead of scheduling another delivery.",
+          "specLiterals": [
+            { "kind": "enum-value", "value": "queue", "role": "Identifies the telemetry source as the queue." },
+            {
+              "kind": "enum-value",
+              "value": "miss",
+              "role": "Identifies the failed delivery's cache status in telemetry."
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "retryOrDrop is called.",
+              "then": "One queue telemetry datapoint is written with the supplied failure context, and message.retry is called with delaySeconds equal to OG_RETRY_DELAY_SECONDS multiplied by message.attempts; the pending marker is not cleared.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "retryOrDrop is called.",
+              "then": "One queue telemetry datapoint is written, message.retry is not called, and clearOgImagePendingMarker is called for the supplied board.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "retryOrDrop is called.",
+              "then": "The delivery is dropped after telemetry is written and the pending marker for the supplied board is cleared.",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "f905841e5e3986957e0847f384662da8ca0c541286e74d1ad99720a8ab42c424"
+        }
+      }
+    ]
+  },
+  "out": [
+    "apps/dotcom/sync-worker/src/routes/tla/thumbnailRender.ts",
+    "apps/dotcom/sync-worker/src/types.ts",
+    "apps/dotcom/sync-worker/src/routes/tla/thumbnailShared.ts",
+    "apps/dotcom/sync-worker/src/utils/renderTokens.ts",
+    "apps/dotcom/sync-worker/src/routes/tla/boardTools.ts",
+    "apps/dotcom/sync-worker/src/config.ts"
+  ],
+  "in": [
+    "apps/dotcom/sync-worker/src/utils/publishSnapshots.test.ts",
+    "apps/dotcom/sync-worker/src/utils/publishSnapshots.ts",
+    "apps/dotcom/sync-worker/src/routes/tla/getOgImage.ts",
+    "apps/dotcom/sync-worker/src/routes/tla/getOgImage.test.ts",
+    "apps/dotcom/sync-worker/src/routes/tla/ogImageQueue.test.ts",
+    "apps/dotcom/sync-worker/src/worker.ts"
+  ],
+  "externals": ["@tldraw/dotcom-shared", "@tldraw/sync-core"],
+  "impact": {
+    "seeds": 14,
+    "callers": 12,
+    "impactedFiles": [
+      "apps/dotcom/sync-worker/src/utils/publishSnapshots.ts",
+      "apps/dotcom/sync-worker/src/routes/tla/getOgImage.ts"
+    ]
+  }
+}

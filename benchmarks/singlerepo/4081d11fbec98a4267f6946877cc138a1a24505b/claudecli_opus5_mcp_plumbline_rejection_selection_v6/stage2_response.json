@@ -1,0 +1,71 @@
+{
+  "duration_api_ms": 68866,
+  "stop_reason": "end_turn",
+  "session_id": "196d166f-43db-4019-9ece-c9fb5462aa6f",
+  "total_cost_usd": 0.9914244999999998,
+  "usage": {
+    "input_tokens": 18,
+    "cache_creation_input_tokens": 64918,
+    "cache_read_input_tokens": 439059,
+    "output_tokens": 4905,
+    "output_tokens_details": { "thinking_tokens": 1057 },
+    "server_tool_use": { "web_search_requests": 0, "web_fetch_requests": 0 },
+    "service_tier": "standard",
+    "cache_creation": { "ephemeral_1h_input_tokens": 64918, "ephemeral_5m_input_tokens": 0 },
+    "inference_geo": "not_available",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 1709,
+        "cache_read_input_tokens": 64023,
+        "cache_creation_input_tokens": 895,
+        "cache_creation": { "ephemeral_5m_input_tokens": 0, "ephemeral_1h_input_tokens": 895 },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-opus-5": {
+      "inputTokens": 18,
+      "outputTokens": 4905,
+      "cacheReadInputTokens": 439059,
+      "cacheCreationInputTokens": 64918,
+      "webSearchRequests": 0,
+      "costUSD": 0.9914244999999998,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "canonicalModel": "claude-opus-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": { "background": 0, "foreground": 0, "unset": 0 },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": { "parent": 0, "user": 0, "system": 0 },
+    "refused": { "depth_limit": 0, "concurrency_limit": 0, "budget": 0 },
+    "by_type": {}
+  },
+  "is_error": false,
+  "num_turns": 9,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "STAGE 2 report — case 5d65a0f09199 (cal.com @ 4081d11f), arm `claudecli_opus5_mcp_plumbline_rejection_selection_v6`\n\nGold file: `gold.json` (no `golden.json` in this case dir). I read `ranked.json` in full before opening it. The answer is a **flat array** — single-repo shape, exactly the shape gold.json uses — 45 paths, no flattening needed.\n\nMetrics (from `score_arm.py`, unedited):\n\n| metric | value |\n|---|---|\n| hits / gold_total | 14 / 31 |\n| recall@10 | 0.226 |\n| recall@20 | 0.323 |\n| recall@25 | 0.419 |\n| recall@50 / @75 (full list, degenerate — list is 45 long) | 0.452 |\n| precision@5 | 0.600 |\n| MRR | 0.333 |\n\n`score_arm.py` does not emit precision@10, precision@20, F1@20 or F1_full_list; per the rules I did not substitute my own arithmetic for them. The scorer flags k=50 and k=75 as degenerate ks (the list caps at 45 against a cap of 75, so recall@full = recall@50 = 0.452).\n\n**Found (14):** RegularBookingService.ts, handleConfirmation.ts, handlePaymentSuccess.ts, auth/lib/verifyEmail.ts, handleBookingRequested.ts, handleCancelBooking.ts, handleMarkNoShow.ts, ManagedEventManualReassignmentService.ts, EmailWorkflowService.ts, getEventTypesFromDB.ts, getBookingToDelete.ts, BookingRepository.ts, payment/getBooking.ts, emails/templates/attendee-verify-email.ts.\n\n**missed_gold (17):**\napps/web/modules/bookings/components/BookerWebWrapper.tsx; apps/web/modules/bookings/hooks/useVerifyEmail.ts; packages/emails/lib/types/email-types.ts; packages/emails/src/templates/BaseScheduledEmail.tsx; packages/emails/src/templates/VerifyEmailByCode.tsx; packages/features/CalendarEventBuilder.ts; packages/features/bookings/lib/payment/handleNoShowFee.ts; packages/features/di/tokens.ts; packages/features/eventtypes/repositories/eventTypeRepository.ts; packages/platform/atoms/booker/BookerPlatformWrapper.tsx; packages/platform/atoms/hooks/useVerifyEmail.ts; packages/trpc/server/routers/loggedInViewer/connectAndJoin.handler.ts; packages/trpc/server/routers/viewer/auth/sendVerifyEmailCode.handler.ts; packages/trpc/server/routers/viewer/auth/sendVerifyEmailCode.schema.ts; packages/trpc/server/routers/viewer/bookings/addGuests.handler.ts; packages/trpc/server/routers/viewer/bookings/confirm.handler.ts; packages/types/Calendar.d.ts.\n\nSurface verdict: **not comparable.** The surface itself is clean — commands.log is present (30 calls), every call is plumbline MCP plus 3 ToolSearch schema loads (exempt), no filesystem or shell tool, and the retriever's own search tool was exercised heavily (`stakeout` 8, `shakedown` 4, `the_receipts` 4, `collateral_damage` 5). The single disqualifying reason is caching: `cache_read=1936727` and `cache_creation=147708`, a warm run, so cost is not comparable to cold runs. Counts were taken from the log, and they happen to agree with the run's own `tools_called`.\n\nWhat the misses share: they sit on the two ends of the chain the arm never walked — the *entry/UI* end and the *type/contract* end. Everything found is a mid-layer server-side handler or repository that literally mentions the branding flag; every miss is a file that either (a) consumes the behaviour through a React/hook surface (BookerWebWrapper, BookerPlatformWrapper, both `useVerifyEmail` copies) or a tRPC router handler/schema (sendVerifyEmailCode ×2, addGuests, confirm, connectAndJoin), or (b) declares the shape rather than the logic (`Calendar.d.ts`, `email-types.ts`, `di/tokens.ts`, `CalendarEventBuilder.ts`, the two `packages/emails/src/templates/*.tsx` React templates, `eventTypeRepository.ts`, `handleNoShowFee.ts`). The list instead filled its tail with the workflow-reminder family and a run of `getServerSideProps` page files — the same register it did reach, extended sideways rather than up into the callers or down into the type declarations. The platform-atoms mirror of a web hook (`useVerifyEmail` in both trees) was missed in both copies, so the duplication was never seen at all.",
+  "ttft_ms": 1972,
+  "type": "result",
+  "duration_ms": 69861,
+  "uuid": "7806b4f6-da19-46f3-9819-39f4677f8dad",
+  "ttft_stream_ms": 1460,
+  "time_to_request_ms": 23,
+  "queued_turn_count": 0
+}

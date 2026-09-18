@@ -1,0 +1,2084 @@
+{
+  "schema": 1,
+  "kind": "file",
+  "repoName": "react",
+  "commitHash": "3a717e42438afac81020cdec297dadb5613a4304",
+  "generatedAt": "2026-08-01T22:13:01.193Z",
+  "file": {
+    "relativePath": "packages/react-dom-bindings/src/events/ReactDOMEventListener.js",
+    "language": "javascript",
+    "sizeBytes": 12400,
+    "tokenCount": 2799,
+    "model": "tencent/hy3",
+    "analysedAt": "2026-08-01T16:58:43.202Z",
+    "module": {
+      "purpose": "Implements React DOM event listener wrappers and dispatch logic, mapping DOM events to priorities and handling hydration blocking and continuous event replay.",
+      "summary": "This module is the core of React DOM's event system bindings. It creates listener wrappers that bind dispatch functions to a container and event flags, selecting discrete, continuous, or default priority. The main dispatch function checks whether an event is blocked by pending hydration (Suspense, Activity, or dehydrated HostRoot), queues continuous events for replay, and otherwise dispatches through the plugin event system. A helper maps DOM event names to React event priorities using scheduler priority when inside message events.",
+      "businessContext": "Part of React's internal DOM renderer. Correct event dispatch and hydration replay are critical; failure breaks interactivity or causes hydration mismatches.",
+      "classes": [],
+      "functions": [
+        "setEnabled (~L74-76): Toggle whether event dispatching is enabled.",
+        "isEnabled (~L78-80): Return current enabled state of event system.",
+        "createEventListenerWrapper (~L82-93): Bind dispatchEvent to container and flags.",
+        "createEventListenerWrapperWithPriority (~L95-120): Create listener wrapper based on event priority.",
+        "dispatchDiscreteEvent (~L122-138): Dispatch discrete event with priority set.",
+        "dispatchContinuousEvent (~L140-156): Dispatch continuous event with priority set.",
+        "dispatchEvent (~L158-235): Main event dispatch with blocking/hydration logic.",
+        "findInstanceBlockingEvent (~L237-242): Find instance blocking given native event.",
+        "findInstanceBlockingTarget (~L248-297): Determine if target node blocks event due to hydration.",
+        "getEventPriority (~L299-343): Map DOM event name to React event priority."
+      ],
+      "keywords": [
+        "react dom events",
+        "event priority",
+        "hydration replay",
+        "discrete event",
+        "continuous event",
+        "suspense blocking",
+        "activity blocking",
+        "event listener wrapper",
+        "plugin event system",
+        "capture phase"
+      ],
+      "ontologyConcepts": [
+        "event dispatch",
+        "priority scheduling",
+        "hydration blocking",
+        "continuous event queue",
+        "fiber tree reflection"
+      ],
+      "businessEntities": ["Event", "Container", "SuspenseInstance", "ActivityInstance", "Fiber", "FiberRoot"],
+      "systemCapabilities": [
+        "create priority-aware event listeners",
+        "dispatch dom events to react",
+        "block events during hydration",
+        "queue continuous events for replay",
+        "map dom events to priorities"
+      ],
+      "configDependencies": [],
+      "importsInternal": [
+        {
+          "spec": "../events/PluginModuleType",
+          "symbols": ["AnyNativeEvent"],
+          "anchor": { "startLine": 10, "endLine": 10 },
+          "resolvedRelativePath": "packages/react-dom-bindings/src/events/PluginModuleType.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/events/PluginModuleType.js",
+          "resolvedHint": "packages/react-dom-bindings/src/events/PluginModuleType.js"
+        },
+        {
+          "spec": "../client/ReactFiberConfigDOM",
+          "symbols": ["Container", "ActivityInstance", "SuspenseInstance"],
+          "anchor": { "startLine": 12, "endLine": 16 },
+          "resolvedRelativePath": "packages/react-dom-bindings/src/client/ReactFiberConfigDOM.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/client/ReactFiberConfigDOM.js",
+          "resolvedHint": "packages/react-dom-bindings/src/client/ReactFiberConfigDOM.js"
+        },
+        {
+          "spec": "../events/DOMEventNames",
+          "symbols": ["DOMEventName"],
+          "anchor": { "startLine": 17, "endLine": 17 },
+          "resolvedRelativePath": "packages/react-dom-bindings/src/events/DOMEventNames.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/events/DOMEventNames.js",
+          "resolvedHint": "packages/react-dom-bindings/src/events/DOMEventNames.js"
+        },
+        {
+          "spec": "./ReactDOMEventReplaying",
+          "symbols": ["isDiscreteEventThatRequiresHydration", "clearIfContinuousEvent", "queueIfContinuousEvent"],
+          "anchor": { "startLine": 19, "endLine": 23 },
+          "resolvedRelativePath": "packages/react-dom-bindings/src/events/ReactDOMEventReplaying.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/events/ReactDOMEventReplaying.js",
+          "resolvedHint": "packages/react-dom-bindings/src/events/ReactDOMEventReplaying.js"
+        },
+        {
+          "spec": "./EventSystemFlags",
+          "symbols": ["EventSystemFlags", "IS_CAPTURE_PHASE"],
+          "anchor": { "startLine": 36, "endLine": 36 },
+          "resolvedRelativePath": "packages/react-dom-bindings/src/events/EventSystemFlags.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/events/EventSystemFlags.js",
+          "resolvedHint": "packages/react-dom-bindings/src/events/EventSystemFlags.js"
+        },
+        {
+          "spec": "./getEventTarget",
+          "symbols": ["getEventTarget"],
+          "anchor": { "startLine": 38, "endLine": 38 },
+          "resolvedRelativePath": "packages/react-dom-bindings/src/events/getEventTarget.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/events/getEventTarget.js",
+          "resolvedHint": "packages/react-dom-bindings/src/events/getEventTarget.js"
+        },
+        {
+          "spec": "../client/ReactDOMComponentTree",
+          "symbols": ["getInstanceFromNode", "getClosestInstanceFromNode"],
+          "anchor": { "startLine": 39, "endLine": 42 },
+          "resolvedRelativePath": "packages/react-dom-bindings/src/client/ReactDOMComponentTree.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/client/ReactDOMComponentTree.js",
+          "resolvedHint": "packages/react-dom-bindings/src/client/ReactDOMComponentTree.js"
+        },
+        {
+          "spec": "./DOMPluginEventSystem",
+          "symbols": ["dispatchEventForPluginEventSystem"],
+          "anchor": { "startLine": 43, "endLine": 43 },
+          "resolvedRelativePath": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js",
+          "resolvedHint": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js"
+        },
+        {
+          "spec": "../client/ReactDOMUpdatePriority",
+          "symbols": ["getCurrentUpdatePriority", "setCurrentUpdatePriority"],
+          "anchor": { "startLine": 44, "endLine": 47 },
+          "resolvedRelativePath": "packages/react-dom-bindings/src/client/ReactDOMUpdatePriority.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/client/ReactDOMUpdatePriority.js",
+          "resolvedHint": "packages/react-dom-bindings/src/client/ReactDOMUpdatePriority.js"
+        }
+      ],
+      "importsExternal": [
+        {
+          "spec": "react-reconciler/src/ReactEventPriorities",
+          "symbols": ["EventPriority"],
+          "package": "react-reconciler",
+          "subpath": "src/ReactEventPriorities",
+          "isBuiltin": false,
+          "anchor": { "startLine": 9, "endLine": 9 }
+        },
+        {
+          "spec": "react-reconciler/src/ReactInternalTypes",
+          "symbols": ["Fiber", "FiberRoot"],
+          "package": "react-reconciler",
+          "subpath": "src/ReactInternalTypes",
+          "isBuiltin": false,
+          "anchor": { "startLine": 11, "endLine": 11 }
+        },
+        {
+          "spec": "react-reconciler/src/ReactFiberReconciler",
+          "symbols": ["attemptSynchronousHydration"],
+          "package": "react-reconciler",
+          "subpath": "src/ReactFiberReconciler",
+          "isBuiltin": false,
+          "anchor": { "startLine": 24, "endLine": 24 }
+        },
+        {
+          "spec": "react-reconciler/src/ReactFiberTreeReflection",
+          "symbols": [
+            "getNearestMountedFiber",
+            "getContainerFromFiber",
+            "getActivityInstanceFromFiber",
+            "getSuspenseInstanceFromFiber"
+          ],
+          "package": "react-reconciler",
+          "subpath": "src/ReactFiberTreeReflection",
+          "isBuiltin": false,
+          "anchor": { "startLine": 25, "endLine": 30 }
+        },
+        {
+          "spec": "react-reconciler/src/ReactWorkTags",
+          "symbols": ["HostRoot", "ActivityComponent", "SuspenseComponent"],
+          "package": "react-reconciler",
+          "subpath": "src/ReactWorkTags",
+          "isBuiltin": false,
+          "anchor": { "startLine": 31, "endLine": 35 }
+        },
+        {
+          "spec": "react-reconciler/src/Scheduler",
+          "symbols": [
+            "getCurrentPriorityLevel",
+            "IdlePriority",
+            "ImmediatePriority",
+            "LowPriority",
+            "NormalPriority",
+            "UserBlockingPriority"
+          ],
+          "package": "react-reconciler",
+          "subpath": "src/Scheduler",
+          "isBuiltin": false,
+          "anchor": { "startLine": 48, "endLine": 55 }
+        },
+        {
+          "spec": "react-reconciler/src/ReactEventPriorities",
+          "symbols": ["DiscreteEventPriority", "ContinuousEventPriority", "DefaultEventPriority", "IdleEventPriority"],
+          "package": "react-reconciler",
+          "subpath": "src/ReactEventPriorities",
+          "isBuiltin": false,
+          "anchor": { "startLine": 56, "endLine": 61 }
+        },
+        {
+          "spec": "shared/ReactSharedInternals",
+          "symbols": ["ReactSharedInternals"],
+          "package": "shared",
+          "subpath": "ReactSharedInternals",
+          "isBuiltin": false,
+          "anchor": { "startLine": 62, "endLine": 62 }
+        },
+        {
+          "spec": "react-reconciler/src/ReactFiberShellHydration",
+          "symbols": ["isRootDehydrated"],
+          "package": "react-reconciler",
+          "subpath": "src/ReactFiberShellHydration",
+          "isBuiltin": false,
+          "anchor": { "startLine": 63, "endLine": 63 }
+        }
+      ],
+      "sideEffects": {
+        "io": [],
+        "network": [],
+        "env": [],
+        "fs": [],
+        "process": [],
+        "mutationOfArg": [
+          "Mutates module-level _enabled via setEnabled",
+          "Mutates module-level return_targetInst in findInstanceBlockingTarget and findInstanceBlockingEvent",
+          "Calls nativeEvent.stopPropagation() in dispatchEvent when blocked or queued",
+          "Sets ReactSharedInternals.T to null in dispatchDiscrete/ContinuousEvent and restores in finally",
+          "Calls setCurrentUpdatePriority to change global update priority temporarily"
+        ]
+      },
+      "integrationSurface": [],
+      "contractsProvided": [
+        {
+          "name": "setEnabled",
+          "shape": "setEnabled(enabled: ?boolean): void",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        { "name": "isEnabled", "shape": "isEnabled(): boolean", "resolvedRelativePath": null, "resolvedFileId": null },
+        {
+          "name": "createEventListenerWrapper",
+          "shape": "createEventListenerWrapper(targetContainer: EventTarget, domEventName: DOMEventName, eventSystemFlags: EventSystemFlags): Function",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "createEventListenerWrapperWithPriority",
+          "shape": "createEventListenerWrapperWithPriority(targetContainer: EventTarget, domEventName: DOMEventName, eventSystemFlags: EventSystemFlags): Function",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "dispatchEvent",
+          "shape": "dispatchEvent(domEventName: DOMEventName, eventSystemFlags: EventSystemFlags, targetContainer: EventTarget, nativeEvent: AnyNativeEvent): void",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "findInstanceBlockingEvent",
+          "shape": "findInstanceBlockingEvent(nativeEvent: AnyNativeEvent): null | Container | SuspenseInstance | ActivityInstance",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "return_targetInst",
+          "shape": "return_targetInst: null | Fiber",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "findInstanceBlockingTarget",
+          "shape": "findInstanceBlockingTarget(targetNode: Node): null | Container | SuspenseInstance | ActivityInstance",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "getEventPriority",
+          "shape": "getEventPriority(domEventName: DOMEventName): EventPriority",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "contractsConsumed": [
+        {
+          "name": "dispatchEventForPluginEventSystem",
+          "shape": "dispatchEventForPluginEventSystem(domEventName: DOMEventName, eventSystemFlags: EventSystemFlags, nativeEvent: AnyNativeEvent, targetInst: null | Fiber, targetContainer: EventTarget): void",
+          "resolvedRelativePath": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js"
+        },
+        {
+          "name": "queueIfContinuousEvent",
+          "shape": "queueIfContinuousEvent(blockedOn: Container | SuspenseInstance | ActivityInstance, domEventName: DOMEventName, eventSystemFlags: EventSystemFlags, targetContainer: EventTarget, nativeEvent: AnyNativeEvent): boolean",
+          "resolvedRelativePath": "packages/react-dom-bindings/src/events/ReactDOMEventReplaying.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/events/ReactDOMEventReplaying.js"
+        },
+        {
+          "name": "clearIfContinuousEvent",
+          "shape": "clearIfContinuousEvent(domEventName: DOMEventName, nativeEvent: AnyNativeEvent): void",
+          "resolvedRelativePath": "packages/react-dom-bindings/src/events/ReactDOMEventReplaying.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/events/ReactDOMEventReplaying.js"
+        },
+        {
+          "name": "isDiscreteEventThatRequiresHydration",
+          "shape": "isDiscreteEventThatRequiresHydration(domEventName: DOMEventName): boolean",
+          "resolvedRelativePath": "packages/react-dom-bindings/src/events/ReactDOMEventReplaying.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/events/ReactDOMEventReplaying.js"
+        },
+        {
+          "name": "attemptSynchronousHydration",
+          "shape": "attemptSynchronousHydration(fiber: Fiber): void",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "getNearestMountedFiber",
+          "shape": "getNearestMountedFiber(fiber: Fiber): Fiber | null",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        },
+        {
+          "name": "getClosestInstanceFromNode",
+          "shape": "getClosestInstanceFromNode(node: Node): Fiber | null",
+          "resolvedRelativePath": "packages/react-dom-bindings/src/client/ReactDOMComponentTree.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/client/ReactDOMComponentTree.js"
+        },
+        {
+          "name": "getInstanceFromNode",
+          "shape": "getInstanceFromNode(node: Node): Fiber | null",
+          "resolvedRelativePath": "packages/react-dom-bindings/src/client/ReactDOMComponentTree.js",
+          "resolvedFileId": "packages/react-dom-bindings/src/client/ReactDOMComponentTree.js"
+        },
+        {
+          "name": "isRootDehydrated",
+          "shape": "isRootDehydrated(root: FiberRoot): boolean",
+          "resolvedRelativePath": null,
+          "resolvedFileId": null
+        }
+      ],
+      "sectionMap": [
+        {
+          "name": "enabled_guard",
+          "intent": "Bail out if event system disabled",
+          "structureKind": "branch",
+          "predicate": "!_enabled",
+          "branchOutcomes": ["return early"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 164, "endLine": 166 }
+        },
+        {
+          "name": "blocking_check",
+          "intent": "Dispatch directly if not blocked",
+          "structureKind": "branch",
+          "predicate": "blockedOn === null",
+          "branchOutcomes": ["dispatch and clear", "continue to blocking logic"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 168, "endLine": 179 }
+        },
+        {
+          "name": "queue_continuous",
+          "intent": "Queue continuous event and stop propagation if blocked",
+          "structureKind": "branch",
+          "predicate": "queueIfContinuousEvent(\n      blockedOn,\n      domEventName,\n      eventSystemFlags,\n      targetContainer,\n      nativeEvent,\n    )",
+          "branchOutcomes": ["stopPropagation and return", "clear and continue"],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 181, "endLine": 195 }
+        },
+        {
+          "name": "capture_hydration_loop",
+          "intent": "Synchronously hydrate blocked instances during capture phase",
+          "structureKind": "loop",
+          "predicate": "blockedOn !== null",
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": "nextBlockedOn === blockedOn",
+          "anchor": { "startLine": 197, "endLine": 224 }
+        },
+        {
+          "name": "priority_switch",
+          "intent": "Map dom event name to react event priority",
+          "structureKind": "branch",
+          "predicate": null,
+          "branchOutcomes": [],
+          "bounds": null,
+          "terminationCondition": null,
+          "anchor": { "startLine": 299, "endLine": 343 }
+        }
+      ],
+      "representationFamily": "function-bag",
+      "representationType": "",
+      "publicSignatures": [
+        {
+          "kind": "function",
+          "name": "setEnabled",
+          "signature": "export function setEnabled(enabled: ?boolean): void",
+          "generics": null,
+          "decorators": [],
+          "returnType": "void",
+          "exported": true,
+          "anchor": { "startLine": 74, "endLine": 76 }
+        },
+        {
+          "kind": "function",
+          "name": "isEnabled",
+          "signature": "export function isEnabled(): boolean",
+          "generics": null,
+          "decorators": [],
+          "returnType": "boolean",
+          "exported": true,
+          "anchor": { "startLine": 78, "endLine": 80 }
+        },
+        {
+          "kind": "function",
+          "name": "createEventListenerWrapper",
+          "signature": "export function createEventListenerWrapper(\n  targetContainer: EventTarget,\n  domEventName: DOMEventName,\n  eventSystemFlags: EventSystemFlags,\n): Function",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Function",
+          "exported": true,
+          "anchor": { "startLine": 82, "endLine": 93 }
+        },
+        {
+          "kind": "function",
+          "name": "createEventListenerWrapperWithPriority",
+          "signature": "export function createEventListenerWrapperWithPriority(\n  targetContainer: EventTarget,\n  domEventName: DOMEventName,\n  eventSystemFlags: EventSystemFlags,\n): Function",
+          "generics": null,
+          "decorators": [],
+          "returnType": "Function",
+          "exported": true,
+          "anchor": { "startLine": 95, "endLine": 120 }
+        },
+        {
+          "kind": "function",
+          "name": "dispatchDiscreteEvent",
+          "signature": "function dispatchDiscreteEvent(\n  domEventName: DOMEventName,\n  eventSystemFlags: EventSystemFlags,\n  container: EventTarget,\n  nativeEvent: AnyNativeEvent,\n)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 122, "endLine": 138 }
+        },
+        {
+          "kind": "function",
+          "name": "dispatchContinuousEvent",
+          "signature": "function dispatchContinuousEvent(\n  domEventName: DOMEventName,\n  eventSystemFlags: EventSystemFlags,\n  container: EventTarget,\n  nativeEvent: AnyNativeEvent,\n)",
+          "generics": null,
+          "decorators": [],
+          "returnType": null,
+          "exported": false,
+          "anchor": { "startLine": 140, "endLine": 156 }
+        },
+        {
+          "kind": "function",
+          "name": "dispatchEvent",
+          "signature": "export function dispatchEvent(\n  domEventName: DOMEventName,\n  eventSystemFlags: EventSystemFlags,\n  targetContainer: EventTarget,\n  nativeEvent: AnyNativeEvent,\n): void",
+          "generics": null,
+          "decorators": [],
+          "returnType": "void",
+          "exported": true,
+          "anchor": { "startLine": 158, "endLine": 235 }
+        },
+        {
+          "kind": "function",
+          "name": "findInstanceBlockingEvent",
+          "signature": "export function findInstanceBlockingEvent(\n  nativeEvent: AnyNativeEvent,\n): null | Container | SuspenseInstance | ActivityInstance",
+          "generics": null,
+          "decorators": [],
+          "returnType": "null | Container | SuspenseInstance | ActivityInstance",
+          "exported": true,
+          "anchor": { "startLine": 237, "endLine": 242 }
+        },
+        {
+          "kind": "function",
+          "name": "findInstanceBlockingTarget",
+          "signature": "export function findInstanceBlockingTarget(\n  targetNode: Node,\n): null | Container | SuspenseInstance | ActivityInstance",
+          "generics": null,
+          "decorators": [],
+          "returnType": "null | Container | SuspenseInstance | ActivityInstance",
+          "exported": true,
+          "anchor": { "startLine": 248, "endLine": 297 }
+        },
+        {
+          "kind": "function",
+          "name": "getEventPriority",
+          "signature": "export function getEventPriority(domEventName: DOMEventName): EventPriority",
+          "generics": null,
+          "decorators": [],
+          "returnType": "EventPriority",
+          "exported": true,
+          "anchor": { "startLine": 299, "endLine": 343 }
+        },
+        {
+          "kind": "variable",
+          "name": "return_targetInst",
+          "signature": "export let return_targetInst: null | Fiber = null;",
+          "generics": null,
+          "decorators": [],
+          "returnType": "null | Fiber",
+          "exported": true,
+          "anchor": { "startLine": 244, "endLine": 244 }
+        }
+      ],
+      "typeShapes": [],
+      "localCallGraph": [],
+      "dataFlowGraph": [],
+      "verbatimLiterals": [],
+      "canonicalCentroid": { "paragraph": "", "tokenEstimate": 0 },
+      "edgeCases": [
+        {
+          "inputShape": "Unmounted fiber (nearestMounted === null)",
+          "handled": true,
+          "behavior": "Sets targetInst = null and dispatches without target",
+          "anchor": { "startLine": 259, "endLine": 261 }
+        },
+        {
+          "inputShape": "Event on not-yet-mounted component (nearestMounted !== targetInst)",
+          "handled": true,
+          "behavior": "Ignores event by setting targetInst = null",
+          "anchor": { "startLine": 289, "endLine": 291 }
+        },
+        {
+          "inputShape": "Dehydrated root with blocked event",
+          "handled": true,
+          "behavior": "Returns container to block event until hydration",
+          "anchor": { "startLine": 283, "endLine": 288 }
+        }
+      ],
+      "boundaryConditions": [
+        {
+          "operator": "==",
+          "left": "blockedOn",
+          "right": "null",
+          "inclusive": true,
+          "intent": "Check if event is not blocked by hydration",
+          "anchor": { "startLine": 169, "endLine": 169 }
+        },
+        {
+          "operator": "==",
+          "left": "nextBlockedOn",
+          "right": "null",
+          "inclusive": true,
+          "intent": "Check if hydration unblocked the event",
+          "anchor": { "startLine": 207, "endLine": 207 }
+        },
+        {
+          "operator": "==",
+          "left": "nextBlockedOn",
+          "right": "blockedOn",
+          "inclusive": true,
+          "intent": "Break loop if no progress in unblocking",
+          "anchor": { "startLine": 215, "endLine": 215 }
+        },
+        {
+          "operator": "==",
+          "left": "blockedOn",
+          "right": "null",
+          "inclusive": true,
+          "intent": "Stop propagation if still blocked after loop",
+          "anchor": { "startLine": 220, "endLine": 220 }
+        },
+        {
+          "operator": "==",
+          "left": "targetInst",
+          "right": "null",
+          "inclusive": true,
+          "intent": "Proceed only if a closest instance exists",
+          "anchor": { "startLine": 257, "endLine": 257 }
+        },
+        {
+          "operator": "==",
+          "left": "nearestMounted",
+          "right": "null",
+          "inclusive": true,
+          "intent": "Detect unmounted tree",
+          "anchor": { "startLine": 259, "endLine": 259 }
+        },
+        {
+          "operator": "==",
+          "left": "fiber",
+          "right": "null",
+          "inclusive": true,
+          "intent": "Attempt hydration only if fiber found",
+          "anchor": { "startLine": 203, "endLine": 203 }
+        },
+        {
+          "operator": "==",
+          "left": "instance",
+          "right": "null",
+          "inclusive": true,
+          "intent": "Return blocking instance for Suspense/Activity",
+          "anchor": { "startLine": 266, "endLine": 266 }
+        },
+        {
+          "operator": "==",
+          "left": "tag",
+          "right": "SuspenseComponent",
+          "inclusive": true,
+          "intent": "Handle Suspense blocking",
+          "anchor": { "startLine": 264, "endLine": 264 }
+        },
+        {
+          "operator": "==",
+          "left": "tag",
+          "right": "ActivityComponent",
+          "inclusive": true,
+          "intent": "Handle Activity blocking",
+          "anchor": { "startLine": 277, "endLine": 277 }
+        },
+        {
+          "operator": "==",
+          "left": "tag",
+          "right": "HostRoot",
+          "inclusive": true,
+          "intent": "Handle dehydrated HostRoot",
+          "anchor": { "startLine": 283, "endLine": 283 }
+        },
+        {
+          "operator": "==",
+          "left": "nearestMounted",
+          "right": "targetInst",
+          "inclusive": true,
+          "intent": "Ignore event before mount committed",
+          "anchor": { "startLine": 289, "endLine": 289 }
+        }
+      ],
+      "errorHandling": [],
+      "invariants": [
+        {
+          "kind": "non-null",
+          "description": "return_targetInst is set before returning a blocking instance from findInstanceBlockingTarget",
+          "anchor": { "startLine": 253, "endLine": 294 }
+        },
+        {
+          "kind": "invariant",
+          "description": "_enabled is always a boolean due to !! coercion in setEnabled",
+          "anchor": { "startLine": 70, "endLine": 76 }
+        }
+      ],
+      "diagnosticNotes": [],
+      "assumptions": [
+        {
+          "kind": "caller",
+          "description": "Caller binds wrapper with correct targetContainer and eventSystemFlags",
+          "anchor": { "startLine": 82, "endLine": 120 }
+        },
+        {
+          "kind": "init-order",
+          "description": "_enabled defaults to true before any listener attached",
+          "anchor": { "startLine": 70, "endLine": 70 }
+        }
+      ],
+      "ambiguities": [],
+      "concurrencyModel": {
+        "kind": "sync",
+        "reentrant": false,
+        "ordering": "deterministic",
+        "notes": "Event listeners are invoked synchronously from the DOM; priority and transition state are saved/restored via try-finally."
+      },
+      "stateModel": null,
+      "fileFingerprint": { "lineCount": 0, "declarationCount": 0, "maxNestingDepth": 0, "roughCyclomatic": 0 },
+      "reconstructionHints": { "namingStyle": "unknown", "returnStyle": "n/a", "commentStyle": "none", "dialect": "" },
+      "moduleContractTests": [
+        {
+          "testId": "disabled-dispatch-noop",
+          "scenario": "When event system is disabled, dispatchEvent must not invoke plugin event system",
+          "given": ["setEnabled(false)"],
+          "when": "dispatchEvent('click', 0, container, nativeEvent)",
+          "then": "dispatchEventForPluginEventSystem is not called and function returns early",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Respects _enabled flag to globally suppress event dispatch"
+        },
+        {
+          "testId": "discrete-priority-mapping",
+          "scenario": "Click event maps to discrete event priority",
+          "given": [],
+          "when": "getEventPriority('click')",
+          "then": "returns DiscreteEventPriority",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Discrete events must run at highest priority"
+        },
+        {
+          "testId": "continuous-priority-mapping",
+          "scenario": "Mouse move maps to continuous event priority",
+          "given": [],
+          "when": "getEventPriority('mousemove')",
+          "then": "returns ContinuousEventPriority",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Continuous events stream at intermediate priority"
+        },
+        {
+          "testId": "blocking-suspense-instance",
+          "scenario": "Target inside pending Suspense boundary returns that instance as blocker",
+          "given": [
+            "const node = suspenseBoundaryNode",
+            "getClosestInstanceFromNode(node) returns fiber with tag SuspenseComponent and getSuspenseInstanceFromFiber returns instance"
+          ],
+          "when": "findInstanceBlockingTarget(node)",
+          "then": "returns the SuspenseInstance and sets return_targetInst appropriately",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Event must be queued until hydration completes"
+        },
+        {
+          "testId": "continuous-queued-stops-propagation",
+          "scenario": "When blocked on continuous event queue succeeds, propagation is stopped",
+          "given": ["findInstanceBlockingEvent returns blockedOn", "queueIfContinuousEvent returns true"],
+          "when": "dispatchEvent(domEventName, flags, container, nativeEvent)",
+          "then": "nativeEvent.stopPropagation() called and no plugin dispatch occurs",
+          "targets": [],
+          "oracleKind": "unit-test",
+          "rationale": "Prevents double dispatch of replayed continuous events"
+        }
+      ],
+      "language": "javascript",
+      "moduleLayout": [
+        "import type declarations",
+        "import statements",
+        "let _enabled",
+        "export function setEnabled",
+        "export function isEnabled",
+        "export function createEventListenerWrapper",
+        "export function createEventListenerWrapperWithPriority",
+        "function dispatchDiscreteEvent",
+        "function dispatchContinuousEvent",
+        "export function dispatchEvent",
+        "export function findInstanceBlockingEvent",
+        "export let return_targetInst",
+        "export function findInstanceBlockingTarget",
+        "export function getEventPriority"
+      ],
+      "moduleLevelCode": "let _enabled: boolean = true;",
+      "exports": [
+        { "name": "setEnabled", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "isEnabled", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "createEventListenerWrapper", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "createEventListenerWrapperWithPriority", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "dispatchEvent", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "findInstanceBlockingEvent", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "return_targetInst", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "findInstanceBlockingTarget", "kind": "own", "fromSpec": null, "exportedAs": null },
+        { "name": "getEventPriority", "kind": "own", "fromSpec": null, "exportedAs": null }
+      ],
+      "importSymbolMap": [
+        {
+          "symbol": "EventPriority",
+          "module": "react-reconciler/src/ReactEventPriorities",
+          "alias": null,
+          "kind": "external"
+        },
+        { "symbol": "AnyNativeEvent", "module": "../events/PluginModuleType", "alias": null, "kind": "internal" },
+        { "symbol": "Fiber", "module": "react-reconciler/src/ReactInternalTypes", "alias": null, "kind": "external" },
+        {
+          "symbol": "FiberRoot",
+          "module": "react-reconciler/src/ReactInternalTypes",
+          "alias": null,
+          "kind": "external"
+        },
+        { "symbol": "Container", "module": "../client/ReactFiberConfigDOM", "alias": null, "kind": "internal" },
+        { "symbol": "ActivityInstance", "module": "../client/ReactFiberConfigDOM", "alias": null, "kind": "internal" },
+        { "symbol": "SuspenseInstance", "module": "../client/ReactFiberConfigDOM", "alias": null, "kind": "internal" },
+        { "symbol": "DOMEventName", "module": "../events/DOMEventNames", "alias": null, "kind": "internal" },
+        {
+          "symbol": "isDiscreteEventThatRequiresHydration",
+          "module": "./ReactDOMEventReplaying",
+          "alias": null,
+          "kind": "internal"
+        },
+        { "symbol": "clearIfContinuousEvent", "module": "./ReactDOMEventReplaying", "alias": null, "kind": "internal" },
+        { "symbol": "queueIfContinuousEvent", "module": "./ReactDOMEventReplaying", "alias": null, "kind": "internal" },
+        {
+          "symbol": "attemptSynchronousHydration",
+          "module": "react-reconciler/src/ReactFiberReconciler",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "getNearestMountedFiber",
+          "module": "react-reconciler/src/ReactFiberTreeReflection",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "getContainerFromFiber",
+          "module": "react-reconciler/src/ReactFiberTreeReflection",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "getActivityInstanceFromFiber",
+          "module": "react-reconciler/src/ReactFiberTreeReflection",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "getSuspenseInstanceFromFiber",
+          "module": "react-reconciler/src/ReactFiberTreeReflection",
+          "alias": null,
+          "kind": "external"
+        },
+        { "symbol": "HostRoot", "module": "react-reconciler/src/ReactWorkTags", "alias": null, "kind": "external" },
+        {
+          "symbol": "ActivityComponent",
+          "module": "react-reconciler/src/ReactWorkTags",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "SuspenseComponent",
+          "module": "react-reconciler/src/ReactWorkTags",
+          "alias": null,
+          "kind": "external"
+        },
+        { "symbol": "EventSystemFlags", "module": "./EventSystemFlags", "alias": null, "kind": "internal" },
+        { "symbol": "IS_CAPTURE_PHASE", "module": "./EventSystemFlags", "alias": null, "kind": "internal" },
+        { "symbol": "getEventTarget", "module": "./getEventTarget", "alias": null, "kind": "internal" },
+        {
+          "symbol": "getInstanceFromNode",
+          "module": "../client/ReactDOMComponentTree",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "getClosestInstanceFromNode",
+          "module": "../client/ReactDOMComponentTree",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "dispatchEventForPluginEventSystem",
+          "module": "./DOMPluginEventSystem",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "getCurrentUpdatePriority",
+          "module": "../client/ReactDOMUpdatePriority",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "setCurrentUpdatePriority",
+          "module": "../client/ReactDOMUpdatePriority",
+          "alias": null,
+          "kind": "internal"
+        },
+        {
+          "symbol": "getCurrentSchedulerPriorityLevel",
+          "module": "react-reconciler/src/Scheduler",
+          "alias": "getCurrentPriorityLevel",
+          "kind": "external"
+        },
+        {
+          "symbol": "IdleSchedulerPriority",
+          "module": "react-reconciler/src/Scheduler",
+          "alias": "IdlePriority",
+          "kind": "external"
+        },
+        {
+          "symbol": "ImmediateSchedulerPriority",
+          "module": "react-reconciler/src/Scheduler",
+          "alias": "ImmediatePriority",
+          "kind": "external"
+        },
+        {
+          "symbol": "LowSchedulerPriority",
+          "module": "react-reconciler/src/Scheduler",
+          "alias": "LowPriority",
+          "kind": "external"
+        },
+        {
+          "symbol": "NormalSchedulerPriority",
+          "module": "react-reconciler/src/Scheduler",
+          "alias": "NormalPriority",
+          "kind": "external"
+        },
+        {
+          "symbol": "UserBlockingSchedulerPriority",
+          "module": "react-reconciler/src/Scheduler",
+          "alias": "UserBlockingPriority",
+          "kind": "external"
+        },
+        {
+          "symbol": "DiscreteEventPriority",
+          "module": "react-reconciler/src/ReactEventPriorities",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "ContinuousEventPriority",
+          "module": "react-reconciler/src/ReactEventPriorities",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "DefaultEventPriority",
+          "module": "react-reconciler/src/ReactEventPriorities",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "IdleEventPriority",
+          "module": "react-reconciler/src/ReactEventPriorities",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "ReactSharedInternals",
+          "module": "shared/ReactSharedInternals",
+          "alias": null,
+          "kind": "external"
+        },
+        {
+          "symbol": "isRootDehydrated",
+          "module": "react-reconciler/src/ReactFiberShellHydration",
+          "alias": null,
+          "kind": "external"
+        }
+      ],
+      "fileConstants": [{ "name": "_enabled", "value": "true", "kind": "boolean" }],
+      "semanticFingerprint": ""
+    },
+    "units": [
+      {
+        "unitId": "packages/react-dom-bindings/src/events/ReactDOMEventListener.js__setEnabled#function:setEnabled",
+        "unitKind": "function",
+        "name": "setEnabled",
+        "qualifiedName": "setEnabled",
+        "parentUnitId": null,
+        "startLine": 74,
+        "endLine": 76,
+        "isBehavioral": true,
+        "source": "  _enabled = !!enabled;\n}\n",
+        "detail": {
+          "unitId": "packages/react-dom-bindings/src/events/ReactDOMEventListener.js__setEnabled#function:setEnabled",
+          "fileId": "packages/react-dom-bindings/src/events/ReactDOMEventListener.js__setEnabled",
+          "unitKind": "function",
+          "name": "setEnabled",
+          "qualifiedName": "setEnabled",
+          "parentUnitId": null,
+          "startLine": 74,
+          "endLine": 76,
+          "signature": "function setEnabled(enabled)",
+          "parameters": [
+            { "name": "enabled", "type": null, "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": ["_enabled is set to the boolean value of the enabled argument"],
+          "invariants": [],
+          "edgeCases": [
+            "If enabled is falsy (e.g., 0, '', null, undefined), _enabled becomes false; if truthy, becomes true."
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": ["_enabled (module-level variable)"],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["_enabled"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Sets the internal _enabled flag to the boolean coercion of the provided argument, controlling whether event listening is enabled.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "91c74c829356eb6365b0a3b76d466fe66e04b10e6711bdd8ca77716b2fc0cce5"
+        }
+      },
+      {
+        "unitId": "packages/react-dom-bindings/src/events/ReactDOMEventListener.js__isEnabled#function:isEnabled",
+        "unitKind": "function",
+        "name": "isEnabled",
+        "qualifiedName": "isEnabled",
+        "parentUnitId": null,
+        "startLine": 78,
+        "endLine": 80,
+        "isBehavioral": false,
+        "source": "  return _enabled;\n}\n",
+        "detail": {
+          "unitId": "packages/react-dom-bindings/src/events/ReactDOMEventListener.js__isEnabled#function:isEnabled",
+          "fileId": "packages/react-dom-bindings/src/events/ReactDOMEventListener.js__isEnabled",
+          "unitKind": "function",
+          "name": "isEnabled",
+          "qualifiedName": "isEnabled",
+          "parentUnitId": null,
+          "startLine": 78,
+          "endLine": 80,
+          "signature": "function isEnabled()",
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": ["Returns the current value of the internal _enabled variable."],
+          "invariants": ["_enabled is a module-level variable mutated only by setEnabled."],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["_enabled"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Returns the current value of the module-scoped _enabled flag that indicates whether event dispatching is enabled.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "14034048b34ab75f0fa4fc86a3dd54a0d4cee008d824638888d0f779286da81c"
+        }
+      },
+      {
+        "unitId": "packages/react-dom-bindings/src/events/ReactDOMEventListener.js__createEventListenerWrapper#function:createEventListenerWrapper",
+        "unitKind": "function",
+        "name": "createEventListenerWrapper",
+        "qualifiedName": "createEventListenerWrapper",
+        "parentUnitId": null,
+        "startLine": 82,
+        "endLine": 93,
+        "isBehavioral": true,
+        "source": "  targetContainer: EventTarget,\n  domEventName: DOMEventName,\n  eventSystemFlags: EventSystemFlags,\n): Function {\n  return dispatchEvent.bind(\n    null,\n    domEventName,\n    eventSystemFlags,\n    targetContainer,\n  );\n}\n",
+        "detail": {
+          "unitId": "packages/react-dom-bindings/src/events/ReactDOMEventListener.js__createEventListenerWrapper#function:createEventListenerWrapper",
+          "fileId": "packages/react-dom-bindings/src/events/ReactDOMEventListener.js__createEventListenerWrapper",
+          "unitKind": "function",
+          "name": "createEventListenerWrapper",
+          "qualifiedName": "createEventListenerWrapper",
+          "parentUnitId": null,
+          "startLine": 82,
+          "endLine": 93,
+          "signature": "createEventListenerWrapper(targetContainer: EventTarget, domEventName: DOMEventName, eventSystemFlags: EventSystemFlags): Function",
+          "parameters": [
+            {
+              "name": "targetContainer",
+              "type": "EventTarget",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "domEventName",
+              "type": "DOMEventName",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "eventSystemFlags",
+              "type": "EventSystemFlags",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            }
+          ],
+          "returnType": "Function",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "targetContainer is an EventTarget",
+            "domEventName is a DOMEventName",
+            "eventSystemFlags is an EventSystemFlags"
+          ],
+          "postconditions": [
+            "Returns a new Function bound to dispatchEvent with domEventName, eventSystemFlags, targetContainer prepended to its arguments"
+          ],
+          "invariants": [],
+          "edgeCases": [
+            "Calling with null or undefined arguments will still produce a bound function that passes those values through to dispatchEvent"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            {
+              "name": "dispatchEvent",
+              "source": "packages/react-dom-bindings/src/events/ReactDOMEventListener.js",
+              "kind": "internal"
+            }
+          ],
+          "symbolReferences": ["EventTarget", "DOMEventName", "EventSystemFlags", "dispatchEvent"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Returns a bound event listener function that dispatches a DOM event of a given name and flags to a target container via the internal dispatchEvent. The wrapper fixes the DOM event name, event system flags, and container for later invocation.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "the returned wrapper is invoked with event e",
+              "then": "dispatchEvent is called with arguments ('click', 0, c, e)",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "7494ce087df21bc3d3d1ccacb57997b41eafafa90a234a67c0c8958d2c41b736"
+        }
+      },
+      {
+        "unitId": "packages/react-dom-bindings/src/events/ReactDOMEventListener.js__createEventListenerWrapperWithPriority#function:createEventListenerWrapperWithPriority",
+        "unitKind": "function",
+        "name": "createEventListenerWrapperWithPriority",
+        "qualifiedName": "createEventListenerWrapperWithPriority",
+        "parentUnitId": null,
+        "startLine": 95,
+        "endLine": 120,
+        "isBehavioral": true,
+        "source": "  targetContainer: EventTarget,\n  domEventName: DOMEventName,\n  eventSystemFlags: EventSystemFlags,\n): Function {\n  const eventPriority = getEventPriority(domEventName);\n  let listenerWrapper;\n  switch (eventPriority) {\n    case DiscreteEventPriority:\n      listenerWrapper = dispatchDiscreteEvent;\n      break;\n    case ContinuousEventPriority:\n      listenerWrapper = dispatchContinuousEvent;\n      break;\n    case DefaultEventPriority:\n    default:\n      listenerWrapper = dispatchEvent;\n      break;\n  }\n  return listenerWrapper.bind(\n    null,\n    domEventName,\n    eventSystemFlags,\n    targetContainer,\n  );\n}\n",
+        "detail": {
+          "unitId": "packages/react-dom-bindings/src/events/ReactDOMEventListener.js__createEventListenerWrapperWithPriority#function:createEventListenerWrapperWithPriority",
+          "fileId": "packages/react-dom-bindings/src/events/ReactDOMEventListener.js__createEventListenerWrapperWithPriority",
+          "unitKind": "function",
+          "name": "createEventListenerWrapperWithPriority",
+          "qualifiedName": "createEventListenerWrapperWithPriority",
+          "parentUnitId": null,
+          "startLine": 95,
+          "endLine": 120,
+          "signature": "function createEventListenerWrapperWithPriority(targetContainer: EventTarget, domEventName: DOMEventName, eventSystemFlags: EventSystemFlags): Function",
+          "parameters": [
+            {
+              "name": "targetContainer",
+              "type": "EventTarget",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "domEventName",
+              "type": "DOMEventName",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "eventSystemFlags",
+              "type": "EventSystemFlags",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            }
+          ],
+          "returnType": "Function",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "view",
+          "visibility": "internal",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "domEventName must be a valid DOM event name recognised by getEventPriority.",
+            "targetContainer must be a valid EventTarget capable of receiving DOM events.",
+            "eventSystemFlags must be a valid bitmask of React event system flags."
+          ],
+          "postconditions": [
+            "The returned Function has its first three parameters (domEventName, eventSystemFlags, targetContainer) pre-bound to the values passed into this call.",
+            "The returned Function, when invoked, will dispatch the event using a priority-specific dispatcher (dispatchDiscreteEvent, dispatchContinuousEvent, or dispatchEvent)."
+          ],
+          "invariants": [
+            "getEventPriority is used consistently to determine event priority for all events handled via this factory.",
+            "The mapping of DiscreteEventPriority to dispatchDiscreteEvent, ContinuousEventPriority to dispatchContinuousEvent, and DefaultEventPriority (or fallback) to dispatchEvent is invariant."
+          ],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "getEventPriority", "source": "same module", "kind": "internal" },
+            { "name": "dispatchDiscreteEvent", "source": "same module", "kind": "internal" },
+            { "name": "dispatchContinuousEvent", "source": "same module", "kind": "internal" },
+            { "name": "dispatchEvent", "source": "same module", "kind": "internal" }
+          ],
+          "symbolReferences": [
+            "DiscreteEventPriority",
+            "ContinuousEventPriority",
+            "DefaultEventPriority",
+            "getEventPriority",
+            "dispatchDiscreteEvent",
+            "dispatchContinuousEvent",
+            "dispatchEvent"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": "Accepts an EventTarget (targetContainer), a DOMEventName string, and an integer eventSystemFlags bitmask. Returns a Function whose leading parameters are bound so it can be directly attached as a DOM event listener.",
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Selects and binds the appropriate React event-dispatching function (discrete, continuous, or default) based on the priority of domEventName, returning a Function ready to be used as an event listener.",
+          "specLiterals": [
+            {
+              "kind": "enum-value",
+              "value": "DiscreteEventPriority",
+              "role": "Priority case matching the discrete dispatcher branch"
+            },
+            {
+              "kind": "enum-value",
+              "value": "ContinuousEventPriority",
+              "role": "Priority case matching the continuous dispatcher branch"
+            },
+            {
+              "kind": "enum-value",
+              "value": "DefaultEventPriority",
+              "role": "Priority case matching the default dispatcher branch"
+            }
+          ],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "createEventListenerWrapperWithPriority is called with that domEventName",
+              "then": "the returned function's bound dispatcher is dispatchDiscreteEvent",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "createEventListenerWrapperWithPriority is called",
+              "then": "the returned function's bound dispatcher is dispatchContinuousEvent",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "createEventListenerWrapperWithPriority is called",
+              "then": "the returned function's bound dispatcher is dispatchEvent",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "55c6fe08403464c70614f1ed8f8141c5d01b87b56ae40273b0977b4159b5fb6e"
+        }
+      },
+      {
+        "unitId": "packages/react-dom-bindings/src/events/ReactDOMEventListener.js__dispatchDiscreteEvent#function:dispatchDiscreteEvent",
+        "unitKind": "function",
+        "name": "dispatchDiscreteEvent",
+        "qualifiedName": "dispatchDiscreteEvent",
+        "parentUnitId": null,
+        "startLine": 122,
+        "endLine": 138,
+        "isBehavioral": true,
+        "source": "  domEventName: DOMEventName,\n  eventSystemFlags: EventSystemFlags,\n  container: EventTarget,\n  nativeEvent: AnyNativeEvent,\n) {\n  const prevTransition = ReactSharedInternals.T;\n  ReactSharedInternals.T = null;\n  const previousPriority = getCurrentUpdatePriority();\n  try {\n    setCurrentUpdatePriority(DiscreteEventPriority);\n    dispatchEvent(domEventName, eventSystemFlags, container, nativeEvent);\n  } finally {\n    setCurrentUpdatePriority(previousPriority);\n    ReactSharedInternals.T = prevTransition;\n  }\n}\n",
+        "detail": {
+          "unitId": "packages/react-dom-bindings/src/events/ReactDOMEventListener.js__dispatchDiscreteEvent#function:dispatchDiscreteEvent",
+          "fileId": "packages/react-dom-bindings/src/events/ReactDOMEventListener.js__dispatchDiscreteEvent",
+          "unitKind": "function",
+          "name": "dispatchDiscreteEvent",
+          "qualifiedName": "dispatchDiscreteEvent",
+          "parentUnitId": null,
+          "startLine": 122,
+          "endLine": 138,
+          "signature": "function dispatchDiscreteEvent(domEventName: DOMEventName, eventSystemFlags: EventSystemFlags, container: EventTarget, nativeEvent: AnyNativeEvent): void",
+          "parameters": [
+            {
+              "name": "domEventName",
+              "type": "DOMEventName",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "eventSystemFlags",
+              "type": "EventSystemFlags",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "container",
+              "type": "EventTarget",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            },
+            {
+              "name": "nativeEvent",
+              "type": "AnyNativeEvent",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 3
+            }
+          ],
+          "returnType": "void",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "mut",
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "Called with a valid DOMEventName string",
+            "eventSystemFlags is a valid bitmask of EventSystemFlags",
+            "container is a valid EventTarget (e.g. the receiving DOM node)"
+          ],
+          "postconditions": [
+            "ReactSharedInternals.T is restored to its original value",
+            "Update priority is restored to its original value",
+            "The native DOM event is dispatched to React's event system via dispatchEvent"
+          ],
+          "invariants": [
+            "ReactSharedInternals.T is always restored, even if dispatchEvent throws",
+            "Update priority is always restored, even if dispatchEvent throws"
+          ],
+          "edgeCases": [
+            "If dispatchEvent throws, ReactSharedInternals.T and update priority are still restored via finally block"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [
+            "ReactSharedInternals.T (temporarily set to null during dispatch, then restored)",
+            "currentUpdatePriority (set to DiscreteEventPriority during dispatch, then restored)"
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "ReactSharedInternals.T", "source": null, "kind": "external" },
+            { "name": "getCurrentUpdatePriority", "source": null, "kind": "external" },
+            { "name": "setCurrentUpdatePriority", "source": null, "kind": "external" },
+            { "name": "DiscreteEventPriority", "source": null, "kind": "external" },
+            { "name": "dispatchEvent", "source": null, "kind": "internal" }
+          ],
+          "symbolReferences": [
+            "ReactSharedInternals",
+            "getCurrentUpdatePriority",
+            "setCurrentUpdatePriority",
+            "DiscreteEventPriority",
+            "dispatchEvent",
+            "DOMEventName",
+            "EventSystemFlags",
+            "EventTarget",
+            "AnyNativeEvent"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Dispatches a discrete DOM event under DiscreteEventPriority, temporarily suspending React's current transition and update priority so that discrete user interactions are processed synchronously with the correct priority.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "651e5b9b79efef811a16879137edf2f9c7328bf94d499db52f60e52adcd37e1c"
+        }
+      },
+      {
+        "unitId": "packages/react-dom-bindings/src/events/ReactDOMEventListener.js__dispatchContinuousEvent#function:dispatchContinuousEvent",
+        "unitKind": "function",
+        "name": "dispatchContinuousEvent",
+        "qualifiedName": "dispatchContinuousEvent",
+        "parentUnitId": null,
+        "startLine": 140,
+        "endLine": 156,
+        "isBehavioral": true,
+        "source": "  domEventName: DOMEventName,\n  eventSystemFlags: EventSystemFlags,\n  container: EventTarget,\n  nativeEvent: AnyNativeEvent,\n) {\n  const prevTransition = ReactSharedInternals.T;\n  ReactSharedInternals.T = null;\n  const previousPriority = getCurrentUpdatePriority();\n  try {\n    setCurrentUpdatePriority(ContinuousEventPriority);\n    dispatchEvent(domEventName, eventSystemFlags, container, nativeEvent);\n  } finally {\n    setCurrentUpdatePriority(previousPriority);\n    ReactSharedInternals.T = prevTransition;\n  }\n}\n",
+        "detail": {
+          "unitId": "packages/react-dom-bindings/src/events/ReactDOMEventListener.js__dispatchContinuousEvent#function:dispatchContinuousEvent",
+          "fileId": "packages/react-dom-bindings/src/events/ReactDOMEventListener.js__dispatchContinuousEvent",
+          "unitKind": "function",
+          "name": "dispatchContinuousEvent",
+          "qualifiedName": "dispatchContinuousEvent",
+          "parentUnitId": null,
+          "startLine": 140,
+          "endLine": 156,
+          "signature": "function dispatchContinuousEvent(domEventName: DOMEventName, eventSystemFlags: EventSystemFlags, container: EventTarget, nativeEvent: AnyNativeEvent)",
+          "parameters": [
+            {
+              "name": "domEventName",
+              "type": "DOMEventName",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "eventSystemFlags",
+              "type": "EventSystemFlags",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "container",
+              "type": "EventTarget",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            },
+            {
+              "name": "nativeEvent",
+              "type": "AnyNativeEvent",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 3
+            }
+          ],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "ReactSharedInternals is accessible",
+            "getCurrentUpdatePriority and setCurrentUpdatePriority are available",
+            "dispatchEvent is defined"
+          ],
+          "postconditions": [
+            "dispatchEvent is invoked exactly once with the provided arguments",
+            "ReactSharedInternals.T and current update priority are restored to their prior values after dispatchEvent completes or throws"
+          ],
+          "invariants": [],
+          "edgeCases": [
+            "If dispatchEvent throws, the finally block still restores previousPriority and prevTransition before the error propagates"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["Any exception thrown by dispatchEvent or priority setters"],
+            "reverts": [],
+            "onInvalidInput": null,
+            "returnsOnError": null
+          },
+          "stateMutations": [
+            "ReactSharedInternals.T set to null then restored to prevTransition",
+            "Current update priority set to ContinuousEventPriority then restored to previousPriority"
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "dispatchEvent", "source": null, "kind": "internal" },
+            { "name": "getCurrentUpdatePriority", "source": null, "kind": "internal" },
+            { "name": "setCurrentUpdatePriority", "source": null, "kind": "internal" }
+          ],
+          "symbolReferences": ["ReactSharedInternals", "ContinuousEventPriority"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Dispatches a continuous DOM event by temporarily setting the update priority to ContinuousEventPriority and clearing the current transition, guaranteeing restoration of previous priority and transition afterwards.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "dispatchContinuousEvent is called",
+              "then": "dispatchEvent is invoked with the same four arguments, and after return or throw ReactSharedInternals.T === T0 and getCurrentUpdatePriority() === P0",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "0c6f825814f8da33c3ee0992c479537450188e35659adc4e2e1066fa567a69f9"
+        }
+      },
+      {
+        "unitId": "packages/react-dom-bindings/src/events/ReactDOMEventListener.js__dispatchEvent#function:dispatchEvent",
+        "unitKind": "function",
+        "name": "dispatchEvent",
+        "qualifiedName": "dispatchEvent",
+        "parentUnitId": null,
+        "startLine": 158,
+        "endLine": 235,
+        "isBehavioral": true,
+        "source": "  domEventName: DOMEventName,\n  eventSystemFlags: EventSystemFlags,\n  targetContainer: EventTarget,\n  nativeEvent: AnyNativeEvent,\n): void {\n  if (!_enabled) {\n    return;\n  }\n\n  let blockedOn = findInstanceBlockingEvent(nativeEvent);\n  if (blockedOn === null) {\n    dispatchEventForPluginEventSystem(\n      domEventName,\n      eventSystemFlags,\n      nativeEvent,\n      return_targetInst,\n      targetContainer,\n    );\n    clearIfContinuousEvent(domEventName, nativeEvent);\n    return;\n  }\n\n  if (\n    queueIfContinuousEvent(\n      blockedOn,\n      domEventName,\n      eventSystemFlags,\n      targetContainer,\n      nativeEvent,\n    )\n  ) {\n    nativeEvent.stopPropagation();\n    return;\n  }\n  // We need to clear only if we didn't queue because\n  // queueing is accumulative.\n  clearIfContinuousEvent(domEventName, nativeEvent);\n\n  if (\n    eventSystemFlags & IS_CAPTURE_PHASE &&\n    isDiscreteEventThatRequiresHydration(domEventName)\n  ) {\n    while (blockedOn !== null) {\n      const fiber = getInstanceFromNode(blockedOn);\n      if (fiber !== null) {\n        attemptSynchronousHydration(fiber);\n      }\n      const nextBlockedOn = findInstanceBlockingEvent(nativeEvent);\n      if (nextBlockedOn === null) {\n        dispatchEventForPluginEventSystem(\n          domEventName,\n          eventSystemFlags,\n          nativeEvent,\n          return_targetInst,\n          targetContainer,\n        );\n      }\n      if (nextBlockedOn === blockedOn) {\n        break;\n      }\n      blockedOn = nextBlockedOn;\n    }\n    if (blockedOn !== null) {\n      nativeEvent.stopPropagation();\n    }\n    return;\n  }\n\n  // This is not replayable so we'll invoke it but without a target,\n  // in case the event system needs to trace it.\n  dispatchEventForPluginEventSystem(\n    domEventName,\n    eventSystemFlags,\n    nativeEvent,\n    null,\n    targetContainer,\n  );\n}",
+        "detail": {
+          "unitId": "packages/react-dom-bindings/src/events/ReactDOMEventListener.js__dispatchEvent#function:dispatchEvent",
+          "fileId": "packages/react-dom-bindings/src/events/ReactDOMEventListener.js__dispatchEvent",
+          "unitKind": "function",
+          "name": "dispatchEvent",
+          "qualifiedName": "dispatchEvent",
+          "parentUnitId": null,
+          "startLine": 158,
+          "endLine": 235,
+          "signature": "function dispatchEvent(domEventName: DOMEventName, eventSystemFlags: EventSystemFlags, targetContainer: EventTarget, nativeEvent: AnyNativeEvent): void",
+          "parameters": [
+            {
+              "name": "domEventName",
+              "type": "DOMEventName",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            },
+            {
+              "name": "eventSystemFlags",
+              "type": "EventSystemFlags",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 1
+            },
+            {
+              "name": "targetContainer",
+              "type": "EventTarget",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 2
+            },
+            {
+              "name": "nativeEvent",
+              "type": "AnyNativeEvent",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 3
+            }
+          ],
+          "returnType": "void",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": null,
+          "visibility": null,
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [
+            "_enabled flag is referenced; if false the function returns early",
+            "nativeEvent is a native event object",
+            "targetContainer is a valid EventTarget"
+          ],
+          "postconditions": [
+            "If not blocked, event dispatched via dispatchEventForPluginEventSystem and continuous event cleared",
+            "If blocked and continuous queue succeeds, propagation stopped",
+            "If blocked in capture phase for discrete hydration event, attempts hydration and may dispatch when unblocked",
+            "Otherwise dispatches with null target instance"
+          ],
+          "invariants": [
+            "Function does not throw; returns undefined",
+            "Respects blocking instances from findInstanceBlockingEvent"
+          ],
+          "edgeCases": [
+            "_enabled false: immediate return, no dispatch",
+            "blockedOn null: immediate dispatch and clear continuous",
+            "queueIfContinuousEvent true: stopPropagation and return without clear",
+            "capture phase + discrete hydration required and blocked: loop hydration until unblocked or stable",
+            "non-replayable blocked: dispatch with null target instance"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [
+            "May mutate internal continuous event queue via queueIfContinuousEvent/clearIfContinuousEvent",
+            "May trigger fiber hydration state change via attemptSynchronousHydration"
+          ],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "findInstanceBlockingEvent", "source": null, "kind": "internal" },
+            { "name": "dispatchEventForPluginEventSystem", "source": null, "kind": "internal" },
+            { "name": "clearIfContinuousEvent", "source": null, "kind": "internal" },
+            { "name": "queueIfContinuousEvent", "source": null, "kind": "internal" },
+            { "name": "isDiscreteEventThatRequiresHydration", "source": null, "kind": "internal" },
+            { "name": "getInstanceFromNode", "source": null, "kind": "internal" },
+            { "name": "attemptSynchronousHydration", "source": null, "kind": "internal" }
+          ],
+          "symbolReferences": ["_enabled", "return_targetInst", "IS_CAPTURE_PHASE"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Dispatches a DOM event through React's plugin event system, handling blocked instances, continuous event queueing, and discrete hydration as needed; silently ignores when disabled.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "dispatchEvent is called with any arguments",
+              "then": "function returns immediately and dispatchEventForPluginEventSystem is not invoked",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "dispatchEvent is called",
+              "then": "dispatchEventForPluginEventSystem is called with return_targetInst and clearIfContinuousEvent is called",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "dispatchEvent is called",
+              "then": "nativeEvent.stopPropagation() is called and no dispatch occurs",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "368d9529d5d9bf5acb7021e174000b0dbe8f7c8b63a6e7c4bf5b8faf074c8fe0"
+        }
+      },
+      {
+        "unitId": "packages/react-dom-bindings/src/events/ReactDOMEventListener.js__findInstanceBlockingEvent#function:findInstanceBlockingEvent",
+        "unitKind": "function",
+        "name": "findInstanceBlockingEvent",
+        "qualifiedName": "findInstanceBlockingEvent",
+        "parentUnitId": null,
+        "startLine": 237,
+        "endLine": 242,
+        "isBehavioral": true,
+        "source": "export function findInstanceBlockingEvent(\n  nativeEvent: AnyNativeEvent,\n): null | Container | SuspenseInstance | ActivityInstance {\n  const nativeEventTarget = getEventTarget(nativeEvent);\n  return findInstanceBlockingTarget(nativeEventTarget);\n}",
+        "detail": {
+          "unitId": "packages/react-dom-bindings/src/events/ReactDOMEventListener.js__findInstanceBlockingEvent#function:findInstanceBlockingEvent",
+          "fileId": "packages/react-dom-bindings/src/events/ReactDOMEventListener.js__findInstanceBlockingEvent",
+          "unitKind": "function",
+          "name": "findInstanceBlockingEvent",
+          "qualifiedName": "findInstanceBlockingEvent",
+          "parentUnitId": null,
+          "startLine": 237,
+          "endLine": 242,
+          "signature": "export function findInstanceBlockingEvent(nativeEvent: AnyNativeEvent): null | Container | SuspenseInstance | ActivityInstance",
+          "parameters": [
+            {
+              "name": "nativeEvent",
+              "type": "AnyNativeEvent",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "null | Container | SuspenseInstance | ActivityInstance",
+          "decorators": [],
+          "modifiersApplied": ["export"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["nativeEvent is a native event object resolvable by getEventTarget"],
+          "postconditions": [
+            "Returns the value produced by findInstanceBlockingTarget for the resolved event target, typed as null | Container | SuspenseInstance | ActivityInstance"
+          ],
+          "invariants": [],
+          "edgeCases": [
+            "When the resolved target is not within a blocking instance, findInstanceBlockingTarget returns null and thus this function returns null"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "getEventTarget", "source": null, "kind": "internal" },
+            { "name": "findInstanceBlockingTarget", "source": null, "kind": "internal" }
+          ],
+          "symbolReferences": ["AnyNativeEvent", "Container", "SuspenseInstance", "ActivityInstance"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Resolves the target of a native event and returns the closest blocking React instance (container, suspense, or activity) or null if none blocks.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "aace21704d698734218e76c514fe96ece81ce4a896a05c4503c36f7147274247"
+        }
+      },
+      {
+        "unitId": "packages/react-dom-bindings/src/events/ReactDOMEventListener.js__return_targetInst#variable:return_targetInst",
+        "unitKind": "variable",
+        "name": "return_targetInst",
+        "qualifiedName": "return_targetInst",
+        "parentUnitId": null,
+        "startLine": 244,
+        "endLine": 244,
+        "isBehavioral": false,
+        "source": "export let return_targetInst: null | Fiber = null;",
+        "detail": {
+          "unitId": "packages/react-dom-bindings/src/events/ReactDOMEventListener.js__return_targetInst#variable:return_targetInst",
+          "fileId": "packages/react-dom-bindings/src/events/ReactDOMEventListener.js__return_targetInst",
+          "unitKind": "variable",
+          "name": "return_targetInst",
+          "qualifiedName": "return_targetInst",
+          "parentUnitId": null,
+          "startLine": 244,
+          "endLine": 244,
+          "signature": "export let return_targetInst: null | Fiber = null;",
+          "parameters": [],
+          "returnType": null,
+          "decorators": [],
+          "modifiersApplied": ["export"],
+          "mutability": "mut",
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": [],
+          "postconditions": [],
+          "invariants": ["Value is either null or a Fiber instance."],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": null },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["Fiber"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Module-level mutable binding that stores the current target Fiber instance (or null) during event dispatch.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "921e87733ac1ed689ceb3c592e021143ad61122c9eeb1e0c1fa7364e814cfe18"
+        }
+      },
+      {
+        "unitId": "packages/react-dom-bindings/src/events/ReactDOMEventListener.js__findInstanceBlockingTarget#function:findInstanceBlockingTarget",
+        "unitKind": "function",
+        "name": "findInstanceBlockingTarget",
+        "qualifiedName": "findInstanceBlockingTarget",
+        "parentUnitId": null,
+        "startLine": 248,
+        "endLine": 297,
+        "isBehavioral": true,
+        "source": "export function findInstanceBlockingTarget(\n  targetNode: Node,\n): null | Container | SuspenseInstance | ActivityInstance {\n  // TODO: Warn if _enabled is false.\n\n  return_targetInst = null;\n\n  let targetInst = getClosestInstanceFromNode(targetNode);\n\n  if (targetInst !== null) {\n    const nearestMounted = getNearestMountedFiber(targetInst);\n    if (nearestMounted === null) {\n      // This tree has been unmounted already. Dispatch without a target.\n      targetInst = null;\n    } else {\n      const tag = nearestMounted.tag;\n      if (tag === SuspenseComponent) {\n        const instance = getSuspenseInstanceFromFiber(nearestMounted);\n        if (instance !== null) {\n          // Queue the event to be replayed later. Abort dispatching since we\n          // don't want this event dispatched twice through the event system.\n          // TODO: If this is the first discrete event in the queue. Schedule an increased\n          // priority for this boundary.\n          return instance;\n        }\n        // This shouldn't happen, something went wrong but to avoid blocking\n        // the whole system, dispatch the event without a target.\n        // TODO: Warn.\n        targetInst = null;\n      } else if (tag === ActivityComponent) {\n        const instance = getActivityInstanceFromFiber(nearestMounted);\n        if (instance !== null) {\n          // Queue the event to be replayed later. Abort dispatching since we\n          // don't want this event dispatched twice through the event system.\n          // TODO: If this is the first discrete event in the queue. Schedule an increased\n          // priority for this boundary.\n          return instance;\n        }\n        // This shouldn't happen, something went wrong but to avoid blocking\n        // the whole system, dispatch the event without a target.\n        // TODO: Warn.\n        targetInst = null;\n      } else if (tag === HostRoot) {\n        const root: FiberRoot = nearestMounted.stateNode;\n        if (isRootDehydrated(root)) {\n          // If this happens during a replay something went wrong and it might block\n          // the whole system.\n          return getContainerFromFiber(nearestMounted);\n        }\n        targetInst = null;",
+        "detail": {
+          "unitId": "packages/react-dom-bindings/src/events/ReactDOMEventListener.js__findInstanceBlockingTarget#function:findInstanceBlockingTarget",
+          "fileId": "packages/react-dom-bindings/src/events/ReactDOMEventListener.js__findInstanceBlockingTarget",
+          "unitKind": "function",
+          "name": "findInstanceBlockingTarget",
+          "qualifiedName": "findInstanceBlockingTarget",
+          "parentUnitId": null,
+          "startLine": 248,
+          "endLine": 297,
+          "signature": "export function findInstanceBlockingTarget(targetNode: Node): null | Container | SuspenseInstance | ActivityInstance",
+          "parameters": [
+            { "name": "targetNode", "type": "Node", "default": null, "optional": false, "variadic": false, "order": 0 }
+          ],
+          "returnType": "null | Container | SuspenseInstance | ActivityInstance",
+          "decorators": [],
+          "modifiersApplied": ["export"],
+          "mutability": null,
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["targetNode is a Node (DOM node)"],
+          "postconditions": [
+            "return_targetInst is set to null",
+            "return value is null, a Container, a SuspenseInstance, or an ActivityInstance"
+          ],
+          "invariants": [],
+          "edgeCases": [
+            "If getClosestInstanceFromNode returns null, returns null",
+            "If nearest mounted fiber is null (unmounted tree), returns null",
+            "If tag is SuspenseComponent and instance non-null, returns the SuspenseInstance",
+            "If tag is SuspenseComponent and instance null, returns null",
+            "If tag is ActivityComponent and instance non-null, returns the ActivityInstance",
+            "If tag is ActivityComponent and instance null, returns null",
+            "If tag is HostRoot and root is dehydrated, returns container from fiber",
+            "If tag is HostRoot and root not dehydrated, returns null",
+            "For any other tag, falls through with targetInst null and returns null"
+          ],
+          "tieBreakingRules": [],
+          "errorPolicy": { "raises": [], "reverts": [], "onInvalidInput": null, "returnsOnError": "null" },
+          "stateMutations": ["return_targetInst (module-level variable) assigned to null"],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [
+            { "name": "getClosestInstanceFromNode", "source": null, "kind": "internal" },
+            { "name": "getNearestMountedFiber", "source": null, "kind": "internal" },
+            { "name": "getSuspenseInstanceFromFiber", "source": null, "kind": "internal" },
+            { "name": "getActivityInstanceFromFiber", "source": null, "kind": "internal" },
+            { "name": "isRootDehydrated", "source": null, "kind": "internal" },
+            { "name": "getContainerFromFiber", "source": null, "kind": "internal" }
+          ],
+          "symbolReferences": [
+            "Node",
+            "Container",
+            "SuspenseInstance",
+            "ActivityInstance",
+            "SuspenseComponent",
+            "ActivityComponent",
+            "HostRoot",
+            "FiberRoot"
+          ],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Returns a blocking target instance (Suspense, Activity, or Container) for an event target node when the event must be queued for replay instead of dispatched, or null otherwise; always resets the module-level return_targetInst to null.",
+          "specLiterals": [],
+          "declaredConstants": [],
+          "specTests": [
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "findInstanceBlockingTarget(targetNode) is invoked",
+              "then": "returns that SuspenseInstance and leaves return_targetInst as null",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            },
+            {
+              "testId": "",
+              "scenario": "",
+              "given": [],
+              "when": "findInstanceBlockingTarget(targetNode) is invoked",
+              "then": "returns the container obtained from getContainerFromFiber",
+              "oracleKind": "unit-test",
+              "rationale": ""
+            }
+          ],
+          "semanticFingerprint": "b3fba7bafedde5518d52c67912b1a40daabbc160d4fb439c67d86991cfdb7b41"
+        }
+      },
+      {
+        "unitId": "packages/react-dom-bindings/src/events/ReactDOMEventListener.js__getEventPriority#function:getEventPriority",
+        "unitKind": "function",
+        "name": "getEventPriority",
+        "qualifiedName": "getEventPriority",
+        "parentUnitId": null,
+        "startLine": 299,
+        "endLine": 343,
+        "isBehavioral": false,
+        "source": "        // If we get an event (ex: img onload) before committing that\n        // component's mount, ignore it for now (that is, treat it as if it was an\n        // event on a non-React tree). We might also consider queueing events and\n        // dispatching them after the mount.\n        targetInst = null;\n      }\n    }\n  }\n  return_targetInst = targetInst;\n  // We're not blocked on anything.\n  return null;\n}\n\nexport function getEventPriority(domEventName: DOMEventName): EventPriority {\n  switch (domEventName) {\n    // Used by SimpleEventPlugin:\n    case 'beforetoggle':\n    case 'cancel':\n    case 'click':\n    case 'close':\n    case 'contextmenu':\n    case 'copy':\n    case 'cut':\n    case 'auxclick':\n    case 'dblclick':\n    case 'dragend':\n    case 'dragstart':\n    case 'drop':\n    case 'focusin':\n    case 'focusout':\n    case 'input':\n    case 'invalid':\n    case 'keydown':\n    case 'keypress':\n    case 'keyup':\n    case 'mousedown':\n    case 'mouseup':\n    case 'paste':\n    case 'pause':\n    case 'play':\n    case 'pointercancel':\n    case 'pointerdown':\n    case 'pointerup':\n    case 'ratechange':\n    case 'reset':",
+        "detail": {
+          "unitId": "packages/react-dom-bindings/src/events/ReactDOMEventListener.js__getEventPriority#function:getEventPriority",
+          "fileId": "packages/react-dom-bindings/src/events/ReactDOMEventListener.js__getEventPriority",
+          "unitKind": "function",
+          "name": "getEventPriority",
+          "qualifiedName": "getEventPriority",
+          "parentUnitId": null,
+          "startLine": 299,
+          "endLine": 343,
+          "signature": "export function getEventPriority(domEventName: DOMEventName): EventPriority",
+          "parameters": [
+            {
+              "name": "domEventName",
+              "type": "DOMEventName",
+              "default": null,
+              "optional": false,
+              "variadic": false,
+              "order": 0
+            }
+          ],
+          "returnType": "EventPriority",
+          "decorators": [],
+          "modifiersApplied": [],
+          "mutability": "view",
+          "visibility": "public",
+          "isAsync": false,
+          "isGenerator": false,
+          "isAbstract": false,
+          "isStatic": false,
+          "genericTypeParams": [],
+          "logicOutline": [],
+          "preconditions": ["domEventName must be a string corresponding to a known DOM event in the switch cases"],
+          "postconditions": ["Returns a valid EventPriority value ('discrete', 'continuous', 'idle', or 'layout')"],
+          "invariants": [
+            "Every listed DOM event name maps to exactly one EventPriority",
+            "The mapping is fixed and deterministic for all inputs"
+          ],
+          "edgeCases": [],
+          "tieBreakingRules": [],
+          "errorPolicy": {
+            "raises": ["Error"],
+            "reverts": [],
+            "onInvalidInput": "Throws an Error indicating the event name has no priority mapping",
+            "returnsOnError": null
+          },
+          "stateMutations": [],
+          "eventsEmitted": [],
+          "complexity": null,
+          "calls": [],
+          "symbolReferences": ["DOMEventName", "EventPriority"],
+          "baseTypes": [],
+          "implementsTypes": [],
+          "members": [],
+          "memberUnitIds": [],
+          "constants": [],
+          "ioFormatSpec": null,
+          "verbatimBlocks": [],
+          "exampleIoPairs": [],
+          "testReferences": [],
+          "summary": "Maps a DOM event name (e.g. 'click', 'keydown') to an EventPriority value based on a fixed switch-case lookup; throws for unknown event names.",
+          "specLiterals": [
+            { "kind": "enum-value", "value": "beforetoggle", "role": "DOM event name mapped to discrete priority" },
+            { "kind": "enum-value", "value": "cancel", "role": "DOM event name mapped to discrete priority" },
+            { "kind": "enum-value", "value": "click", "role": "DOM event name mapped to discrete priority" },
+            { "kind": "enum-value", "value": "close", "role": "DOM event name mapped to discrete priority" },
+            { "kind": "enum-value", "value": "contextmenu", "role": "DOM event name mapped to discrete priority" },
+            { "kind": "enum-value", "value": "copy", "role": "DOM event name mapped to discrete priority" },
+            { "kind": "enum-value", "value": "cut", "role": "DOM event name mapped to discrete priority" },
+            { "kind": "enum-value", "value": "auxclick", "role": "DOM event name mapped to discrete priority" },
+            { "kind": "enum-value", "value": "dblclick", "role": "DOM event name mapped to discrete priority" },
+            { "kind": "enum-value", "value": "dragend", "role": "DOM event name mapped to discrete priority" },
+            { "kind": "enum-value", "value": "dragstart", "role": "DOM event name mapped to discrete priority" },
+            { "kind": "enum-value", "value": "drop", "role": "DOM event name mapped to discrete priority" },
+            { "kind": "enum-value", "value": "focusin", "role": "DOM event name mapped to discrete priority" },
+            { "kind": "enum-value", "value": "focusout", "role": "DOM event name mapped to discrete priority" },
+            { "kind": "enum-value", "value": "input", "role": "DOM event name mapped to discrete priority" },
+            { "kind": "enum-value", "value": "invalid", "role": "DOM event name mapped to discrete priority" },
+            { "kind": "enum-value", "value": "keydown", "role": "DOM event name mapped to discrete priority" },
+            { "kind": "enum-value", "value": "keypress", "role": "DOM event name mapped to discrete priority" },
+            { "kind": "enum-value", "value": "keyup", "role": "DOM event name mapped to discrete priority" },
+            { "kind": "enum-value", "value": "mousedown", "role": "DOM event name mapped to discrete priority" },
+            { "kind": "enum-value", "value": "mouseup", "role": "DOM event name mapped to discrete priority" },
+            { "kind": "enum-value", "value": "paste", "role": "DOM event name mapped to discrete priority" },
+            { "kind": "enum-value", "value": "pause", "role": "DOM event name mapped to discrete priority" },
+            { "kind": "enum-value", "value": "play", "role": "DOM event name mapped to discrete priority" },
+            { "kind": "enum-value", "value": "pointercancel", "role": "DOM event name mapped to discrete priority" },
+            { "kind": "enum-value", "value": "pointerdown", "role": "DOM event name mapped to discrete priority" },
+            { "kind": "enum-value", "value": "pointerup", "role": "DOM event name mapped to discrete priority" },
+            { "kind": "enum-value", "value": "ratechange", "role": "DOM event name mapped to discrete priority" },
+            { "kind": "enum-value", "value": "reset", "role": "DOM event name mapped to discrete priority" }
+          ],
+          "declaredConstants": [],
+          "specTests": [],
+          "semanticFingerprint": "bdc846f71adcaca23ad9aa41bb9d2465b2cd9844c71d50cbc0b9fd9d1e17e539"
+        }
+      }
+    ]
+  },
+  "out": [
+    "packages/react-dom-bindings/src/events/ReactDOMEventReplaying.js",
+    "packages/react-dom-bindings/src/client/ReactDOMComponentTree.js",
+    "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js",
+    "packages/react-dom-bindings/src/client/ReactDOMUpdatePriority.js",
+    "packages/react-dom-bindings/src/events/PluginModuleType.js",
+    "packages/react-dom-bindings/src/events/DOMEventNames.js",
+    "packages/react-dom-bindings/src/events/EventSystemFlags.js",
+    "packages/react-dom-bindings/src/events/getEventTarget.js"
+  ],
+  "in": [
+    "packages/react-dom-bindings/src/events/ReactDOMEventReplaying.js",
+    "packages/react-dom-bindings/src/events/DOMPluginEventSystem.js",
+    "packages/react-dom-bindings/src/client/ReactDOMUpdatePriority.js"
+  ],
+  "externals": [
+    "react-reconciler/src/ReactEventPriorities",
+    "react-reconciler/src/ReactInternalTypes",
+    "react-reconciler/src/ReactFiberReconciler",
+    "react-reconciler/src/ReactFiberTreeReflection",
+    "react-reconciler/src/ReactWorkTags",
+    "react-reconciler/src/Scheduler",
+    "shared/ReactSharedInternals",
+    "react-reconciler/src/ReactFiberShellHydration"
+  ],
+  "impact": { "seeds": 11, "callers": 6, "impactedFiles": [] }
+}

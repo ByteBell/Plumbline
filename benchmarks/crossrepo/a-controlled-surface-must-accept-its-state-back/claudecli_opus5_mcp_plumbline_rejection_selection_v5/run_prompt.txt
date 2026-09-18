@@ -1,0 +1,318 @@
+You are performing a cross-repository information-retrieval task.
+
+REPOSITORIES: 16, each pinned at exactly one commit. Every path you
+name must exist in its repository AT ITS OWN PIN.
+
+  redux            3aa561f9fc13f3287e6d83764f85fe0e82437c5f
+  redux-toolkit    b1c5130154c454ca8387f55da6122fcb507c560c
+  react-redux      ad5d1e0816d0cb1464b25cf2853f2a7d73433f5b
+  reselect         8d87c27b75f55883629be75d1eae1c27832d907a
+  react            3a717e42438afac81020cdec297dadb5613a4304
+  jotai            5c4ca26b0db5571114be58393e17854a771f7790
+  zustand          beca84e600e4e250f6b244d22878e72948f331c7
+  db               7f0fa36ff6d48b0494ed5f6a1223fd18c317e41f
+  xyflow           360f5b13e2bc6899ea06b4be1a49b068d86926cf
+  query            46d7f02f1c7b9fcd3255082cc7103e8bfa3dab76
+  table            d08af367e11c539bb7e18c2472aa761149ef6db6
+  tldraw           5590d14d8edd4faab7dc1177b6e1adb28876fd23
+  redux-devtools   f4b4668c30ae08920c59a76cc4629c35c16ef0fa
+  router           3dee5b2e9453d01a3172c73426959007b290b3fc
+  primitives       58164e06ca67dff9a68dd375d858180cfdc8ec27
+  zod              912f0f51b0ced654d0069741e7160834dca742ee
+
+CHECKOUTS:    <benchmark root>/<repo>, at the pin above. The benchmark root is
+              /Users/sauravverma/programs/benchmarks/react-ecosystem.
+PATHS:        repo-relative, no leading slash, no repo-name prefix.
+
+--- GATE ROSTER ---
+redux 3aa561f9fc13f3287e6d83764f85fe0e82437c5f redux
+redux-toolkit b1c5130154c454ca8387f55da6122fcb507c560c redux-toolkit
+react-redux ad5d1e0816d0cb1464b25cf2853f2a7d73433f5b react-redux
+reselect 8d87c27b75f55883629be75d1eae1c27832d907a reselect
+react 3a717e42438afac81020cdec297dadb5613a4304 react
+jotai 5c4ca26b0db5571114be58393e17854a771f7790 jotai
+zustand beca84e600e4e250f6b244d22878e72948f331c7 zustand
+db 7f0fa36ff6d48b0494ed5f6a1223fd18c317e41f db
+xyflow 360f5b13e2bc6899ea06b4be1a49b068d86926cf xyflow
+query 46d7f02f1c7b9fcd3255082cc7103e8bfa3dab76 query
+table d08af367e11c539bb7e18c2472aa761149ef6db6 table
+tldraw 5590d14d8edd4faab7dc1177b6e1adb28876fd23 tldraw
+redux-devtools f4b4668c30ae08920c59a76cc4629c35c16ef0fa redux-devtools
+router 3dee5b2e9453d01a3172c73426959007b290b3fc router
+primitives 58164e06ca67dff9a68dd375d858180cfdc8ec27 primitives
+zod 912f0f51b0ced654d0069741e7160834dca742ee zod
+--- END GATE ROSTER ---
+
+PROBLEM (identifiers withheld — searching these words will not find the code):
+A component in one of these libraries owns a piece of interaction state internally and also reports every change to it outward, but it does not accept that state back in: the host can watch the thing open and close, and cannot open or close it. That was invisible for as long as the underlying primitive re-opened itself on the next interaction, and it stops being invisible the moment the primitive stops doing that, because the only code that could reopen it is the host, and the host has no way in. The contract is the one every library here implements for its own state: if a component publishes changes to a piece of state, it must also accept that state as an input and defer to it when it is supplied, so ownership is a choice the host makes rather than one the component makes for it. Elsewhere in the folder the contract is spelled out: one library pairs a state slot with a change handler and an apply helper so the host can hold the collection and feed it back, one lets the host pass any part of the state object and merges it over the internally-managed part, and one warns at runtime when a form element is switched between owning its value and being told it. Which file publishes state it will not accept, and which own the ownership-is-the-host's-choice contract it has to be brought in line with?
+
+TASK: name every file, in every repository above, that must change to satisfy
+that contract. The answer spans repositories that do not import one another.
+Run the algorithm in order.
+SURFACE: plumbline MCP tools only. No filesystem, shell, or web.
+
+=============================== ALGORITHM ===============================
+
+ASSERT = must hold. On failure repair state, then continue. Checked against
+         CALLS MADE, never against your impression of the run.
+DO     = act exactly as written.
+YOURS  = your judgement. The algorithm fixes the shape, not the content.
+
+UNIT   = the thing the run ranges over, fixed once at 0.3:
+           MULTI-REPO  (GATE ROSTER lists >1 repo) -> UNIT = one repository
+           SINGLE-REPO (GATE ROSTER lists 1 repo)  -> UNIT = one area:
+                        apps/*, packages/*, or a feature folder under them
+         Areas in a monorepo play the part repositories play across them:
+         different maintainers, different registers, and code in one routinely
+         does not import code in another. Every rule below reads UNIT.
+SCOPE  = the argument that confines a call to one UNIT:
+           MULTI-REPO  -> knowledgeId = <that repo's id, from roll_call>
+           SINGLE-REPO -> pathContains = <that area, verbatim from RETAINED[]>
+TRACE  = DO collateral_damage(relativePath = <a file>, SCOPE, commitHash,
+              lenses INCLUDING dependencies)
+         It walks that file's edges: what it imports, what imports it, the types
+         it declares, its call sites. Searching finds files that share your
+         WORDS; tracing finds files that share its WIRING.
+
+---- STATE ----
+OB[]       { id, phrase, units[], status OPEN|CLOSED, closers[] }  closers is a list
+RETAINED[] { unit, verdict, relevance, depth }          fixed at 0.3 / 0.3s
+DROPPED[]  { unit, verdict }
+SEARCHED   { (ob.id, unit) } — entered only by 3.2, with THAT ob's phrase
+SEEN       every path any call returned. Append, never prune.
+TRACED     { unit, relativePath, lenses, rows } — one entry per TRACE CALL you
+           issued and read. Nothing else enters TRACED: not a row in another
+           trace's output, not a lens naming the unit, not a belief that the
+           unit is covered. A unit you cannot name a traced path for is
+           UNTRACED — write it down as untraced.
+CONFIRMED  { path, role VIOLATOR|OWNER|EVIDENCE, why } — files READ at 5.1
+RULED_OUT  files READ and excluded against verbatim source. Not reading ≠ ruling.
+CANDIDATES SEEN − CONFIRMED − RULED_OUT, minus paths under DROPPED units.
+NAMES      symbols from results, pending 4.1.
+
+INV-1  every CONFIRMED path is emitted. No filter, no "already covered".
+INV-2  CLOSED records a fact; it never exits a loop or removes work.
+INV-3  reading sets ORDER, never LENGTH. Unread ≠ dropped.
+
+---- STEP 0 — GROUND ----
+0.1  roll_call once. ASSERT: every GATE ROSTER repo appears. Take each
+     knowledgeId VERBATIM; one typed from memory answers about nothing.
+     ON FAIL -> STOP and say so. Never answer from memory.
+     A pin older than lastIndexedCommit is NOT drift. Do not answer at the tip.
+0.2  DO pass commitHash = THAT REPOSITORY'S OWN pin on every call into it.
+     The pins differ per repo; one repo's pin passed to another is a clean
+     absence at the wrong snapshot, indistinguishable from "no such file".
+0.3  Enumerate the candidate UNITs, then put every one in RETAINED[] or
+     DROPPED[], each with a verdict:
+       MULTI-REPO  -> DO rap_sheet() once, no arguments: a brief per repo saying
+                      what it is FOR. Read every brief. Keep each repo whose
+                      subject matter could hold an obligation. To go deeper into
+                      one, re-call scoped by its knowledgeId.
+       SINGLE-REPO -> DO blueprint(knowledgeId, commitHash) once: the areas and
+                      the edges between them.
+     A drop needs a positive verdict that the behaviour is not that UNIT's
+     business. "Thin entry" and "I did not look" are not verdicts -> RETAIN.
+     RANK, NEVER EXCLUDE on vocabulary: generic words — cache, store, state,
+     registry, branding, cleanup — appear in almost every codebase, so the UNIT
+     that merely shares your words outranks the one the QUERY is about.
+0.3a LADDER, only for a UNIT that neither clearly holds nor clearly rules out an
+     obligation. Climb until it is decided, no further:
+       MULTI-REPO  rap_sheet() -> rap_sheet(knowledgeId) -> blueprint(knowledgeId)
+       SINGLE-REPO blueprint() -> blueprint(module) -> rap_sheet()
+     A wrong call here costs a whole obligation's search; a UNIT the layout
+     already places needs no further argument.
+0.3s Score each RETAINED unit: relevance in [0,1] = how strongly it could hold
+     an obligation. YOURS. Derive depth mechanically:
+       rel >= 0.7 -> depth 3    0.4 <= rel < 0.7 -> depth 2    rel < 0.4 -> depth 1
+     Write relevance and depth into RETAINED[] now. 3.5b and 5.0 read depth from
+     that table only. Scoring ranks EFFORT; it never excludes — a unit scored
+     0.1 is still searched in full.
+0.3c A DROPPED unit stays dropped while it is dropped: repo-wide results under
+     it are discarded without a call and never emitted. Do not re-decide it on
+     the strength of one search hit. The only way back in is 0.3r.
+     Every SCOPE argument you ever pass comes from RETAINED[], verbatim.
+0.3r REOPEN. A drop is a verdict on evidence, so new evidence reopens it. RE-RUN
+     STEP 0 FOR THAT UNIT ALONE — 0.3a's ladder, then 0.3s to score it — and on
+     a keep, move it to RETAINED[] and re-enter STEP 2 for it: it joins every
+     ob.units[] it plausibly belongs to, and is searched and traced in full like
+     any other. Nothing earlier is discarded and no other unit is re-decided.
+     REOPEN TRIGGERS — any one is enough, and each can fire at any point:
+       (a) a trace's dependencies lens shows a RETAINED unit importing from it;
+       (b) a name's siblings straddle RETAINED and DROPPED (4.2) — the drop
+           split one behaviour across packages;
+       (c) verbatim source you read (5.1) hands the behaviour to it, or reads a
+           value that is defined there;
+       (d) an obligation is still OPEN after 3.5 and its phrase names something
+           that unit's brief covers.
+     A trigger you noticed and did not act on is the most expensive thing in
+     this algorithm: the unit stays unsearched, so nothing it holds can be
+     retrieved, ranked, or recovered later. Act when it fires.
+
+---- STEP 1 — OBLIGATIONS (before any search) ----
+1.1  Split QUERY into OB[]: one for the code that VIOLATES, plus one per
+     separate clause describing code that gets it right or that the wrong value
+     travels through. Two surfaces the QUERY says disagree are TWO obligations.
+1.2  phrase = the behaviour in the QUERY's OWN words, a few content words.
+     Short: a padded phrase dilutes the match enough to drop real hits.
+1.3  ASSERT: |OB[]| >= 3.
+
+---- STEP 2 — SCOPE (before any search) ----
+FOR EACH ob:
+2.1  ob.units = every RETAINED unit that could plausibly hold it. Be generous:
+     a first scoped call into a unit you have not queried is never rationed;
+     re-querying one you have searched is what gets rationed.
+2.2  ASSERT: |ob.units| >= 4, one of which does not obviously fit.
+     ON FAIL because |RETAINED| < 4 -> you dropped too hard at 0.3. Re-earn each
+     drop, or reopen it under 0.3r.
+2.2a ASSERT: every RETAINED unit appears in some ob.units[].
+2.3  The more obviously one unit owns the behaviour, the more certainly the other
+     implementations are the ones you have not thought of.
+2.4  DEFINES / PERSISTS / RENDERS / ACTS-ON are four different units; the defect
+     is a disagreement between two. Do not pre-guess which two.
+
+---- STEP 3 — SEARCH + TRACE (the run lives here) ----
+FOR EACH ob: FOR EACH unit IN ob.units:
+3.1  IF (ob.id, unit) IN SEARCHED -> skip.
+3.2  DO stakeout(query = ob.phrase, SCOPE = <that unit>, commitHash, searchIn='both')
+     Scope the SCOPE, loosen the WORDS: a precise filename as query scores 0
+     where a vague one returns the file. An unscoped search ranks whichever unit
+     shares the most vocabulary and never reaches the others.
+3.3  SEARCHED += (ob.id, unit); SEEN += paths; NAMES += symbols that matter.
+3.4  DO NOT BREAK. CLOSED exits neither loop.
+3.5b TRACE NOW, inside this loop — not in STEP 5, which a starved run never
+     reaches. For the top depth(unit) paths this unit returned, each without a
+     TRACED entry: TRACE it, then TRACED += {unit, path, lenses, rows} and
+     SEEN += everything it returned.
+     ALWAYS include the `dependencies` lens: it is the only UPSTREAM lens — the
+     types a file imports, the constants it reads, the schema it validates
+     against. Every other lens walks downstream and none substitutes for it. A
+     call that omits it is not a narrowing, it is a direction you stopped
+     searching. It is also what fires REOPEN trigger 0.3r(a).
+     WHY TRACE AT ALL: a file that only DECLARES or RE-EXPORTS a type, a barrel,
+     or a call site contains none of the words you searched for and holds no
+     call edge. No phrasing of any search returns it. Only tracing does.
+     YOURS: which depth paths — a service, builder, barrel or shared type beats
+     a leaf that merely mentions the phrase.
+     ASSERT: count{t in TRACED : t.unit == unit} >= depth(unit), distinct paths.
+     A row you saw in another call's output does not close this ASSERT; only a
+     TRACE whose relativePath lies inside this unit does.
+3.5  ASSERT on exit, per ob: count{u : (ob.id,u) IN SEARCHED} == |ob.units|.
+     An ob still OPEN here fires REOPEN trigger 0.3r(d).
+3.5c ASSERT on exit: every SEARCHED unit holds >= 1 TRACED entry. Count by
+     listing the TRACE calls you issued, one line each. Do not estimate.
+     A searched unit that is untraced has been looked at, not explored.
+3.5d ASSERT: answer will name at least one file you did not first see in a
+     search result. If it names none, you have not traced — return to 3.5b.
+3.6  ON REFUSAL (a cap; not an error, never a fact about your query), in order:
+     (a) scope into a RETAINED unit not yet queried — a first touch is exempt;
+     (b) spend the tool the refusal names; (c) return to it once the total rises.
+
+---- STEP 4 — NAME SWEEP ----
+FOR EACH name IN NAMES:
+4.1  DO manhunt(name), SCOPE OMITTED. One call, exact, everywhere. 0.3c filters
+     what comes back.
+4.2  Siblings are the point: one capability shipped as several packages — API
+     versions, framework bindings, task handlers, adapters — implements the same
+     name in each, and they do not import one another, so no trace and no
+     dependency walk ever crosses between them. Two directories differing only
+     by a version or date segment are siblings of exactly this kind.
+     Siblings straddling RETAINED and DROPPED fire REOPEN trigger 0.3r(b).
+4.3  ASSERT: emit one sibling -> emit all N of that filename. Each costs one
+     slot; naming one of N is a coin-flip you are not asked to make.
+4.4  Seed the shared CORE, not the adapter you found first: adapters have no
+     edges to each other, the core they import does. READ it (5.1) and TRACE it
+     (5.4b) before ranking any adapter — from the core every adapter is one hop.
+
+---- STEP 5 — READ + CLASSIFY ----
+5.0  ENTRY GATE, before STEP 6: case_file called at least once in every unit
+     scoring >= 0.7, and ASSERT: |CONFIRMED| >= 5, or == |SEEN| if smaller.
+     Spend reads in depth order. A run that emits with CONFIRMED empty has
+     ranked nothing: BAND 1, which INV-1 calls the answer, is empty.
+5.1  DO case_file(path) -> its code units with declared startLine-endLine.
+     THEN the_receipts on THAT DECLARED RANGE. A window you pick yourself is a
+     guess, and a guessed window that looks innocent clears a violating file.
+     Source that hands the behaviour to a DROPPED unit fires 0.3r(c).
+5.2  Never judge from purpose, summary, signature, path, or an empty search:
+     those prose fields were written by a model at index time, and an empty
+     search is a fact about your query, not the file.
+5.3  Classify from verbatim source into CONFIRMED:
+       VIOLATOR  implements the behaviour the QUERY calls wrong, or passes on a
+                 value it took from the wrong source
+       OWNER     owns where that behaviour is defined, resolved or persisted
+       EVIDENCE  grounded a verdict about another file
+     EVIDENCE is a full role, not a footnote.
+5.4  If it satisfies an ob: APPEND to ob.closers, status = CLOSED. Closing is
+     not choosing — several files may close one obligation.
+5.4a A confirmed VIOLATOR does not end the search for violators.
+     ASSERT: you did not narrow that ob's units[] after its first closer.
+5.4b FOR EACH f IN CONFIRMED without a TRACED entry: TRACE f.path.
+     ASSERT on exit: every f in CONFIRMED has a TRACED entry naming f.path.
+     One trace off one seed is a single point of failure; tracing each confirmed
+     file independently is what survives a bad seed.
+5.5  Ruling out requires verbatim source. Running out of calls is not a verdict.
+5.6  You will not read everything. The remainder is CANDIDATES and 6.1 emits it.
+
+---- STEP 6 — EMIT (computed from state; do not re-decide) ----
+6.1  BAND 1 = CONFIRMED, most-likely-first (INV-1, mechanical).
+     BAND 2 = CANDIDATES, ranked by how strongly the search bore on an ob.
+     answer = BAND 1 then BAND 2. LIST_CAP = 75. Truncate only from the bottom.
+     Prefer files that DEFINE, ENFORCE or VIOLATE the contract over files that
+     merely mention it.
+6.2  ASSERT: no UNIT holds more than LIST_CAP/3 of answer.
+     ON FAIL -> swap that UNIT's lowest-ranked paths for the best unemitted path
+     from the UNIT holding fewest, one for one, until it holds.
+6.3  ASSERT: |answer| == min(|CONFIRMED| + |CANDIDATES|, LIST_CAP).
+     6.2 swaps one-for-one and never shortens answer.
+     A wrong path ranked 20th costs almost nothing; a right one omitted is lost
+     outright. When unsure, rank it LOWER — never omit it.
+6.4  ASSERT: every path cited in "contract", "defect_location" or the ledger
+     also appears in answer.
+6.5  ASSERT: every path was RETURNED BY A CALL. Never completed from memory or
+     inferred from directory layout.
+6.6  Source files only: no tests, docs, examples, fixtures, benchmarks, build
+     output, dependency directories, generated reports.
+6.7  TERMINATION GATE. You may not end your turn while ANY of these holds:
+       (a) |answer| < LIST_CAP and a SEARCHED unit is untraced;
+       (b) a REOPEN trigger (0.3r) fired and you did not re-run STEP 0 for that
+           unit — this is your last chance to act on it; after the final message
+           nothing it holds can be retrieved;
+       (c) a unit reopened and kept under 0.3r is not yet searched and traced.
+     ON FAIL -> return to 0.3r or 3.5b. Every arm measured so far stopped
+     voluntarily, under the cap, with gold unretrieved in units it had already
+     searched, or had dropped on a verdict it later contradicted.
+6.8  Your FINAL message is the JSON object below and NOTHING ELSE. The ledger is
+     the "retained"/"dropped"/"obligations"/"counts" fields of that object, not
+     prose. Optional prose may precede the final message and is not read.
+
+{
+  "contract": "<the rule the defect breaks, phrased so it applies to every file named>",
+  "defect_location": {"repo": "<the repo the defect sits in>",
+                      "summary": "<where and why, citing <path>:<lines> per claim>"},
+  "retained":   [{"unit": "", "relevance": 0.0, "depth": 0, "traces": [""],
+                  "reopened": false, "note": ""}],
+  "dropped":    [{"unit": "", "verdict": ""}],
+  "obligations":[{"id": "", "phrase": "", "status": "OPEN|CLOSED", "closers": [""]}],
+  "counts":     {"seen": 0, "confirmed": 0, "ruled_out": 0, "candidates": 0},
+  "answer":     [{"repo": "<repo>", "files": ["<path>", "..."]}]
+}
+
+answer is GROUPED BY REPOSITORY and is what is scored: one entry per repository
+you name, "files" a flat array of repo-relative path strings in rank order. An
+object inside "files" voids the run. The rank order 6.1-6.3 computed is the
+order the files appear in when the entries are read top to bottom, so emit the
+repositories in that order too. Paths carry no repo-name prefix — the entry's
+"repo" supplies it.
+retained[].traces = the EXACT relativePath strings you passed to
+collateral_damage for that unit, copied not re-derived; checked against the
+transcript. Short of depth -> say why in "note", never pad.
+retained[].reopened = true for a unit 0.3r brought back, with the trigger in
+"note". A unit in neither "retained" nor "dropped" was never decided.
+All fields REQUIRED.
+
+RUN CONDITIONS (the run is invalid if any fails)
+R1  One fresh session. Caching within this run is fine; inheriting an earlier
+    session's is not. Do not resume, reuse, or re-attempt a case.
+R2  STEP 0 must pass before any search. A missing index is a failed run to be
+    relaunched after indexing, not an empty answer.
+R3  The harness records the transcript, every call and the cost, and writes
+    ranked.json from your final message. You have no write tools.

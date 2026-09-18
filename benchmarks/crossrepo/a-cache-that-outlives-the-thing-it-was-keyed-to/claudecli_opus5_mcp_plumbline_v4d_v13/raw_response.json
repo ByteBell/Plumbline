@@ -1,0 +1,84 @@
+{
+  "duration_api_ms": 451838,
+  "stop_reason": "end_turn",
+  "session_id": "48351aa4-0dae-4d2e-a76b-f861abe1ba6e",
+  "total_cost_usd": 4.811988500000001,
+  "usage": {
+    "input_tokens": 52,
+    "cache_creation_input_tokens": 221377,
+    "cache_read_input_tokens": 3568095,
+    "output_tokens": 32305,
+    "output_tokens_details": { "thinking_tokens": 16661 },
+    "server_tool_use": { "web_search_requests": 0, "web_fetch_requests": 0 },
+    "service_tier": "standard",
+    "cache_creation": { "ephemeral_1h_input_tokens": 221377, "ephemeral_5m_input_tokens": 0 },
+    "inference_geo": "not_available",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 9521,
+        "cache_read_input_tokens": 246548,
+        "cache_creation_input_tokens": 4044,
+        "cache_creation": { "ephemeral_5m_input_tokens": 0, "ephemeral_1h_input_tokens": 4044 },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 6186,
+      "outputTokens": 20,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.006286,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000,
+      "canonicalModel": "claude-haiku-4-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    },
+    "claude-opus-5": {
+      "inputTokens": 52,
+      "outputTokens": 32305,
+      "cacheReadInputTokens": 3568095,
+      "cacheCreationInputTokens": 221377,
+      "webSearchRequests": 0,
+      "costUSD": 4.805702500000001,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "canonicalModel": "claude-opus-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "extra_usage_disabled",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": { "background": 0, "foreground": 0, "unset": 0 },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": { "parent": 0, "user": 0, "system": 0 },
+    "refused": { "depth_limit": 0, "concurrency_limit": 0, "budget": 0 },
+    "by_type": {}
+  },
+  "is_error": false,
+  "num_turns": 46,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## LEDGER\n\n**(a) Obligations**\n\n| ob | phrase | status | closers |\n|---|---|---|---|\n| **OB-1** VIOLATOR — *torn down, rebuilt with the same identity, comes back wearing its predecessor's state* | CLOSED | `xyflow packages/system/src/utils/store.ts` (adoptUserNodes: `tmpLookup.get(userNode.id)` → `parseHandles(userNode, internalNode)` hands the **previous** node's measured `handleBounds`/`z`/`positionAbsolute` to a brand-new node purely because the id string matched); `jotai src/vanilla/utils/atomFamily.ts` (`atoms: Map<Param,[AtomType,CreatedAt]>` — the atom, with all its state, is returned for any later call with an equal param, with nothing tying its life to the subject's); `table packages/table-core/src/utils/getCoreRowModel.ts` (row model memoised on `[table.options.data]`, `rowsById` rebuilt by id) |\n| **OB-2** the dual failure — *two distinct things handed one shared entry, quietly overwriting each other* | CLOSED | `zod packages/zod/src/v4/core/registries.ts:39-41` (`this._idmap.set(meta.id!, schema)` — a second schema registered under the same `id` silently replaces the first, and that strong `Map` entry outlives the schema the `WeakMap` half correctly releases); `table packages/table-core/src/utils/getCoreRowModel.ts:32-53` (`rowModel.rowsById[row.id] = row`, with the dev-only duplicate/missing-id throw commented out at lines 32-37); `xyflow packages/system/src/utils/store.ts` (`nodeLookup.set(userNode.id, …)` — last node with a given id wins) |\n| **OB-3** OWNER — *the rule about when remembered work must be let go* | CLOSED | `query packages/query-core/src/removable.ts:6-40` (`Removable`: `gcTime` → `scheduleGc` → `optionalRemove`, the only thing that ends a cache entry's life); `tldraw packages/store/src/lib/Store.ts:1104-1155` (`createCache` keys a `WeakCache<Atom,…>` on the **record's atom**, not its id — \"cleans up when records are deleted\", lines 131-132); `tldraw packages/store/src/lib/AtomMap.ts:247-298` (`delete`/`deleteMany` drop the atom, so a re-created record gets a *new* atom and no inherited derivation); `tldraw packages/utils/src/lib/cache.ts` (`WeakCache<K extends object,V>` — the weak-keyed mechanism both rely on); `jotai src/vanilla/utils/atomFamily.ts:125-151` (`remove`/`setShouldRemove` — the let-go rule, but manual and time-based, never tied to the subject) |\n| **OB-4** OWNER — *equal keys may not be assumed to mean the same subject* | CLOSED | `reselect src/devModeChecks/cacheSizeCheck.ts:11-44` — states the contract verbatim: results keyed by **objects** live in `WeakMap`s and are released once the key is unreachable; results keyed by **primitives** (ids, offsets, page numbers) are held strongly and \"only released by `clearCache()`\"; `jotai src/vanilla/utils/atomFamily.ts:80-90` (`areEqual === undefined` → `atoms.get(param)`: equal key ⇒ same subject); `table packages/table-core/src/core/row.ts:104-152` (the in-repo counterexample — `_valuesCache`/`_uniqueValuesCache` are created per `createRow`, so their lifetime *is* the row's) |\n\n**(b) Sweep matrix** — repositories in SWEPT, per obligation\n\n| ob | repos swept |\n|---|---|\n| OB-1 | table, xyflow, tldraw, router, jotai, reselect, zustand, react, react-redux, redux-devtools |\n| OB-2 | table, xyflow, zod, redux-toolkit, db, zustand, primitives, redux |\n| OB-3 | query, db, jotai, reselect, redux-toolkit, router, tldraw, redux-devtools |\n| OB-4 | reselect, zod, table, jotai, react, db, primitives, redux |\n\nEvery row meets or exceeds its ob's `repos[]` length; all 16 roster repositories were scoped into at least once. Commit discipline held: `redux`, `react`, `table`, `zustand` were queried at their ROSTER pins, not their newer indexed tips. Two opening `stakeout` results exceeded the return cap and were read from the files the tool handed back.\n\n[{\"repo\":\"xyflow\",\"files\":[\"packages/system/src/utils/store.ts\",\"packages/react/src/store/index.ts\",\"packages/svelte/src/lib/store/index.ts\",\"packages/react/src/hooks/useUpdateNodeInternals.ts\",\"packages/react/src/utils/changes.ts\",\"packages/system/src/utils/graph.ts\",\"packages/react/src/store/initialState.ts\",\"packages/svelte/src/lib/store/initial-store.svelte.ts\",\"packages/system/src/types/nodes.ts\",\"packages/react/src/components/NodeWrapper/useNodeObserver.ts\"],\"pinpoints\":[{\"path\":\"packages/system/src/utils/store.ts\",\"symbol\":\"adoptUserNodes\",\"lines\":\"141-171\",\"change\":\"Stop inheriting the previous entry's internals by id alone: only reuse internalNode when it is the same user node object (or the node was not re-created), and drop handleBounds/z/positionAbsolute otherwise.\"},{\"path\":\"packages/system/src/utils/store.ts\",\"symbol\":\"parseHandles\",\"lines\":\"79-82\",\"change\":\"Do not fall back to internalNode.internals.handleBounds for a node whose identity was not proven to carry over; force re-measurement instead.\"}]},\n{\"repo\":\"table\",\"files\":[\"packages/table-core/src/utils/getCoreRowModel.ts\",\"packages/table-core/src/core/row.ts\",\"packages/table-core/src/features/RowSelection.ts\",\"packages/table-core/src/core/table.ts\",\"packages/table-core/src/utils.ts\",\"packages/table-core/src/features/RowExpanding.ts\",\"packages/table-core/src/features/RowPinning.ts\",\"packages/table-core/src/core/cell.ts\",\"packages/table-core/src/utils/getFacetedUniqueValues.ts\",\"packages/table-core/src/utils/getFacetedMinMaxValues.ts\",\"packages/table-core/src/utils/getExpandedRowModel.ts\",\"packages/table-core/src/utils/filterRowsUtils.ts\",\"packages/table-core/src/features/ColumnGrouping.ts\",\"packages/table-core/src/types.ts\"],\"pinpoints\":[{\"path\":\"packages/table-core/src/utils/getCoreRowModel.ts\",\"symbol\":\"getCoreRowModel\",\"lines\":\"31-53\",\"change\":\"Detect a duplicate row.id before writing rowModel.rowsById[row.id] instead of silently overwriting, and restore the commented-out missing-id guard at lines 32-37.\"},{\"path\":\"packages/table-core/src/core/row.ts\",\"symbol\":\"createRow\",\"lines\":\"104-152\",\"change\":\"Keep the per-row _valuesCache/_uniqueValuesCache lifetime tied to this row object — the in-repo model the id-keyed feature state should follow.\"}]},\n{\"repo\":\"tldraw\",\"files\":[\"packages/store/src/lib/Store.ts\",\"packages/store/src/lib/AtomMap.ts\",\"packages/utils/src/lib/cache.ts\",\"packages/store/src/lib/StoreQueries.ts\",\"packages/store/src/lib/StoreSideEffects.ts\",\"packages/state/src/lib/Computed.ts\",\"packages/store/src/lib/RecordsDiff.ts\",\"packages/editor/src/lib/utils/EditorAtom.ts\",\"packages/editor/src/lib/editor/overlays/OverlayManager.ts\",\"packages/tldraw/src/lib/shapes/arrow/ArrowShapeUtil.tsx\"],\"pinpoints\":[{\"path\":\"packages/store/src/lib/Store.ts\",\"symbol\":\"Store.createCache\",\"lines\":\"1110-1121\",\"change\":\"Owner of the contract: the cache is keyed on the record's atom via WeakCache, not on its id — keep this and document it as the rule other id-keyed caches must follow.\"},{\"path\":\"packages/store/src/lib/AtomMap.ts\",\"symbol\":\"AtomMap.delete\",\"lines\":\"247-260\",\"change\":\"Deleting removes the value atom, so a re-created record gets a fresh atom and no inherited derivation — this is the lifetime tie the violators lack.\"}]},\n{\"repo\":\"jotai\",\"files\":[\"src/vanilla/utils/atomFamily.ts\",\"src/vanilla/utils/selectAtom.ts\",\"src/vanilla/utils/splitAtom.ts\",\"src/vanilla/utils/unwrap.ts\",\"src/vanilla/internals.ts\"],\"pinpoints\":[{\"path\":\"src/vanilla/utils/atomFamily.ts\",\"symbol\":\"createAtom\",\"lines\":\"78-104\",\"change\":\"An equal param returns the predecessor's atom with all its state; nothing ties the entry to the subject's lifetime — require an explicit identity/version in the key or evict on subject teardown.\"},{\"path\":\"src/vanilla/utils/atomFamily.ts\",\"symbol\":\"createAtom.setShouldRemove\",\"lines\":\"125-151\",\"change\":\"remove/setShouldRemove is the only let-go rule and it is time-based — tie removal to the keyed subject instead.\"}]},\n{\"repo\":\"zod\",\"files\":[\"packages/zod/src/v4/core/registries.ts\",\"packages/zod/src/v4/core/to-json-schema.ts\"],\"pinpoints\":[{\"path\":\"packages/zod/src/v4/core/registries.ts\",\"symbol\":\"$ZodRegistry.add\",\"lines\":\"33-43\",\"change\":\"_idmap.set(meta.id!, schema) silently overwrites a different schema registered under the same id, and holds it strongly while _map (a WeakMap) releases it — detect the collision and tie the id entry to the schema's lifetime.\"}]},\n{\"repo\":\"reselect\",\"files\":[\"src/devModeChecks/cacheSizeCheck.ts\",\"src/weakMapMemoize.ts\",\"src/lruMemoize.ts\",\"src/createSelectorCreator.ts\",\"src/createStructuredSelector.ts\",\"src/devModeChecks/inputStabilityCheck.ts\"],\"pinpoints\":[{\"path\":\"src/devModeChecks/cacheSizeCheck.ts\",\"symbol\":\"runCacheSizeCheck\",\"lines\":\"11-44\",\"change\":\"Owns the rule in prose: object keys live in WeakMaps and are released when unreachable, primitive keys (ids) are held strongly until clearCache() — the contract every id-keyed cache here must be brought in line with.\"}]},\n{\"repo\":\"query\",\"files\":[\"packages/query-core/src/removable.ts\",\"packages/query-core/src/queryCache.ts\",\"packages/query-core/src/query.ts\",\"packages/query-core/src/mutation.ts\",\"packages/query-core/src/queryClient.ts\",\"packages/query-core/src/queriesObserver.ts\"],\"pinpoints\":[{\"path\":\"packages/query-core/src/removable.ts\",\"symbol\":\"Removable.scheduleGc\",\"lines\":\"14-22\",\"change\":\"The owning rule for letting remembered work go: gcTime elapses with no observers, then optionalRemove() drops the entry keyed by queryHash.\"}]},\n{\"repo\":\"redux-toolkit\",\"files\":[\"packages/toolkit/src/query/core/buildMiddleware/cacheCollection.ts\",\"packages/toolkit/src/entities/unsorted_state_adapter.ts\",\"packages/toolkit/src/entities/sorted_state_adapter.ts\",\"packages/toolkit/src/entities/utils.ts\",\"packages/toolkit/src/entities/create_adapter.ts\",\"packages/toolkit/src/entities/state_selectors.ts\"]},\n{\"repo\":\"db\",\"files\":[\"packages/db/src/collection/lifecycle.ts\",\"packages/db/src/collection/cleanup-queue.ts\",\"packages/db/src/collection/state.ts\",\"packages/db/src/collection/index.ts\",\"packages/db/src/collection/sync.ts\",\"packages/db/src/collection/subscription.ts\"]},\n{\"repo\":\"router\",\"files\":[\"packages/router-core/src/router.ts\",\"packages/router-core/src/lru-cache.ts\",\"packages/router-core/src/Matches.ts\"]},\n{\"repo\":\"primitives\",\"files\":[\"packages/react/collection/src/collection.tsx\",\"packages/react/collection/src/collection-legacy.tsx\",\"packages/react/roving-focus/src/roving-focus-group.tsx\"]},\n{\"repo\":\"react-redux\",\"files\":[\"src/components/Context.ts\",\"src/connect/selectorFactory.ts\"]},\n{\"repo\":\"redux-devtools\",\"files\":[\"packages/redux-devtools-app-core/src/reducers/instances.ts\"]},\n{\"repo\":\"zustand\",\"files\":[\"src/middleware/persist.ts\"]}]",
+  "ttft_ms": 1765,
+  "type": "result",
+  "duration_ms": 1046251,
+  "uuid": "2c49409a-28cd-4c3f-94db-5dbb9f5e05a0",
+  "ttft_stream_ms": 1427,
+  "time_to_request_ms": 13,
+  "queued_turn_count": 0
+}
